@@ -1,5 +1,8 @@
 import { useBusiness } from "../hooks/useBusiness"
-import { Link } from "react-router-dom"
+import ListHeader from "@/modules/core/components/ListHeader"
+import ListGrid from "@/modules/core/components/ListGrid"
+import ListCard from "@/modules/core/components/ListCard"
+
 
 export default function BusinessList() {
   const { business, loading } = useBusiness()
@@ -8,28 +11,23 @@ export default function BusinessList() {
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">Empreendimentos</h1>
-      <Link 
-          to="/empreendimentos/novo" 
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Novo Empreendimento
-        </Link>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        
+      <ListHeader
+        title='Empreendimentos'
+        buttonText='Novo Empreendimento'
+        buttonLink='/empreendimentos/novo'
+      />
+      
+      <ListGrid>
         {business.map((business) => (
-          <Link
+          <ListCard
             key={business.id}
             to={`/empreendimentos/${business.id}`}
-            className="border p-4 rounded-lg hover:shadow-md transition"
-          >
-            <h2 className="text-lg font-semibold">{business.name}</h2>
-            <p className="text-gray-600">CNPJ: {business.document}</p>
-            <p className="text-gray-600">Cidade: {business.city?.name}</p>
-          </Link>
+            title={business.corporate_name}
+            subtitle={business.cnpj}
+          />
         ))}
-      </div>
+      </ListGrid>
     </div>
   )
 }

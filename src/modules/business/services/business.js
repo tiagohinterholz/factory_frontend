@@ -10,7 +10,23 @@ export async function getBusinessById(id) {
   return response.data;
 }
 
+export async function getBusinessLogo(id) {
+  const response = await api.get(`/empreendimentos/${id}/`);
+  return response.data.logo;
+}
+
 export async function createBusiness(payload) {
   const response = await api.post("/empreendimentos/", payload)
   return response.data
+}
+
+export async function getUsersByBusiness(id) {
+  const response = await api.get(`/empreendimentos/${id}/usuarios/`);
+  return response.data;
+}
+
+
+export async function getLicenseByBusiness(id) {
+  const response = await api.get(`/empreendimentos/${id}/licenca/`);
+  return response.data;
 }

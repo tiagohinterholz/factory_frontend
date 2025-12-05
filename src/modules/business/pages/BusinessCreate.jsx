@@ -1,150 +1,99 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { createBusiness } from "../services/business"
+import { useBusinessForm } from "@/modules/business/hooks/useBusinessForm"
+import { useStates } from "@/modules/location/state/hooks/useState"
+import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
+import FormField from "@/modules/core/components/FormField"
+import SelectField from "@/modules/core/components/SelectField"
+import PrimaryButton from "@/modules/core/components/PrimaryButton"
+
 
 export default function BusinessCreate() {
-  const navigate = useNavigate()
-
-  const [form, setForm] = useState({
-    corporate_name: "",
-    trade_name: "",
-    cnpj: "",
-    state_id: "",
-    city_id: "",
-    address: "",
-    number: "",
-    complement: "",
-    phone: "",
-    email: "",
-  })
-
-  function handleChange(ev) {
-    setForm({ ...form, [ev.target.name]: ev.target.value })
-  }
-
-  async function handleSubmit(ev) {
-    ev.preventDefault()
-
-    try {
-      await createBusiness({
-        ...form,
-        state_id: Number(form.state_id),
-        city_id: Number(form.city_id),
-        is_active: true
-      })
-
-      navigate("/empreendimentos")
-    } catch (error) {
-      console.log(error)
-      alert("Erro ao criar empreendimento")
-    }
-  }
+  const {
+    corporateName, setCorporateName,  
+    tradeName, setTradeName,
+    cnpj, setCnpj,
+    stateId, setStateId,
+    cityId, setCityId,
+    address, setAddress,
+    number, setNumber,
+    complement, setComplement,
+    phone, setPhone,
+    email, setEmail,
+    handleSubmit
+  } = useBusinessForm()
+  
+  const { states, loading: loadingStates } = useStates()
+  const { citiesByState, loading: loadingCities } = useCitiesByState(stateId)
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-semibold">Novo Empreendimento</h1>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+     <form className="space-y-4" onSubmit={handleSubmit}>
+        <FormField 
+          label="Razão Social"
+          value={tradeName}
+          onChange={(e) => setTradeName(e.target.value)}
+        />
 
-        <div>
-          <label className="block mb-1">Razão Social</label>
-          <input
-            name="corporate_name"
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-        </div>
+        <FormField 
+          label="Nome Fantasia"
+          value={corporateName}
+          onChange={(e) => setCorporateName(e.target.value)}
+        />
 
-        <div>
-          <label className="block mb-1">Nome Fantasia</label>
-          <input
-            name="trade_name"
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-        </div>
+        <FormField 
+          label="CNPJ"
+          value={cnpj}
+          onChange={(e) => setCnpj(e.target.value)}
+        />
 
-        <div>
-          <label className="block mb-1">CNPJ</label>
-          <input
-            name="cnpj"
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-        </div>
+        <SelectField 
+          label="Estado"
+          value={stateId}
+          onChange={(e) => setStateId(e.target.value)}
+          options={states}
+        />
 
-        <div>
-          <label className="block mb-1">Estado</label>
-          <input
-            type="number"
-            name="state_id"
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-        </div>
+        <SelectField 
+          label="Cidade"
+          value={cityId}
+          onChange={(e) => setCityId(e.target.value)}
+          options={citiesByState}
+        />
 
-        <div>
-          <label className="block mb-1">Cidade</label>
-          <input
-            type="number"
-            name="city_id"
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-        </div>
+        <FormField 
+          label="Endereço"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+        />
 
-        <div>
-          <label className="block mb-1">Endereço</label>
-          <input
-            name="address"
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-        </div>
+        <FormField 
+          label="Número"
+          value={number}
+          onChange={(e) => setNumber(e.target.value)}
+        />
 
-        <div>
-          <label className="block mb-1">Número</label>
-          <input
-            name="number"
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-        </div>
+        <FormField 
+          label="Complemento"
+          value={complement}
+          onChange={(e) => setComplement(e.target.value)}
+        />
 
-        <div>
-          <label className="block mb-1">Complemento</label>
-          <input
-            name="complement"
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-        </div>
+        <FormField 
+          label="Telefone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
 
-        <div>
-          <label className="block mb-1">Telefone</label>
-          <input
-            name="phone"
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-        </div>
+        <FormField 
+          label="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        <div>
-          <label className="block mb-1">Email</label>
-          <input
-            type="email"
-            name="email"
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="col-span-2 bg-blue-600 hover:bg-blue-700 text-white rounded p-2"
-        >
-          Criar
-        </button>
+        <PrimaryButton type="submit">
+          Salvar
+        </PrimaryButton>
 
       </form>
     </div>
