@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { updateBusiness, getBusinessById } from "@/modules/business/services/business"
+import { updateBusiness, getBusinessById, deleteBusiness } from "@/modules/business/services/business"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useBusinessEditForm() {

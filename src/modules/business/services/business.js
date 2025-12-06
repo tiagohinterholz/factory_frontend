@@ -30,8 +30,12 @@ export async function getUsersByBusiness(id) {
   return response.data;
 }
 
-
 export async function getLicenseByBusiness(id) {
   const response = await api.get(`/empreendimentos/${id}/licenca/`);
+  return response.data;
+}
+
+export async function deleteBusiness(id) {
+  const response = await api.delete(`/empreendimentos/${id}/`);
   return response.data;
 }
