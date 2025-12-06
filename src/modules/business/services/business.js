@@ -20,6 +20,11 @@ export async function createBusiness(payload) {
   return response.data
 }
 
+export async function updateBusiness(id, payload) {
+  const response = await api.patch(`/empreendimentos/${id}/`, payload)
+  return response.data
+}
+
 export async function getUsersByBusiness(id) {
   const response = await api.get(`/empreendimentos/${id}/usuarios/`);
   return response.data;

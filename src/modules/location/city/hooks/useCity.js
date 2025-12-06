@@ -4,7 +4,7 @@ import { getCitiesByState } from "@/modules/location/city/services/city"
 
 export function useCities() {
   const [cities, setCities] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -24,7 +24,7 @@ export function useCities() {
 
 export function useCitiesByState(stateId) {
   const [citiesByState, setCitiesByState] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!stateId) return

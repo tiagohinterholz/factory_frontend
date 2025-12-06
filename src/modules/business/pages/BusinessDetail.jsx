@@ -1,38 +1,117 @@
-import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
-import { getBusinessById } from "../services/business"
+import { useBusinessEditForm } from "@/modules/business/hooks/useBusinessEditForm"
+import { useStates } from "@/modules/location/state/hooks/useState"
+import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
+import FormField from "@/modules/core/components/FormField"
+import SelectField from "@/modules/core/components/SelectField"
+import PrimaryButton from "@/modules/core/components/PrimaryButton"
 
-export default function BusinessDetail() {
-  const { id } = useParams()
-  const [business, setBusiness] = useState(null)
 
-  useEffect(() => {
-    async function load() {
-      const data = await getBusinessById(id)
-      setBusiness(data)
-    }
-    load()
-  }, [id])
+export default function BusinessEdit() {
+  const {
+    corporateName, setCorporateName,  
+    tradeName, setTradeName,
+    cnpj, setCnpj,
+    stateId, setStateId,
+    cityId, setCityId,
+    address, setAddress,
+    number, setNumber,
+    complement, setComplement,
+    phone, setPhone,
+    email, setEmail,
+    loading,
+    handleUpdate,
+    handleDelete
+  } = useBusinessEditForm()
+  
+  const { states, loading: loadingStates } = useStates()
+  const { citiesByState, loading: loadingCities } = useCitiesByState(stateId)
 
-  if (!business) return <p className="p-6">Carregando...</p>
+  const handleStateChange = (e) => {
+    setStateId(e.target.value);
+    setCityId(""); 
+  };
+
+  if (loading || loadingStates || (stateId && loadingCities)) return <p className="p-6">Carregando...</p>
 
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">{business.name}</h1>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-semibold">Novo Empreendimento</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="border p-4 rounded">
-          <h2 className="font-semibold">Informações</h2>
-          <p>CNPJ: {business.document}</p>
-          <p>Ativo: {business.is_active ? "Sim" : "Não"}</p>
-        </div>
+     <form className="space-y-4" onSubmit={handleUpdate}>
+        <FormField 
+          label="Razão Social"
+          value={tradeName}
+          onChange={(e) => setTradeName(e.target.value)}
+        />
 
-        <div className="border p-4 rounded">
-          <h2 className="font-semibold">Localização</h2>
-          <p>Estado: {business.state?.name}</p>
-          <p>Cidade: {business.city?.name}</p>
-        </div>
-      </div>
+        <FormField 
+          label="Nome Fantasia"
+          value={corporateName}
+          onChange={(e) => setCorporateName(e.target.value)}
+        />
+
+        <FormField 
+          label="CNPJ"
+          value={cnpj}
+          onChange={(e) => setCnpj(e.target.value)}
+        />
+
+        <SelectField 
+          label="Estado"
+          value={stateId}
+          onChange={handleStateChange}
+          options={states}
+        />
+
+        <SelectField 
+          label="Cidade"
+          value={cityId}
+          onChange={(e) => setCityId(e.target.value)}
+          options={citiesByState}
+        />
+
+        <FormField 
+          label="Endereço"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+        />
+
+        <FormField 
+          label="Número"
+          value={number}
+          onChange={(e) => setNumber(e.target.value)}
+        />
+
+        <FormField 
+          label="Complemento"
+          value={complement}
+          onChange={(e) => setComplement(e.target.value)}
+        />
+
+        <FormField 
+          label="Telefone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+
+        <FormField 
+          label="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <PrimaryButton type="submit">
+          Atualizar
+        </PrimaryButton>
+      </form>
+
+      <button
+        onClick={handleDelete}
+        className="bg-red-600 text-white px-4 py-2 rounded"
+      >
+        Deletar
+      </button>
+
     </div>
   )
 }
