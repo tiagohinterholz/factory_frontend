@@ -25,7 +25,6 @@ export default function StateList() {
           />
         ))}
       </ListGrid>
-      
     </div>
   )
 }

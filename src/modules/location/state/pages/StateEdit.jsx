@@ -22,19 +22,16 @@ export default function StateEdit() {
       <h1 className="text-2xl font-bold">Editar Estado</h1>
 
       <form className="space-y-4" onSubmit={handleUpdate}>
-
         <FormField
           label="Nome"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-
         <FormField
           label="Abreviação"
           value={abbreviation}
           onChange={(e) => setAbbreviation(e.target.value)}
         />
-
         <PrimaryButton type="submit">
           Atualizar
         </PrimaryButton>

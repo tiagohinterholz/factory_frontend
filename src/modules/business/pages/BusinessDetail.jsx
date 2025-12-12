@@ -35,7 +35,7 @@ export default function BusinessEdit() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Novo Empreendimento</h1>
+      <h1 className="text-2xl font-semibold">Editar Empreendimento</h1>
 
      <form className="space-y-4" onSubmit={handleUpdate}>
         <FormField 

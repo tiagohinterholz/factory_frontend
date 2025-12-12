@@ -35,7 +35,6 @@ export default function Login() {
         </h2>
 
         <form className="space-y-5" onSubmit={handleLogin}>
-
           <div>
             <label className="block text-gray-700 mb-1 font-medium">
               Email
@@ -61,34 +60,28 @@ export default function Login() {
               onChange={(ev) => setPassword(ev.target.value)}
             />
           </div>
-
           <button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition"
           >
             Entrar
           </button>
-
         </form>
 
         <div className="mt-6 text-center space-y-2">
-
           <a
             href="#forgot"
             className="block text-blue-600 hover:underline text-sm"
           >
             Esqueceu a senha?
           </a>
-
           <a
             href="#register"
             className="block text-gray-700 hover:underline text-sm"
           >
             Criar uma conta
           </a>
-
         </div>
-
       </div>
     </div>
   );

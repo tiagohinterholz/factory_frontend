@@ -21,17 +21,14 @@ export default function StateCreate() {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-
         <FormField 
           label="Abreviação"
           value={abbreviation}
           onChange={(e) => setAbbreviation(e.target.value)}
         />
-
         <PrimaryButton type="submit">
           Salvar
         </PrimaryButton>
-
       </form>
     </div>
   )
