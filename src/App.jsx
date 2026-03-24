@@ -17,6 +17,10 @@ import CityList from "@/modules/location/city/pages/CityList"
 import CityCreate from "@/modules/location/city/pages/CityCreate"
 import CityEdit from "@/modules/location/city/pages/CityEdit"
 
+import SupplierList from "@/modules/supplier/pages/SupplierList"
+import SupplierEdit from "@/modules/supplier/pages/SupplierDetail"
+import SupplierCreate from "@/modules/supplier/pages/SupplierCreate"
+
 
 
 export default function App() {
@@ -126,6 +130,37 @@ export default function App() {
             <PrivateRoute>
               <DashboardLayout>
                 <CityEdit />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/fornecedores"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <SupplierList />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/fornecedores/novo"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <SupplierCreate />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/fornecedores/:id"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <SupplierEdit />
               </DashboardLayout>
             </PrivateRoute>
           }
