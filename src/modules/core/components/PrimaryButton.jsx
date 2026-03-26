@@ -1,9 +1,12 @@
-export default function PrimaryButton({ children, type = "button" }) {
+import { Save } from "lucide-react"
+
+export default function PrimaryButton({ children, type = "button", icon: Icon = Save, fullWidth = true }) {
   return (
     <button 
       type={type}
-      className="bg-blue-600 text-white px-4 py-2 rounded"
+      className={`btn-primary ${fullWidth ? "w-full" : "px-8"}`}
     >
+      <Icon className="w-4 h-4" />
       {children}
     </button>
   )

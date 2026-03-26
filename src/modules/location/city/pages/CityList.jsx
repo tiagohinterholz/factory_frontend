@@ -20,7 +20,7 @@ export default function CityList() {
         {cities.map((city) => (
           <ListCard
             key={city.id}
-            to={`/estados/${city.id}`}
+            to={`/cidades/${city.id}`}
             title={city.name}
             subtitle={city.state.name}
           />

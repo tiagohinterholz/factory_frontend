@@ -25,6 +25,10 @@ import ClientList from "@/modules/client/pages/ClientList"
 import ClientEdit from "@/modules/client/pages/ClientDetail"
 import ClientCreate from "@/modules/client/pages/ClientCreate"
 
+import VehicleList from "@/modules/vehicle/pages/VehicleList"
+import VehicleEdit from "@/modules/vehicle/pages/VehicleDetail"
+import VehicleCreate from "@/modules/vehicle/pages/VehicleCreate"
+
 
 
 export default function App() {
@@ -196,6 +200,36 @@ export default function App() {
             <PrivateRoute>
               <DashboardLayout>
                 <ClientEdit />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/veiculos"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <VehicleList />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/veiculos/novo"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <VehicleCreate />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/veiculos/:id"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <VehicleEdit />
               </DashboardLayout>
             </PrivateRoute>
           }

@@ -1,12 +1,15 @@
-export default function FormField({ label, value, onChange, type = "text" }) {
+export default function FormField({ label, value, onChange, type = "text", placeholder }) {
   return (
-    <div>
-      <label className="block mb-1">{label}</label>
+    <div className="flex flex-col group">
+      <label className="label-premium group-focus-within:text-indigo-600 transition duration-300">
+        {label}
+      </label>
       <input
         type={type}
-        className="border p-2 rounded w-full"
+        className="input-premium shadow-sm shadow-slate-200/50"
         value={value}
         onChange={onChange}
+        placeholder={placeholder || `Digite o(a) ${label?.toLowerCase()}`}
       />
     </div>
   )

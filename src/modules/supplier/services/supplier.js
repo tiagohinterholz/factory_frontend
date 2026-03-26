@@ -26,11 +26,11 @@ export async function deleteSupplier(id) {
 }
 
 export async function GetProductBySupplier(id) {
-  const response = await api.delete(`/fornecedores/${id}/produtos`);
+  const response = await api.get(`/fornecedores/${id}/produtos/`);
   return response.data;
 }
 
 export async function GetServiceBySupplier(id) {
-  const response = await api.delete(`/fornecedores/${id}/servicos`);
+  const response = await api.get(`/fornecedores/${id}/servicos/`);
   return response.data;
 }
