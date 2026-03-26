@@ -4,8 +4,8 @@ import { api } from "@/api/http";
 
 export default function Login() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState("tiago@gmail.com")
+  const [password, setPassword] = useState("tiago123")
 
   async function handleLogin(ev) {
     ev.preventDefault()
@@ -18,7 +18,7 @@ export default function Login() {
 
       localStorage.setItem('access', response.data.access)
       localStorage.setItem('refresh', response.data.refresh)
-      localStorage.setItem('user', JSON.stringify(response.data.user))
+      localStorage.setItem('user', JSON.stringify(response.data))
       console.log("LOGIN OK, NAVEGANDO...")
       navigate('/dashboard')
     } catch (err) {

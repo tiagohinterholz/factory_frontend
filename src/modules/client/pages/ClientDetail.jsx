@@ -1,4 +1,4 @@
-import { useSupplierForm } from "@/modules/supplier/hooks/useSupplierForm"
+import { useClientEditForm } from "@/modules/client/hooks/useClientEditForm"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
@@ -7,12 +7,12 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 
 
-export default function SupplierCreate() {
+export default function ClientEdit() {
   const {
     business, setBusiness,
-    corporateName, setCorporateName,  
-    tradeName, setTradeName,
-    cnpj, setCnpj,
+    firstName, setFirstName,  
+    lastName, setLastName,
+    cpf, setCpf,
     stateId, setStateId,
     cityId, setCityId,
     address, setAddress,
@@ -20,8 +20,10 @@ export default function SupplierCreate() {
     complement, setComplement,
     phone, setPhone,
     email, setEmail,
-    handleSubmit
-  } = useSupplierForm()
+    loading,
+    handleUpdate,
+    handleDelete
+  } = useClientEditForm()
   
   const { states, loading: loadingStates } = useStates()
   const { citiesByState, loading: loadingCities } = useCitiesByState(stateId)
@@ -35,13 +37,18 @@ export default function SupplierCreate() {
     name: b.corporate_name
   }))
 
-  if (loadingStates || loadingBusinesses || (stateId && loadingCities)) return <p className="p-6">Carregando...</p>
+  const handleStateChange = (e) => {
+    setStateId(e.target.value);
+    setCityId(""); 
+  };
+
+  if (loading || loadingStates || loadingBusinesses || (stateId && loadingCities)) return <p className="p-6">Carregando...</p>
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Novo Fornecedor</h1>
+      <h1 className="text-2xl font-semibold">Editar Cliente</h1>
 
-     <form className="space-y-4" onSubmit={handleSubmit}>
+     <form className="space-y-4" onSubmit={handleUpdate}>
         
         {isSuperUser && (
           <SelectField 
@@ -52,27 +59,27 @@ export default function SupplierCreate() {
           />
         )}
         <FormField 
-          label="Razão Social"
-          value={tradeName}
-          onChange={(e) => setTradeName(e.target.value)}
+          label="Nome"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
         />
 
         <FormField 
-          label="Nome Fantasia"
-          value={corporateName}
-          onChange={(e) => setCorporateName(e.target.value)}
+          label="Sobrenome"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
         />
 
         <FormField 
-          label="CNPJ"
-          value={cnpj}
-          onChange={(e) => setCnpj(e.target.value)}
+          label="CPF"
+          value={cpf}
+          onChange={(e) => setCpf(e.target.value)}
         />
 
         <SelectField 
           label="Estado"
           value={stateId}
-          onChange={(e) => setStateId(e.target.value)}
+          onChange={handleStateChange}
           options={states}
         />
 
@@ -114,10 +121,17 @@ export default function SupplierCreate() {
         />
 
         <PrimaryButton type="submit">
-          Salvar
+          Atualizar
         </PrimaryButton>
-
       </form>
+
+      <button
+        onClick={handleDelete}
+        className="bg-red-600 text-white px-4 py-2 rounded"
+      >
+        Deletar
+      </button>
+
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useSupplierEditForm } from "@/modules/supplier/hooks/useSupplierEditForm"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
+import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -8,6 +9,7 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 
 export default function SupplierEdit() {
   const {
+    business, setBusiness,
     corporateName, setCorporateName,  
     tradeName, setTradeName,
     cnpj, setCnpj,
@@ -25,19 +27,37 @@ export default function SupplierEdit() {
   
   const { states, loading: loadingStates } = useStates()
   const { citiesByState, loading: loadingCities } = useCitiesByState(stateId)
+  const { business: businesses, loading: loadingBusinesses } = useBusiness()
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}")
+  const isSuperUser = !user.business_id
+
+  const businessOptions = businesses.map(b => ({
+    id: b.id,
+    name: b.corporate_name
+  }))
 
   const handleStateChange = (e) => {
     setStateId(e.target.value);
     setCityId(""); 
   };
 
-  if (loading || loadingStates || (stateId && loadingCities)) return <p className="p-6">Carregando...</p>
+  if (loading || loadingStates || loadingBusinesses || (stateId && loadingCities)) return <p className="p-6">Carregando...</p>
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-semibold">Editar Fornecedor</h1>
 
      <form className="space-y-4" onSubmit={handleUpdate}>
+
+        {isSuperUser && (
+          <SelectField 
+            label="Selecione o Empreendimento"
+            value={business}
+            onChange={(e) => setBusiness(e.target.value)}
+            options={businessOptions}
+          />
+        )}
         <FormField 
           label="Razão Social"
           value={tradeName}

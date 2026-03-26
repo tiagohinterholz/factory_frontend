@@ -1,4 +1,4 @@
-import { useSupplierForm } from "@/modules/supplier/hooks/useSupplierForm"
+import { useClientForm } from "@/modules/client/hooks/useClientForm"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
@@ -7,12 +7,12 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 
 
-export default function SupplierCreate() {
+export default function ClientCreate() {
   const {
     business, setBusiness,
-    corporateName, setCorporateName,  
-    tradeName, setTradeName,
-    cnpj, setCnpj,
+    firstName, setFirstName,  
+    lastName, setLastName,
+    cpf, setCpf,
     stateId, setStateId,
     cityId, setCityId,
     address, setAddress,
@@ -21,7 +21,7 @@ export default function SupplierCreate() {
     phone, setPhone,
     email, setEmail,
     handleSubmit
-  } = useSupplierForm()
+  } = useClientForm()
   
   const { states, loading: loadingStates } = useStates()
   const { citiesByState, loading: loadingCities } = useCitiesByState(stateId)
@@ -39,10 +39,10 @@ export default function SupplierCreate() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Novo Fornecedor</h1>
+      <h1 className="text-2xl font-semibold">Novo Cliente</h1>
 
      <form className="space-y-4" onSubmit={handleSubmit}>
-        
+
         {isSuperUser && (
           <SelectField 
             label="Selecione o Empreendimento"
@@ -52,21 +52,21 @@ export default function SupplierCreate() {
           />
         )}
         <FormField 
-          label="Razão Social"
-          value={tradeName}
-          onChange={(e) => setTradeName(e.target.value)}
+          label="Nome"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
         />
 
         <FormField 
-          label="Nome Fantasia"
-          value={corporateName}
-          onChange={(e) => setCorporateName(e.target.value)}
+          label="Sobrenome"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
         />
 
         <FormField 
-          label="CNPJ"
-          value={cnpj}
-          onChange={(e) => setCnpj(e.target.value)}
+          label="CPF"
+          value={cpf}
+          onChange={(e) => setCpf(e.target.value)}
         />
 
         <SelectField 

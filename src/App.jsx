@@ -21,6 +21,10 @@ import SupplierList from "@/modules/supplier/pages/SupplierList"
 import SupplierEdit from "@/modules/supplier/pages/SupplierDetail"
 import SupplierCreate from "@/modules/supplier/pages/SupplierCreate"
 
+import ClientList from "@/modules/client/pages/ClientList"
+import ClientEdit from "@/modules/client/pages/ClientDetail"
+import ClientCreate from "@/modules/client/pages/ClientCreate"
+
 
 
 export default function App() {
@@ -166,6 +170,36 @@ export default function App() {
           }
         />
 
+        <Route
+          path="/clientes"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <ClientList />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/clientes/novo"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <ClientCreate />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/clientes/:id"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <ClientEdit />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react"
-import { updateSupplier, getSupplierById, deleteSupplier } from "@/modules/supplier/services/supplier"
+import { updateClient, getClientById, deleteClient } from "@/modules/client/services/client"
 import { useNavigate, useParams } from "react-router-dom"
 
-export function useSupplierEditForm() {
+export function useClientEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
 
   const [business, setBusiness] = useState("")
-  const [corporateName, setCorporateName] = useState("")
-  const [tradeName, setTradeName] = useState("")
-  const [cnpj, setCnpj] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [cpf, setCpf] = useState("")
   const [stateId, setStateId] = useState("")
   const [cityId, setCityId] = useState("")
   const [address, setAddress] = useState("")
@@ -23,11 +23,11 @@ export function useSupplierEditForm() {
   useEffect(() => {
       async function load() {
         try {
-          const data = await getSupplierById(id)
+          const data = await getClientById(id)
           setBusiness(data.business)
-          setCorporateName(data.corporate_name)
-          setTradeName(data.trade_name)
-          setCnpj(data.cnpj)
+          setFirstName(data.first_name)
+          setLastName(data.last_name)
+          setCpf(data.cpf)
           setStateId(data.state.id || "")
           setCityId(data.city.id || "")
           setAddress(data.address)
@@ -48,9 +48,9 @@ export function useSupplierEditForm() {
 
     const payload = {
       business_id: business,
-      corporate_name: corporateName,  
-      trade_name: tradeName,
-      cnpj: cnpj,
+      first_name: firstName,  
+      last_name: lastName,
+      cpf: cpf,
       state_id: stateId,
       city_id: cityId,
       address:address,
@@ -61,25 +61,25 @@ export function useSupplierEditForm() {
     }
 
     try {
-      await updateSupplier(id, payload)
-      navigate(`/fornecedores/`)
+      await updateClient(id, payload)
+      navigate(`/clientes/`)
     } catch (error) {
       console.log(error)
-      alert("Erro ao atualizar Fornecedor")
+      alert("Erro ao atualizar cliente")
     }
   }
 
   async function handleDelete() {
       if (!confirm("Deseja realmente deletar?")) return
-      await deleteSupplier(id)
-      navigate("/fornecedores")
+      await deleteClient(id)
+      navigate("/clientes")
     }
 
   return {
     business, setBusiness,
-    corporateName, setCorporateName,  
-    tradeName, setTradeName,
-    cnpj, setCnpj,
+    firstName, setFirstName,  
+    lastName, setLastName,
+    cpf, setCpf,
     stateId, setStateId,
     cityId, setCityId,
     address, setAddress,

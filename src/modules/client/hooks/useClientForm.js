@@ -1,14 +1,14 @@
 import { useState } from "react"
-import { createSupplier } from "@/modules/supplier/services/supplier"
+import { createClient } from "@/modules/client/services/client"
 import { useNavigate } from "react-router-dom"
 
-export function useSupplierForm() {
+export function useClientForm() {
   const navigate = useNavigate()
 
   const [business, setBusiness] = useState("")
-  const [corporateName, setCorporateName] = useState("")
-  const [tradeName, setTradeName] = useState("")
-  const [cnpj, setCnpj] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [cpf, setCpf] = useState("")
   const [stateId, setStateId] = useState("")
   const [cityId, setCityId] = useState("")
   const [address, setAddress] = useState("")
@@ -23,9 +23,9 @@ export function useSupplierForm() {
 
     const payload = {
       business_id: business,
-      corporate_name: corporateName,  
-      trade_name: tradeName,
-      cnpj: cnpj,
+      first_name: firstName,  
+      last_name: lastName,
+      cpf: cpf,
       state_id: stateId,
       city_id: cityId,
       address:address,
@@ -36,19 +36,19 @@ export function useSupplierForm() {
     }
 
     try {
-      await createSupplier(payload)
-      navigate("/fornecedores")
+      await createClient(payload)
+      navigate("/clientes")
     } catch (error) {
       console.log(error)
-      alert("Erro ao criar fornecedor")
+      alert("Erro ao criar cliente")
     }
   }
 
   return {
     business, setBusiness,
-    corporateName, setCorporateName,  
-    tradeName, setTradeName,
-    cnpj, setCnpj,
+    firstName, setFirstName,  
+    lastName, setLastName,
+    cpf, setCpf,
     stateId, setStateId,
     cityId, setCityId,
     address, setAddress,
