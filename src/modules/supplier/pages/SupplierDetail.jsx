@@ -218,11 +218,11 @@ export default function SupplierDetail() {
             items={products.map(p => ({
               id: p.id,
               name: p.name,
-              subtitle: `R$ ${p.price || '0,00'}`
+              subtitle: `R$ ${p.unit_price || '0,00'}`
             }))}
             loading={loadingRelated}
             emptyMessage="Este fornecedor não possui produtos cadastrados."
-            onAddClick={() => navigate("/produtos")}
+            onAddClick={() => navigate("/produtos/novo", { state: { supplierId: id } })}
           />
 
           <RelatedDataCard 
@@ -231,11 +231,11 @@ export default function SupplierDetail() {
             items={services.map(s => ({
               id: s.id,
               name: s.name,
-              subtitle: `R$ ${s.price || '0,00'}`
+              subtitle: `R$ ${s.unit_price || '0,00'}`
             }))}
             loading={loadingRelated}
             emptyMessage="Este fornecedor não possui serviços cadastrados."
-            onAddClick={() => navigate("/servicos")}
+            onAddClick={() => navigate("/servicos/novo", { state: { supplierId: id } })}
           />
 
         </div>

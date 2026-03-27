@@ -29,6 +29,9 @@ import VehicleList from "@/modules/vehicle/pages/VehicleList"
 import VehicleEdit from "@/modules/vehicle/pages/VehicleDetail"
 import VehicleCreate from "@/modules/vehicle/pages/VehicleCreate"
 
+import ProductList from "@/modules/product/pages/ProductList"
+import ProductEdit from "@/modules/product/pages/ProductDetail"
+import ProductCreate from "@/modules/product/pages/ProductCreate"
 
 
 export default function App() {
@@ -230,6 +233,36 @@ export default function App() {
             <PrivateRoute>
               <DashboardLayout>
                 <VehicleEdit />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/produtos"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <ProductList />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/produtos/novo"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <ProductCreate />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/produtos/:id"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <ProductEdit />
               </DashboardLayout>
             </PrivateRoute>
           }
