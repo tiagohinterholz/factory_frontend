@@ -1,3 +1,4 @@
+import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
@@ -12,7 +13,7 @@ export default function DashboardLayout({ children }) {
         
         <main className="p-8 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-700">
           <div className="max-w-[1400px] mx-auto">
-            {children}
+            {children || <Outlet />}
           </div>
         </main>
 
