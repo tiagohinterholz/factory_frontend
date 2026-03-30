@@ -42,6 +42,7 @@ export default function SupplierDetail() {
   const [products, setProducts] = useState([])
   const [services, setServices] = useState([])
   const [loadingRelated, setLoadingRelated] = useState(true)
+  const [activeTab, setActiveTab] = useState('products')
 
   useEffect(() => {
     async function loadRelatedData() {
@@ -209,35 +210,80 @@ export default function SupplierDetail() {
           </div>
         </div>
 
-        {/* Lado Direito: Produtos e Serviços */}
-        <div className="lg:col-span-5 space-y-6">
-          
-          <RelatedDataCard 
-            title="Produtos Fornecidos"
-            icon={Package}
-            items={products.map(p => ({
-              id: p.id,
-              name: p.name,
-              subtitle: `R$ ${p.unit_price || '0,00'}`
-            }))}
-            loading={loadingRelated}
-            emptyMessage="Este fornecedor não possui produtos cadastrados."
-            onAddClick={() => navigate("/produtos/novo", { state: { supplierId: id } })}
-          />
+        {/* Lado Direito: Produtos e Serviços com Abas */}
+        <div className="lg:col-span-5 h-full">
+          <div className="card-premium h-full flex flex-col p-4">
+            {/* Cabeçalho de Abas */}
+            <div className="flex p-1 bg-slate-50/80 rounded-2xl border border-slate-100 mb-6 shadow-inner">
+              <button 
+                onClick={() => setActiveTab('products')}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${
+                  activeTab === 'products' 
+                  ? 'bg-white text-indigo-600 shadow-sm border border-indigo-50 hover:scale-[1.02]' 
+                  : 'text-slate-400 hover:text-slate-500'
+                }`}
+              >
+                <Package className="w-4 h-4" />
+                Produtos
+                {products.length > 0 && (
+                  <span className={`ml-1.5 text-[10px] px-2 py-0.5 rounded-full ${
+                    activeTab === 'products' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-200 text-slate-500'
+                  }`}>
+                    {products.length}
+                  </span>
+                )}
+              </button>
+              <button 
+                onClick={() => setActiveTab('services')}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${
+                  activeTab === 'services' 
+                  ? 'bg-white text-indigo-600 shadow-sm border border-indigo-50 hover:scale-[1.02]' 
+                  : 'text-slate-400 hover:text-slate-500'
+                }`}
+              >
+                <Hammer className="w-4 h-4" />
+                Serviços
+                {services.length > 0 && (
+                  <span className={`ml-1.5 text-[10px] px-2 py-0.5 rounded-full ${
+                    activeTab === 'services' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-200 text-slate-500'
+                  }`}>
+                    {services.length}
+                  </span>
+                )}
+              </button>
+            </div>
 
-          <RelatedDataCard 
-            title="Serviços Oferecidos"
-            icon={Hammer}
-            items={services.map(s => ({
-              id: s.id,
-              name: s.name,
-              subtitle: `R$ ${s.unit_price || '0,00'}`
-            }))}
-            loading={loadingRelated}
-            emptyMessage="Este fornecedor não possui serviços cadastrados."
-            onAddClick={() => navigate("/servicos/novo", { state: { supplierId: id } })}
-          />
-
+            {/* Conteúdo da Aba Ativa */}
+            <div className="flex-1 min-h-[400px]">
+              {activeTab === 'products' ? (
+                <RelatedDataCard 
+                  title="Produtos Fornecidos"
+                  icon={Package}
+                  items={products.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    subtitle: `R$ ${p.unit_price || '0,00'}`
+                  }))}
+                  loading={loadingRelated}
+                  emptyMessage="Nenhum produto cadastrado para este fornecedor."
+                  onAddClick={() => navigate("/produtos/novo", { state: { supplierId: id } })}
+                />
+              ) : (
+                <RelatedDataCard 
+                  title="Serviços Oferecidos"
+                  icon={Hammer}
+                  items={services.map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    subtitle: `R$ ${s.unit_price || '0,00'}`
+                  }))}
+                  loading={loadingRelated}
+                  emptyMessage="Nenhum serviço cadastrado para este fornecedor."
+                  onAddClick={() => navigate("/servicos/novo", { state: { supplierId: id } })}
+                />
+              )}
+            </div>
+          </div>
         </div>
 
       </div>

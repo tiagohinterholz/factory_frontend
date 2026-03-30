@@ -1,12 +1,21 @@
 import { useCities } from "@/modules/location/city/hooks/useCity"
 import ListHeader from "@/modules/core/components/ListHeader"
-import ListGrid from "@/modules/core/components/ListGrid"
-import ListCard from "@/modules/core/components/ListCard"
+import ListTable from "@/modules/core/components/ListTable"
 
 export default function CityList() {
   const { cities, loading } = useCities()
 
-  if (loading) return <p className="p-6">Carregando...</p>
+  const columns = [
+    { header: 'Sigla', accessor: (item) => item.state.abbreviation },
+    { header: 'Cidade', accessor: (item) => item.name },
+    { header: 'Estado', accessor: (item) => item.state.name },
+  ]
+
+  const handleDelete = (item) => {
+    if (window.confirm(`Deseja excluir a cidade ${item.name}?`)) {
+      console.log('Excluindo...', item.id)
+    }
+  }
 
   return (
     <div className="p-6 space-y-4">
@@ -16,16 +25,13 @@ export default function CityList() {
         buttonText='Nova Cidade'
         buttonLink='/cidades/novo'
       />
-      <ListGrid>
-        {cities.map((city) => (
-          <ListCard
-            key={city.id}
-            to={`/cidades/${city.id}`}
-            title={city.name}
-            subtitle={city.state.name}
-          />
-        ))}
-      </ListGrid>
+      <ListTable 
+        columns={columns}
+        data={cities}
+        editLinkPrefix="/cidades"
+        onDelete={handleDelete}
+        loading={loading}
+      />
     </div>
   )
 }

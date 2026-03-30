@@ -11,6 +11,7 @@ import ClientRoutes from "@/modules/client/routes"
 import VehicleRoutes from "@/modules/vehicle/routes"
 import ProductRoutes from "@/modules/product/routes"
 import WorkServiceRoutes from "@/modules/workservice/routes"
+import AppointmentRoutes from "@/modules/appointment/routes"
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           {VehicleRoutes}
           {ProductRoutes}
           {WorkServiceRoutes}
+          {AppointmentRoutes}
         </Route>
       </Routes>
     </BrowserRouter>

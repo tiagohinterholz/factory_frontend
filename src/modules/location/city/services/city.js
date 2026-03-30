@@ -10,11 +10,6 @@ export async function getCity(id) {
   return response.data
 }
 
-export async function getCitiesByState(id) {
-  const response = await api.get(`estados/${id}/cidades/`)
-  return response.data
-}
-
 export async function createCity(payload) {
   const response = await api.post("/cidades/", payload)
   return response.data

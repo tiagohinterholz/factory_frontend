@@ -1,12 +1,20 @@
 import { useStates } from "@/modules/location/state/hooks/useState"
 import ListHeader from "@/modules/core/components/ListHeader"
-import ListGrid from "@/modules/core/components/ListGrid"
-import ListCard from "@/modules/core/components/ListCard"
+import ListTable from "@/modules/core/components/ListTable"
 
 export default function StateList() {
   const { states, loading } = useStates()
 
-  if (loading) return <p className="p-6">Carregando...</p>
+  const columns = [
+    { header: 'Sigla', accessor: (item) => item.abbreviation },
+    { header: 'Estado', accessor: (item) => item.name },
+  ]
+
+  const handleDelete = (item) => {
+    if (window.confirm(`Deseja excluir o estado ${item.name}?`)) {
+      console.log('Excluindo...', item.id)
+    }
+  }
 
   return (
     <div className="p-6 space-y-4">
@@ -15,16 +23,13 @@ export default function StateList() {
         buttonText='Novo Estado'
         buttonLink='/estados/novo'
       />
-      <ListGrid>
-        {states.map((state) => (
-          <ListCard
-            key={state.id}
-            to={`/estados/${state.id}`}
-            title={state.name}
-            subtitle={state.abbreviation}
-          />
-        ))}
-      </ListGrid>
+      <ListTable 
+        columns={columns}
+        data={states}
+        editLinkPrefix="/estados"
+        onDelete={handleDelete}
+        loading={loading}
+      />
     </div>
   )
 }

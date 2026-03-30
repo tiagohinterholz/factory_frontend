@@ -21,6 +21,7 @@ const navItems = [
   { path: "/dashboard", name: "Dashboard", icon: LayoutDashboard },
   { path: "/orcamentos", name: "Orçamentos", icon: TrendingUp },
   { path: "/empreendimentos", name: "Empreendimentos", icon: Briefcase },
+  { path: "/empreedimentos/licencas", name: "Licenças", icon: Briefcase },
   { path: "/clientes", name: "Clientes", icon: Users },
   { path: "/veiculos", name: "Veículos", icon: Car },
 ]

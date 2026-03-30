@@ -24,3 +24,8 @@ export async function deleteState(id) {
   const response = await api.delete(`/estados/${id}/`)
   return response.data
 }
+
+export async function getCitiesByState(id) {
+  const response = await api.get(`estados/${id}/cidades/`)
+  return response.data
+}

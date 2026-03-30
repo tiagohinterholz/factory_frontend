@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react"
 import { getCities } from "@/modules/location/city/services/city"
-import { getCitiesByState } from "@/modules/location/city/services/city"
+import { getCitiesByState } from "@/modules/location/state/services/state"
 
 export function useCities() {
   const [cities, setCities] = useState([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    setLoading(true)
     async function load() {
+      setLoading(true)
       const data = await getCities()
       const sorted = data.sort((a, b) => 
         a.state.name.localeCompare(b.state.name)
@@ -28,10 +28,9 @@ export function useCitiesByState(stateId) {
 
   useEffect(() => {
     if (!stateId) return
-    
-    setLoading(true)
 
     async function load() {
+      setLoading(true)
       const data = await getCitiesByState(stateId)
       const sorted = data.sort((a, b) => 
         a.name.localeCompare(b.name)
