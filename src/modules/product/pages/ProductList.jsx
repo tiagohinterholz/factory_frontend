@@ -7,7 +7,7 @@ export default function ProductList() {
 
   const columns = [
     { header: 'Produto', accessor: (item) => item.name },
-    { header: 'Referência', accessor: (item) => item.reference },
+    { header: 'Referência', accessor: (item) => item.reference ? item.reference : '-' },
     { header: 'Preço Venda', accessor: (item) => item.unit_price ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace('.', ',')}` : 'R$ 0,00' },
   ]
 

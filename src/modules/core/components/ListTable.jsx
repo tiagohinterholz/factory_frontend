@@ -2,7 +2,7 @@ import { Search, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-export default function ListTable({ columns, data, onDelete, editLinkPrefix, loading }) {
+export default function ListTable({ columns, data, onDelete, editLinkPrefix, loading, renderActions }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 8
@@ -76,20 +76,26 @@ export default function ListTable({ columns, data, onDelete, editLinkPrefix, loa
                   ))}
                   <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                         {editLinkPrefix && (
-                             <Link 
-                                to={`${editLinkPrefix}/${item.id}`} 
-                                className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                             >
-                                <Edit2 size={18}/>
-                             </Link>
+                         {renderActions ? (
+                             renderActions(item)
+                         ) : (
+                             <>
+                                {editLinkPrefix && (
+                                    <Link 
+                                        to={`${editLinkPrefix}/${item.id}`} 
+                                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                    >
+                                        <Edit2 size={18}/>
+                                    </Link>
+                                )}
+                                <button 
+                                    onClick={() => onDelete && onDelete(item)}
+                                    className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                                >
+                                    <Trash2 size={18}/>
+                                </button>
+                             </>
                          )}
-                         <button 
-                            onClick={() => onDelete && onDelete(item)}
-                            className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                         >
-                            <Trash2 size={18}/>
-                         </button>
                       </div>
                   </td>
                 </tr>

@@ -20,8 +20,6 @@ import {
 const navItems = [
   { path: "/dashboard", name: "Dashboard", icon: LayoutDashboard },
   { path: "/orcamentos", name: "Orçamentos", icon: TrendingUp },
-  { path: "/empreendimentos", name: "Empreendimentos", icon: Briefcase },
-  { path: "/empreedimentos/licencas", name: "Licenças", icon: Briefcase },
   { path: "/clientes", name: "Clientes", icon: Users },
   { path: "/veiculos", name: "Veículos", icon: Car },
 ]
@@ -35,8 +33,9 @@ const servicesItems = [
 ]
 
 export default function Sidebar() {
-  const [locationOpen, setLocationOpen] = useState(false)
   const location = useLocation()
+  const [locationOpen, setLocationOpen] = useState(location.pathname.startsWith("/estados") || location.pathname.startsWith("/cidades"))
+  const [businessOpen, setBusinessOpen] = useState(location.pathname.startsWith("/empreendimentos"))
 
   const isActive = (path) => location.pathname.startsWith(path)
 
@@ -73,7 +72,39 @@ export default function Sidebar() {
           </Link>
         ))}
 
-        {/* Dropdown Section */}
+        {/* Business Dropdown Section */}
+        <div className="pt-2">
+          <button 
+            onClick={() => setBusinessOpen(!businessOpen)}
+            className={`w-full flex justify-between items-center px-4 py-3 rounded-xl transition duration-300 group ${
+              businessOpen || isActive("/empreendimentos")
+                ? "text-indigo-400 bg-slate-800/50"
+                : "text-slate-400 hover:bg-slate-800 hover:text-indigo-400"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Briefcase className={`w-5 h-5 ${businessOpen || isActive("/empreendimentos") ? "text-indigo-400" : "text-slate-500 group-hover:text-indigo-400"}`} />
+              <span className="font-medium text-[15px]">Empreendimentos</span>
+            </div>
+            {businessOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          </button>
+
+          {businessOpen && (
+            <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
+              <Link to="/empreendimentos" className={`block py-2 text-sm transition duration-300 ${isActive("/empreendimentos") && !location.pathname.includes('/licencas') && !location.pathname.includes('/usuarios') ? "text-white font-medium" : "text-slate-500 hover:text-indigo-400"}`}>
+                Gestão
+              </Link>
+              <Link to="/empreendimentos/licencas" className={`block py-2 text-sm transition duration-300 ${isActive("/empreendimentos/licencas") ? "text-white font-medium" : "text-slate-500 hover:text-indigo-400"}`}>
+                Licenças
+              </Link>
+              <Link to="/usuarios" className={`block py-2 text-sm transition duration-300 ${isActive("/usuarios") ? "text-white font-medium" : "text-slate-500 hover:text-indigo-400"}`}>
+                Usuários
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Dropdown Section Localização */}
         <div className="pt-2">
           <button 
             onClick={() => setLocationOpen(!locationOpen)}

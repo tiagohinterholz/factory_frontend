@@ -22,7 +22,7 @@ export default function Login() {
       console.log("LOGIN OK, NAVEGANDO...")
       navigate('/dashboard')
     } catch (err) {
-      alert('Credenciais Inválidas')
+      alert('Credenciais Inválidas', err)
     }
   }
 

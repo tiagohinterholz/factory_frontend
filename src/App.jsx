@@ -12,6 +12,8 @@ import VehicleRoutes from "@/modules/vehicle/routes"
 import ProductRoutes from "@/modules/product/routes"
 import WorkServiceRoutes from "@/modules/workservice/routes"
 import AppointmentRoutes from "@/modules/appointment/routes"
+import LicenseRoutes from "@/modules/license/routes"
+import UserRoutes from "@/modules/user/routes"
 
 export default function App() {
   return (
@@ -22,6 +24,7 @@ export default function App() {
 
         {/* Dashboard routes (Private & Layout wrapped) */}
         <Route element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
+          {LicenseRoutes}
           {DashboardRoutes}
           {BusinessRoutes}
           {LocationRoutes}
@@ -31,6 +34,7 @@ export default function App() {
           {ProductRoutes}
           {WorkServiceRoutes}
           {AppointmentRoutes}
+          {UserRoutes}
         </Route>
       </Routes>
     </BrowserRouter>
