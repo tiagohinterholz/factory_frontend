@@ -3,7 +3,15 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
 export default function UserList() {
-  const { user, loading } = useUser()
+  const { 
+    user, 
+    loading,
+    searchTerm, 
+    setSearchTerm, 
+    currentPage, 
+    setCurrentPage, 
+    totalItems 
+  } = useUser()
 
   const columns = [
     { header: 'Nome', accessor: (item) => item.name },
@@ -31,6 +39,11 @@ export default function UserList() {
         editLinkPrefix="/usuarios"
         onDelete={handleDelete}
         loading={loading}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        currentPage={currentPage}
+        handlePageChange={setCurrentPage}
+        totalItems={totalItems}
       />
     </div>
   )

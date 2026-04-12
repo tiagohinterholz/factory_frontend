@@ -3,7 +3,15 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
 export default function SupplierList() {
-  const { supplier, loading } = useSupplier()
+  const { 
+    supplier, 
+    loading,
+    searchTerm, 
+    setSearchTerm, 
+    currentPage, 
+    setCurrentPage, 
+    totalItems 
+  } = useSupplier()
 
   const columns = [
     { header: 'Razão Social', accessor: (item) => item.corporate_name },
@@ -30,6 +38,11 @@ export default function SupplierList() {
         editLinkPrefix="/fornecedores"
         onDelete={handleDelete}
         loading={loading}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        currentPage={currentPage}
+        handlePageChange={setCurrentPage}
+        totalItems={totalItems}
       />
     </div>
   )

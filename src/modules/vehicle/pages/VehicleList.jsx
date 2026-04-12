@@ -3,7 +3,15 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
 export default function VehicleList() {
-  const { vehicle, loading } = useVehicle()
+  const { 
+    vehicle, 
+    loading,
+    searchTerm, 
+    setSearchTerm, 
+    currentPage, 
+    setCurrentPage, 
+    totalItems 
+  } = useVehicle()
 
   const columns = [
     { header: 'Placa', accessor: (item) => item.plate },
@@ -31,6 +39,11 @@ export default function VehicleList() {
         editLinkPrefix="/veiculos"
         onDelete={handleDelete}
         loading={loading}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        currentPage={currentPage}
+        handlePageChange={setCurrentPage}
+        totalItems={totalItems}
       />
     </div>
   )
