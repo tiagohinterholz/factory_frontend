@@ -1,7 +1,7 @@
 import { api } from "@/api/http"
 
-export async function getProduct() {
-  const response = await api.get("/produtos/");
+export async function getProduct(params = {}) {
+  const response = await api.get('/produtos/', { params });
   return response.data;
 }
 

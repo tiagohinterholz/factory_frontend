@@ -1,22 +1,37 @@
-import { useEffect, useState } from "react"
-import { getClient } from "@/modules/client/services/client"
+import { useEffect, useState, useCallback } from 'react'
+import { getClient } from '@/modules/client/services/client'
 
 export function useClient() {
-  const [client, setClient] = useState([])
+  const [data, setData] = useState({ results: [], count: 0 })
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await getClient()
-        setClient(data)
-      } finally {
-        setLoading(false)
-      }
+  const load = useCallback(async (search = '', page = 1) => {
+    setLoading(true)
+    try {
+      const response = await getClient({ search, page })
+      setData(response)
+    } finally {
+      setLoading(false)
     }
-
-    load()
   }, [])
 
-  return { client, loading }
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      load(searchTerm, currentPage)
+    }, 300)
+
+    return () => clearTimeout(handler)
+  }, [searchTerm, currentPage, load])
+
+  return { 
+    client: data.results, 
+    totalItems: data.count,
+    loading, 
+    searchTerm, 
+    setSearchTerm, 
+    currentPage, 
+    setCurrentPage 
+  }
 }

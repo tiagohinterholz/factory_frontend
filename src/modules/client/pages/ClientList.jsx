@@ -3,7 +3,15 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
 export default function ClientList() {
-  const { client, loading } = useClient()
+  const { 
+    client, 
+    loading, 
+    searchTerm, 
+    setSearchTerm, 
+    currentPage, 
+    setCurrentPage, 
+    totalItems 
+  } = useClient()
 
   const columns = [
     { header: 'Nome', accessor: (item) => `${item.first_name} ${item.last_name}` },
@@ -30,6 +38,11 @@ export default function ClientList() {
         editLinkPrefix="/clientes"
         onDelete={handleDelete}
         loading={loading}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        currentPage={currentPage}
+        handlePageChange={setCurrentPage}
+        totalItems={totalItems}
       />
     </div>
   )

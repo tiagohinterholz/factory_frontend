@@ -3,7 +3,15 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
 export default function ProductList() {
-  const { product, loading } = useProduct()
+  const { 
+    product, 
+    loading,
+    searchTerm, 
+    setSearchTerm, 
+    currentPage, 
+    setCurrentPage, 
+    totalItems 
+  } = useProduct()
 
   const columns = [
     { header: 'Produto', accessor: (item) => item.name },
@@ -30,6 +38,11 @@ export default function ProductList() {
         editLinkPrefix="/produtos"
         onDelete={handleDelete}
         loading={loading}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        currentPage={currentPage}
+        handlePageChange={setCurrentPage}
+        totalItems={totalItems}
       />
     </div>
   )
