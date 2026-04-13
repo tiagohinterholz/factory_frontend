@@ -14,6 +14,8 @@ import WorkServiceRoutes from "@/modules/workservice/routes"
 import AppointmentRoutes from "@/modules/appointment/routes"
 import LicenseRoutes from "@/modules/license/routes"
 import UserRoutes from "@/modules/user/routes"
+import BudgetRoutes from "@/modules/budget/routes"
+import OrderRoutes from "@/modules/order/routes"
 
 export default function App() {
   return (
@@ -34,6 +36,8 @@ export default function App() {
           {ProductRoutes}
           {WorkServiceRoutes}
           {AppointmentRoutes}
+          {BudgetRoutes}
+          {OrderRoutes}
           {UserRoutes}
         </Route>
       </Routes>

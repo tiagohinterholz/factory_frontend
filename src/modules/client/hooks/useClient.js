@@ -11,7 +11,16 @@ export function useClient() {
     setLoading(true)
     try {
       const response = await getClient({ search, page })
-      setData(response)
+      if (Array.isArray(response)) {
+        setData({ results: response, count: response.length })
+      } else if (response && response.results) {
+        setData(response)
+      } else {
+        setData({ results: [], count: 0 })
+      }
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error)
+      setData({ results: [], count: 0 })
     } finally {
       setLoading(false)
     }
@@ -26,8 +35,8 @@ export function useClient() {
   }, [searchTerm, currentPage, load])
 
   return { 
-    client: data.results, 
-    totalItems: data.count,
+    client: data?.results || [], 
+    totalItems: data?.count || 0, 
     loading, 
     searchTerm, 
     setSearchTerm, 

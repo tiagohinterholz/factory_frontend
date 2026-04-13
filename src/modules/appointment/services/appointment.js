@@ -1,7 +1,7 @@
 import { api } from "@/api/http"
 
-export async function getAppointment() {
-  const response = await api.get("/agendamentos/");
+export async function getAppointment(params) {
+  const response = await api.get("/agendamentos/", { params });
   return response.data;
 }
 

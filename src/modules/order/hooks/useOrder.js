@@ -11,7 +11,16 @@ export function useOrder() {
     setLoading(true)
     try {
       const response = await getOrder({ search, page })
-      setData(response)
+      if (Array.isArray(response)) {
+        setData({ results: response, count: response.length })
+      } else if (response && response.results) {
+        setData(response)
+      } else {
+        setData({ results: [], count: 0 })
+      }
+    } catch (error) {
+      console.error('Erro ao buscar ordens:', error)
+      setData({ results: [], count: 0 })
     } finally {
       setLoading(false)
     }
@@ -26,12 +35,13 @@ export function useOrder() {
   }, [searchTerm, currentPage, load])
 
   return { 
-    order: data.results, 
-    totalItems: data.count,
+    orders: data?.results || [], 
+    totalItems: data?.count || 0,
     loading, 
     searchTerm, 
     setSearchTerm, 
     currentPage, 
-    setCurrentPage 
+    setCurrentPage,
+    load
   }
 }

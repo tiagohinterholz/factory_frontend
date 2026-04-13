@@ -3,7 +3,15 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
 export default function CityList() {
-  const { cities, loading } = useCities()
+  const { 
+    cities, 
+    loading, 
+    searchTerm, 
+    setSearchTerm, 
+    currentPage, 
+    setCurrentPage, 
+    totalItems 
+  } = useCities()
 
   const columns = [
     { header: 'Sigla', accessor: (item) => item.state.abbreviation },
@@ -31,6 +39,11 @@ export default function CityList() {
         editLinkPrefix="/cidades"
         onDelete={handleDelete}
         loading={loading}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        currentPage={currentPage}
+        handlePageChange={setCurrentPage}
+        totalItems={totalItems}
       />
     </div>
   )

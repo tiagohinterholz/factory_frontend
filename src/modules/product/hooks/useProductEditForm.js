@@ -21,14 +21,14 @@ export function useProductEditForm() {
       async function load() {
         try {
           const data = await getProductById(id)
-          setBusiness(data.business)
-          setSupplier(data.supplier)
-          setName(data.name)
-          setBrand(data.brand)
-          setReference(data.reference)
-          setDescription(data.description)
-          setStockQuantity(data.stock_quantity)
-          setUnitPrice(data.unit_price)
+          setBusiness(data.business?.id || data.business || "")
+          setSupplier(data.supplier?.id || data.supplier || "")
+          setName(data.name || "")
+          setBrand(data.brand || "")
+          setReference(data.reference || "")
+          setDescription(data.description || "")
+          setStockQuantity(data.stock_quantity || "")
+          setUnitPrice(data.unit_price || "")
         } finally {
           setLoading(false)
         }

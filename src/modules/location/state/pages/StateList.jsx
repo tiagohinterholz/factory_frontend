@@ -3,7 +3,15 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
 export default function StateList() {
-  const { states, loading } = useStates()
+  const { 
+    states, 
+    loading,
+    searchTerm,
+    setSearchTerm,
+    currentPage,
+    setCurrentPage,
+    totalItems
+  } = useStates()
 
   const columns = [
     { header: 'Sigla', accessor: (item) => item.abbreviation },
@@ -29,6 +37,11 @@ export default function StateList() {
         editLinkPrefix="/estados"
         onDelete={handleDelete}
         loading={loading}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        currentPage={currentPage}
+        handlePageChange={setCurrentPage}
+        totalItems={totalItems}
       />
     </div>
   )

@@ -1,7 +1,7 @@
 import { api } from "@/api/http"
 
-export async function getCities() {
-  const response = await api.get("/cidades/")
+export async function getCities(params = {}) {
+  const response = await api.get("/cidades/", { params })
   return response.data
 }
 

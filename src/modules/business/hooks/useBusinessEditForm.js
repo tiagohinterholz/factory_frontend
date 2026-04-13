@@ -23,16 +23,16 @@ export function useBusinessEditForm() {
       async function load() {
         try {
           const data = await getBusinessById(id)
-          setCorporateName(data.corporate_name)
-          setTradeName(data.trade_name)
-          setCnpj(data.cnpj)
-          setStateId(data.state.id || "")
-          setCityId(data.city.id || "")
-          setAddress(data.address)
-          setNumber(data.number)
-          setComplement(data.complement)
-          setPhone(data.phone)
-          setEmail(data.email)
+          setCorporateName(data.corporate_name || "")
+          setTradeName(data.trade_name || "")
+          setCnpj(data.cnpj || "")
+          setStateId(data.state?.id || data.state || "")
+          setCityId(data.city?.id || data.city || "")
+          setAddress(data.address || "")
+          setNumber(data.number || "")
+          setComplement(data.complement || "")
+          setPhone(data.phone || "")
+          setEmail(data.email || "")
         } finally {
           setLoading(false)
         }

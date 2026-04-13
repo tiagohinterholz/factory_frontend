@@ -11,7 +11,16 @@ export function useUser() {
     setLoading(true)
     try {
       const response = await getUser({ search, page })
-      setData(response)
+      if (Array.isArray(response)) {
+        setData({ results: response, count: response.length })
+      } else if (response && response.results) {
+        setData(response)
+      } else {
+        setData({ results: [], count: 0 })
+      }
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error)
+      setData({ results: [], count: 0 })
     } finally {
       setLoading(false)
     }
@@ -26,8 +35,8 @@ export function useUser() {
   }, [searchTerm, currentPage, load])
 
   return { 
-    user: data.results, 
-    totalItems: data.count,
+    user: data?.results || [], 
+    totalItems: data?.count || 0,
     loading, 
     searchTerm, 
     setSearchTerm, 

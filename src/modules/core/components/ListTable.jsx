@@ -12,10 +12,9 @@ export default function ListTable({
   setSearchTerm,
   currentPage,
   handlePageChange,
-  totalItems = 0,
+  totalItems,
   itemsPerPage = 10
 }) {
-  
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
   return (
@@ -27,9 +26,12 @@ export default function ListTable({
         <input 
           type='text' 
           className='input-premium pl-10' 
-          placeholder='Pesquisar no banco de dados...' 
+          placeholder='Pesquisar...'
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value)
+            handlePageChange(1)
+          }}
         />
       </div>
 
@@ -61,7 +63,7 @@ export default function ListTable({
                    </td>
                  </tr>
                ))
-            ) : data.length > 0 ? (
+            ) : data && data.length > 0 ? (
               data.map((item, idx) => (
                 <tr key={item.id || idx} className='group hover:bg-slate-50/30 transition-colors duration-200'>
                   {columns.map((col, colIdx) => (
@@ -109,7 +111,7 @@ export default function ListTable({
       {totalPages > 1 && (
         <div className='flex items-center justify-between pt-4 border-t border-slate-100 mt-auto'>
           <div className='text-sm text-slate-500'>
-             Total de <span className='font-medium'>{totalItems}</span> registros
+              Mostrando <span className='font-medium'>{((currentPage - 1) * itemsPerPage) + 1}</span> a <span className='font-medium'>{Math.min(currentPage * itemsPerPage, totalItems)}</span> de <span className='font-medium'>{totalItems}</span>
           </div>
           <div className='flex gap-2'>
             <button 

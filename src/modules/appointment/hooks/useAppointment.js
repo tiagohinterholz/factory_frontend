@@ -1,22 +1,46 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { getAppointment } from "@/modules/appointment/services/appointment"
 
 export function useAppointment() {
-  const [appointment, setAppointment] = useState([])
+  const [appointments, setAppointments] = useState({ results: [], count: 0 })
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await getAppointment()
-        setAppointment(data)
-      } finally {
-        setLoading(false)
+  const load = useCallback(async (search='', page=1) => {
+    setLoading(true)
+    try {
+      const response = await getAppointment({ search, page })
+      if (Array.isArray(response)) {
+        setAppointments({ results: response, count: response.length })
+      } else if (response && response.results) {
+        setAppointments(response)
+      } else {
+        setAppointments({ results: [], count: 0 })
       }
+    } catch (error) {
+      console.error('Erro ao carregar Agendamentos:', error)
+      setAppointments({ results: [], count: 0 })
+    } finally {
+      setLoading(false)
     }
-
-    load()
   }, [])
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      load(searchTerm, currentPage)
+    }, 300)
 
-  return { appointment, loading }
+    return () => clearTimeout(handler)
+  }, [searchTerm, currentPage, load])
+
+  return { 
+    appointments: appointments?.results || [], 
+    totalItems: appointments?.count || 0, 
+    loading,
+    searchTerm, 
+    setSearchTerm, 
+    currentPage, 
+    setCurrentPage 
+  }
 }

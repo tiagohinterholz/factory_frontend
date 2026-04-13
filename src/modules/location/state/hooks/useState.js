@@ -1,21 +1,46 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { getStates } from "@/modules/location/state/services/state"
 
 export function useStates() {
-  const [states, setStates] = useState([])
+  const [data, setData] = useState({ results: [], count: 0 })
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
-  useEffect(() => {
-    async function load() {
-      const data = await getStates()
-      const sorted = data.sort((a, b) =>
-        a.name.localeCompare(b.name)
-      )
-      setStates(sorted)
+  const load = useCallback(async (search = '', page = 1) => {
+    setLoading(true)
+    try {
+      const response = await getStates({ search, page })
+      if (Array.isArray(response)) {
+        setData({ results: response, count: response.length })
+      } else if (response && response.results) {
+        setData(response)
+      } else {
+        setData({ results: [], count: 0 })
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estados:', error)
+      setData({ results: [], count: 0 })
+    } finally {
       setLoading(false)
     }
-    load()
   }, [])
 
-  return { states, loading }
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      load(searchTerm, currentPage)
+    }, 300)
+
+    return () => clearTimeout(handler)
+  }, [searchTerm, currentPage, load])
+
+  return { 
+    states: data?.results || [], 
+    totalItems: data?.count || 0,
+    loading, 
+    searchTerm, 
+    setSearchTerm, 
+    currentPage, 
+    setCurrentPage 
+  }
 }

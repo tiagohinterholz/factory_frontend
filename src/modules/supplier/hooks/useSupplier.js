@@ -11,7 +11,16 @@ export function useSupplier() {
     setLoading(true)
     try {
       const response = await getSupplier({ search, page })
-      setData(response)
+      if (Array.isArray(response)) {
+        setData({ results: response, count: response.length })
+      } else if (response && response.results) {
+        setData(response)
+      } else {
+        setData({ results: [], count: 0 })
+      }
+    } catch (error) {
+      console.error('Erro ao buscar fornecedores:', error)
+      setData({ results: [], count: 0 })
     } finally {
       setLoading(false)
     }
@@ -26,8 +35,8 @@ export function useSupplier() {
   }, [searchTerm, currentPage, load])
 
   return { 
-    supplier: data.results, 
-    totalItems: data.count,
+    supplier: data?.results || [], 
+    totalItems: data?.count || 0,
     loading, 
     searchTerm, 
     setSearchTerm, 

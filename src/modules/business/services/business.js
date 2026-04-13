@@ -1,7 +1,7 @@
 import { api } from "@/api/http"
 
-export async function getBusiness() {
-  const response = await api.get("/empreendimentos/");
+export async function getBusiness(params = {}) {
+  const response = await api.get("/empreendimentos/", { params });
   return response.data;
 }
 

@@ -1,7 +1,7 @@
 import { api } from "@/api/http"
 
-export async function getStates() {
-  const response = await api.get("/estados/")
+export async function getStates(params = {}) {
+  const response = await api.get("/estados/", { params })
   return response.data
 }
 

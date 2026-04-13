@@ -23,16 +23,16 @@ export function useVehicleEditForm() {
       async function load() {
         try {
           const data = await getVehicleById(id)
-          setBusiness(data.business)
-          setClient(data.client)
-          setModel(data.model)
-          setYear(data.year)
-          setYearModel(data.year_model)
-          setPlate(data.plate)
-          setColor(data.color)
-          setManufacturer(data.manufacturer)
-          setFuel(data.fuel)
-          setMileage(data.mileage)
+          setBusiness(data.business?.id || data.business || "")
+          setClient(data.client?.id || data.client || "")
+          setModel(data.model || "")
+          setYear(data.year || "")
+          setYearModel(data.year_model || "")
+          setPlate(data.plate || "")
+          setColor(data.color || "")
+          setManufacturer(data.manufacturer || "")
+          setFuel(data.fuel || "")
+          setMileage(data.mileage || "")
         } finally {
           setLoading(false)
         }

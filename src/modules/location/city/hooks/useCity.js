@@ -1,25 +1,49 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { getCities } from "@/modules/location/city/services/city"
 import { getCitiesByState } from "@/modules/location/state/services/state"
 
 export function useCities() {
-  const [cities, setCities] = useState([])
+  const [data, setData] = useState({ results: [], count: 0 })
   const [loading, setLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true)
-      const data = await getCities()
-      const sorted = data.sort((a, b) => 
-        a.state.name.localeCompare(b.state.name)
-      )
-      setCities(sorted)
+  const load = useCallback(async (search = '', page = 1) => {
+    setLoading(true)
+    try {
+      const response = await getCities({ search, page })
+      if (Array.isArray(response)) {
+        setData({ results: response, count: response.length })
+      } else if (response && response.results) {
+        setData(response)
+      } else {
+        setData({ results: [], count: 0 })
+      }
+    } catch (error) {
+      console.error('Erro ao carregar cidades:', error)
+      setData({ results: [], count: 0 })
+    } finally {
       setLoading(false)
     }
-    load()
   }, [])
 
-  return { cities, loading }
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      load(searchTerm, currentPage)
+    }, 300)
+
+    return () => clearTimeout(handler)
+  }, [searchTerm, currentPage, load])
+
+  return { 
+    cities: data?.results || [], 
+    totalItems: data?.count || 0,
+    loading, 
+    searchTerm, 
+    setSearchTerm, 
+    currentPage, 
+    setCurrentPage 
+  }
 }
 
 export function useCitiesByState(stateId) {

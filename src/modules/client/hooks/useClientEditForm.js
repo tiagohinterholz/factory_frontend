@@ -24,17 +24,17 @@ export function useClientEditForm() {
       async function load() {
         try {
           const data = await getClientById(id)
-          setBusiness(data.business)
-          setFirstName(data.first_name)
-          setLastName(data.last_name)
-          setCpf(data.cpf)
-          setStateId(data.state.id || "")
-          setCityId(data.city.id || "")
-          setAddress(data.address)
-          setNumber(data.number)
-          setComplement(data.complement)
-          setPhone(data.phone)
-          setEmail(data.email)
+          setBusiness(data.business?.id || data.business || "")
+          setFirstName(data.first_name || "")
+          setLastName(data.last_name || "")
+          setCpf(data.cpf || "")
+          setStateId(data.state?.id || data.state || "")
+          setCityId(data.city?.id || data.city || "")
+          setAddress(data.address || "")
+          setNumber(data.number || "")
+          setComplement(data.complement || "")
+          setPhone(data.phone || "")
+          setEmail(data.email || "")
         } finally {
           setLoading(false)
         }

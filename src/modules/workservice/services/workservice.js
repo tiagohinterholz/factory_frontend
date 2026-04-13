@@ -1,7 +1,7 @@
 import { api } from "@/api/http"
 
-export async function getWorkService() {
-  const response = await api.get("/servicos/");
+export async function getWorkService(params = {}) {
+  const response = await api.get('/servicos/', { params });
   return response.data;
 }
 

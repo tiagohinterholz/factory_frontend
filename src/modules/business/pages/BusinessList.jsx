@@ -3,7 +3,15 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
 export default function BusinessList() {
-  const { business, loading } = useBusiness()
+  const { 
+    business, 
+    loading,
+    searchTerm,
+    setSearchTerm,
+    currentPage,
+    setCurrentPage,
+    totalItems
+  } = useBusiness()
 
   const columns = [
     { header: 'Razão Social', accessor: (item) => item.corporate_name },
@@ -30,6 +38,11 @@ export default function BusinessList() {
         editLinkPrefix="/empreendimentos"
         onDelete={handleDelete}
         loading={loading}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        currentPage={currentPage}
+        handlePageChange={setCurrentPage}
+        totalItems={totalItems}
       />
     </div>
   )
