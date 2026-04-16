@@ -69,9 +69,23 @@ Siga os passos abaixo para configurar e rodar o Factory Frontend na sua máquina
 
 ---
 
+## 🐳 Execução via Docker
+
+A forma mais rápida e recomendada de rodar o ambiente é através do Docker, garantindo que todas as dependências estejam isoladas.
+
+1. **Suba o container do Frontend**
+   ```bash
+   docker compose up --build -d
+   ```
+
+2. **Acesse a aplicação**
+   Acesse [http://localhost:5173](http://localhost:5173) no seu navegador.
+
+---
+
 ## 🖌️ Design System e Padronização de Componentes
 
-Nenhum input genérico sobreviveu! O sistema opera embasado em **Custom Hooks** `(ex: useLicenseForm, useSupplierForm)` e Componentes Core Reutilizáveis localizados na pasta `src/modules/core/components/`, tais como:
+O sistema opera embasado em **Custom Hooks** `(ex: useLicenseForm, useSupplierForm)` e Componentes Core Reutilizáveis localizados na pasta `src/modules/core/components/`, tais como:
 - `ListHeader` e `ListTable`: Cabeçallho de filtragem com Tabelas responsivas assíncronas padrão.
 - `FormField` e `SelectField`: Elementos de transição suave com `focus-within:text-indigo-600`
 - `PrimaryButton`: UX unificada para chamadas de ação primárias.
