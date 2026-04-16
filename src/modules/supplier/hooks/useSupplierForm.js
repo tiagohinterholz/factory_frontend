@@ -5,7 +5,11 @@ import { useNavigate } from "react-router-dom"
 export function useSupplierForm() {
   const navigate = useNavigate()
 
-  const [business, setBusiness] = useState("")
+  const [business, setBusiness] = useState(() => {
+    const userStr = localStorage.getItem("user") || "{}"
+    const loggedUser = JSON.parse(userStr)
+    return loggedUser.business_id || ""
+  })
   const [corporateName, setCorporateName] = useState("")
   const [tradeName, setTradeName] = useState("")
   const [cnpj, setCnpj] = useState("")
@@ -16,7 +20,6 @@ export function useSupplierForm() {
   const [complement, setComplement] = useState("")
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
-
 
   async function handleSubmit(e) {
     e.preventDefault()

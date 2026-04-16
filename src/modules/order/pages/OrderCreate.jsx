@@ -5,7 +5,6 @@ import { useVehicle } from "@/modules/vehicle/hooks/useVehicle"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useEffect } from "react"
 
 export default function OrderCreate() {
   const {
@@ -22,12 +21,6 @@ export default function OrderCreate() {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}")
   const isSuperUser = !user.business_id
-
-  useEffect(() => {
-    if (!isSuperUser && user.business_id) {
-      setBusiness(user.business_id)
-    }
-  }, [isSuperUser, user.business_id, setBusiness])
 
   const businessOptions = businesses.map(b => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients

@@ -6,7 +6,11 @@ export function useWorkServiceForm() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const [business, setBusiness] = useState("")
+  const [business, setBusiness] = useState(() => {
+    const userStr = localStorage.getItem("user") || "{}"
+    const loggedUser = JSON.parse(userStr)
+    return loggedUser.business_id || ""
+  })
   const [supplier, setSupplier] = useState(location.state?.supplierId || "")  
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")

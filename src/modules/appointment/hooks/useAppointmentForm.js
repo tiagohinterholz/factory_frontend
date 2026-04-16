@@ -5,7 +5,11 @@ import { useNavigate } from "react-router-dom"
 export function useAppointmentForm() {
   const navigate = useNavigate()
 
-  const [business, setBusiness] = useState("")
+  const [business, setBusiness] = useState(() => {
+    const userStr = localStorage.getItem("user") || "{}"
+    const loggedUser = JSON.parse(userStr)
+    return loggedUser.business_id || ""
+  })
   const [client, setClient] = useState("")
   const [vehicle, setVehicle] = useState("")
   const [date, setDate] = useState("")
@@ -23,7 +27,7 @@ export function useAppointmentForm() {
       date: date,
       time: time,
       observation: observation,
-      order_id: order,
+      order_id: order || null,
     }
 
     try {

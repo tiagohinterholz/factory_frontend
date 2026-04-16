@@ -51,8 +51,10 @@ export default function SupplierDetail() {
           GetProductBySupplier(id),
           GetServiceBySupplier(id)
         ])
-        setProducts(prodData)
-        setServices(servData)
+        
+        // Handle pagination if exists
+        setProducts(prodData.results || (Array.isArray(prodData) ? prodData : []))
+        setServices(servData.results || (Array.isArray(servData) ? servData : []))
       } catch (err) {
         console.error("Erro ao carregar dados relacionados", err)
       } finally {

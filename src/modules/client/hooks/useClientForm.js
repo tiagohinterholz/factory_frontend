@@ -5,7 +5,11 @@ import { useNavigate } from "react-router-dom"
 export function useClientForm() {
   const navigate = useNavigate()
 
-  const [business, setBusiness] = useState("")
+  const [business, setBusiness] = useState(() => {
+    const userStr = localStorage.getItem("user") || "{}"
+    const loggedUser = JSON.parse(userStr)
+    return loggedUser.business_id || ""
+  })
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [cpf, setCpf] = useState("")
@@ -40,7 +44,7 @@ export function useClientForm() {
       navigate("/clientes")
     } catch (error) {
       console.log(error)
-      alert("Erro ao criar cliente")
+      alert("Erro ao criar cliente. Verifique se os dados estão corretos.")
     }
   }
 

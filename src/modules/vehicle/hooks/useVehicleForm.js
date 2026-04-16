@@ -5,7 +5,11 @@ import { useNavigate } from "react-router-dom"
 export function useVehicleForm() {
   const navigate = useNavigate()
 
-  const [business, setBusiness] = useState("")
+  const [business, setBusiness] = useState(() => {
+    const userStr = localStorage.getItem("user") || "{}"
+    const loggedUser = JSON.parse(userStr)
+    return loggedUser.business_id || ""
+  })
   const [client, setClient] = useState("")
   const [model, setModel] = useState("")
   const [year, setYear] = useState("")

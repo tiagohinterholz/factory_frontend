@@ -68,6 +68,7 @@ export default function ProductCreate() {
                   value={business}
                   onChange={(e) => setBusiness(e.target.value)}
                   options={businessOptions}
+                  required
                 />
               )}
 

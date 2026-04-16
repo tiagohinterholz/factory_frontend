@@ -72,6 +72,7 @@ export default function ClientCreate() {
                 value={business}
                 onChange={(e) => setBusiness(e.target.value)}
                 options={businessOptions}
+                required
               />
             )}
 

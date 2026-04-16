@@ -34,15 +34,6 @@ export default function VehicleCreate() {
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { client: clients, loading: loadingClients } = useClient()
 
-  useEffect(() => {
-     if (location.state?.clientId && clients.length > 0) {
-        const currentClient = clients.find(c => c.id == location.state.clientId)
-        if (currentClient?.business_id) {
-           setBusiness(currentClient.business_id)
-        }
-     }
-  }, [clients, location.state, setBusiness])
-
   const user = JSON.parse(localStorage.getItem("user") || "{}")
   const isSuperUser = !user.business_id
 

@@ -6,7 +6,11 @@ export function useBudgetForm() {
   const navigate = useNavigate()
 
   const [client, setClient] = useState("")
-  const [business, setBusiness] = useState("")
+  const [business, setBusiness] = useState(() => {
+    const userStr = localStorage.getItem("user") || "{}"
+    const loggedUser = JSON.parse(userStr)
+    return loggedUser.business_id || ""
+  })
   const [vehicle, setVehicle] = useState("")
   const [validUntil, setValidUntil] = useState("")
 

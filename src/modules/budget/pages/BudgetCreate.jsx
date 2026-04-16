@@ -5,7 +5,6 @@ import { useVehicle } from "@/modules/vehicle/hooks/useVehicle"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useEffect } from "react"
 
 export default function BudgetCreate() {
   const {
@@ -22,12 +21,6 @@ export default function BudgetCreate() {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}")
   const isSuperUser = !user.business_id
-
-  useEffect(() => {
-    if (!isSuperUser && user.business_id) {
-      setBusiness(user.business_id)
-    }
-  }, [isSuperUser, user.business_id, setBusiness])
 
   const businessOptions = businesses.map(b => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients
@@ -53,14 +46,15 @@ export default function BudgetCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {isSuperUser && (
+            {isSuperUser &&
               <SelectField 
                 label="Empreendimento"
                 value={business}
                 onChange={(e) => setBusiness(e.target.value)}
                 options={businessOptions}
+                required
               />
-            )}
+           }
             <SelectField 
               label="Cliente"
               value={client}

@@ -46,7 +46,7 @@ export default function ClientDetail() {
     async function loadVehicles() {
       try {
         const data = await vehicleByClient(id)
-        setVehicles(data)
+        setVehicles(data.results || (Array.isArray(data) ? data : []))
       } catch (err) {
         console.error("Erro ao carregar veículos", err)
       } finally {

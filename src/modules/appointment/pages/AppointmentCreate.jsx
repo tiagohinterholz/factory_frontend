@@ -29,13 +29,6 @@ export default function AppointmentCreate() {
   const user = JSON.parse(localStorage.getItem("user") || "{}")
   const isSuperUser = !user.business_id
 
-  // Inicializar business se não for superuser
-  useEffect(() => {
-    if (!isSuperUser && user.business_id) {
-      setBusiness(user.business_id)
-    }
-  }, [isSuperUser, user.business_id, setBusiness])
-
   useEffect(() => {
     if (isSuperUser) {
         setClient("")

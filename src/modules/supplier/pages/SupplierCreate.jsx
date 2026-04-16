@@ -72,6 +72,7 @@ export default function SupplierCreate() {
                 value={business}
                 onChange={(e) => setBusiness(e.target.value)}
                 options={businessOptions}
+                required
               />
             )}
 
