@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { getUser } from '@/modules/user/services/user'
+import { getUser, deleteUser } from '@/modules/user/services/user'
 
 export function useUser() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -34,6 +34,23 @@ export function useUser() {
     return () => clearTimeout(handler)
   }, [searchTerm, currentPage, load])
 
+  const handleDelete = async (id) => {
+    try {
+      setData(prev => ({
+        ...prev,
+        results: prev.results.filter(u => u.id !== id),
+        count: prev.count - 1
+      }))
+
+      await deleteUser(id)
+      await load(searchTerm, currentPage)
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error)
+      alert("Erro ao excluir usuário. A lista será atualizada.")
+      await load(searchTerm, currentPage)
+    }
+  }
+
   return { 
     user: data?.results || [], 
     totalItems: data?.count || 0,
@@ -41,6 +58,7 @@ export function useUser() {
     searchTerm, 
     setSearchTerm, 
     currentPage, 
-    setCurrentPage 
+    setCurrentPage,
+    handleDelete
   }
 }

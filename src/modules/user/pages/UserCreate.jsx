@@ -21,6 +21,7 @@ export default function UserCreate() {
   const userStr = localStorage.getItem("user") || "{}"
   const loggedUser = JSON.parse(userStr)
   const isSuperUser = !loggedUser.business_id
+  const loggedRole = loggedUser.role
 
   const businessOptions = businesses?.map(b => ({
     id: b.id,
@@ -28,9 +29,13 @@ export default function UserCreate() {
   })) || []
 
   const roleOptions = [
-    { id: 'admin', name: 'Administrador' },
+    ...(isSuperUser ? [{ id: 'admin', name: 'Administrador' }] : []),
     { id: 'colaborador', name: 'Colaborador' }
-  ]
+  ].filter(option => {
+    if (isSuperUser) return true;
+    if (loggedRole === 'admin') return option.id === 'colaborador';
+    return false;
+  })
 
   return (
     <div className="p-6 space-y-6">

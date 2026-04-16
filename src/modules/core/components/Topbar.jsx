@@ -30,7 +30,7 @@ export default function Topbar() {
 
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end mr-1">
-            <span className="text-sm font-bold text-slate-700 leading-none">{user?.email?.split('@')[0] || "Usuário"}</span>
+            <span className="text-sm font-bold text-slate-700 leading-none">{user.email}</span>
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">{user?.role || "Colaborador"}</span>
           </div>
           

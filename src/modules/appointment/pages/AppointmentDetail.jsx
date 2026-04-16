@@ -29,7 +29,7 @@ export default function AppointmentDetail() {
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { client: clients, loading: loadingClients } = useClient()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicle()
-  const { order: orders, loading: loadingOrders } = useOrder()
+  const { orders, loading: loadingOrders } = useOrder()
 
   const user = JSON.parse(localStorage.getItem("user") || "{}")
   const isSuperUser = !user.business_id

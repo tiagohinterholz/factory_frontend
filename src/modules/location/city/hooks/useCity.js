@@ -55,12 +55,22 @@ export function useCitiesByState(stateId) {
 
     async function load() {
       setLoading(true)
-      const data = await getCitiesByState(stateId)
-      const sorted = data.sort((a, b) => 
-        a.name.localeCompare(b.name)
-      )
-      setCitiesByState(sorted)
-      setLoading(false)
+      try {
+        const response = await getCitiesByState(stateId)
+        const citiesArray = Array.isArray(response) 
+          ? response 
+          : response?.results || []
+          
+        const sorted = [...citiesArray].sort((a, b) => 
+          (a.name || '').localeCompare(b.name || '')
+        )
+        setCitiesByState(sorted)
+      } catch (error) {
+        console.error('Erro ao carregar cidades por estado:', error)
+        setCitiesByState([])
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [stateId])

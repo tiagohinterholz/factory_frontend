@@ -9,7 +9,8 @@ export default function UserList() {
     searchTerm, 
     setSearchTerm, 
     currentPage, 
-    setCurrentPage, 
+    setCurrentPage,
+    handleDelete: removeUser,
     totalItems 
   } = useUser()
 
@@ -20,9 +21,9 @@ export default function UserList() {
     { header: 'Empreendimento', accessor: (item) => item.business?.corporate_name || '-' },
   ]
 
-  const handleDelete = (item) => {
-    if (window.confirm(`Deseja excluir o usuário ${item.name}?`)) {
-      console.log('Excluindo...', item.id)
+  const handleDelete = async (item) => {
+    if (window.confirm(`Deseja realmente excluir o usuário ${item.name}?`)) {
+      await removeUser(item.id)
     }
   }
 
