@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { getClient } from '@/modules/client/services/client'
+import { ClientService } from '@/modules/client/services/client'
 
 export function useClient() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useClient() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getClient({ search, page })
+      const response = await ClientService.getClient({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {

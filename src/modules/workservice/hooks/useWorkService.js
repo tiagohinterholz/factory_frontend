@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { getWorkService } from '@/modules/workservice/services/workservice'
+import { WorkService } from '@/modules/workservice/services/workservice'
 
 export function useWorkService() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useWorkService() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getWorkService({ search, page })
+      const response = await WorkService.getWorkService({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {

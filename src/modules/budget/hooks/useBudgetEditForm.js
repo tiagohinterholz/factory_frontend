@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { updateBudget, getBudgetById, deleteBudget, approveBudget, cancelBudget } from "@/modules/budget/services/budgets"
+import { BudgetService } from "@/modules/budget/services/budgets"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useBudgetEditForm() {
@@ -19,7 +19,7 @@ export function useBudgetEditForm() {
 
   const load = useCallback(async () => {
     try {
-      const data = await getBudgetById(id)
+      const data = await BudgetService.getBudgetById(id)
       setBusiness(data.business?.id || data.business || "")
       setClient(data.client?.id || data.client || "")
       setVehicle(data.vehicle?.id || data.vehicle || "")
@@ -53,7 +53,7 @@ export function useBudgetEditForm() {
     }
 
     try {
-      await updateBudget(id, payload)
+      await BudgetService.updateBudget(id, payload)
       navigate(`/orcamentos/`)
     } catch (error) {
       console.log(error)
@@ -63,14 +63,14 @@ export function useBudgetEditForm() {
 
   async function handleDelete() {
     if (!confirm("Deseja realmente deletar?")) return
-    await deleteBudget(id)
+    await BudgetService.deleteBudget(id)
     navigate("/orcamentos")
   }
 
   async function handleApprove() {
     if (!confirm("Deseja aprovar este orçamento? Isso pode gerar uma Ordem de Serviço.")) return
     try {
-      await approveBudget(id)
+      await BudgetService.approveBudget(id)
       refresh()
       alert("Orçamento aprovado com sucesso!")
     } catch (error) {
@@ -82,7 +82,7 @@ export function useBudgetEditForm() {
   async function handleCancel() {
     if (!confirm("Deseja cancelar este orçamento?")) return
     try {
-      await cancelBudget(id)
+      await BudgetService.cancelBudget(id)
       refresh()
     } catch (error) {
       console.error(error)

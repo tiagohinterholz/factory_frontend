@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createBusiness } from "@/modules/business/services/business"
+import { BusinessService } from "@/modules/business/services/business"
 import { useNavigate } from "react-router-dom"
 
 export function useBusinessForm() {
@@ -34,7 +34,7 @@ export function useBusinessForm() {
     }
 
     try {
-      await createBusiness(payload)
+      await BusinessService.createBusiness(payload)
       navigate("/empreendimentos")
     } catch (error) {
       console.log(error)

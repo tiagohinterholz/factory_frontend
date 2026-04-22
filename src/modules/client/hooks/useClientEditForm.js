@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { updateClient, getClientById, deleteClient } from "@/modules/client/services/client"
+import { ClientService } from "@/modules/client/services/client"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useClientEditForm() {
@@ -23,7 +23,7 @@ export function useClientEditForm() {
   useEffect(() => {
       async function load() {
         try {
-          const data = await getClientById(id)
+          const data = await ClientService.getClientById(id)
           setBusiness(data.business?.id || data.business || "")
           setFirstName(data.first_name || "")
           setLastName(data.last_name || "")
@@ -61,7 +61,7 @@ export function useClientEditForm() {
     }
 
     try {
-      await updateClient(id, payload)
+      await ClientService.updateClient(id, payload)
       navigate(`/clientes/`)
     } catch (error) {
       console.log(error)
@@ -71,7 +71,7 @@ export function useClientEditForm() {
 
   async function handleDelete() {
       if (!confirm("Deseja realmente deletar?")) return
-      await deleteClient(id)
+      await ClientService.deleteClient(id)
       navigate("/clientes")
     }
 

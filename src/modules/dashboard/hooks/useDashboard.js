@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getDashboard } from '@/modules/dashboard/services/dashboard'
+import { DashboardService } from '@/modules/dashboard/services/dashboard'
 
 export function useDashboard() {
     const [loading, setLoading] = useState(true)
@@ -8,7 +8,7 @@ export function useDashboard() {
     useEffect(() => {
         async function load() {
             try {
-                const result = await getDashboard()
+                const result = await DashboardService.getDashboard()
                 setData(result)
             } finally {
                 setLoading(false)

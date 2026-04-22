@@ -4,7 +4,7 @@ import { useSupplierEditForm } from "@/modules/supplier/hooks/useSupplierEditFor
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
-import { GetProductBySupplier, GetServiceBySupplier } from "@/modules/supplier/services/supplier"
+import { SupplierService } from "@/modules/supplier/services/supplier"
 
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -48,8 +48,8 @@ export default function SupplierDetail() {
     async function loadRelatedData() {
       try {
         const [prodData, servData] = await Promise.all([
-          GetProductBySupplier(id),
-          GetServiceBySupplier(id)
+          SupplierService.getProductBySupplier(id),
+          SupplierService.getServiceBySupplier(id)
         ])
         
         // Handle pagination if exists

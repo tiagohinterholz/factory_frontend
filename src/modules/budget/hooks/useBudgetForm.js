@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createBudget } from "@/modules/budget/services/budgets"
+import { BudgetService } from "@/modules/budget/services/budgets"
 import { useNavigate } from "react-router-dom"
 
 export function useBudgetForm() {
@@ -26,7 +26,7 @@ export function useBudgetForm() {
     }
 
     try {
-      await createBudget(payload)
+      await BudgetService.createBudget(payload)
       navigate("/orcamentos")
     } catch (error) {
       console.log(error)

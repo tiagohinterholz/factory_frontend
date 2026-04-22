@@ -9,7 +9,7 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Plus, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useParams } from "react-router-dom"
-import { orderProductCreate, orderProductDelete, orderServiceCreate, orderServiceDelete } from "../services/orders"
+import { OrderService } from "../services/order"
 import { useProduct } from "@/modules/product/hooks/useProduct"
 import { useWorkService } from "@/modules/workservice/hooks/useWorkService"
 
@@ -50,7 +50,7 @@ export default function OrderEdit() {
     const product = allProducts.find(p => p.id === parseInt(selectedProduct))
     
     try {
-      await orderProductCreate(id, { 
+      await OrderService.orderProductCreate(id, { 
         product_id: selectedProduct, 
         order_id: id,
         quantity,
@@ -70,7 +70,7 @@ export default function OrderEdit() {
     const service = allServices.find(s => s.id === parseInt(selectedService))
 
     try {
-      await orderServiceCreate(id, { 
+      await OrderService.orderServiceCreate(id, { 
         service_id: selectedService,
         order_id: id,
         unit_price: service?.unit_price
@@ -83,12 +83,12 @@ export default function OrderEdit() {
   }
 
   const handleDeleteProduct = async (itemId) => {
-    await orderProductDelete(id, itemId)
+    await OrderService.orderProductDelete(id, itemId)
     refresh()
   }
 
   const handleDeleteService = async (itemId) => {
-    await orderServiceDelete(id, itemId)
+    await OrderService.orderServiceDelete(id, itemId)
     refresh()
   }
 

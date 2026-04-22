@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createClient } from "@/modules/client/services/client"
+import { ClientService } from "@/modules/client/services/client"
 import { useNavigate } from "react-router-dom"
 
 export function useClientForm() {
@@ -40,7 +40,7 @@ export function useClientForm() {
     }
 
     try {
-      await createClient(payload)
+      await ClientService.createClient(payload)
       navigate("/clientes")
     } catch (error) {
       console.log(error)

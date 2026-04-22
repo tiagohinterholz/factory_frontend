@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { getProduct } from '@/modules/product/services/product'
+import { ProductService } from '@/modules/product/services/product'
 
 export function useProduct() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useProduct() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getProduct({ search, page })
+      const response = await ProductService.getProduct({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {

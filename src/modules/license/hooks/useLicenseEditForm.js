@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { getLicenseRenew, getLicenseById } from "@/modules/license/services/license"
+import { LicenseService } from "@/modules/license/services/license"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useLicenseEditForm() {
@@ -17,7 +17,7 @@ export function useLicenseEditForm() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getLicenseById(id)
+        const data = await LicenseService.getLicenseById(id)
         setBusiness(data.business)
         setStatus(data.status)
         setPeriod(data.period)
@@ -42,7 +42,7 @@ export function useLicenseEditForm() {
     try {
       // Usamos o business_id (pode ser objeto carregado ou string do combo)
       const businessIdToRenew = business?.id || business
-      await getLicenseRenew(businessIdToRenew, payload)
+      await LicenseService.getLicenseRenew(businessIdToRenew, payload)
       navigate(`/empreendimentos/licencas`)
     } catch (error) {
       console.log(error)

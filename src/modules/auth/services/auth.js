@@ -1,6 +1,12 @@
 import { api } from "@/api/http"
 
-export async function Logout() {
+export class AuthService {
+  async login(payload) {
+    const response = await api.post("/usuarios/login/", payload);
+    return response.data;
+  }
+
+  async logout() {
     const refresh = localStorage.getItem('refresh')
     const access = localStorage.getItem('access')
 
@@ -16,4 +22,5 @@ export async function Logout() {
   localStorage.removeItem("access");
   localStorage.removeItem("refresh");
   localStorage.removeItem("user");
+  }
 }

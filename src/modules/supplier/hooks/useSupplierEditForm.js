@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { updateSupplier, getSupplierById, deleteSupplier } from "@/modules/supplier/services/supplier"
+import { SupplierService } from "@/modules/supplier/services/supplier"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useSupplierEditForm() {
@@ -23,7 +23,7 @@ export function useSupplierEditForm() {
   useEffect(() => {
       async function load() {
         try {
-          const data = await getSupplierById(id)
+          const data = await SupplierService.getSupplierById(id)
           setBusiness(data.business)
           setCorporateName(data.corporate_name)
           setTradeName(data.trade_name)
@@ -61,7 +61,7 @@ export function useSupplierEditForm() {
     }
 
     try {
-      await updateSupplier(id, payload)
+      await SupplierService.updateSupplier(id, payload)
       navigate(`/fornecedores/`)
     } catch (error) {
       console.log(error)
@@ -71,7 +71,7 @@ export function useSupplierEditForm() {
 
   async function handleDelete() {
       if (!confirm("Deseja realmente deletar?")) return
-      await deleteSupplier(id)
+      await SupplierService.deleteSupplier(id)
       navigate("/fornecedores")
     }
 

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createAppointment } from "@/modules/appointment/services/appointment"
+import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { useNavigate } from "react-router-dom"
 
 export function useAppointmentForm() {
@@ -31,7 +31,7 @@ export function useAppointmentForm() {
     }
 
     try {
-      await createAppointment(payload)
+      await AppointmentService.createAppointment(payload)
       navigate("/agendamentos")
     } catch (error) {
       console.log(error)

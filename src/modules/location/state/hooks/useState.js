@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react"
-import { getStates } from "@/modules/location/state/services/state"
+import { StateService } from "@/modules/location/state/services/state"
 
 export function useStates() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useStates() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getStates({ search, page })
+      const response = await StateService.getStates({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {

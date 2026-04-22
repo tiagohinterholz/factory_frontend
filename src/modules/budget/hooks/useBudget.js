@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { getBudget } from '@/modules/budget/services/budgets'
+import { BudgetService } from '@/modules/budget/services/budgets'
 
 export function useBudget() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useBudget() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getBudget({ search, page })
+      const response = await BudgetService.getBudget({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {

@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { createCity } from "@/modules/location/city/services/city"
+import { Milestone, Save } from "lucide-react"
 import { useStates } from "@/modules/location/state/hooks/useState"
+import { CityService } from "../services/city"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { Milestone, Save } from "lucide-react"
 
 export default function CityCreate() {
   const navigate = useNavigate()
@@ -19,7 +19,7 @@ export default function CityCreate() {
     e.preventDefault()
 
     try {
-      await createCity({ name, state_id: stateId })
+      await CityService.createCity({ name, state_id: stateId })
       navigate("/cidades")
     } catch (error) {
       alert("Erro ao criar cidade!")

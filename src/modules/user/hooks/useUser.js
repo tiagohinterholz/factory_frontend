@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { getUser, deleteUser } from '@/modules/user/services/user'
+import { UserService } from '@/modules/user/services/user'
 
 export function useUser() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useUser() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getUser({ search, page })
+      const response = await UserService.getUser({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {
@@ -42,7 +42,7 @@ export function useUser() {
         count: prev.count - 1
       }))
 
-      await deleteUser(id)
+      await UserService.deleteUser(id)
       await load(searchTerm, currentPage)
     } catch (error) {
       console.error('Erro ao excluir usuário:', error)

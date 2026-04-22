@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { updateVehicle, getVehicleById, deleteVehicle } from "@/modules/vehicle/services/vehicle"
+import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useVehicleEditForm() {
@@ -22,7 +22,7 @@ export function useVehicleEditForm() {
   useEffect(() => {
       async function load() {
         try {
-          const data = await getVehicleById(id)
+          const data = await VehicleService.getVehicleById(id)
           setBusiness(data.business?.id || data.business || "")
           setClient(data.client?.id || data.client || "")
           setModel(data.model || "")
@@ -58,7 +58,7 @@ export function useVehicleEditForm() {
     }
 
     try {
-      await updateVehicle(id, payload)
+      await VehicleService.updateVehicle(id, payload)
       navigate(`/veiculos/`)
     } catch (error) {
       console.log(error)
@@ -68,7 +68,7 @@ export function useVehicleEditForm() {
 
   async function handleDelete() {
     if (!confirm("Deseja realmente deletar?")) return
-    await deleteVehicle(id)
+    await VehicleService.deleteVehicle(id)
     navigate("/veiculos")
   }
 

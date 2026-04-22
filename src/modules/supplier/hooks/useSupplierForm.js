@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createSupplier } from "@/modules/supplier/services/supplier"
+import { SupplierService } from "@/modules/supplier/services/supplier"
 import { useNavigate } from "react-router-dom"
 
 export function useSupplierForm() {
@@ -39,7 +39,7 @@ export function useSupplierForm() {
     }
 
     try {
-      await createSupplier(payload)
+      await SupplierService.createSupplier(payload)
       navigate("/fornecedores")
     } catch (error) {
       console.log(error)

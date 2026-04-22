@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
-import { getLicenseRenew } from "@/modules/license/services/license"
-import { getBusiness } from "@/modules/business/services/business"
+import { LicenseService } from "@/modules/license/services/license"
+import { BusinessService } from "@/modules/business/services/business"
 import { useNavigate } from "react-router-dom"
 
 export function useLicenseForm() {
@@ -19,7 +19,7 @@ export function useLicenseForm() {
     async function loadBusinesses() {
       if (isSuperUser) {
         try {
-          const data = await getBusiness()
+          const data = await BusinessService.getBusiness()
           setBusinesses(data)
         } catch (err) {
           console.error(err)
@@ -40,7 +40,7 @@ export function useLicenseForm() {
     }
 
     try {
-      await getLicenseRenew(business, payload)
+      await LicenseService.getLicenseRenew(business, payload)
       navigate("/empreendimentos/licencas")
     } catch (error) {
       console.log(error)

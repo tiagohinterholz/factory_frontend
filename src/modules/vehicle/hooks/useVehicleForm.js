@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createVehicle } from "@/modules/vehicle/services/vehicle"
+import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useNavigate } from "react-router-dom"
 
 export function useVehicleForm() {
@@ -37,7 +37,7 @@ export function useVehicleForm() {
     }
 
     try {
-      await createVehicle(payload)
+      await VehicleService.createVehicle(payload)
       navigate("/veiculos")
     } catch (error) {
       console.log(error)

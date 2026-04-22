@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { updateAppointment, getAppointmentById, deleteAppointment } from "@/modules/appointment/services/appointment"
+import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useAppointmentEditForm() {
@@ -19,7 +19,7 @@ export function useAppointmentEditForm() {
   useEffect(() => {
       async function load() {
         try {
-          const data = await getAppointmentById(id)
+          const data = await AppointmentService.getAppointmentById(id)
           setBusiness(data.business?.id || data.business || "")
           setClient(data.client?.id || data.client || "")
           setVehicle(data.vehicle?.id || data.vehicle || "")
@@ -49,7 +49,7 @@ export function useAppointmentEditForm() {
     }
 
     try {
-      await updateAppointment(id, payload)
+      await AppointmentService.updateAppointment(id, payload)
       navigate(`/agendamentos/`)
     } catch (error) {
       console.log(error)
@@ -59,7 +59,7 @@ export function useAppointmentEditForm() {
 
   async function handleDelete() {
     if (!confirm("Deseja realmente deletar?")) return
-    await deleteAppointment(id)
+    await AppointmentService.deleteAppointment(id)
     navigate("/agendamentos")
   }
 

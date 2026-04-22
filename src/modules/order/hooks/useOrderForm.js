@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createOrder } from "@/modules/order/services/orders"
+import { OrderService } from "@/modules/order/services/order"
 import { useNavigate } from "react-router-dom"
 
 export function useOrderForm() {
@@ -27,7 +27,7 @@ export function useOrderForm() {
     }
 
     try {
-      await createOrder(payload)
+      await OrderService.createOrder(payload)
       navigate("/ordens")
     } catch (error) {
       console.log(error)

@@ -4,7 +4,7 @@ import { useClientEditForm } from "@/modules/client/hooks/useClientEditForm"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
-import { vehicleByClient } from "@/modules/client/services/client"
+import { ClientService } from "@/modules/client/services/client"
 
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -45,7 +45,7 @@ export default function ClientDetail() {
   useEffect(() => {
     async function loadVehicles() {
       try {
-        const data = await vehicleByClient(id)
+        const data = await ClientService.vehicleByClient(id)
         setVehicles(data.results || (Array.isArray(data) ? data : []))
       } catch (err) {
         console.error("Erro ao carregar veículos", err)

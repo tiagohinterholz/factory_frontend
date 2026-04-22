@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { updateBusiness, getBusinessById, deleteBusiness } from "@/modules/business/services/business"
+import { BusinessService } from "@/modules/business/services/business"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useBusinessEditForm() {
@@ -22,7 +22,7 @@ export function useBusinessEditForm() {
   useEffect(() => {
       async function load() {
         try {
-          const data = await getBusinessById(id)
+          const data = await BusinessService.getBusinessById(id)
           setCorporateName(data.corporate_name || "")
           setTradeName(data.trade_name || "")
           setCnpj(data.cnpj || "")
@@ -58,7 +58,7 @@ export function useBusinessEditForm() {
     }
 
     try {
-      await updateBusiness(id, payload)
+      await BusinessService.updateBusiness(id, payload)
       navigate(`/empreendimentos/`)
     } catch (error) {
       console.log(error)
@@ -68,7 +68,7 @@ export function useBusinessEditForm() {
 
   async function handleDelete() {
       if (!confirm("Deseja realmente deletar?")) return
-      await deleteBusiness(id)
+      await BusinessService.deleteBusiness(id)
       navigate("/empreendimentos")
     }
 

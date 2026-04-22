@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { updateWorkService, getWorkServiceById, deleteWorkService } from "@/modules/workservice/services/workservice"
+import { WorkService } from "@/modules/workservice/services/workservice"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useWorkServiceEditForm() {
@@ -17,7 +17,7 @@ export function useWorkServiceEditForm() {
   useEffect(() => {
       async function load() {
         try {
-          const data = await getWorkServiceById(id)
+          const data = await WorkService.getWorkServiceById(id)
           setBusiness(data.business?.id || data.business || "")
           setSupplier(data.supplier?.id || data.supplier || "")
           setName(data.name || "")
@@ -43,7 +43,7 @@ export function useWorkServiceEditForm() {
     }
 
     try {
-      await updateWorkService(id, payload)
+      await WorkService.updateWorkService(id, payload)
       navigate(`/servicos/`)
     } catch (error) {
       console.log(error)
@@ -53,7 +53,7 @@ export function useWorkServiceEditForm() {
 
   async function handleDelete() {
       if (!confirm("Deseja realmente deletar?")) return
-      await deleteWorkService(id)
+      await WorkService.deleteWorkService(id)
       navigate("/servicos")
     }
 

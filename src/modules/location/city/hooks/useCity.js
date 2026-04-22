@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react"
-import { getCities } from "@/modules/location/city/services/city"
-import { getCitiesByState } from "@/modules/location/state/services/state"
+import { CityService } from "@/modules/location/city/services/city"
+import { StateService } from "@/modules/location/state/services/state"
 
 export function useCities() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -11,7 +11,7 @@ export function useCities() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getCities({ search, page })
+      const response = await CityService.getCities({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {
@@ -56,7 +56,7 @@ export function useCitiesByState(stateId) {
     async function load() {
       setLoading(true)
       try {
-        const response = await getCitiesByState(stateId)
+        const response = await StateService.getCitiesByState(stateId)
         const citiesArray = Array.isArray(response) 
           ? response 
           : response?.results || []

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getLicense } from "@/modules/license/services/license"
+import { LicenseService } from "@/modules/license/services/license"
 
 export function useLicense() {
   const [license, setLicense] = useState([])
@@ -8,7 +8,7 @@ export function useLicense() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getLicense()
+        const data = await LicenseService.getLicense()
         setLicense(data)
       } finally {
         setLoading(false)

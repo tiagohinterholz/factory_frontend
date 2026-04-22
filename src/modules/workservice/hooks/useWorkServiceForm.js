@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createWorkService } from "@/modules/workservice/services/workservice"
+import { WorkService } from "@/modules/workservice/services/workservice"
 import { useNavigate, useLocation } from "react-router-dom"
 
 export function useWorkServiceForm() {
@@ -28,7 +28,7 @@ export function useWorkServiceForm() {
     }
 
     try {
-      await createWorkService(payload)
+      await WorkService.createWorkService(payload)
       navigate("/servicos")
     } catch (error) {
       console.log(error)

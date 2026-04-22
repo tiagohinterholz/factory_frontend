@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { getOrder } from '@/modules/order/services/orders'
+import { OrderService } from '@/modules/order/services/order'
 
 export function useOrder() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useOrder() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getOrder({ search, page })
+      const response = await OrderService.getOrder({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {

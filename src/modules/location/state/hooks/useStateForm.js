@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { createState } from "@/modules/location/state/services/state"
 import { useNavigate } from "react-router-dom"
+import { StateService } from "../services/state"
 
 export function useStateForm() {
   const navigate = useNavigate()
@@ -12,7 +12,7 @@ export function useStateForm() {
     e.preventDefault()
 
     try {
-      await createState({ name, abbreviation })
+      await StateService.createState({ name, abbreviation })
       navigate("/estados")
     } catch (error) {
       console.log(error)

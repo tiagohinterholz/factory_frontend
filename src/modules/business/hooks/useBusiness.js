@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react"
-import { getBusiness } from "@/modules/business/services/business"
+import { BusinessService } from "@/modules/business/services/business"
 
 export function useBusiness() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useBusiness() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getBusiness({ search, page })
+      const response = await BusinessService.getBusiness({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {

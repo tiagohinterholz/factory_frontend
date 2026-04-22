@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { getCity, updateCity, deleteCity } from "@/modules/location/city/services/city"
-import { useStates } from "@/modules/location/state/hooks/useState"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Milestone, Trash2, Edit2 } from "lucide-react"
+import { CityService } from "../services/city"
+import { useStates } from "@/modules/location/state/hooks/useState"
 
 export default function CityEdit() {
   const { id } = useParams()
@@ -20,7 +20,7 @@ export default function CityEdit() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getCity(id)
+        const data = await CityService.getCity(id)
         setName(data.name)
         setStateId(data.state.id)
       } finally {
@@ -33,7 +33,7 @@ export default function CityEdit() {
   async function handleUpdate(e) {
     e.preventDefault()
     try {
-      await updateCity(id, { name, state_id: stateId })
+      await CityService.updateCity(id, { name, state_id: stateId })
       navigate("/cidades")
     } catch {
       alert("Erro ao atualizar cidade")
@@ -42,7 +42,7 @@ export default function CityEdit() {
 
   async function handleDelete() {
     if (!confirm("Deseja realmente deletar?")) return
-    await deleteCity(id)
+    await CityService.deleteCity(id)
     navigate("/cidades")
   }
 

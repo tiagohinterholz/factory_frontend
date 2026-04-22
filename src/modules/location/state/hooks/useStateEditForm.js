@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { getState, updateState, deleteState } from "../services/state"
+import { StateService } from "../services/state"
 
 export function useStateEditForm() {
   const { id } = useParams()
@@ -13,7 +13,7 @@ export function useStateEditForm() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getState(id)
+        const data = await StateService.getState(id)
         setName(data.name)
         setAbbreviation(data.abbreviation)
       } finally {
@@ -25,13 +25,13 @@ export function useStateEditForm() {
 
   async function handleUpdate(e) {
     e.preventDefault()
-    await updateState(id, { name, abbreviation })
+    await StateService.updateState(id, { name, abbreviation })
     navigate("/estados")
   }
 
   async function handleDelete() {
     if (!confirm("Deseja realmente deletar?")) return
-    await deleteState(id)
+    await StateService.deleteState(id)
     navigate("/estados")
   }
 

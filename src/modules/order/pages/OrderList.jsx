@@ -1,5 +1,5 @@
 import { useOrder } from "../hooks/useOrder"
-import { deleteOrder } from "../services/orders"
+import { OrderService } from "../services/order"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -35,7 +35,7 @@ export default function OrderList() {
   const handleDelete = async (item) => {
     if (window.confirm(`Deseja excluir a ordem de serviço #${item.id}?`)) {
       try {
-        await deleteOrder(item.id)
+        await OrderService.deleteOrder(item.id)
         load(searchTerm, currentPage)
       } catch (error) {
         console.error(error)

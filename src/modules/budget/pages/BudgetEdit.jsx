@@ -8,7 +8,7 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Plus, Trash2, CheckCircle, XCircle } from "lucide-react"
 import { useState } from "react"
 import { useParams } from "react-router-dom"
-import { budgetProductCreate, budgetProductDelete, budgetServiceCreate, budgetServiceDelete } from "../services/budgets"
+import { BudgetService } from "../services/budgets"
 import { useProduct } from "@/modules/product/hooks/useProduct"
 import { useWorkService } from "@/modules/workservice/hooks/useWorkService"
 
@@ -46,7 +46,7 @@ export default function BudgetEdit() {
     const product = allProducts.find(p => p.id === parseInt(selectedProduct))
 
     try {
-      await budgetProductCreate(id, { 
+      await BudgetService.budgetProductCreate(id, { 
         product_id: selectedProduct, 
         budget_id: id,
         quantity,
@@ -66,7 +66,7 @@ export default function BudgetEdit() {
     const service = allServices.find(s => s.id === parseInt(selectedService))
 
     try {
-      await budgetServiceCreate(id, { 
+      await BudgetService.budgetServiceCreate(id, { 
         service_id: selectedService,
         budget_id: id,
         unit_price: service?.unit_price
@@ -79,12 +79,12 @@ export default function BudgetEdit() {
   }
 
   const handleDeleteProduct = async (itemId) => {
-    await budgetProductDelete(id, itemId)
+    await BudgetService.budgetProductDelete(id, itemId)
     refresh()
   }
 
   const handleDeleteService = async (itemId) => {
-    await budgetServiceDelete(id, itemId)
+    await BudgetService.budgetServiceDelete(id, itemId)
     refresh()
   }
 

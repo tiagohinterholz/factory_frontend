@@ -1,31 +1,33 @@
 import { api } from "@/api/http"
 
-export async function getClient(params = {}) {
-  const response = await api.get('/clientes/', { params });
-  return response.data;
-}
+export class ClientService {
+  static async getClient(params = {}) {
+    const response = await api.get('/clientes/', { params });
+    return response.data;
+  }
 
-export async function getClientById(id) {
-  const response = await api.get(`/clientes/${id}/`);
-  return response.data;
-}
+  static async getClientById(id) {
+    const response = await api.get(`/clientes/${id}/`);
+    return response.data;
+  }
 
-export async function createClient(payload) {
-  const response = await api.post("/clientes/", payload)
-  return response.data
-}
+  static async createClient(payload) {
+    const response = await api.post("/clientes/", payload)
+    return response.data
+  }
 
-export async function updateClient(id, payload) {
-  const response = await api.patch(`/clientes/${id}/`, payload)
-  return response.data
-}
+  static async updateClient(id, payload) {
+    const response = await api.patch(`/clientes/${id}/`, payload)
+    return response.data
+  }
 
-export async function deleteClient(id) {
-  const response = await api.delete(`/clientes/${id}/`);
-  return response.data;
-}
+  static async deleteClient(id) {
+    const response = await api.delete(`/clientes/${id}/`);
+    return response.data;
+  }
 
-export async function vehicleByClient(id) {
-  const response = await api.get(`/clientes/${id}/veiculos/`);
-  return response.data;
+  static async vehicleByClient(id) {
+    const response = await api.get(`/clientes/${id}/veiculos/`);
+    return response.data;
+  }
 }

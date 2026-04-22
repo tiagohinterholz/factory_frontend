@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createUser } from "@/modules/user/services/user"
+import { UserService } from "@/modules/user/services/user"
 import { useNavigate } from "react-router-dom"
 
 export function useUserForm() {
@@ -33,7 +33,7 @@ export function useUserForm() {
     }
 
     try {
-      await createUser(payload)
+      await UserService.createUser(payload)
       navigate("/usuarios")
     } catch (error) {
       console.error('Erro ao criar usuário:', error)

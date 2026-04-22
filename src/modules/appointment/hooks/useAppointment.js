@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react"
-import { getAppointment } from "@/modules/appointment/services/appointment"
+import { AppointmentService } from "@/modules/appointment/services/appointment"
 
 export function useAppointment() {
   const [appointments, setAppointments] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useAppointment() {
   const load = useCallback(async (search='', page=1) => {
     setLoading(true)
     try {
-      const response = await getAppointment({ search, page })
+      const response = await AppointmentService.getAppointment({ search, page })
       if (Array.isArray(response)) {
         setAppointments({ results: response, count: response.length })
       } else if (response && response.results) {

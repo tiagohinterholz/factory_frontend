@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createProduct } from "@/modules/product/services/product"
+import { ProductService } from "@/modules/product/services/product"
 import { useNavigate, useLocation } from "react-router-dom"
 
 export function useProductForm() {
@@ -34,7 +34,7 @@ export function useProductForm() {
     }
 
     try {
-      await createProduct(payload)
+      await ProductService.createProduct(payload)
       navigate("/produtos")
     } catch (error) {
       console.log(error)

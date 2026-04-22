@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { getSupplier } from '@/modules/supplier/services/supplier'
+import { SupplierService } from '@/modules/supplier/services/supplier'
 
 export function useSupplier() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useSupplier() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getSupplier({ search, page })
+      const response = await SupplierService.getSupplier({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {

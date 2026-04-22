@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { updateProduct, getProductById, deleteProduct } from "@/modules/product/services/product"
+import { ProductService } from "@/modules/product/services/product"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useProductEditForm() {
@@ -20,7 +20,7 @@ export function useProductEditForm() {
   useEffect(() => {
       async function load() {
         try {
-          const data = await getProductById(id)
+          const data = await ProductService.getProductById(id)
           setBusiness(data.business?.id || data.business || "")
           setSupplier(data.supplier?.id || data.supplier || "")
           setName(data.name || "")
@@ -52,7 +52,7 @@ export function useProductEditForm() {
     }
 
     try {
-      await updateProduct(id, payload)
+      await ProductService.updateProduct(id, payload)
       navigate(`/produtos/`)
     } catch (error) {
       console.log(error)
@@ -62,7 +62,7 @@ export function useProductEditForm() {
 
   async function handleDelete() {
       if (!confirm("Deseja realmente deletar?")) return
-      await deleteProduct(id)
+      await ProductService.deleteProduct(id)
       navigate("/produtos")
     }
 

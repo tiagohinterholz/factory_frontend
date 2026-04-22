@@ -1,4 +1,4 @@
-import { Logout } from "@/modules/auth/services/auth"
+import { AuthService } from "@/modules/auth/services/auth"
 import { useNavigate } from "react-router-dom"
 import { LogOut, Bell, User } from "lucide-react"
 
@@ -7,7 +7,7 @@ export default function Topbar() {
   const user = JSON.parse(localStorage.getItem("user") || "{}")
 
   function handleLogout() {
-    Logout()
+    AuthService.logout()
     navigate('/')
   }
 

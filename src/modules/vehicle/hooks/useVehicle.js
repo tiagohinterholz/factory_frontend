@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { getVehicle } from '@/modules/vehicle/services/vehicle'
+import { VehicleService } from '@/modules/vehicle/services/vehicle'
 
 export function useVehicle() {
   const [data, setData] = useState({ results: [], count: 0 })
@@ -10,7 +10,7 @@ export function useVehicle() {
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
     try {
-      const response = await getVehicle({ search, page })
+      const response = await VehicleService.getVehicle({ search, page })
       if (Array.isArray(response)) {
         setData({ results: response, count: response.length })
       } else if (response && response.results) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { updateOrder, getOrderById, deleteOrder, invoiceOrder } from "@/modules/order/services/orders"
+import { OrderService } from "@/modules/order/services/order"
 import { useNavigate, useParams } from "react-router-dom"
 
 export function useOrderEditForm() {
@@ -22,7 +22,7 @@ export function useOrderEditForm() {
 
   const load = useCallback(async () => {
     try {
-      const data = await getOrderById(id)
+      const data = await OrderService.getOrderById(id)
       setBusiness(data.business?.id || data.business)
       setClient(data.client?.id || data.client)
       setVehicle(data.vehicle?.id || data.vehicle)
@@ -63,7 +63,7 @@ export function useOrderEditForm() {
     console.log("Enviando PATCH para OS:", id, payload)
 
     try {
-      await updateOrder(id, payload)
+      await OrderService.updateOrder(id, payload)
       navigate(`/ordens/`)
     } catch (error) {
       console.log(error)
@@ -73,14 +73,14 @@ export function useOrderEditForm() {
 
   async function handleDelete() {
     if (!confirm("Deseja realmente deletar?")) return
-    await deleteOrder(id)
+    await OrderService.deleteOrder(id)
     navigate("/ordens")
   }
 
   async function handleInvoice() {
     if (!confirm("Deseja faturar esta Ordem de Serviço? Esta ação não pode ser desfeita.")) return
     try {
-      await invoiceOrder(id)
+      await OrderService.invoiceOrder(id)
       load()
     } catch (error) {
       console.error(error)
