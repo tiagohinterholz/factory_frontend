@@ -41,6 +41,6 @@ export function useBudget() {
     searchTerm, 
     setSearchTerm, 
     currentPage, 
-    setCurrentPage 
+    setCurrentPage,
   }
 }

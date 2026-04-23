@@ -1,4 +1,5 @@
 import { useBudget } from "../hooks/useBudget"
+import { BudgetService } from "../services/budgets"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -10,7 +11,8 @@ export default function BudgetList() {
     setSearchTerm, 
     currentPage, 
     setCurrentPage, 
-    totalItems 
+    totalItems,
+    load
   } = useBudget()
 
   const columns = [
@@ -30,9 +32,15 @@ export default function BudgetList() {
     { header: 'Total', accessor: (item) => `R$ ${parseFloat(item.total).toFixed(2)}` },
   ]
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (window.confirm(`Deseja excluir o orçamento #${item.id}?`)) {
-      console.log('Excluindo...', item.id)
+      try {
+        await BudgetService.deleteBudget(item.id)
+        load(searchTerm, currentPage)
+      } catch (error) {
+        console.error(error)
+        alert('Erro ao excluir o orçamento.')
+      }
     }
   }
 
