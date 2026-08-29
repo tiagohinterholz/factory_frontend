@@ -1,7 +1,12 @@
 import axios from 'axios'
 
+const API_URL = import.meta.env.VITE_API_URL
+if (!API_URL) {
+  throw new Error("VITE_API_URL não definida. Copie .env.example para .env")
+}
+
 export const api = axios.create({
-    baseURL: 'http://localhost:8000'
+    baseURL: API_URL
 })
 
 api.interceptors.request.use((config) => {
@@ -28,7 +33,7 @@ api.interceptors.response.use(
 
         try {
             const refresh = localStorage.getItem('refresh')
-            const response = await axios.post('http://localhost:8000/usuarios/refresh-token/', {
+            const response = await axios.post(`${API_URL}/usuarios/refresh-token/`, {
                 refresh: refresh,
             })
             const newAccess = response.data.access
