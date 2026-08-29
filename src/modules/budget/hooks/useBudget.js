@@ -42,5 +42,6 @@ export function useBudget() {
     setSearchTerm, 
     currentPage, 
     setCurrentPage,
+    load
   }
 }
