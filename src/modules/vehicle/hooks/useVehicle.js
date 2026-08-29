@@ -40,7 +40,8 @@ export function useVehicle() {
     loading, 
     searchTerm, 
     setSearchTerm, 
-    currentPage, 
-    setCurrentPage 
+    currentPage,
+    setCurrentPage,
+    load
   }
 }

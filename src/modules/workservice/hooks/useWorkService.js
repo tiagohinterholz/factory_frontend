@@ -40,7 +40,8 @@ export function useWorkService() {
     loading, 
     searchTerm, 
     setSearchTerm, 
-    currentPage, 
-    setCurrentPage 
+    currentPage,
+    setCurrentPage,
+    load
   }
 }

@@ -1,4 +1,5 @@
 import { useStates } from "@/modules/location/state/hooks/useState"
+import { StateService } from "@/modules/location/state/services/state"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -10,7 +11,8 @@ export default function StateList() {
     setSearchTerm,
     currentPage,
     setCurrentPage,
-    totalItems
+    totalItems,
+    load
   } = useStates()
 
   const columns = [
@@ -18,9 +20,15 @@ export default function StateList() {
     { header: 'Estado', accessor: (item) => item.name },
   ]
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (window.confirm(`Deseja excluir o estado ${item.name}?`)) {
-      console.log('Excluindo...', item.id)
+      try {
+        await StateService.deleteState(item.id)
+        load(searchTerm, currentPage)
+      } catch (error) {
+        console.error(error)
+        alert('Erro ao excluir o estado.')
+      }
     }
   }
 

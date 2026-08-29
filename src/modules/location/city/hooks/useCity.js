@@ -41,8 +41,9 @@ export function useCities() {
     loading, 
     searchTerm, 
     setSearchTerm, 
-    currentPage, 
-    setCurrentPage 
+    currentPage,
+    setCurrentPage,
+    load
   }
 }
 

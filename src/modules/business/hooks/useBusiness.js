@@ -40,7 +40,8 @@ export function useBusiness() {
     loading, 
     searchTerm, 
     setSearchTerm, 
-    currentPage, 
-    setCurrentPage 
+    currentPage,
+    setCurrentPage,
+    load
   }
 }

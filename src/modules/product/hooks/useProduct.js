@@ -40,7 +40,8 @@ export function useProduct() {
     loading, 
     searchTerm, 
     setSearchTerm, 
-    currentPage, 
-    setCurrentPage 
+    currentPage,
+    setCurrentPage,
+    load
   }
 }

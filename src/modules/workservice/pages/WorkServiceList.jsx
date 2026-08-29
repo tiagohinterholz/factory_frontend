@@ -1,4 +1,5 @@
 import { useWorkService } from "../hooks/useWorkService"
+import { WorkService } from "../services/workservice"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -9,8 +10,9 @@ export default function WorkServiceList() {
     searchTerm, 
     setSearchTerm, 
     currentPage, 
-    setCurrentPage, 
-    totalItems 
+    setCurrentPage,
+    totalItems,
+    load
   } = useWorkService()
 
   const columns = [
@@ -19,9 +21,15 @@ export default function WorkServiceList() {
     { header: 'Descrição', accessor: (item) => item.description || '-' },
   ]
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (window.confirm(`Deseja excluir o serviço ${item.name}?`)) {
-      console.log('Excluindo...', item.id)
+      try {
+        await WorkService.deleteWorkService(item.id)
+        load(searchTerm, currentPage)
+      } catch (error) {
+        console.error(error)
+        alert('Erro ao excluir o serviço.')
+      }
     }
   }
 

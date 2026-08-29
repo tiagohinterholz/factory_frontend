@@ -1,4 +1,5 @@
 import { useVehicle } from "../hooks/useVehicle"
+import { VehicleService } from "../services/vehicle"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -9,8 +10,9 @@ export default function VehicleList() {
     searchTerm, 
     setSearchTerm, 
     currentPage, 
-    setCurrentPage, 
-    totalItems 
+    setCurrentPage,
+    totalItems,
+    load
   } = useVehicle()
 
   const columns = [
@@ -20,9 +22,15 @@ export default function VehicleList() {
     { header: 'Cliente', accessor: (item) => `${item.client.first_name} ${item.client.last_name}` },
   ]
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (window.confirm(`Deseja excluir o veículo ${item.plate}?`)) {
-      console.log('Excluindo...', item.id)
+      try {
+        await VehicleService.deleteVehicle(item.id)
+        load(searchTerm, currentPage)
+      } catch (error) {
+        console.error(error)
+        alert('Erro ao excluir o veículo.')
+      }
     }
   }
 

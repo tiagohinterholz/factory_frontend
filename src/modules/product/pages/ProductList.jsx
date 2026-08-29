@@ -1,4 +1,5 @@
 import { useProduct } from "../hooks/useProduct"
+import { ProductService } from "../services/product"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -9,8 +10,9 @@ export default function ProductList() {
     searchTerm, 
     setSearchTerm, 
     currentPage, 
-    setCurrentPage, 
-    totalItems 
+    setCurrentPage,
+    totalItems,
+    load
   } = useProduct()
 
   const columns = [
@@ -20,9 +22,15 @@ export default function ProductList() {
     { header : 'Qtde. em estoque', accessor: (item) => item.stock_quantity ? item.stock_quantity : '0'}
   ]
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (window.confirm(`Deseja excluir o produto ${item.name}?`)) {
-      console.log('Excluindo...', item.id)
+      try {
+        await ProductService.deleteProduct(item.id)
+        load(searchTerm, currentPage)
+      } catch (error) {
+        console.error(error)
+        alert('Erro ao excluir o produto.')
+      }
     }
   }
 

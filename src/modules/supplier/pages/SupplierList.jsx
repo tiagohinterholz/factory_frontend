@@ -1,4 +1,5 @@
 import { useSupplier } from "../hooks/useSupplier"
+import { SupplierService } from "../services/supplier"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -9,8 +10,9 @@ export default function SupplierList() {
     searchTerm, 
     setSearchTerm, 
     currentPage, 
-    setCurrentPage, 
-    totalItems 
+    setCurrentPage,
+    totalItems,
+    load
   } = useSupplier()
 
   const columns = [
@@ -19,9 +21,15 @@ export default function SupplierList() {
     { header: 'Telefone', accessor: (item) => item.phone },
   ]
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (window.confirm(`Deseja excluir o fornecedor ${item.corporate_name}?`)) {
-      console.log('Excluindo...', item.id)
+      try {
+        await SupplierService.deleteSupplier(item.id)
+        load(searchTerm, currentPage)
+      } catch (error) {
+        console.error(error)
+        alert('Erro ao excluir o fornecedor.')
+      }
     }
   }
 

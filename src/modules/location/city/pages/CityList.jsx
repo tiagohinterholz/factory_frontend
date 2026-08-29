@@ -1,4 +1,5 @@
 import { useCities } from "@/modules/location/city/hooks/useCity"
+import { CityService } from "@/modules/location/city/services/city"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -9,8 +10,9 @@ export default function CityList() {
     searchTerm, 
     setSearchTerm, 
     currentPage, 
-    setCurrentPage, 
-    totalItems 
+    setCurrentPage,
+    totalItems,
+    load
   } = useCities()
 
   const columns = [
@@ -19,9 +21,15 @@ export default function CityList() {
     { header: 'Estado', accessor: (item) => item.state.name },
   ]
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (window.confirm(`Deseja excluir a cidade ${item.name}?`)) {
-      console.log('Excluindo...', item.id)
+      try {
+        await CityService.deleteCity(item.id)
+        load(searchTerm, currentPage)
+      } catch (error) {
+        console.error(error)
+        alert('Erro ao excluir a cidade.')
+      }
     }
   }
 

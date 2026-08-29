@@ -1,4 +1,5 @@
 import { useBusiness } from "../hooks/useBusiness"
+import { BusinessService } from "../services/business"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -10,7 +11,8 @@ export default function BusinessList() {
     setSearchTerm,
     currentPage,
     setCurrentPage,
-    totalItems
+    totalItems,
+    load
   } = useBusiness()
 
   const columns = [
@@ -19,9 +21,15 @@ export default function BusinessList() {
     { header: 'Email', accessor: (item) => item.email },
   ]
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (window.confirm(`Deseja excluir o empreendimento ${item.corporate_name}?`)) {
-      console.log('Excluindo...', item.id)
+      try {
+        await BusinessService.deleteBusiness(item.id)
+        load(searchTerm, currentPage)
+      } catch (error) {
+        console.error(error)
+        alert('Erro ao excluir o empreendimento.')
+      }
     }
   }
 

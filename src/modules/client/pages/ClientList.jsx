@@ -1,4 +1,5 @@
 import { useClient } from "../hooks/useClient"
+import { ClientService } from "../services/client"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -8,9 +9,10 @@ export default function ClientList() {
     loading, 
     searchTerm, 
     setSearchTerm, 
-    currentPage, 
-    setCurrentPage, 
-    totalItems 
+    currentPage,
+    setCurrentPage,
+    totalItems,
+    load
   } = useClient()
 
   const columns = [
@@ -19,9 +21,15 @@ export default function ClientList() {
     { header: 'Telefone', accessor: (item) => item.phone },
   ]
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (window.confirm(`Deseja excluir o cliente ${item.first_name}?`)) {
-      console.log('Excluindo...', item.id)
+      try {
+        await ClientService.deleteClient(item.id)
+        load(searchTerm, currentPage)
+      } catch (error) {
+        console.error(error)
+        alert('Erro ao excluir o cliente.')
+      }
     }
   }
 
