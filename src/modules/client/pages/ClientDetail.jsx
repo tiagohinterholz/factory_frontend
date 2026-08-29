@@ -69,11 +69,6 @@ export default function ClientDetail() {
     setCityId(""); 
   };
 
-  const stateOptions = states.map(s => ({
-    id: s.id,
-    name: s.name
-  }))
-
   if (loading || loadingStates || loadingBusinesses || (stateId && loadingCities)) {
     return (
       <div className="flex items-center justify-center h-[400px]">
@@ -169,7 +164,7 @@ export default function ClientDetail() {
                     label="Estado"
                     value={stateId}
                     onChange={handleStateChange}
-                    options={stateOptions}
+                    options={states}
                   />
                   <SelectField 
                     label="Cidade"

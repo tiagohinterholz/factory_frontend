@@ -1,4 +1,4 @@
-export default function SelectField({ label, value, onChange, options }) {
+export default function SelectField({ label, value, onChange, options = [] }) {
   return (
     <div className="flex flex-col group">
       <label className="label-premium group-focus-within:text-indigo-600 transition duration-300">
