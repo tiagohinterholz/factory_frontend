@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { AuthProvider } from "@/modules/auth/context/AuthProvider"
 import PrivateRoute from "@/routes/PrivateRoute"
 import DashboardLayout from "@/modules/core/layout/DashboardLayout"
 
@@ -19,28 +20,30 @@ import OrderRoutes from "@/modules/order/routes"
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Auth routes (Public) */}
-        {AuthRoutes}
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Auth routes (Public) */}
+          {AuthRoutes}
 
-        {/* Dashboard routes (Private & Layout wrapped) */}
-        <Route element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
-          {LicenseRoutes}
-          {DashboardRoutes}
-          {BusinessRoutes}
-          {LocationRoutes}
-          {SupplierRoutes}
-          {ClientRoutes}
-          {VehicleRoutes}
-          {ProductRoutes}
-          {WorkServiceRoutes}
-          {AppointmentRoutes}
-          {BudgetRoutes}
-          {OrderRoutes}
-          {UserRoutes}
-        </Route>
-      </Routes>
-    </BrowserRouter>
+          {/* Dashboard routes (Private & Layout wrapped) */}
+          <Route element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
+            {LicenseRoutes}
+            {DashboardRoutes}
+            {BusinessRoutes}
+            {LocationRoutes}
+            {SupplierRoutes}
+            {ClientRoutes}
+            {VehicleRoutes}
+            {ProductRoutes}
+            {WorkServiceRoutes}
+            {AppointmentRoutes}
+            {BudgetRoutes}
+            {OrderRoutes}
+            {UserRoutes}
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
