@@ -1,15 +1,14 @@
 import { useState } from "react"
 import { SupplierService } from "@/modules/supplier/services/supplier"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+
 
 export function useSupplierForm() {
   const navigate = useNavigate()
-
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const { businessId } = useAuth()
+  
+  const [business, setBusiness] = useState(businessId || "")
   const [corporateName, setCorporateName] = useState("")
   const [tradeName, setTradeName] = useState("")
   const [cnpj, setCnpj] = useState("")

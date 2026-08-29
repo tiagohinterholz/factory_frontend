@@ -1,16 +1,15 @@
 import { useState } from "react"
 import { WorkService } from "@/modules/workservice/services/workservice"
 import { useNavigate, useLocation } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+
 
 export function useWorkServiceForm() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { businessId } = useAuth()
 
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [supplier, setSupplier] = useState(location.state?.supplierId || "")  
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")

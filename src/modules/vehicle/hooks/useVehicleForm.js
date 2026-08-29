@@ -1,15 +1,14 @@
 import { useState } from "react"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+
 
 export function useVehicleForm() {
   const navigate = useNavigate()
-
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const { businessId } = useAuth()
+  
+  const [business, setBusiness] = useState(businessId || "")
   const [client, setClient] = useState("")
   const [model, setModel] = useState("")
   const [year, setYear] = useState("")

@@ -3,6 +3,7 @@ import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import { UserPlus, Save, Lock } from "lucide-react"
 
 export default function UserCreate() {
@@ -18,10 +19,8 @@ export default function UserCreate() {
 
   const { business: businesses } = useBusiness()
   
-  const userStr = localStorage.getItem("user") || "{}"
-  const loggedUser = JSON.parse(userStr)
-  const isSuperUser = !loggedUser.business_id
-  const loggedRole = loggedUser.role
+  const { user: loggedUser, isSuperUser } = useAuth()
+  const loggedRole = loggedUser?.role
 
   const businessOptions = businesses?.map(b => ({
     id: b.id,
@@ -92,7 +91,7 @@ export default function UserCreate() {
               ) : (
                 <FormField 
                     label="Empreendimento"
-                    value={loggedUser.business?.name || "Meu Empreendimento"}
+                    value={loggedUser?.business?.name || "Meu Empreendimento"}
                     onChange={() => {}}
                     readOnly
                 />

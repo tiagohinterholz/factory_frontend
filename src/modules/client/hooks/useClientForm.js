@@ -1,15 +1,13 @@
 import { useState } from "react"
 import { ClientService } from "@/modules/client/services/client"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
 
 export function useClientForm() {
   const navigate = useNavigate()
+  const { businessId } = useAuth()
 
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [cpf, setCpf] = useState("")

@@ -6,6 +6,7 @@ import { useClient } from "@/modules/client/hooks/useClient"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import { fuelOptions } from "../constants/vehicle"
 
 
@@ -34,8 +35,7 @@ export default function VehicleCreate() {
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { client: clients, loading: loadingClients } = useClient()
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  const isSuperUser = !user.business_id
+  const { isSuperUser } = useAuth()
 
   const businessOptions = businesses.map(b => ({
     id: b.id,

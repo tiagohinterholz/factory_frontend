@@ -1,15 +1,13 @@
 import { useState } from "react"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
 
 export function useAppointmentForm() {
   const navigate = useNavigate()
+  const { businessId } = useAuth()
 
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [client, setClient] = useState("")
   const [vehicle, setVehicle] = useState("")
   const [date, setDate] = useState("")

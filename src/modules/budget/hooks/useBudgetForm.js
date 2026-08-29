@@ -1,16 +1,14 @@
 import { useState } from "react"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
 
 export function useBudgetForm() {
   const navigate = useNavigate()
+  const { businessId } = useAuth()
 
   const [client, setClient] = useState("")
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [vehicle, setVehicle] = useState("")
   const [validUntil, setValidUntil] = useState("")
 

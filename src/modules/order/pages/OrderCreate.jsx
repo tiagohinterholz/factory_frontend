@@ -5,6 +5,7 @@ import { useVehicle } from "@/modules/vehicle/hooks/useVehicle"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { useAuth } from "@/modules/auth/context/auth-context"
 
 export default function OrderCreate() {
   const {
@@ -19,8 +20,7 @@ export default function OrderCreate() {
   const { client: clients, loading: loadingClients } = useClient()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicle()
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  const isSuperUser = !user.business_id
+  const { isSuperUser } = useAuth()
 
   const businessOptions = businesses.map(b => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients

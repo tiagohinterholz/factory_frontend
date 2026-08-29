@@ -2,13 +2,12 @@ import { useState, useEffect } from "react"
 import { LicenseService } from "@/modules/license/services/license"
 import { BusinessService } from "@/modules/business/services/business"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
 
 export function useLicenseForm() {
   const navigate = useNavigate()
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  const isSuperUser = !user.business_id
-
-  const [business, setBusiness] = useState(user.business_id || "")
+  const { businessId, isSuperUser } = useAuth()
+  const [business, setBusiness] = useState(businessId || "")
   const [period, setPeriod] = useState("MENSAL")
   const [max_users, setMaxUsers] = useState("1")
   const [activation_date, setActivationDate] = useState(new Date().toISOString().split('T')[0])

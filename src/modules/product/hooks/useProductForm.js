@@ -1,16 +1,14 @@
 import { useState } from "react"
 import { ProductService } from "@/modules/product/services/product"
 import { useNavigate, useLocation } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
 
 export function useProductForm() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { businessId } = useAuth()
 
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [supplier, setSupplier] = useState(location.state?.supplierId || "")  
   const [name, setName] = useState("")
   const [brand, setBrand] = useState("")

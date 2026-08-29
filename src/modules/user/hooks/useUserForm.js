@@ -1,17 +1,16 @@
 import { useState } from "react"
 import { UserService } from "@/modules/user/services/user"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+
+
 
 export function useUserForm() {
   const navigate = useNavigate()
-
+  const { businessId } = useAuth()
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [role, setRole] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")

@@ -1,15 +1,13 @@
 import { useState } from "react"
 import { OrderService } from "@/modules/order/services/order"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
 
 export function useOrderForm() {
   const navigate = useNavigate()
+  const { businessId } = useAuth()
 
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [client, setClient] = useState("")
   const [vehicle, setVehicle] = useState("")
   const [serviceDate, setServiceDate] = useState("")
