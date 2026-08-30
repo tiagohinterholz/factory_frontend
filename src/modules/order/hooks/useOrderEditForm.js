@@ -65,8 +65,6 @@ export function useOrderEditForm() {
       notes: notes || null,
     }
 
-    console.log("Enviando PATCH para OS:", id, payload)
-
     try {
       await OrderService.updateOrder(id, payload)
       navigate(`/ordens/`)

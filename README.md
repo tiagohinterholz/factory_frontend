@@ -54,18 +54,26 @@ Siga os passos abaixo para configurar e rodar o Factory Frontend na sua máquina
    ```
 
 2. **Instale as dependências**
-   Recomendamos a utilização do `npm` ou `yarn`:
    ```bash
    npm install
    ```
 
-3. **Inicie o servidor de desenvolvimento**
+3. **Configure o ambiente**
+   Copie `.env.example` para `.env` e ajuste a URL da API:
+   ```bash
+   cp .env.example .env
+   # .env
+   # VITE_API_URL=http://localhost:8000
+   ```
+
+4. **Inicie o servidor de desenvolvimento**
    ```bash
    npm run dev
    ```
+   A aplicação sobe em `http://localhost:5173`.
 
-4. **Certifique-se do Backend**
-   Para funcionamento pleno (_Login, Fetchs e Autenticação_), seu backend Django precisar estar operando em modo local, preferencialmente apontando para as CORS origins deste repositório (via de regra: `http://localhost:5173`).
+5. **Certifique-se do Backend**
+   Para funcionamento pleno (_Login, Fetchs e Autenticação_), o backend Django precisa estar rodando na URL definida em `VITE_API_URL`, com esta origem (`http://localhost:5173`) liberada no CORS.
 
 ---
 
