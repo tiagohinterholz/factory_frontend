@@ -1,7 +1,8 @@
 import { useStates } from "@/modules/location/state/hooks/useState"
-import { StateService } from "@/modules/location/state/services/state"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function StateList() {
   const { 
@@ -12,8 +13,13 @@ export default function StateList() {
     currentPage,
     setCurrentPage,
     totalItems,
-    load
+    refetch,
+    remove,
+    error
   } = useStates()
+
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const columns = [
     { header: 'Sigla', accessor: (item) => item.abbreviation },
@@ -21,14 +27,19 @@ export default function StateList() {
   ]
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Deseja excluir o estado ${item.name}?`)) {
-      try {
-        await StateService.deleteState(item.id)
-        load(searchTerm, currentPage)
-      } catch (error) {
-        console.error(error)
-        alert('Erro ao excluir o estado.')
-      }
+    const confirmed = await confirm({
+      title: "Excluir estado?",
+      message: `O estado "${item.name}" será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+
+    try {
+      await remove(item.id)
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao excluir o estado.")
     }
   }
 
@@ -45,6 +56,8 @@ export default function StateList() {
         editLinkPrefix="/estados"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

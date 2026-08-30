@@ -1,16 +1,17 @@
 import { useState } from "react"
 import { ProductService } from "@/modules/product/services/product"
 import { useNavigate, useLocation } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export function useProductForm() {
   const navigate = useNavigate()
+  const toast = useToast()
   const location = useLocation()
+  const { businessId } = useAuth()
 
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [supplier, setSupplier] = useState(location.state?.supplierId || "")  
   const [name, setName] = useState("")
   const [brand, setBrand] = useState("")
@@ -37,8 +38,8 @@ export function useProductForm() {
       await ProductService.createProduct(payload)
       navigate("/produtos")
     } catch (error) {
-      console.log(error)
-      alert("Erro ao criar produto")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar produto").message)
     }
   }
 

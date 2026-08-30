@@ -5,6 +5,8 @@ import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { useAuth } from "@/modules/auth/context/auth-context"
+
 import { User, Save, Milestone } from "lucide-react"
 
 
@@ -28,8 +30,7 @@ export default function ClientCreate() {
   const { citiesByState, loading: loadingCities } = useCitiesByState(stateId)
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  const isSuperUser = !user.business_id
+  const { isSuperUser } = useAuth()
 
   const businessOptions = businesses.map(b => ({
     id: b.id,

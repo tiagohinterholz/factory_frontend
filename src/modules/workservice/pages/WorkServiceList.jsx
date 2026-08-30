@@ -1,7 +1,8 @@
 import { useWorkService } from "../hooks/useWorkService"
-import { WorkService } from "../services/workservice"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function WorkServiceList() {
   const { 
@@ -12,8 +13,13 @@ export default function WorkServiceList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load
+    refetch,
+    remove,
+    error
   } = useWorkService()
+
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const columns = [
     { header: 'Nome', accessor: (item) => item.name },
@@ -22,14 +28,19 @@ export default function WorkServiceList() {
   ]
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Deseja excluir o serviço ${item.name}?`)) {
-      try {
-        await WorkService.deleteWorkService(item.id)
-        load(searchTerm, currentPage)
-      } catch (error) {
-        console.error(error)
-        alert('Erro ao excluir o serviço.')
-      }
+    const confirmed = await confirm({
+      title: "Excluir serviço?",
+      message: `"${item.name}" será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+
+    try {
+      await remove(item.id)
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao excluir o serviço.")
     }
   }
 
@@ -46,6 +57,8 @@ export default function WorkServiceList() {
         editLinkPrefix="/servicos"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

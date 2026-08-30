@@ -10,6 +10,7 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
+import { useAuth } from "@/modules/auth/context/auth-context"
 
 import { User, Car, Edit2, Trash2, Milestone, ChevronRight } from "lucide-react"
 
@@ -56,8 +57,7 @@ export default function ClientDetail() {
     if (id) loadVehicles()
   }, [id])
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  const isSuperUser = !user.business_id
+  const { isSuperUser } = useAuth()
 
   const businessOptions = businesses.map(b => ({
     id: b.id,

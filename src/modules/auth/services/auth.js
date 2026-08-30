@@ -1,4 +1,5 @@
 import { api } from "@/api/http"
+import { authStorage } from "@/api/auth-storage"
 
 export const AuthService = {
   async login(payload) {
@@ -6,9 +7,10 @@ export const AuthService = {
     return response.data
   },
 
+  // Só a chamada de API. Limpar a sessão é responsabilidade do AuthContext.
   async logout() {
-    const refresh = localStorage.getItem("refresh")
-    const access = localStorage.getItem("access")
+    const refresh = authStorage.getRefresh()
+    const access = authStorage.getAccess()
 
     try {
       await api.post(
@@ -16,12 +18,8 @@ export const AuthService = {
         { refresh },
         { headers: { Authorization: `Bearer ${access}` } }
       )
-    } catch (err) {
-      alert("Erro no logout:", err)
+    } catch (error) {
+      console.error("Erro no logout:", error)
     }
-
-    localStorage.removeItem("access")
-    localStorage.removeItem("refresh")
-    localStorage.removeItem("user")
   },
 }

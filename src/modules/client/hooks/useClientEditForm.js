@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react"
 import { ClientService } from "@/modules/client/services/client"
 import { useNavigate, useParams } from "react-router-dom"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useClientEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const [business, setBusiness] = useState("")
   const [firstName, setFirstName] = useState("")
@@ -64,13 +69,19 @@ export function useClientEditForm() {
       await ClientService.updateClient(id, payload)
       navigate(`/clientes/`)
     } catch (error) {
-      console.log(error)
-      alert("Erro ao atualizar cliente")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar cliente").message)
     }
   }
 
   async function handleDelete() {
-      if (!confirm("Deseja realmente deletar?")) return
+      const confirmed = await confirm({
+        title: "Excluir cliente?",
+        message: "Esta ação não pode ser desfeita.",
+        confirmText: "Excluir",
+        danger: true,
+      })
+      if (!confirmed) return
       await ClientService.deleteClient(id)
       navigate("/clientes")
     }

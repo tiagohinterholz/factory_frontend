@@ -7,6 +7,7 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useEffect } from "react"
+import { useAuth } from "@/modules/auth/context/auth-context"
 
 
 export default function AppointmentCreate() {
@@ -26,8 +27,7 @@ export default function AppointmentCreate() {
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicle()
   const { orders, loading: loadingOrders } = useOrder()
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  const isSuperUser = !user.business_id
+  const { isSuperUser} = useAuth()
 
   useEffect(() => {
     if (isSuperUser) {

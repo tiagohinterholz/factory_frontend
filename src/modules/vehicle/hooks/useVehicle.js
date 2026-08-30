@@ -1,47 +1,39 @@
-import { useEffect, useState, useCallback } from 'react'
-import { VehicleService } from '@/modules/vehicle/services/vehicle'
+import { useState } from "react"
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
+import { VehicleService } from "@/modules/vehicle/services/vehicle"
+import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
+import { normalizeList } from "@/api/normalize-list"
+
+const QUERY_KEY = "vehicles"
 
 export function useVehicle() {
-  const [data, setData] = useState({ results: [], count: 0 })
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  const queryClient = useQueryClient()
+  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const search = useDebouncedValue(searchTerm, 300)
 
-  const load = useCallback(async (search = '', page = 1) => {
-    setLoading(true)
-    try {
-      const response = await VehicleService.getVehicle({ search, page })
-      if (Array.isArray(response)) {
-        setData({ results: response, count: response.length })
-      } else if (response && response.results) {
-        setData(response)
-      } else {
-        setData({ results: [], count: 0 })
-      }
-    } catch (error) {
-      console.error('Erro ao buscar veículos:', error)
-      setData({ results: [], count: 0 })
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const query = useQuery({
+    queryKey: [QUERY_KEY, { search, page: currentPage }],
+    queryFn: () => VehicleService.getVehicle({ search, page: currentPage }),
+    placeholderData: keepPreviousData,
+    select: normalizeList,
+  })
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      load(searchTerm, currentPage)
-    }, 300)
+  const removeMutation = useMutation({
+    mutationFn: (id) => VehicleService.deleteVehicle(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  })
 
-    return () => clearTimeout(handler)
-  }, [searchTerm, currentPage, load])
-
-  return { 
-    vehicle: data?.results || [], 
-    totalItems: data?.count || 0, 
-    loading, 
-    searchTerm, 
-    setSearchTerm, 
+  return {
+    vehicle: query.data?.results ?? [],
+    totalItems: query.data?.count ?? 0,
+    loading: query.isPending,
+    error: query.error ?? null,
+    refetch: query.refetch,
+    remove: removeMutation.mutateAsync,
+    searchTerm,
+    setSearchTerm,
     currentPage,
     setCurrentPage,
-    load
   }
 }

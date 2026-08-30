@@ -1,16 +1,17 @@
 import { useState } from "react"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export function useBudgetForm() {
   const navigate = useNavigate()
+  const toast = useToast()
+  const { businessId } = useAuth()
 
   const [client, setClient] = useState("")
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [vehicle, setVehicle] = useState("")
   const [validUntil, setValidUntil] = useState("")
 
@@ -29,8 +30,8 @@ export function useBudgetForm() {
       await BudgetService.createBudget(payload)
       navigate("/orcamentos")
     } catch (error) {
-      console.log(error)
-      alert("Erro ao criar orçamento")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar orçamento").message)
     }
   }
 

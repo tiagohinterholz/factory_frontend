@@ -1,7 +1,8 @@
 import { useBusiness } from "../hooks/useBusiness"
-import { BusinessService } from "../services/business"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function BusinessList() {
   const { 
@@ -12,8 +13,13 @@ export default function BusinessList() {
     currentPage,
     setCurrentPage,
     totalItems,
-    load
+    refetch,
+    remove,
+    error
   } = useBusiness()
+
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const columns = [
     { header: 'Razão Social', accessor: (item) => item.corporate_name },
@@ -22,14 +28,19 @@ export default function BusinessList() {
   ]
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Deseja excluir o empreendimento ${item.corporate_name}?`)) {
-      try {
-        await BusinessService.deleteBusiness(item.id)
-        load(searchTerm, currentPage)
-      } catch (error) {
-        console.error(error)
-        alert('Erro ao excluir o empreendimento.')
-      }
+    const confirmed = await confirm({
+      title: "Excluir empreendimento?",
+      message: `"${item.corporate_name}" será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+
+    try {
+      await remove(item.id)
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao excluir o empreendimento.")
     }
   }
 
@@ -46,6 +57,8 @@ export default function BusinessList() {
         editLinkPrefix="/empreendimentos"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

@@ -1,16 +1,18 @@
 import { useState } from "react"
 import { WorkService } from "@/modules/workservice/services/workservice"
 import { useNavigate, useLocation } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
+
 
 export function useWorkServiceForm() {
   const navigate = useNavigate()
+  const toast = useToast()
   const location = useLocation()
+  const { businessId } = useAuth()
 
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [supplier, setSupplier] = useState(location.state?.supplierId || "")  
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
@@ -31,8 +33,8 @@ export function useWorkServiceForm() {
       await WorkService.createWorkService(payload)
       navigate("/servicos")
     } catch (error) {
-      console.log(error)
-      alert("Erro ao criar serviço")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar serviço").message)
     }
   }
 

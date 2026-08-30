@@ -6,10 +6,13 @@ import { CityService } from "../services/city"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export default function CityCreate() {
   const navigate = useNavigate()
   const location = useLocation()
+  const toast = useToast()
 
   const [name, setName] = useState("")
   const [stateId, setStateId] = useState(location.state?.stateId || "")
@@ -22,8 +25,8 @@ export default function CityCreate() {
       await CityService.createCity({ name, state_id: stateId })
       navigate("/cidades")
     } catch (error) {
-      alert("Erro ao criar cidade!")
-      console.log(error)
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar cidade").message)
     }
   }
 

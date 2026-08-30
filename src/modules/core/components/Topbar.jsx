@@ -1,13 +1,13 @@
-import { AuthService } from "@/modules/auth/services/auth"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import { LogOut, Bell, User } from "lucide-react"
 
 export default function Topbar() {
   const navigate = useNavigate()
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
+  const { user, logout } = useAuth()
 
-  function handleLogout() {
-    AuthService.logout()
+  async function handleLogout() {
+    await logout()
     navigate('/')
   }
 
@@ -30,7 +30,7 @@ export default function Topbar() {
 
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end mr-1">
-            <span className="text-sm font-bold text-slate-700 leading-none">{user.email}</span>
+            <span className="text-sm font-bold text-slate-700 leading-none">{user?.email}</span>
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">{user?.role || "Colaborador"}</span>
           </div>
           

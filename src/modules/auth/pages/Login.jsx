@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/api/http";
+import { useAuth } from "@/modules/auth/context/auth-context";
+import { useToast } from "@/modules/core/feedback/toast-context";
 
 export default function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
+  const toast = useToast()
   const [email, setEmail] = useState(import.meta.env.DEV ? "tiago@gmail.com" : "")
   const [password, setPassword] = useState(import.meta.env.DEV ? "tiago123" : "")
 
@@ -11,17 +14,10 @@ export default function Login() {
     ev.preventDefault()
 
     try {
-      const response = await api.post('/usuarios/login/', {
-        email: email,
-        password: password
-      })
-
-      localStorage.setItem('access', response.data.access)
-      localStorage.setItem('refresh', response.data.refresh)
-      localStorage.setItem('user', JSON.stringify(response.data))
+      await login({ email, password })
       navigate('/dashboard')
-    } catch (err) {
-      alert('Credenciais Inválidas', err)
+    } catch {
+      toast.error("Credenciais inválidas")
     }
   }
 

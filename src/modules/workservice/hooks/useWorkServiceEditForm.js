@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react"
 import { WorkService } from "@/modules/workservice/services/workservice"
 import { useNavigate, useParams } from "react-router-dom"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useWorkServiceEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const [business, setBusiness] = useState("")
   const [supplier, setSupplier] = useState("")
@@ -46,13 +51,19 @@ export function useWorkServiceEditForm() {
       await WorkService.updateWorkService(id, payload)
       navigate(`/servicos/`)
     } catch (error) {
-      console.log(error)
-      alert("Erro ao atualizar serviço")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar serviço").message)
     }
   }
 
   async function handleDelete() {
-      if (!confirm("Deseja realmente deletar?")) return
+      const confirmed = await confirm({
+        title: "Excluir serviço?",
+        message: "Esta ação não pode ser desfeita.",
+        confirmText: "Excluir",
+        danger: true,
+      })
+      if (!confirmed) return
       await WorkService.deleteWorkService(id)
       navigate("/servicos")
     }

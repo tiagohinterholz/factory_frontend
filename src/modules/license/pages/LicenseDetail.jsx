@@ -3,6 +3,7 @@ import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import { Briefcase, Milestone, Edit2, Trash2 } from "lucide-react"
 import { LicenseOptions } from "@/modules/license/constants/license"
 
@@ -18,8 +19,7 @@ export default function LicenseDetail() {
   } = useLicenseEditForm()
   
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  const isSuperUser = !user.business_id
+  const { isSuperUser } = useAuth()
 
   if (loading || loadingBusinesses) {
     return (

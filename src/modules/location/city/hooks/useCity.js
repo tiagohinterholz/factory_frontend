@@ -1,80 +1,58 @@
-import { useEffect, useState, useCallback } from "react"
+import { useState } from "react"
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { CityService } from "@/modules/location/city/services/city"
 import { StateService } from "@/modules/location/state/services/state"
+import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
+import { normalizeList } from "@/api/normalize-list"
+
+const QUERY_KEY = "cities"
 
 export function useCities() {
-  const [data, setData] = useState({ results: [], count: 0 })
-  const [loading, setLoading] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
+  const queryClient = useQueryClient()
+  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const search = useDebouncedValue(searchTerm, 300)
 
-  const load = useCallback(async (search = '', page = 1) => {
-    setLoading(true)
-    try {
-      const response = await CityService.getCities({ search, page })
-      if (Array.isArray(response)) {
-        setData({ results: response, count: response.length })
-      } else if (response && response.results) {
-        setData(response)
-      } else {
-        setData({ results: [], count: 0 })
-      }
-    } catch (error) {
-      console.error('Erro ao carregar cidades:', error)
-      setData({ results: [], count: 0 })
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const query = useQuery({
+    queryKey: [QUERY_KEY, { search, page: currentPage }],
+    queryFn: () => CityService.getCities({ search, page: currentPage }),
+    placeholderData: keepPreviousData,
+    select: normalizeList,
+  })
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      load(searchTerm, currentPage)
-    }, 300)
+  const removeMutation = useMutation({
+    mutationFn: (id) => CityService.deleteCity(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  })
 
-    return () => clearTimeout(handler)
-  }, [searchTerm, currentPage, load])
-
-  return { 
-    cities: data?.results || [], 
-    totalItems: data?.count || 0,
-    loading, 
-    searchTerm, 
-    setSearchTerm, 
+  return {
+    cities: query.data?.results ?? [],
+    totalItems: query.data?.count ?? 0,
+    loading: query.isPending,
+    error: query.error ?? null,
+    refetch: query.refetch,
+    remove: removeMutation.mutateAsync,
+    searchTerm,
+    setSearchTerm,
     currentPage,
     setCurrentPage,
-    load
   }
 }
 
+// Cidades de um estado, ordenadas por nome. Só busca quando há stateId.
 export function useCitiesByState(stateId) {
-  const [citiesByState, setCitiesByState] = useState([])
-  const [loading, setLoading] = useState(false)
+  const query = useQuery({
+    queryKey: [QUERY_KEY, "by-state", stateId],
+    queryFn: () => StateService.getCitiesByState(stateId),
+    enabled: Boolean(stateId),
+    select: (response) => {
+      const list = normalizeList(response).results
+      return [...list].sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+    },
+  })
 
-  useEffect(() => {
-    if (!stateId) return
-
-    async function load() {
-      setLoading(true)
-      try {
-        const response = await StateService.getCitiesByState(stateId)
-        const citiesArray = Array.isArray(response) 
-          ? response 
-          : response?.results || []
-          
-        const sorted = [...citiesArray].sort((a, b) => 
-          (a.name || '').localeCompare(b.name || '')
-        )
-        setCitiesByState(sorted)
-      } catch (error) {
-        console.error('Erro ao carregar cidades por estado:', error)
-        setCitiesByState([])
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [stateId])
-
-  return { citiesByState, loading }
+  return {
+    citiesByState: query.data ?? [],
+    loading: query.isFetching,
+  }
 }

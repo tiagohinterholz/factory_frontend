@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback } from "react"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { useNavigate, useParams } from "react-router-dom"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useBudgetEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const [client, setClient] = useState("")
   const [business, setBusiness] = useState("")
@@ -56,37 +61,54 @@ export function useBudgetEditForm() {
       await BudgetService.updateBudget(id, payload)
       navigate(`/orcamentos/`)
     } catch (error) {
-      console.log(error)
-      alert("Erro ao atualizar")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar o orçamento").message)
     }
   }
 
   async function handleDelete() {
-    if (!confirm("Deseja realmente deletar?")) return
+    const confirmed = await confirm({
+      title: "Excluir orçamento?",
+      message: "Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
     await BudgetService.deleteBudget(id)
     navigate("/orcamentos")
   }
 
   async function handleApprove() {
-    if (!confirm("Deseja aprovar este orçamento? Isso pode gerar uma Ordem de Serviço.")) return
+    const confirmed = await confirm({
+      title: "Aprovar orçamento?",
+      message: "Isso pode gerar uma Ordem de Serviço.",
+      confirmText: "Aprovar",
+    })
+    if (!confirmed) return
     try {
       await BudgetService.approveBudget(id)
       refresh()
-      alert("Orçamento aprovado com sucesso!")
+      toast.success("Orçamento aprovado com sucesso!")
     } catch (error) {
       console.error(error)
-      alert("Erro ao aprovar orçamento")
+      toast.error(parseApiError(error, "Erro ao aprovar orçamento").message)
     }
   }
 
   async function handleCancel() {
-    if (!confirm("Deseja cancelar este orçamento?")) return
+    const confirmed = await confirm({
+      title: "Cancelar orçamento?",
+      message: "O orçamento será marcado como cancelado.",
+      confirmText: "Sim, cancelar",
+      danger: true,
+    })
+    if (!confirmed) return
     try {
       await BudgetService.cancelBudget(id)
       refresh()
     } catch (error) {
       console.error(error)
-      alert("Erro ao cancelar orçamento")
+      toast.error(parseApiError(error, "Erro ao cancelar orçamento").message)
     }
   }
 

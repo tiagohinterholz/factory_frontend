@@ -1,17 +1,19 @@
 import { useState } from "react"
 import { UserService } from "@/modules/user/services/user"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
+
+
 
 export function useUserForm() {
   const navigate = useNavigate()
-
+  const toast = useToast()
+  const { businessId } = useAuth()
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const [business, setBusiness] = useState(businessId || "")
   const [role, setRole] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -20,7 +22,7 @@ export function useUserForm() {
     e.preventDefault()
 
     if (password !== confirmPassword) {
-      alert("As senhas não coincidem!")
+      toast.error("As senhas não coincidem!")
       return
     }
 
@@ -37,10 +39,7 @@ export function useUserForm() {
       navigate("/usuarios")
     } catch (error) {
       console.error('Erro ao criar usuário:', error)
-      const errorMsg = error.response?.data 
-        ? JSON.stringify(error.response.data) 
-        : "Erro ao criar usuário"
-      alert(errorMsg)
+      toast.error(parseApiError(error, "Erro ao criar usuário").message)
     }
   }
 

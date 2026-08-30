@@ -5,6 +5,7 @@ import { useSupplier } from "@/modules/supplier/hooks/useSupplier"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import { Settings, Edit2, Trash2 } from "lucide-react"
 
 export default function WorkServiceDetail() {
@@ -24,8 +25,7 @@ export default function WorkServiceDetail() {
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplier()
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  const isSuperUser = !user.business_id
+  const { isSuperUser } = useAuth()
 
   const businessOptions = businesses.map(b => ({
     id: b.id,

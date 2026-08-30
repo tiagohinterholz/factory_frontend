@@ -7,6 +7,7 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useVehicle } from "@/modules/vehicle/hooks/useVehicle"
 import { useOrder } from "@/modules/order/hooks/useOrder"
 import { useEffect } from "react"
+import { useAuth } from "@/modules/auth/context/auth-context"
 
 
 import { Edit, Trash2 } from "lucide-react"
@@ -31,8 +32,7 @@ export default function AppointmentDetail() {
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicle()
   const { orders, loading: loadingOrders } = useOrder()
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  const isSuperUser = !user.business_id
+  const {isSuperUser, user } = useAuth()
 
   // Inicializar business se não for superuser e estiver vazio
   useEffect(() => {

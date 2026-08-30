@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react"
 import { ProductService } from "@/modules/product/services/product"
 import { useNavigate, useParams } from "react-router-dom"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useProductEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const [business, setBusiness] = useState("")
   const [supplier, setSupplier] = useState("")
@@ -55,13 +60,19 @@ export function useProductEditForm() {
       await ProductService.updateProduct(id, payload)
       navigate(`/produtos/`)
     } catch (error) {
-      console.log(error)
-      alert("Erro ao atualizar Produto")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar produto").message)
     }
   }
 
   async function handleDelete() {
-      if (!confirm("Deseja realmente deletar?")) return
+      const confirmed = await confirm({
+        title: "Excluir produto?",
+        message: "Esta ação não pode ser desfeita.",
+        confirmText: "Excluir",
+        danger: true,
+      })
+      if (!confirmed) return
       await ProductService.deleteProduct(id)
       navigate("/produtos")
     }

@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react"
 import { LicenseService } from "@/modules/license/services/license"
 import { useNavigate, useParams } from "react-router-dom"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export function useLicenseEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
 
   const [business, setBusiness] = useState(null)
   const [status, setStatus] = useState("")
@@ -45,8 +48,8 @@ export function useLicenseEditForm() {
       await LicenseService.getLicenseRenew(businessIdToRenew, payload)
       navigate(`/empreendimentos/licencas`)
     } catch (error) {
-      console.log(error)
-      alert("Erro ao processar renovação")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao processar renovação").message)
     }
   }
 

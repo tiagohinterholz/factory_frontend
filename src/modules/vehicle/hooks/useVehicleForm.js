@@ -1,15 +1,17 @@
 import { useState } from "react"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
+
 
 export function useVehicleForm() {
   const navigate = useNavigate()
-
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const toast = useToast()
+  const { businessId } = useAuth()
+  
+  const [business, setBusiness] = useState(businessId || "")
   const [client, setClient] = useState("")
   const [model, setModel] = useState("")
   const [year, setYear] = useState("")
@@ -40,8 +42,8 @@ export function useVehicleForm() {
       await VehicleService.createVehicle(payload)
       navigate("/veiculos")
     } catch (error) {
-      console.log(error)
-      alert("Erro ao criar veiculo")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar veículo").message)
     }
   }
 

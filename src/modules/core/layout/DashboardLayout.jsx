@@ -1,8 +1,11 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import { ErrorBoundary } from "@/modules/core/components/ErrorBoundary";
 
 export default function DashboardLayout({ children }) {
+  const location = useLocation();
+
   return (
     <div className="min-h-screen flex bg-slate-50 relative">
       
@@ -13,7 +16,9 @@ export default function DashboardLayout({ children }) {
         
         <main className="p-8 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-700">
           <div className="max-w-[1400px] mx-auto">
-            {children || <Outlet />}
+            <ErrorBoundary key={location.pathname}>
+              {children || <Outlet />}
+            </ErrorBoundary>
           </div>
         </main>
 

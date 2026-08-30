@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback } from "react"
 import { OrderService } from "@/modules/order/services/order"
 import { useNavigate, useParams } from "react-router-dom"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useOrderEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const [client, setClient] = useState("")
   const [business, setBusiness] = useState("")
@@ -66,25 +71,36 @@ export function useOrderEditForm() {
       await OrderService.updateOrder(id, payload)
       navigate(`/ordens/`)
     } catch (error) {
-      console.log(error)
-      alert("Erro ao atualizar")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar a ordem de serviço").message)
     }
   }
 
   async function handleDelete() {
-    if (!confirm("Deseja realmente deletar?")) return
+    const confirmed = await confirm({
+      title: "Excluir ordem de serviço?",
+      message: "Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
     await OrderService.deleteOrder(id)
     navigate("/ordens")
   }
 
   async function handleInvoice() {
-    if (!confirm("Deseja faturar esta Ordem de Serviço? Esta ação não pode ser desfeita.")) return
+    const confirmed = await confirm({
+      title: "Faturar ordem de serviço?",
+      message: "Esta ação não pode ser desfeita.",
+      confirmText: "Faturar",
+    })
+    if (!confirmed) return
     try {
       await OrderService.invoiceOrder(id)
       load()
     } catch (error) {
       console.error(error)
-      alert("Erro ao faturar a OS")
+      toast.error(parseApiError(error, "Erro ao faturar a ordem de serviço").message)
     }
   }
 

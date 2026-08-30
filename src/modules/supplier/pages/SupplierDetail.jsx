@@ -9,6 +9,7 @@ import { SupplierService } from "@/modules/supplier/services/supplier"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 
 import { Factory, Package, Hammer, Edit2, Trash2, Milestone, ChevronRight } from "lucide-react"
@@ -64,8 +65,7 @@ export default function SupplierDetail() {
     if (id) loadRelatedData()
   }, [id])
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}")
-  const isSuperUser = !user.business_id
+  const { isSuperUser } = useAuth()
 
   const businessOptions = businesses.map(b => ({
     id: b.id,

@@ -1,9 +1,12 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { StateService } from "../services/state"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export function useStateForm() {
   const navigate = useNavigate()
+  const toast = useToast()
 
   const [name, setName] = useState("")
   const [abbreviation, setAbbreviation] = useState("")
@@ -15,8 +18,8 @@ export function useStateForm() {
       await StateService.createState({ name, abbreviation })
       navigate("/estados")
     } catch (error) {
-      console.log(error)
-      alert("Erro ao criar estado")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar estado").message)
     }
   }
 

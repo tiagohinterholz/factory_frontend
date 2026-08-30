@@ -1,15 +1,17 @@
 import { useState } from "react"
 import { SupplierService } from "@/modules/supplier/services/supplier"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
+
 
 export function useSupplierForm() {
   const navigate = useNavigate()
-
-  const [business, setBusiness] = useState(() => {
-    const userStr = localStorage.getItem("user") || "{}"
-    const loggedUser = JSON.parse(userStr)
-    return loggedUser.business_id || ""
-  })
+  const toast = useToast()
+  const { businessId } = useAuth()
+  
+  const [business, setBusiness] = useState(businessId || "")
   const [corporateName, setCorporateName] = useState("")
   const [tradeName, setTradeName] = useState("")
   const [cnpj, setCnpj] = useState("")
@@ -42,8 +44,8 @@ export function useSupplierForm() {
       await SupplierService.createSupplier(payload)
       navigate("/fornecedores")
     } catch (error) {
-      console.log(error)
-      alert("Erro ao criar fornecedor")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar fornecedor").message)
     }
   }
 

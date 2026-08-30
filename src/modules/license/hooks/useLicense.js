@@ -1,22 +1,16 @@
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { LicenseService } from "@/modules/license/services/license"
 
 export function useLicense() {
-  const [license, setLicense] = useState([])
-  const [loading, setLoading] = useState(true)
+  const query = useQuery({
+    queryKey: ["licenses"],
+    queryFn: () => LicenseService.getLicense(),
+  })
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await LicenseService.getLicense()
-        setLicense(data)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    load()
-  }, [])
-
-  return { license, loading }
+  return {
+    license: query.data ?? [],
+    loading: query.isPending,
+    error: query.error ?? null,
+    refetch: query.refetch,
+  }
 }

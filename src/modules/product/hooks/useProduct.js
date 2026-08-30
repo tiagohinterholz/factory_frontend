@@ -1,47 +1,39 @@
-import { useEffect, useState, useCallback } from 'react'
-import { ProductService } from '@/modules/product/services/product'
+import { useState } from "react"
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
+import { ProductService } from "@/modules/product/services/product"
+import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
+import { normalizeList } from "@/api/normalize-list"
+
+const QUERY_KEY = "products"
 
 export function useProduct() {
-  const [data, setData] = useState({ results: [], count: 0 })
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  const queryClient = useQueryClient()
+  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const search = useDebouncedValue(searchTerm, 300)
 
-  const load = useCallback(async (search = '', page = 1) => {
-    setLoading(true)
-    try {
-      const response = await ProductService.getProduct({ search, page })
-      if (Array.isArray(response)) {
-        setData({ results: response, count: response.length })
-      } else if (response && response.results) {
-        setData(response)
-      } else {
-        setData({ results: [], count: 0 })
-      }
-    } catch (error) {
-      console.error('Erro ao buscar produtos:', error)
-      setData({ results: [], count: 0 })
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const query = useQuery({
+    queryKey: [QUERY_KEY, { search, page: currentPage }],
+    queryFn: () => ProductService.getProduct({ search, page: currentPage }),
+    placeholderData: keepPreviousData,
+    select: normalizeList,
+  })
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      load(searchTerm, currentPage)
-    }, 300)
+  const removeMutation = useMutation({
+    mutationFn: (id) => ProductService.deleteProduct(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  })
 
-    return () => clearTimeout(handler)
-  }, [searchTerm, currentPage, load])
-
-  return { 
-    product: data?.results || [], 
-    totalItems: data?.count || 0, 
-    loading, 
-    searchTerm, 
-    setSearchTerm, 
+  return {
+    product: query.data?.results ?? [],
+    totalItems: query.data?.count ?? 0,
+    loading: query.isPending,
+    error: query.error ?? null,
+    refetch: query.refetch,
+    remove: removeMutation.mutateAsync,
+    searchTerm,
+    setSearchTerm,
     currentPage,
     setCurrentPage,
-    load
   }
 }
