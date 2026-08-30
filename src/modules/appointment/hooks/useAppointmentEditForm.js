@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { useNavigate, useParams } from "react-router-dom"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useAppointmentEditForm() {
@@ -56,8 +57,8 @@ export function useAppointmentEditForm() {
       await AppointmentService.updateAppointment(id, payload)
       navigate(`/agendamentos/`)
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao atualizar agendamento")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar agendamento").message)
     }
   }
 

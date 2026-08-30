@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { SupplierService } from "@/modules/supplier/services/supplier"
 import { useNavigate, useParams } from "react-router-dom"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useSupplierEditForm() {
@@ -68,8 +69,8 @@ export function useSupplierEditForm() {
       await SupplierService.updateSupplier(id, payload)
       navigate(`/fornecedores/`)
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao atualizar fornecedor")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar fornecedor").message)
     }
   }
 

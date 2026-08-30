@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { BusinessService } from "@/modules/business/services/business"
 import { useNavigate, useParams } from "react-router-dom"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useBusinessEditForm() {
@@ -65,8 +66,8 @@ export function useBusinessEditForm() {
       await BusinessService.updateBusiness(id, payload)
       navigate(`/empreendimentos/`)
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao atualizar empreendimento")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar empreendimento").message)
     }
   }
 

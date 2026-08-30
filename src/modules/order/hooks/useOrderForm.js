@@ -3,6 +3,7 @@ import { OrderService } from "@/modules/order/services/order"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export function useOrderForm() {
   const navigate = useNavigate()
@@ -30,8 +31,8 @@ export function useOrderForm() {
       await OrderService.createOrder(payload)
       navigate("/ordens")
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao criar ordem")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar ordem").message)
     }
   }
 

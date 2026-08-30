@@ -3,6 +3,7 @@ import { SupplierService } from "@/modules/supplier/services/supplier"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 
 export function useSupplierForm() {
@@ -43,8 +44,8 @@ export function useSupplierForm() {
       await SupplierService.createSupplier(payload)
       navigate("/fornecedores")
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao criar fornecedor")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar fornecedor").message)
     }
   }
 

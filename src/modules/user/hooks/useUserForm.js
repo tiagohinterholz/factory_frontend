@@ -3,6 +3,7 @@ import { UserService } from "@/modules/user/services/user"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 
 
@@ -38,10 +39,7 @@ export function useUserForm() {
       navigate("/usuarios")
     } catch (error) {
       console.error('Erro ao criar usuário:', error)
-      const errorMsg = error.response?.data 
-        ? JSON.stringify(error.response.data) 
-        : "Erro ao criar usuário"
-      toast.error(errorMsg)
+      toast.error(parseApiError(error, "Erro ao criar usuário").message)
     }
   }
 

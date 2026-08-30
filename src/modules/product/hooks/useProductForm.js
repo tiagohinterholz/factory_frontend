@@ -3,6 +3,7 @@ import { ProductService } from "@/modules/product/services/product"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export function useProductForm() {
   const navigate = useNavigate()
@@ -37,8 +38,8 @@ export function useProductForm() {
       await ProductService.createProduct(payload)
       navigate("/produtos")
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao criar produto")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar produto").message)
     }
   }
 

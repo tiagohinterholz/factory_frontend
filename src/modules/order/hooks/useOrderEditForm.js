@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { OrderService } from "@/modules/order/services/order"
 import { useNavigate, useParams } from "react-router-dom"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useOrderEditForm() {
@@ -70,8 +71,8 @@ export function useOrderEditForm() {
       await OrderService.updateOrder(id, payload)
       navigate(`/ordens/`)
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao atualizar a ordem de serviço")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar a ordem de serviço").message)
     }
   }
 
@@ -99,7 +100,7 @@ export function useOrderEditForm() {
       load()
     } catch (error) {
       console.error(error)
-      toast.error("Erro ao faturar a ordem de serviço")
+      toast.error(parseApiError(error, "Erro ao faturar a ordem de serviço").message)
     }
   }
 

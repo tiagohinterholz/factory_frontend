@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { useNavigate, useParams } from "react-router-dom"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useBudgetEditForm() {
@@ -60,8 +61,8 @@ export function useBudgetEditForm() {
       await BudgetService.updateBudget(id, payload)
       navigate(`/orcamentos/`)
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao atualizar o orçamento")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar o orçamento").message)
     }
   }
 
@@ -90,7 +91,7 @@ export function useBudgetEditForm() {
       toast.success("Orçamento aprovado com sucesso!")
     } catch (error) {
       console.error(error)
-      toast.error("Erro ao aprovar orçamento")
+      toast.error(parseApiError(error, "Erro ao aprovar orçamento").message)
     }
   }
 
@@ -107,7 +108,7 @@ export function useBudgetEditForm() {
       refresh()
     } catch (error) {
       console.error(error)
-      toast.error("Erro ao cancelar orçamento")
+      toast.error(parseApiError(error, "Erro ao cancelar orçamento").message)
     }
   }
 

@@ -3,6 +3,7 @@ import { ClientService } from "@/modules/client/services/client"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export function useClientForm() {
   const navigate = useNavigate()
@@ -43,8 +44,8 @@ export function useClientForm() {
       await ClientService.createClient(payload)
       navigate("/clientes")
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao criar cliente. Verifique se os dados estão corretos.")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar cliente. Verifique se os dados estão corretos.").message)
     }
   }
 

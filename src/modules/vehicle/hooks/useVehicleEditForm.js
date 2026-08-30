@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useNavigate, useParams } from "react-router-dom"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useVehicleEditForm() {
@@ -65,8 +66,8 @@ export function useVehicleEditForm() {
       await VehicleService.updateVehicle(id, payload)
       navigate(`/veiculos/`)
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao atualizar veículo")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar veículo").message)
     }
   }
 

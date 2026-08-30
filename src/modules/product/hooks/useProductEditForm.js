@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { ProductService } from "@/modules/product/services/product"
 import { useNavigate, useParams } from "react-router-dom"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useProductEditForm() {
@@ -59,8 +60,8 @@ export function useProductEditForm() {
       await ProductService.updateProduct(id, payload)
       navigate(`/produtos/`)
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao atualizar produto")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar produto").message)
     }
   }
 

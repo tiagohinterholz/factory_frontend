@@ -3,6 +3,7 @@ import { WorkService } from "@/modules/workservice/services/workservice"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 
 export function useWorkServiceForm() {
@@ -32,8 +33,8 @@ export function useWorkServiceForm() {
       await WorkService.createWorkService(payload)
       navigate("/servicos")
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao criar serviço")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar serviço").message)
     }
   }
 

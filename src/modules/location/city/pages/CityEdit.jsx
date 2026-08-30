@@ -7,6 +7,7 @@ import { Milestone, Trash2, Edit2 } from "lucide-react"
 import { CityService } from "../services/city"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function CityEdit() {
@@ -39,8 +40,9 @@ export default function CityEdit() {
     try {
       await CityService.updateCity(id, { name, state_id: stateId })
       navigate("/cidades")
-    } catch {
-      toast.error("Erro ao atualizar cidade")
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar cidade").message)
     }
   }
 

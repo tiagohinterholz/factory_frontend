@@ -4,6 +4,7 @@ import { BusinessService } from "@/modules/business/services/business"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export function useLicenseForm() {
   const navigate = useNavigate()
@@ -44,8 +45,8 @@ export function useLicenseForm() {
       await LicenseService.getLicenseRenew(business, payload)
       navigate("/empreendimentos/licencas")
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao configurar/renovar licença. Verifique se o empreendimento já possui uma base de licença.")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao configurar/renovar licença. Verifique se o empreendimento já possui uma base de licença.").message)
     }
   }
 

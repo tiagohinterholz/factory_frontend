@@ -3,6 +3,7 @@ import { BudgetService } from "@/modules/budget/services/budgets"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export function useBudgetForm() {
   const navigate = useNavigate()
@@ -29,8 +30,8 @@ export function useBudgetForm() {
       await BudgetService.createBudget(payload)
       navigate("/orcamentos")
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao criar orçamento")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar orçamento").message)
     }
   }
 

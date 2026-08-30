@@ -3,6 +3,7 @@ import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 
 export function useVehicleForm() {
@@ -41,8 +42,8 @@ export function useVehicleForm() {
       await VehicleService.createVehicle(payload)
       navigate("/veiculos")
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao criar veículo")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao criar veículo").message)
     }
   }
 

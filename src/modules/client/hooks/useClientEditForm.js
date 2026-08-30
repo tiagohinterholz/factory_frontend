@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { ClientService } from "@/modules/client/services/client"
 import { useNavigate, useParams } from "react-router-dom"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useClientEditForm() {
@@ -68,8 +69,8 @@ export function useClientEditForm() {
       await ClientService.updateClient(id, payload)
       navigate(`/clientes/`)
     } catch (error) {
-      console.log(error)
-      toast.error("Erro ao atualizar cliente")
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar cliente").message)
     }
   }
 
