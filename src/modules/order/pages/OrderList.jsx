@@ -1,5 +1,4 @@
 import { useOrder } from "../hooks/useOrder"
-import { OrderService } from "../services/order"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -14,7 +13,8 @@ export default function OrderList() {
     currentPage, 
     setCurrentPage, 
     totalItems,
-    load,
+    refetch,
+    remove,
     error
   } = useOrder()
 
@@ -48,8 +48,7 @@ export default function OrderList() {
     if (!confirmed) return
 
     try {
-      await OrderService.deleteOrder(item.id)
-      load(searchTerm, currentPage)
+      await remove(item.id)
     } catch (error) {
       console.error(error)
       toast.error("Erro ao excluir a ordem de serviço.")
@@ -70,7 +69,7 @@ export default function OrderList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

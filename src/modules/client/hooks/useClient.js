@@ -1,51 +1,39 @@
-import { useEffect, useState, useCallback } from 'react'
-import { ClientService } from '@/modules/client/services/client'
+import { useState } from "react"
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
+import { ClientService } from "@/modules/client/services/client"
+import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
+import { normalizeList } from "@/api/normalize-list"
+
+const QUERY_KEY = "clients"
 
 export function useClient() {
-  const [data, setData] = useState({ results: [], count: 0 })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const queryClient = useQueryClient()
+  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const search = useDebouncedValue(searchTerm, 300)
 
-  const load = useCallback(async (search = '', page = 1) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await ClientService.getClient({ search, page })
-      if (Array.isArray(response)) {
-        setData({ results: response, count: response.length })
-      } else if (response && response.results) {
-        setData(response)
-      } else {
-        setData({ results: [], count: 0 })
-      }
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error)
-      setError(error)
-      setData({ results: [], count: 0 })
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const query = useQuery({
+    queryKey: [QUERY_KEY, { search, page: currentPage }],
+    queryFn: () => ClientService.getClient({ search, page: currentPage }),
+    placeholderData: keepPreviousData,
+    select: normalizeList,
+  })
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      load(searchTerm, currentPage)
-    }, 300)
+  const removeMutation = useMutation({
+    mutationFn: (id) => ClientService.deleteClient(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  })
 
-    return () => clearTimeout(handler)
-  }, [searchTerm, currentPage, load])
-
-  return { 
-    client: data?.results || [], 
-    totalItems: data?.count || 0, 
-    loading, 
-    searchTerm, 
-    setSearchTerm, 
+  return {
+    client: query.data?.results ?? [],
+    totalItems: query.data?.count ?? 0,
+    loading: query.isPending,
+    error: query.error ?? null,
+    refetch: query.refetch,
+    remove: removeMutation.mutateAsync,
+    searchTerm,
+    setSearchTerm,
     currentPage,
     setCurrentPage,
-    load,
-    error
   }
 }

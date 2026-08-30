@@ -6,7 +6,7 @@ import ListTable from "@/modules/core/components/ListTable"
 
 export default function LicenseList() {
   const navigate = useNavigate()
-  const { license, loading, error, load } = useLicense()
+  const { license, loading, error, refetch } = useLicense()
 
   const columns = [
     { header: 'Razão Social', accessor: (item) => item.business.corporate_name },
@@ -46,7 +46,7 @@ export default function LicenseList() {
         data={license}
         loading={loading}
         error={error}
-        onRetry={load}
+        onRetry={refetch}
         renderActions={(item) => (
           <button 
             onClick={() => navigate(`/empreendimentos/licencas/${item.id}`)}

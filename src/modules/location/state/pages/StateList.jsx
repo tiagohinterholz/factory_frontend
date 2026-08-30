@@ -1,5 +1,4 @@
 import { useStates } from "@/modules/location/state/hooks/useState"
-import { StateService } from "@/modules/location/state/services/state"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -14,7 +13,8 @@ export default function StateList() {
     currentPage,
     setCurrentPage,
     totalItems,
-    load,
+    refetch,
+    remove,
     error
   } = useStates()
 
@@ -36,8 +36,7 @@ export default function StateList() {
     if (!confirmed) return
 
     try {
-      await StateService.deleteState(item.id)
-      load(searchTerm, currentPage)
+      await remove(item.id)
     } catch (error) {
       console.error(error)
       toast.error("Erro ao excluir o estado.")
@@ -58,7 +57,7 @@ export default function StateList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

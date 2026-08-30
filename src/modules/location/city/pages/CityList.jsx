@@ -1,5 +1,4 @@
 import { useCities } from "@/modules/location/city/hooks/useCity"
-import { CityService } from "@/modules/location/city/services/city"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -14,7 +13,8 @@ export default function CityList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load,
+    refetch,
+    remove,
     error
   } = useCities()
 
@@ -37,8 +37,7 @@ export default function CityList() {
     if (!confirmed) return
 
     try {
-      await CityService.deleteCity(item.id)
-      load(searchTerm, currentPage)
+      await remove(item.id)
     } catch (error) {
       console.error(error)
       toast.error("Erro ao excluir a cidade.")
@@ -60,7 +59,7 @@ export default function CityList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

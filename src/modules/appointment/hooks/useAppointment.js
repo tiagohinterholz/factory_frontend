@@ -1,46 +1,30 @@
-import { useEffect, useState, useCallback } from "react"
+import { useState } from "react"
+import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
+import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
+import { normalizeList } from "@/api/normalize-list"
 
 export function useAppointment() {
-  const [appointments, setAppointments] = useState({ results: [], count: 0 })
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const search = useDebouncedValue(searchTerm, 300)
 
-  const load = useCallback(async (search='', page=1) => {
-    setLoading(true)
-    try {
-      const response = await AppointmentService.getAppointment({ search, page })
-      if (Array.isArray(response)) {
-        setAppointments({ results: response, count: response.length })
-      } else if (response && response.results) {
-        setAppointments(response)
-      } else {
-        setAppointments({ results: [], count: 0 })
-      }
-    } catch (error) {
-      console.error('Erro ao carregar Agendamentos:', error)
-      setAppointments({ results: [], count: 0 })
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-  
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      load(searchTerm, currentPage)
-    }, 300)
+  const query = useQuery({
+    queryKey: ["appointments", { search, page: currentPage }],
+    queryFn: () => AppointmentService.getAppointment({ search, page: currentPage }),
+    placeholderData: keepPreviousData,
+    select: normalizeList,
+  })
 
-    return () => clearTimeout(handler)
-  }, [searchTerm, currentPage, load])
-
-  return { 
-    appointments: appointments?.results || [], 
-    totalItems: appointments?.count || 0, 
-    loading,
-    searchTerm, 
-    setSearchTerm, 
-    currentPage, 
-    setCurrentPage 
+  return {
+    appointments: query.data?.results ?? [],
+    totalItems: query.data?.count ?? 0,
+    loading: query.isPending,
+    error: query.error ?? null,
+    refetch: query.refetch,
+    searchTerm,
+    setSearchTerm,
+    currentPage,
+    setCurrentPage,
   }
 }

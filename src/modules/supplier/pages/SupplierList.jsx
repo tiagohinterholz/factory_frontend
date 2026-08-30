@@ -1,5 +1,4 @@
 import { useSupplier } from "../hooks/useSupplier"
-import { SupplierService } from "../services/supplier"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -14,7 +13,8 @@ export default function SupplierList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load,
+    refetch,
+    remove,
     error
   } = useSupplier()
 
@@ -37,8 +37,7 @@ export default function SupplierList() {
     if (!confirmed) return
 
     try {
-      await SupplierService.deleteSupplier(item.id)
-      load(searchTerm, currentPage)
+      await remove(item.id)
     } catch (error) {
       console.error(error)
       toast.error("Erro ao excluir o fornecedor.")
@@ -59,7 +58,7 @@ export default function SupplierList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

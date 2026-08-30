@@ -1,5 +1,4 @@
 import { useBudget } from "../hooks/useBudget"
-import { BudgetService } from "../services/budgets"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -14,7 +13,8 @@ export default function BudgetList() {
     currentPage, 
     setCurrentPage, 
     totalItems,
-    load,
+    refetch,
+    remove,
     error
   } = useBudget()
 
@@ -48,8 +48,7 @@ export default function BudgetList() {
     if (!confirmed) return
 
     try {
-      await BudgetService.deleteBudget(item.id)
-      load(searchTerm, currentPage)
+      await remove(item.id)
     } catch (error) {
       console.error(error)
       toast.error("Erro ao excluir o orçamento.")
@@ -70,7 +69,7 @@ export default function BudgetList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

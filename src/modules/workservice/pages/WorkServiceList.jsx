@@ -1,5 +1,4 @@
 import { useWorkService } from "../hooks/useWorkService"
-import { WorkService } from "../services/workservice"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -14,7 +13,8 @@ export default function WorkServiceList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load,
+    refetch,
+    remove,
     error
   } = useWorkService()
 
@@ -37,8 +37,7 @@ export default function WorkServiceList() {
     if (!confirmed) return
 
     try {
-      await WorkService.deleteWorkService(item.id)
-      load(searchTerm, currentPage)
+      await remove(item.id)
     } catch (error) {
       console.error(error)
       toast.error("Erro ao excluir o serviço.")
@@ -59,7 +58,7 @@ export default function WorkServiceList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

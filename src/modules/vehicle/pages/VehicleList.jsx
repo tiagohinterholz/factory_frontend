@@ -1,5 +1,4 @@
 import { useVehicle } from "../hooks/useVehicle"
-import { VehicleService } from "../services/vehicle"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -14,7 +13,8 @@ export default function VehicleList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load,
+    refetch,
+    remove,
     error
   } = useVehicle()
 
@@ -38,8 +38,7 @@ export default function VehicleList() {
     if (!confirmed) return
 
     try {
-      await VehicleService.deleteVehicle(item.id)
-      load(searchTerm, currentPage)
+      await remove(item.id)
     } catch (error) {
       console.error(error)
       toast.error("Erro ao excluir o veículo.")
@@ -60,7 +59,7 @@ export default function VehicleList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

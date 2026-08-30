@@ -13,7 +13,7 @@ export default function UserList() {
     setCurrentPage,
     handleDelete: removeUser,
     totalItems,
-    load,
+    refetch,
     error
   } = useUser()
 
@@ -51,7 +51,7 @@ export default function UserList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

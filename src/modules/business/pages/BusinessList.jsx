@@ -1,5 +1,4 @@
 import { useBusiness } from "../hooks/useBusiness"
-import { BusinessService } from "../services/business"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -14,7 +13,8 @@ export default function BusinessList() {
     currentPage,
     setCurrentPage,
     totalItems,
-    load,
+    refetch,
+    remove,
     error
   } = useBusiness()
 
@@ -37,8 +37,7 @@ export default function BusinessList() {
     if (!confirmed) return
 
     try {
-      await BusinessService.deleteBusiness(item.id)
-      load(searchTerm, currentPage)
+      await remove(item.id)
     } catch (error) {
       console.error(error)
       toast.error("Erro ao excluir o empreendimento.")
@@ -59,7 +58,7 @@ export default function BusinessList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

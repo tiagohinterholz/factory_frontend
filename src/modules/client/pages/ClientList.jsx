@@ -1,5 +1,4 @@
 import { useClient } from "../hooks/useClient"
-import { ClientService } from "../services/client"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -14,7 +13,8 @@ export default function ClientList() {
     currentPage,
     setCurrentPage,
     totalItems,
-    load,
+    refetch,
+    remove,
     error
   } = useClient()
 
@@ -37,8 +37,7 @@ export default function ClientList() {
     if (!confirmed) return
 
     try {
-      await ClientService.deleteClient(item.id)
-      load(searchTerm, currentPage)
+      await remove(item.id)
     } catch (error) {
       console.error(error)
       toast.error("Erro ao excluir o cliente.")
@@ -59,7 +58,7 @@ export default function ClientList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

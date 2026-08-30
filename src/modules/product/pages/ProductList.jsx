@@ -1,5 +1,4 @@
 import { useProduct } from "../hooks/useProduct"
-import { ProductService } from "../services/product"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -14,7 +13,8 @@ export default function ProductList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load,
+    refetch,
+    remove,
     error
   } = useProduct()
 
@@ -38,8 +38,7 @@ export default function ProductList() {
     if (!confirmed) return
 
     try {
-      await ProductService.deleteProduct(item.id)
-      load(searchTerm, currentPage)
+      await remove(item.id)
     } catch (error) {
       console.error(error)
       toast.error("Erro ao excluir o produto.")
@@ -60,7 +59,7 @@ export default function ProductList() {
         onDelete={handleDelete}
         loading={loading}
         error={error}
-        onRetry={() => load(searchTerm, currentPage)}
+        onRetry={refetch}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}
