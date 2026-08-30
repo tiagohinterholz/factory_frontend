@@ -2,6 +2,8 @@ import { useCities } from "@/modules/location/city/hooks/useCity"
 import { CityService } from "@/modules/location/city/services/city"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function CityList() {
   const { 
@@ -15,6 +17,9 @@ export default function CityList() {
     load
   } = useCities()
 
+  const toast = useToast()
+  const confirm = useConfirm()
+
   const columns = [
     { header: 'Sigla', accessor: (item) => item.state.abbreviation },
     { header: 'Cidade', accessor: (item) => item.name },
@@ -22,14 +27,20 @@ export default function CityList() {
   ]
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Deseja excluir a cidade ${item.name}?`)) {
-      try {
-        await CityService.deleteCity(item.id)
-        load(searchTerm, currentPage)
-      } catch (error) {
-        console.error(error)
-        alert('Erro ao excluir a cidade.')
-      }
+    const confirmed = await confirm({
+      title: "Excluir cidade?",
+      message: `A cidade "${item.name}" será removida permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+
+    try {
+      await CityService.deleteCity(item.id)
+      load(searchTerm, currentPage)
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao excluir a cidade.")
     }
   }
 

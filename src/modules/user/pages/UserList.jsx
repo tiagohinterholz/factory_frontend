@@ -1,6 +1,7 @@
 import { useUser } from "../hooks/useUser"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function UserList() {
   const { 
@@ -14,6 +15,8 @@ export default function UserList() {
     totalItems 
   } = useUser()
 
+  const confirm = useConfirm()
+
   const columns = [
     { header: 'Nome', accessor: (item) => item.name },
     { header: 'Email', accessor: (item) => item.email },
@@ -22,9 +25,14 @@ export default function UserList() {
   ]
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Deseja realmente excluir o usuário ${item.name}?`)) {
-      await removeUser(item.id)
-    }
+    const confirmed = await confirm({
+      title: "Excluir usuário?",
+      message: `"${item.name}" perderá o acesso ao sistema.`,
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+    await removeUser(item.id)
   }
 
   return (

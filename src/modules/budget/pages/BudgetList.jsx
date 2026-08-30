@@ -2,6 +2,8 @@ import { useBudget } from "../hooks/useBudget"
 import { BudgetService } from "../services/budgets"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function BudgetList() {
   const { 
@@ -14,6 +16,9 @@ export default function BudgetList() {
     totalItems,
     load
   } = useBudget()
+
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const columns = [
     { header: 'ID', accessor: (item) => `#${item.id}` },
@@ -33,14 +38,20 @@ export default function BudgetList() {
   ]
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Deseja excluir o orçamento #${item.id}?`)) {
-      try {
-        await BudgetService.deleteBudget(item.id)
-        load(searchTerm, currentPage)
-      } catch (error) {
-        console.error(error)
-        alert('Erro ao excluir o orçamento.')
-      }
+    const confirmed = await confirm({
+      title: "Excluir orçamento?",
+      message: `O orçamento #${item.id} será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+
+    try {
+      await BudgetService.deleteBudget(item.id)
+      load(searchTerm, currentPage)
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao excluir o orçamento.")
     }
   }
 

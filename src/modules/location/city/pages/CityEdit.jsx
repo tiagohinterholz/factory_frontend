@@ -6,10 +6,14 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Milestone, Trash2, Edit2 } from "lucide-react"
 import { CityService } from "../services/city"
 import { useStates } from "@/modules/location/state/hooks/useState"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function CityEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const [name, setName] = useState("")
   const [stateId, setStateId] = useState("")
@@ -36,12 +40,18 @@ export default function CityEdit() {
       await CityService.updateCity(id, { name, state_id: stateId })
       navigate("/cidades")
     } catch {
-      alert("Erro ao atualizar cidade")
+      toast.error("Erro ao atualizar cidade")
     }
   }
 
   async function handleDelete() {
-    if (!confirm("Deseja realmente deletar?")) return
+    const confirmed = await confirm({
+      title: "Excluir cidade?",
+      message: "Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
     await CityService.deleteCity(id)
     navigate("/cidades")
   }

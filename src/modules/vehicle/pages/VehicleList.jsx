@@ -2,6 +2,8 @@ import { useVehicle } from "../hooks/useVehicle"
 import { VehicleService } from "../services/vehicle"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function VehicleList() {
   const { 
@@ -15,6 +17,9 @@ export default function VehicleList() {
     load
   } = useVehicle()
 
+  const toast = useToast()
+  const confirm = useConfirm()
+
   const columns = [
     { header: 'Placa', accessor: (item) => item.plate },
     { header: 'Modelo', accessor: (item) => item.model },
@@ -23,14 +28,20 @@ export default function VehicleList() {
   ]
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Deseja excluir o veículo ${item.plate}?`)) {
-      try {
-        await VehicleService.deleteVehicle(item.id)
-        load(searchTerm, currentPage)
-      } catch (error) {
-        console.error(error)
-        alert('Erro ao excluir o veículo.')
-      }
+    const confirmed = await confirm({
+      title: "Excluir veículo?",
+      message: `O veículo de placa "${item.plate}" será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+
+    try {
+      await VehicleService.deleteVehicle(item.id)
+      load(searchTerm, currentPage)
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao excluir o veículo.")
     }
   }
 

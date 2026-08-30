@@ -18,8 +18,8 @@ export const AuthService = {
         { refresh },
         { headers: { Authorization: `Bearer ${access}` } }
       )
-    } catch (err) {
-      alert("Erro no logout:", err)
+    } catch (error) {
+      console.error("Erro no logout:", error)
     }
   },
 }

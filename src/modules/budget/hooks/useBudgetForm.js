@@ -2,9 +2,11 @@ import { useState } from "react"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 export function useBudgetForm() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { businessId } = useAuth()
 
   const [client, setClient] = useState("")
@@ -28,7 +30,7 @@ export function useBudgetForm() {
       navigate("/orcamentos")
     } catch (error) {
       console.log(error)
-      alert("Erro ao criar orçamento")
+      toast.error("Erro ao criar orçamento")
     }
   }
 

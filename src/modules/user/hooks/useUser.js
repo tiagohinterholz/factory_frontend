@@ -1,7 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { UserService } from '@/modules/user/services/user'
+import { useToast } from '@/modules/core/feedback/toast-context'
 
 export function useUser() {
+  const toast = useToast()
+
   const [data, setData] = useState({ results: [], count: 0 })
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -46,7 +49,7 @@ export function useUser() {
       await load(searchTerm, currentPage)
     } catch (error) {
       console.error('Erro ao excluir usuário:', error)
-      alert("Erro ao excluir usuário. A lista será atualizada.")
+      toast.error("Erro ao excluir usuário. A lista será atualizada.")
       await load(searchTerm, currentPage)
     }
   }

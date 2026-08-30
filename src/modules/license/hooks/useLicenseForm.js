@@ -3,10 +3,12 @@ import { LicenseService } from "@/modules/license/services/license"
 import { BusinessService } from "@/modules/business/services/business"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 export function useLicenseForm() {
   const navigate = useNavigate()
   const { businessId, isSuperUser } = useAuth()
+  const toast = useToast()
   const [business, setBusiness] = useState(businessId || "")
   const [period, setPeriod] = useState("MENSAL")
   const [max_users, setMaxUsers] = useState("1")
@@ -43,7 +45,7 @@ export function useLicenseForm() {
       navigate("/empreendimentos/licencas")
     } catch (error) {
       console.log(error)
-      alert("Erro ao configurar/renovar licença. Verifique se o empreendimento já possui uma base de licença.")
+      toast.error("Erro ao configurar/renovar licença. Verifique se o empreendimento já possui uma base de licença.")
     }
   }
 

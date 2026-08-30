@@ -2,10 +2,12 @@ import { useState } from "react"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 
 export function useVehicleForm() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { businessId } = useAuth()
   
   const [business, setBusiness] = useState(businessId || "")
@@ -40,7 +42,7 @@ export function useVehicleForm() {
       navigate("/veiculos")
     } catch (error) {
       console.log(error)
-      alert("Erro ao criar veiculo")
+      toast.error("Erro ao criar veículo")
     }
   }
 

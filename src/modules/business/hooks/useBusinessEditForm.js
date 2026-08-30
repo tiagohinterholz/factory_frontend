@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react"
 import { BusinessService } from "@/modules/business/services/business"
 import { useNavigate, useParams } from "react-router-dom"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useBusinessEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const [corporateName, setCorporateName] = useState("")
   const [tradeName, setTradeName] = useState("")
@@ -62,12 +66,18 @@ export function useBusinessEditForm() {
       navigate(`/empreendimentos/`)
     } catch (error) {
       console.log(error)
-      alert("Erro ao atualizar empreendimento")
+      toast.error("Erro ao atualizar empreendimento")
     }
   }
 
   async function handleDelete() {
-      if (!confirm("Deseja realmente deletar?")) return
+      const confirmed = await confirm({
+        title: "Excluir empreendimento?",
+        message: "Esta ação não pode ser desfeita.",
+        confirmText: "Excluir",
+        danger: true,
+      })
+      if (!confirmed) return
       await BusinessService.deleteBusiness(id)
       navigate("/empreendimentos")
     }

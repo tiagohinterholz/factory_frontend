@@ -2,9 +2,11 @@ import { useState } from "react"
 import { ClientService } from "@/modules/client/services/client"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 export function useClientForm() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { businessId } = useAuth()
 
   const [business, setBusiness] = useState(businessId || "")
@@ -42,7 +44,7 @@ export function useClientForm() {
       navigate("/clientes")
     } catch (error) {
       console.log(error)
-      alert("Erro ao criar cliente. Verifique se os dados estão corretos.")
+      toast.error("Erro ao criar cliente. Verifique se os dados estão corretos.")
     }
   }
 

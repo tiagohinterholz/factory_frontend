@@ -2,11 +2,13 @@ import { useState } from "react"
 import { UserService } from "@/modules/user/services/user"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 
 
 export function useUserForm() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { businessId } = useAuth()
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
@@ -19,7 +21,7 @@ export function useUserForm() {
     e.preventDefault()
 
     if (password !== confirmPassword) {
-      alert("As senhas não coincidem!")
+      toast.error("As senhas não coincidem!")
       return
     }
 
@@ -39,7 +41,7 @@ export function useUserForm() {
       const errorMsg = error.response?.data 
         ? JSON.stringify(error.response.data) 
         : "Erro ao criar usuário"
-      alert(errorMsg)
+      toast.error(errorMsg)
     }
   }
 

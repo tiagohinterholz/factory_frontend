@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { useNavigate, useParams } from "react-router-dom"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useAppointmentEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const [business, setBusiness] = useState("")
   const [client, setClient] = useState("")
@@ -53,12 +57,18 @@ export function useAppointmentEditForm() {
       navigate(`/agendamentos/`)
     } catch (error) {
       console.log(error)
-      alert("Erro ao atualizar agendamento")
+      toast.error("Erro ao atualizar agendamento")
     }
   }
 
   async function handleDelete() {
-    if (!confirm("Deseja realmente deletar?")) return
+    const confirmed = await confirm({
+      title: "Excluir agendamento?",
+      message: "Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
     await AppointmentService.deleteAppointment(id)
     navigate("/agendamentos")
   }

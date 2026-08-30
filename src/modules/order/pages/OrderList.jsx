@@ -2,6 +2,8 @@ import { useOrder } from "../hooks/useOrder"
 import { OrderService } from "../services/order"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function OrderList() {
   const { 
@@ -14,6 +16,9 @@ export default function OrderList() {
     totalItems,
     load
   } = useOrder()
+
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const columns = [
     { header: 'ID', accessor: (item) => `#${item.id}` },
@@ -33,14 +38,20 @@ export default function OrderList() {
   ]
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Deseja excluir a ordem de serviço #${item.id}?`)) {
-      try {
-        await OrderService.deleteOrder(item.id)
-        load(searchTerm, currentPage)
-      } catch (error) {
-        console.error(error)
-        alert('Erro ao excluir a ordem de serviço.')
-      }
+    const confirmed = await confirm({
+      title: "Excluir ordem de serviço?",
+      message: `A OS #${item.id} será removida permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+
+    try {
+      await OrderService.deleteOrder(item.id)
+      load(searchTerm, currentPage)
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao excluir a ordem de serviço.")
     }
   }
 

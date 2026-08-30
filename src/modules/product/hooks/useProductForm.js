@@ -2,9 +2,11 @@ import { useState } from "react"
 import { ProductService } from "@/modules/product/services/product"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 export function useProductForm() {
   const navigate = useNavigate()
+  const toast = useToast()
   const location = useLocation()
   const { businessId } = useAuth()
 
@@ -36,7 +38,7 @@ export function useProductForm() {
       navigate("/produtos")
     } catch (error) {
       console.log(error)
-      alert("Erro ao criar produto")
+      toast.error("Erro ao criar produto")
     }
   }
 

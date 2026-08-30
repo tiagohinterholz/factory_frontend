@@ -1,9 +1,11 @@
 import { useState } from "react"
 import { BusinessService } from "@/modules/business/services/business"
 import { useNavigate } from "react-router-dom"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 export function useBusinessForm() {
   const navigate = useNavigate()
+  const toast = useToast()
 
   const [corporateName, setCorporateName] = useState("")
   const [tradeName, setTradeName] = useState("")
@@ -38,7 +40,7 @@ export function useBusinessForm() {
       navigate("/empreendimentos")
     } catch (error) {
       console.log(error)
-      alert("Erro ao criar empreendimento")
+      toast.error("Erro ao criar empreendimento")
     }
   }
 

@@ -2,9 +2,11 @@ import { useState } from "react"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 export function useAppointmentForm() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { businessId } = useAuth()
 
   const [business, setBusiness] = useState(businessId || "")
@@ -33,7 +35,7 @@ export function useAppointmentForm() {
       navigate("/agendamentos")
     } catch (error) {
       console.log(error)
-      alert("Erro ao criar agendamento")
+      toast.error("Erro ao criar agendamento")
     }
   }
 

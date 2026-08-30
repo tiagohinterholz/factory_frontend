@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useNavigate, useParams } from "react-router-dom"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export function useVehicleEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
+  const confirm = useConfirm()
 
   const [business, setBusiness] = useState("")
   const [client, setClient] = useState("")
@@ -62,12 +66,18 @@ export function useVehicleEditForm() {
       navigate(`/veiculos/`)
     } catch (error) {
       console.log(error)
-      alert("Erro ao atualizar veiculo")
+      toast.error("Erro ao atualizar veículo")
     }
   }
 
   async function handleDelete() {
-    if (!confirm("Deseja realmente deletar?")) return
+    const confirmed = await confirm({
+      title: "Excluir veículo?",
+      message: "Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
     await VehicleService.deleteVehicle(id)
     navigate("/veiculos")
   }

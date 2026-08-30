@@ -2,10 +2,12 @@ import { useState } from "react"
 import { WorkService } from "@/modules/workservice/services/workservice"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 
 export function useWorkServiceForm() {
   const navigate = useNavigate()
+  const toast = useToast()
   const location = useLocation()
   const { businessId } = useAuth()
 
@@ -31,7 +33,7 @@ export function useWorkServiceForm() {
       navigate("/servicos")
     } catch (error) {
       console.log(error)
-      alert("Erro ao criar serviço")
+      toast.error("Erro ao criar serviço")
     }
   }
 

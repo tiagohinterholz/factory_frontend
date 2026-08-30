@@ -2,6 +2,8 @@ import { useSupplier } from "../hooks/useSupplier"
 import { SupplierService } from "../services/supplier"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function SupplierList() {
   const { 
@@ -15,6 +17,9 @@ export default function SupplierList() {
     load
   } = useSupplier()
 
+  const toast = useToast()
+  const confirm = useConfirm()
+
   const columns = [
     { header: 'Razão Social', accessor: (item) => item.corporate_name },
     { header: 'CNPJ', accessor: (item) => item.cnpj },
@@ -22,14 +27,20 @@ export default function SupplierList() {
   ]
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Deseja excluir o fornecedor ${item.corporate_name}?`)) {
-      try {
-        await SupplierService.deleteSupplier(item.id)
-        load(searchTerm, currentPage)
-      } catch (error) {
-        console.error(error)
-        alert('Erro ao excluir o fornecedor.')
-      }
+    const confirmed = await confirm({
+      title: "Excluir fornecedor?",
+      message: `"${item.corporate_name}" será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+
+    try {
+      await SupplierService.deleteSupplier(item.id)
+      load(searchTerm, currentPage)
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao excluir o fornecedor.")
     }
   }
 

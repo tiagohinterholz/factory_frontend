@@ -2,9 +2,11 @@ import { useState } from "react"
 import { OrderService } from "@/modules/order/services/order"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 export function useOrderForm() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { businessId } = useAuth()
 
   const [business, setBusiness] = useState(businessId || "")
@@ -29,7 +31,7 @@ export function useOrderForm() {
       navigate("/ordens")
     } catch (error) {
       console.log(error)
-      alert("Erro ao criar ordem")
+      toast.error("Erro ao criar ordem")
     }
   }
 
