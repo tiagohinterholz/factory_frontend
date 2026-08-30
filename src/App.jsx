@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { QueryClientProvider } from "@tanstack/react-query"
+import { queryClient } from "@/api/query-client"
 import { AuthProvider } from "@/modules/auth/context/AuthProvider"
 import { ToastProvider } from "@/modules/core/feedback/ToastProvider"
 import { ConfirmProvider } from "@/modules/core/feedback/ConfirmProvider"
@@ -23,36 +25,38 @@ import OrderRoutes from "@/modules/order/routes"
 
 export default function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <ConfirmProvider>
-          <BrowserRouter>
-            <ErrorBoundary>
-              <Routes>
-                {/* Auth routes (Public) */}
-                {AuthRoutes}
+    <QueryClientProvider client={queryClient}>
+      <ToastProvider>
+        <AuthProvider>
+          <ConfirmProvider>
+            <BrowserRouter>
+              <ErrorBoundary>
+                <Routes>
+                  {/* Auth routes (Public) */}
+                  {AuthRoutes}
 
-                {/* Dashboard routes (Private & Layout wrapped) */}
-                <Route element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
-                  {LicenseRoutes}
-                  {DashboardRoutes}
-                  {BusinessRoutes}
-                  {LocationRoutes}
-                  {SupplierRoutes}
-                  {ClientRoutes}
-                  {VehicleRoutes}
-                  {ProductRoutes}
-                  {WorkServiceRoutes}
-                  {AppointmentRoutes}
-                  {BudgetRoutes}
-                  {OrderRoutes}
-                  {UserRoutes}
-                </Route>
-              </Routes>
-            </ErrorBoundary>
-          </BrowserRouter>
-        </ConfirmProvider>
-      </AuthProvider>
-    </ToastProvider>
+                  {/* Dashboard routes (Private & Layout wrapped) */}
+                  <Route element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
+                    {LicenseRoutes}
+                    {DashboardRoutes}
+                    {BusinessRoutes}
+                    {LocationRoutes}
+                    {SupplierRoutes}
+                    {ClientRoutes}
+                    {VehicleRoutes}
+                    {ProductRoutes}
+                    {WorkServiceRoutes}
+                    {AppointmentRoutes}
+                    {BudgetRoutes}
+                    {OrderRoutes}
+                    {UserRoutes}
+                  </Route>
+                </Routes>
+              </ErrorBoundary>
+            </BrowserRouter>
+          </ConfirmProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </QueryClientProvider>
   );
 }
