@@ -1,0 +1,4 @@
+# Revisões que só reformatam (Prettier). git blame as ignora:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Adicione aqui o SHA do commit "style: prettier --write ." quando ele existir.
