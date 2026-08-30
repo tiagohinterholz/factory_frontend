@@ -2,3 +2,4 @@
 #   git config blame.ignoreRevsFile .git-blame-ignore-revs
 #
 # Adicione aqui o SHA do commit "style: prettier --write ." quando ele existir.
+101074b3e12fbb9efd7709c3718130cb945eda0b
