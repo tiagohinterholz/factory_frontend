@@ -22,22 +22,21 @@ export function useClientForm() {
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
 
-
   async function handleSubmit(e) {
     e.preventDefault()
 
     const payload = {
       business_id: business,
-      first_name: firstName,  
+      first_name: firstName,
       last_name: lastName,
       cpf: cpf,
       state_id: stateId,
       city_id: cityId,
-      address:address,
+      address: address,
       number: number,
       complement: complement,
       phone: phone,
-      email: email
+      email: email,
     }
 
     try {
@@ -45,24 +44,36 @@ export function useClientForm() {
       navigate("/clientes")
     } catch (error) {
       console.error(error)
-      toast.error(parseApiError(error, "Erro ao criar cliente. Verifique se os dados estão corretos.").message)
+      toast.error(
+        parseApiError(error, "Erro ao criar cliente. Verifique se os dados estão corretos.")
+          .message,
+      )
     }
   }
 
   return {
-    business, setBusiness,
-    firstName, setFirstName,  
-    lastName, setLastName,
-    cpf, setCpf,
-    stateId, setStateId,
-    cityId, setCityId,
-    address, setAddress,
-    number, setNumber,
-    complement, setComplement,
-    phone, setPhone,
-    email, setEmail,
-    handleSubmit
+    business,
+    setBusiness,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    cpf,
+    setCpf,
+    stateId,
+    setStateId,
+    cityId,
+    setCityId,
+    address,
+    setAddress,
+    number,
+    setNumber,
+    complement,
+    setComplement,
+    phone,
+    setPhone,
+    email,
+    setEmail,
+    handleSubmit,
   }
 }
-
-

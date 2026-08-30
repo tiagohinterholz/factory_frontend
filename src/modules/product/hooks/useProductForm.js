@@ -12,7 +12,7 @@ export function useProductForm() {
   const { businessId } = useAuth()
 
   const [business, setBusiness] = useState(businessId || "")
-  const [supplier, setSupplier] = useState(location.state?.supplierId || "")  
+  const [supplier, setSupplier] = useState(location.state?.supplierId || "")
   const [name, setName] = useState("")
   const [brand, setBrand] = useState("")
   const [reference, setReference] = useState("")
@@ -25,7 +25,7 @@ export function useProductForm() {
 
     const payload = {
       business_id: business,
-      supplier_id: supplier,  
+      supplier_id: supplier,
       name: name,
       brand: brand,
       reference: reference,
@@ -44,16 +44,22 @@ export function useProductForm() {
   }
 
   return {
-    business, setBusiness,
-    supplier, setSupplier,  
-    name, setName,
-    brand, setBrand,
-    reference, setReference,
-    description, setDescription,
-    stockQuantity, setStockQuantity,
-    unitPrice, setUnitPrice,
-    handleSubmit
+    business,
+    setBusiness,
+    supplier,
+    setSupplier,
+    name,
+    setName,
+    brand,
+    setBrand,
+    reference,
+    setReference,
+    description,
+    setDescription,
+    stockQuantity,
+    setStockQuantity,
+    unitPrice,
+    setUnitPrice,
+    handleSubmit,
   }
 }
-
-

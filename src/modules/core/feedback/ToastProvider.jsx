@@ -48,10 +48,13 @@ export function ToastProvider({ children }) {
     (type, message, duration) => {
       const id = ++idSequence
       setToasts((list) => [...list, { id, type, message }])
-      timers.current.set(id, setTimeout(() => remove(id), duration))
+      timers.current.set(
+        id,
+        setTimeout(() => remove(id), duration),
+      )
       return id
     },
-    [remove]
+    [remove],
   )
 
   const toast = useMemo(
@@ -60,7 +63,7 @@ export function ToastProvider({ children }) {
       error: (message, options = {}) => push("error", message, options.duration ?? 6000),
       info: (message, options = {}) => push("info", message, options.duration ?? 4000),
     }),
-    [push]
+    [push],
   )
 
   return (
@@ -77,7 +80,7 @@ export function ToastProvider({ children }) {
             />
           ))}
         </div>,
-        document.body
+        document.body,
       )}
     </ToastContext.Provider>
   )

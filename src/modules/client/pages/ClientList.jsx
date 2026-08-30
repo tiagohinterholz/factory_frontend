@@ -5,26 +5,26 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function ClientList() {
-  const { 
-    client, 
-    loading, 
-    searchTerm, 
-    setSearchTerm, 
+  const {
+    client,
+    loading,
+    searchTerm,
+    setSearchTerm,
     currentPage,
     setCurrentPage,
     totalItems,
     refetch,
     remove,
-    error
+    error,
   } = useClient()
 
   const toast = useToast()
   const confirm = useConfirm()
 
   const columns = [
-    { header: 'Nome', accessor: (item) => `${item.first_name} ${item.last_name}` },
-    { header: 'CPF', accessor: (item) => item.cpf },
-    { header: 'Telefone', accessor: (item) => item.phone },
+    { header: "Nome", accessor: (item) => `${item.first_name} ${item.last_name}` },
+    { header: "CPF", accessor: (item) => item.cpf },
+    { header: "Telefone", accessor: (item) => item.phone },
   ]
 
   const handleDelete = async (item) => {
@@ -46,12 +46,8 @@ export default function ClientList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader
-        title='Clientes'
-        buttonText='Novo Cliente'
-        buttonLink='/clientes/novo'
-      />
-      <ListTable 
+      <ListHeader title="Clientes" buttonText="Novo Cliente" buttonLink="/clientes/novo" />
+      <ListTable
         columns={columns}
         data={client}
         editLinkPrefix="/clientes"

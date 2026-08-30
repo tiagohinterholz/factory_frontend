@@ -41,15 +41,20 @@ export function useAppointmentForm() {
   }
 
   return {
-    business, setBusiness,
-    client, setClient,  
-    vehicle, setVehicle,
-    date, setDate,
-    time, setTime,
-    observation, setObservation,
-    order, setOrder,
-    handleSubmit
+    business,
+    setBusiness,
+    client,
+    setClient,
+    vehicle,
+    setVehicle,
+    date,
+    setDate,
+    time,
+    setTime,
+    observation,
+    setObservation,
+    order,
+    setOrder,
+    handleSubmit,
   }
 }
-
-

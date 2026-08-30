@@ -7,29 +7,32 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useAuth } from "@/modules/auth/context/auth-context"
 
-
 export default function BudgetCreate() {
   const {
-    business, setBusiness,
-    client, setClient,
-    vehicle, setVehicle,
-    validUntil, setValidUntil,
-    handleSubmit
+    business,
+    setBusiness,
+    client,
+    setClient,
+    vehicle,
+    setVehicle,
+    validUntil,
+    setValidUntil,
+    handleSubmit,
   } = useBudgetForm()
-  
+
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { client: clients, loading: loadingClients } = useClient()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicle()
 
   const { isSuperUser } = useAuth()
 
-  const businessOptions = businesses.map(b => ({ id: b.id, name: b.corporate_name }))
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients
-    .filter(c => !business || (c.business?.id || c.business) === parseInt(business))
-    .map(c => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
+    .filter((c) => !business || (c.business?.id || c.business) === parseInt(business))
+    .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
   const vehicleOptions = vehicles
-    .filter(v => !client || (v.client?.id || v.client) === parseInt(client))
-    .map(v => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
+    .filter((v) => !client || (v.client?.id || v.client) === parseInt(client))
+    .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
 
   if (loadingBusinesses || loadingClients || loadingVehicles) {
     return (
@@ -42,35 +45,39 @@ export default function BudgetCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Novo Orçamento</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">Crie a estrutura básica do orçamento</p>
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+          Novo Orçamento
+        </h1>
+        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+          Crie a estrutura básica do orçamento
+        </p>
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {isSuperUser &&
-              <SelectField 
+            {isSuperUser && (
+              <SelectField
                 label="Empreendimento"
                 value={business}
                 onChange={(e) => setBusiness(e.target.value)}
                 options={businessOptions}
                 required
               />
-           }
-            <SelectField 
+            )}
+            <SelectField
               label="Cliente"
               value={client}
               onChange={(e) => setClient(e.target.value)}
               options={clientOptions}
               disabled={!business && isSuperUser}
             />
-            <SelectField 
+            <SelectField
               label="Veículo"
               value={vehicle}
               onChange={(e) => setVehicle(e.target.value)}
               options={vehicleOptions}
               disabled={!client}
             />
-            <FormField 
+            <FormField
               label="Validade"
               type="date"
               value={validUntil}

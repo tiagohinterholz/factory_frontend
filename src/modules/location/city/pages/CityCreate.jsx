@@ -40,10 +40,11 @@ export default function CityCreate() {
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-xl mx-auto">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Nova Cidade</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">Adicione um novo município ao sistema</p>
+        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+          Adicione um novo município ao sistema
+        </p>
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
@@ -60,12 +61,12 @@ export default function CityCreate() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Curitiba"
             />
-            
+
             <SelectField
               label="Estado"
               value={stateId}
               onChange={(e) => setStateId(e.target.value)}
-              options={states.map(s => ({ id: s.id, name: `${s.name} (${s.abbreviation})` }))}
+              options={states.map((s) => ({ id: s.id, name: `${s.name} (${s.abbreviation})` }))}
             />
 
             <div className="pt-4">

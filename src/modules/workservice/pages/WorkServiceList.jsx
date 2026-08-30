@@ -5,26 +5,32 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function WorkServiceList() {
-  const { 
-    workservice, 
+  const {
+    workservice,
     loading,
-    searchTerm, 
-    setSearchTerm, 
-    currentPage, 
+    searchTerm,
+    setSearchTerm,
+    currentPage,
     setCurrentPage,
     totalItems,
     refetch,
     remove,
-    error
+    error,
   } = useWorkService()
 
   const toast = useToast()
   const confirm = useConfirm()
 
   const columns = [
-    { header: 'Nome', accessor: (item) => item.name },
-    { header: 'Preço', accessor: (item) => item.unit_price ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace('.', ',')}` : 'R$ 0,00' },
-    { header: 'Descrição', accessor: (item) => item.description || '-' },
+    { header: "Nome", accessor: (item) => item.name },
+    {
+      header: "Preço",
+      accessor: (item) =>
+        item.unit_price
+          ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace(".", ",")}`
+          : "R$ 0,00",
+    },
+    { header: "Descrição", accessor: (item) => item.description || "-" },
   ]
 
   const handleDelete = async (item) => {
@@ -46,12 +52,8 @@ export default function WorkServiceList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader
-        title='Serviços'
-        buttonText='Novo Serviço'
-        buttonLink='/servicos/novo'
-      />
-      <ListTable 
+      <ListHeader title="Serviços" buttonText="Novo Serviço" buttonLink="/servicos/novo" />
+      <ListTable
         columns={columns}
         data={workservice}
         editLinkPrefix="/servicos"

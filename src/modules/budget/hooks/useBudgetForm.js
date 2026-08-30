@@ -15,7 +15,6 @@ export function useBudgetForm() {
   const [vehicle, setVehicle] = useState("")
   const [validUntil, setValidUntil] = useState("")
 
-
   async function handleSubmit(e) {
     e.preventDefault()
 
@@ -36,12 +35,14 @@ export function useBudgetForm() {
   }
 
   return {
-    business, setBusiness,
-    client, setClient,
-    vehicle, setVehicle,
-    validUntil, setValidUntil,
-    handleSubmit
+    business,
+    setBusiness,
+    client,
+    setClient,
+    vehicle,
+    setVehicle,
+    validUntil,
+    setValidUntil,
+    handleSubmit,
   }
 }
-
-

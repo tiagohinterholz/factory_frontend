@@ -7,33 +7,40 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { Package, Save, Milestone } from "lucide-react"
 
-
 export default function ProductCreate() {
   const {
-    business, setBusiness,
-    supplier, setSupplier,  
-    name, setName,
-    brand, setBrand,
-    reference, setReference,
-    description, setDescription,
-    stockQuantity, setStockQuantity,
-    unitPrice, setUnitPrice,
-    handleSubmit
+    business,
+    setBusiness,
+    supplier,
+    setSupplier,
+    name,
+    setName,
+    brand,
+    setBrand,
+    reference,
+    setReference,
+    description,
+    setDescription,
+    stockQuantity,
+    setStockQuantity,
+    unitPrice,
+    setUnitPrice,
+    handleSubmit,
   } = useProductForm()
-  
+
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplier()
 
   const { isSuperUser } = useAuth()
 
-  const businessOptions = businesses.map(b => ({
+  const businessOptions = businesses.map((b) => ({
     id: b.id,
-    name: b.corporate_name
+    name: b.corporate_name,
   }))
 
-  const supplierOptions = suppliers.map(s => ({
+  const supplierOptions = suppliers.map((s) => ({
     id: s.id,
-    name: s.corporate_name
+    name: s.corporate_name,
   }))
 
   if (loadingBusinesses || loadingSuppliers) {
@@ -46,10 +53,11 @@ export default function ProductCreate() {
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Novo Produto</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">Cadastro de itens para estoque</p>
+        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+          Cadastro de itens para estoque
+        </p>
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
@@ -60,10 +68,9 @@ export default function ProductCreate() {
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {isSuperUser && (
-                <SelectField 
+                <SelectField
                   label="Empreendimento"
                   value={business}
                   onChange={(e) => setBusiness(e.target.value)}
@@ -72,7 +79,7 @@ export default function ProductCreate() {
                 />
               )}
 
-              <SelectField 
+              <SelectField
                 label="Fornecedor"
                 value={supplier}
                 onChange={(e) => setSupplier(e.target.value)}
@@ -81,13 +88,13 @@ export default function ProductCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Nome do Produto"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: Óleo 5W30"
               />
-              <FormField 
+              <FormField
                 label="Marca"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
@@ -96,13 +103,13 @@ export default function ProductCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Referência/SKU"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
                 placeholder="Ex: REF-123"
               />
-              <FormField 
+              <FormField
                 label="Descrição"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -111,13 +118,13 @@ export default function ProductCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Qtd em Estoque"
                 value={stockQuantity}
                 onChange={(e) => setStockQuantity(e.target.value)}
                 type="number"
               />
-              <FormField 
+              <FormField
                 label="Preço Unitário"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}

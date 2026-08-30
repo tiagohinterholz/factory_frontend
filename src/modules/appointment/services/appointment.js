@@ -2,13 +2,13 @@ import { api } from "@/api/http"
 
 export class AppointmentService {
   async getAppointment(params) {
-    const response = await api.get("/agendamentos/", { params });
-    return response.data;
+    const response = await api.get("/agendamentos/", { params })
+    return response.data
   }
 
   async getAppointmentById(id) {
-    const response = await api.get(`/agendamentos/${id}/`);
-    return response.data;
+    const response = await api.get(`/agendamentos/${id}/`)
+    return response.data
   }
 
   async createAppointment(payload) {
@@ -22,7 +22,7 @@ export class AppointmentService {
   }
 
   async deleteAppointment(id) {
-    const response = await api.delete(`/agendamentos/${id}/`);
-    return response.data;
+    const response = await api.delete(`/agendamentos/${id}/`)
+    return response.data
   }
 }

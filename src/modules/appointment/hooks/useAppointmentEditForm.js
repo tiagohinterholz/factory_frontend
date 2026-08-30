@@ -22,23 +22,22 @@ export function useAppointmentEditForm() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-      async function load() {
-        try {
-          const data = await AppointmentService.getAppointmentById(id)
-          setBusiness(data.business?.id || data.business || "")
-          setClient(data.client?.id || data.client || "")
-          setVehicle(data.vehicle?.id || data.vehicle || "")
-          setDate(data.date)
-          setTime(data.time)
-          setObservation(data.observation)
-          setOrder(data.order?.id || data.order || "")
-        } finally {
-          setLoading(false)
-        }
+    async function load() {
+      try {
+        const data = await AppointmentService.getAppointmentById(id)
+        setBusiness(data.business?.id || data.business || "")
+        setClient(data.client?.id || data.client || "")
+        setVehicle(data.vehicle?.id || data.vehicle || "")
+        setDate(data.date)
+        setTime(data.time)
+        setObservation(data.observation)
+        setOrder(data.order?.id || data.order || "")
+      } finally {
+        setLoading(false)
       }
-      load()
-    }, [id])
-
+    }
+    load()
+  }, [id])
 
   async function handleUpdate(e) {
     e.preventDefault()
@@ -75,15 +74,22 @@ export function useAppointmentEditForm() {
   }
 
   return {
-    business, setBusiness,
-    client, setClient,  
-    vehicle, setVehicle,
-    date, setDate,
-    time, setTime,
-    observation, setObservation,
-    order, setOrder,
+    business,
+    setBusiness,
+    client,
+    setClient,
+    vehicle,
+    setVehicle,
+    date,
+    setDate,
+    time,
+    setTime,
+    observation,
+    setObservation,
+    order,
+    setOrder,
     loading,
     handleUpdate,
-    handleDelete
+    handleDelete,
   }
 }

@@ -25,26 +25,25 @@ export function useVehicleEditForm() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-      async function load() {
-        try {
-          const data = await VehicleService.getVehicleById(id)
-          setBusiness(data.business?.id || data.business || "")
-          setClient(data.client?.id || data.client || "")
-          setModel(data.model || "")
-          setYear(data.year || "")
-          setYearModel(data.year_model || "")
-          setPlate(data.plate || "")
-          setColor(data.color || "")
-          setManufacturer(data.manufacturer || "")
-          setFuel(data.fuel || "")
-          setMileage(data.mileage || "")
-        } finally {
-          setLoading(false)
-        }
+    async function load() {
+      try {
+        const data = await VehicleService.getVehicleById(id)
+        setBusiness(data.business?.id || data.business || "")
+        setClient(data.client?.id || data.client || "")
+        setModel(data.model || "")
+        setYear(data.year || "")
+        setYearModel(data.year_model || "")
+        setPlate(data.plate || "")
+        setColor(data.color || "")
+        setManufacturer(data.manufacturer || "")
+        setFuel(data.fuel || "")
+        setMileage(data.mileage || "")
+      } finally {
+        setLoading(false)
       }
-      load()
-    }, [id])
-
+    }
+    load()
+  }, [id])
 
   async function handleUpdate(e) {
     e.preventDefault()
@@ -84,18 +83,28 @@ export function useVehicleEditForm() {
   }
 
   return {
-    business, setBusiness,
-    client, setClient,  
-    model, setModel,
-    year, setYear,
-    year_model, setYearModel,
-    plate, setPlate,
-    color, setColor,
-    manufacturer, setManufacturer,
-    fuel, setFuel,
-    mileage, setMileage,
+    business,
+    setBusiness,
+    client,
+    setClient,
+    model,
+    setModel,
+    year,
+    setYear,
+    year_model,
+    setYearModel,
+    plate,
+    setPlate,
+    color,
+    setColor,
+    manufacturer,
+    setManufacturer,
+    fuel,
+    setFuel,
+    mileage,
+    setMileage,
     loading,
     handleUpdate,
-    handleDelete
+    handleDelete,
   }
 }

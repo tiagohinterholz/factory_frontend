@@ -1,7 +1,7 @@
-import { Route } from "react-router-dom";
-import ClientList from "./pages/ClientList";
-import ClientEdit from "./pages/ClientDetail";
-import ClientCreate from "./pages/ClientCreate";
+import { Route } from "react-router-dom"
+import ClientList from "./pages/ClientList"
+import ClientEdit from "./pages/ClientDetail"
+import ClientCreate from "./pages/ClientCreate"
 
 const ClientRoutes = (
   <>
@@ -9,6 +9,6 @@ const ClientRoutes = (
     <Route path="/clientes/novo" element={<ClientCreate />} />
     <Route path="/clientes/:id" element={<ClientEdit />} />
   </>
-);
+)
 
-export default ClientRoutes;
+export default ClientRoutes

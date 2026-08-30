@@ -5,8 +5,6 @@ import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 
-
-
 export function useUserForm() {
   const navigate = useNavigate()
   const toast = useToast()
@@ -27,7 +25,7 @@ export function useUserForm() {
     }
 
     const payload = {
-      email: email,  
+      email: email,
       name: name,
       business_id: business || undefined,
       role: role,
@@ -38,20 +36,24 @@ export function useUserForm() {
       await UserService.createUser(payload)
       navigate("/usuarios")
     } catch (error) {
-      console.error('Erro ao criar usuário:', error)
+      console.error("Erro ao criar usuário:", error)
       toast.error(parseApiError(error, "Erro ao criar usuário").message)
     }
   }
 
   return {
-    email, setEmail,  
-    name, setName,
-    business, setBusiness,
-    role, setRole,
-    password, setPassword,
-    confirmPassword, setConfirmPassword,
-    handleSubmit
+    email,
+    setEmail,
+    name,
+    setName,
+    business,
+    setBusiness,
+    role,
+    setRole,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    handleSubmit,
   }
 }
-
-

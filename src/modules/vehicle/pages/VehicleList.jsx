@@ -5,27 +5,27 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function VehicleList() {
-  const { 
-    vehicle, 
+  const {
+    vehicle,
     loading,
-    searchTerm, 
-    setSearchTerm, 
-    currentPage, 
+    searchTerm,
+    setSearchTerm,
+    currentPage,
     setCurrentPage,
     totalItems,
     refetch,
     remove,
-    error
+    error,
   } = useVehicle()
 
   const toast = useToast()
   const confirm = useConfirm()
 
   const columns = [
-    { header: 'Placa', accessor: (item) => item.plate },
-    { header: 'Modelo', accessor: (item) => item.model },
-    { header: 'Cor', accessor: (item) => item.color },
-    { header: 'Cliente', accessor: (item) => `${item.client.first_name} ${item.client.last_name}` },
+    { header: "Placa", accessor: (item) => item.plate },
+    { header: "Modelo", accessor: (item) => item.model },
+    { header: "Cor", accessor: (item) => item.color },
+    { header: "Cliente", accessor: (item) => `${item.client.first_name} ${item.client.last_name}` },
   ]
 
   const handleDelete = async (item) => {
@@ -47,12 +47,8 @@ export default function VehicleList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader
-        title='Veículos'
-        buttonText='Novo Veículo'
-        buttonLink='/veiculos/novo'
-      />
-      <ListTable 
+      <ListHeader title="Veículos" buttonText="Novo Veículo" buttonLink="/veiculos/novo" />
+      <ListTable
         columns={columns}
         data={vehicle}
         editLinkPrefix="/veiculos"

@@ -1,7 +1,7 @@
-import { Route } from "react-router-dom";
-import VehicleList from "./pages/VehicleList";
-import VehicleEdit from "./pages/VehicleDetail";
-import VehicleCreate from "./pages/VehicleCreate";
+import { Route } from "react-router-dom"
+import VehicleList from "./pages/VehicleList"
+import VehicleEdit from "./pages/VehicleDetail"
+import VehicleCreate from "./pages/VehicleCreate"
 
 const VehicleRoutes = (
   <>
@@ -9,6 +9,6 @@ const VehicleRoutes = (
     <Route path="/veiculos/novo" element={<VehicleCreate />} />
     <Route path="/veiculos/:id" element={<VehicleEdit />} />
   </>
-);
+)
 
-export default VehicleRoutes;
+export default VehicleRoutes

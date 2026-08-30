@@ -2,13 +2,13 @@ import { api } from "@/api/http"
 
 export class SupplierService {
   static async getSupplier(params = {}) {
-    const response = await api.get('/fornecedores/', { params });
-    return response.data;
+    const response = await api.get("/fornecedores/", { params })
+    return response.data
   }
 
   static async getSupplierById(id) {
-    const response = await api.get(`/fornecedores/${id}/`);
-    return response.data;
+    const response = await api.get(`/fornecedores/${id}/`)
+    return response.data
   }
 
   static async createSupplier(payload) {
@@ -22,17 +22,17 @@ export class SupplierService {
   }
 
   static async deleteSupplier(id) {
-    const response = await api.delete(`/fornecedores/${id}/`);
-    return response.data;
+    const response = await api.delete(`/fornecedores/${id}/`)
+    return response.data
   }
 
   static async getProductBySupplier(id) {
-    const response = await api.get(`/fornecedores/${id}/produtos/`);
-    return response.data;
+    const response = await api.get(`/fornecedores/${id}/produtos/`)
+    return response.data
   }
 
   static async getServiceBySupplier(id) {
-    const response = await api.get(`/fornecedores/${id}/servicos/`);
-    return response.data;
+    const response = await api.get(`/fornecedores/${id}/servicos/`)
+    return response.data
   }
 }

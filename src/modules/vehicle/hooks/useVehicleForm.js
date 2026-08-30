@@ -5,12 +5,11 @@ import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 
-
 export function useVehicleForm() {
   const navigate = useNavigate()
   const toast = useToast()
   const { businessId } = useAuth()
-  
+
   const [business, setBusiness] = useState(businessId || "")
   const [client, setClient] = useState("")
   const [model, setModel] = useState("")
@@ -48,18 +47,26 @@ export function useVehicleForm() {
   }
 
   return {
-    business, setBusiness,
-    client, setClient,  
-    model, setModel,
-    year, setYear,
-    year_model, setYearModel,
-    plate, setPlate,
-    color, setColor,
-    manufacturer, setManufacturer,
-    fuel, setFuel,
-    mileage, setMileage,
-    handleSubmit
+    business,
+    setBusiness,
+    client,
+    setClient,
+    model,
+    setModel,
+    year,
+    setYear,
+    year_model,
+    setYearModel,
+    plate,
+    setPlate,
+    color,
+    setColor,
+    manufacturer,
+    setManufacturer,
+    fuel,
+    setFuel,
+    mileage,
+    setMileage,
+    handleSubmit,
   }
 }
-
-

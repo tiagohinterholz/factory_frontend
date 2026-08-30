@@ -8,40 +8,48 @@ import { UserPlus, Save, Lock } from "lucide-react"
 
 export default function UserCreate() {
   const {
-    email, setEmail,  
-    name, setName,
-    business, setBusiness,
-    role, setRole,
-    password, setPassword,
-    confirmPassword, setConfirmPassword,
-    handleSubmit
+    email,
+    setEmail,
+    name,
+    setName,
+    business,
+    setBusiness,
+    role,
+    setRole,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    handleSubmit,
   } = useUserForm()
 
   const { business: businesses } = useBusiness()
-  
+
   const { user: loggedUser, isSuperUser } = useAuth()
   const loggedRole = loggedUser?.role
 
-  const businessOptions = businesses?.map(b => ({
-    id: b.id,
-    name: b.corporate_name
-  })) || []
+  const businessOptions =
+    businesses?.map((b) => ({
+      id: b.id,
+      name: b.corporate_name,
+    })) || []
 
   const roleOptions = [
-    ...(isSuperUser ? [{ id: 'admin', name: 'Administrador' }] : []),
-    { id: 'colaborador', name: 'Colaborador' }
-  ].filter(option => {
-    if (isSuperUser) return true;
-    if (loggedRole === 'admin') return option.id === 'colaborador';
-    return false;
+    ...(isSuperUser ? [{ id: "admin", name: "Administrador" }] : []),
+    { id: "colaborador", name: "Colaborador" },
+  ].filter((option) => {
+    if (isSuperUser) return true
+    if (loggedRole === "admin") return option.id === "colaborador"
+    return false
   })
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Novo Usuário</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">Cadastre os dados de acesso</p>
+        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+          Cadastre os dados de acesso
+        </p>
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
@@ -52,16 +60,15 @@ export default function UserCreate() {
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Nome Completo"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: João da Silva"
                 required
               />
-              <FormField 
+              <FormField
                 label="E-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -72,16 +79,16 @@ export default function UserCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectField 
+              <SelectField
                 label="Perfil (Role)"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 options={roleOptions}
                 required
               />
-              
+
               {isSuperUser ? (
-                <SelectField 
+                <SelectField
                   label="Empreendimento"
                   value={business}
                   onChange={(e) => setBusiness(e.target.value)}
@@ -89,17 +96,17 @@ export default function UserCreate() {
                   required
                 />
               ) : (
-                <FormField 
-                    label="Empreendimento"
-                    value={loggedUser?.business?.name || "Meu Empreendimento"}
-                    onChange={() => {}}
-                    readOnly
+                <FormField
+                  label="Empreendimento"
+                  value={loggedUser?.business?.name || "Meu Empreendimento"}
+                  onChange={() => {}}
+                  readOnly
                 />
               )}
             </div>
 
             <div className="pt-6 pb-2">
-               <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm">
                   <Lock className="w-5 h-5" />
                 </div>
@@ -108,14 +115,14 @@ export default function UserCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 type="password"
                 required
               />
-              <FormField 
+              <FormField
                 label="Confirmar Senha"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -129,7 +136,6 @@ export default function UserCreate() {
                 Salvar Usuário
               </PrimaryButton>
             </div>
-
           </form>
         </div>
       </div>

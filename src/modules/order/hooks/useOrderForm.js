@@ -24,7 +24,7 @@ export function useOrderForm() {
       business_id: business,
       vehicle_id: vehicle,
       service_date: serviceDate || null,
-      notes: notes
+      notes: notes,
     }
 
     try {
@@ -37,11 +37,16 @@ export function useOrderForm() {
   }
 
   return {
-    business, setBusiness,
-    client, setClient,
-    vehicle, setVehicle,
-    serviceDate, setServiceDate,
-    notes, setNotes,
-    handleSubmit
+    business,
+    setBusiness,
+    client,
+    setClient,
+    vehicle,
+    setVehicle,
+    serviceDate,
+    setServiceDate,
+    notes,
+    setNotes,
+    handleSubmit,
   }
 }

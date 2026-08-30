@@ -68,12 +68,15 @@ export default function CityEdit() {
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Editar Cidade</h1>
-            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">Gestão de municípios</p>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              Editar Cidade
+            </h1>
+            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
+              Gestão de municípios
+            </p>
           </div>
           <button
             onClick={handleDelete}
@@ -99,12 +102,12 @@ export default function CityEdit() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: São Paulo"
             />
-            
+
             <SelectField
               label="Estado"
               value={stateId}
               onChange={(e) => setStateId(e.target.value)}
-              options={states.map(s => ({ id: s.id, name: `${s.name} (${s.abbreviation})` }))}
+              options={states.map((s) => ({ id: s.id, name: `${s.name} (${s.abbreviation})` }))}
             />
 
             <div className="pt-4">

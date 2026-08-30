@@ -7,20 +7,12 @@ import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 
 import { MapPin, Globe, Edit2, Trash2, Milestone } from "lucide-react"
 
-
 export default function StateEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
-  
-  const {
-    name,
-    setName,
-    abbreviation,
-    setAbbreviation,
-    loading,
-    handleUpdate,
-    handleDelete
-  } = useStateEditForm()
+
+  const { name, setName, abbreviation, setAbbreviation, loading, handleUpdate, handleDelete } =
+    useStateEditForm()
 
   const { citiesByState, loading: loadingCities } = useCitiesByState(id)
 
@@ -34,11 +26,14 @@ export default function StateEdit() {
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Editar Estado</h1>
-          <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">Gestão de divisões territoriais</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+            Editar Estado
+          </h1>
+          <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
+            Gestão de divisões territoriais
+          </p>
         </div>
         <button
           onClick={handleDelete}
@@ -50,7 +45,6 @@ export default function StateEdit() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
         {/* Lado Esquerdo: Formulário */}
         <div className="lg:col-span-7">
           <div className="card-premium">
@@ -90,36 +84,39 @@ export default function StateEdit() {
 
         {/* Lado Direito: Cidades do Estado */}
         <div className="lg:col-span-5">
-          <RelatedDataCard 
+          <RelatedDataCard
             title="Cidades Vinculadas"
             icon={MapPin}
-            items={citiesByState.map(city => ({
+            items={citiesByState.map((city) => ({
               id: city.id,
               name: city.name,
-              subtitle: "Município"
+              subtitle: "Município",
             }))}
             loading={loadingCities}
             emptyMessage="Este estado ainda não possui cidades cadastradas."
             onAddClick={() => navigate("/cidades/novo", { state: { stateId: id } })}
             renderItem={(item) => (
-               <div 
+              <div
                 onClick={() => navigate(`/cidades/${item.id}`)}
                 className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between group cursor-pointer transition duration-300 hover:bg-white hover:border-indigo-100 hover:shadow-md"
               >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition duration-300 shadow-sm border border-slate-100">
-                      <Milestone className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <p className="font-bold text-slate-700 text-sm group-hover:text-indigo-600 transition duration-300">{item.name}</p>
-                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-0.5">{item.subtitle}</p>
-                    </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition duration-300 shadow-sm border border-slate-100">
+                    <Milestone className="w-5 h-5" />
                   </div>
+                  <div>
+                    <p className="font-bold text-slate-700 text-sm group-hover:text-indigo-600 transition duration-300">
+                      {item.name}
+                    </p>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-0.5">
+                      {item.subtitle}
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           />
         </div>
-
       </div>
     </div>
   )

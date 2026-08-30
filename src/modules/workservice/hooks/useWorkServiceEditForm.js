@@ -20,28 +20,27 @@ export function useWorkServiceEditForm() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-      async function load() {
-        try {
-          const data = await WorkService.getWorkServiceById(id)
-          setBusiness(data.business?.id || data.business || "")
-          setSupplier(data.supplier?.id || data.supplier || "")
-          setName(data.name || "")
-          setDescription(data.description || "")
-          setUnitPrice(data.unit_price || "")
-        } finally {
-          setLoading(false)
-        }
+    async function load() {
+      try {
+        const data = await WorkService.getWorkServiceById(id)
+        setBusiness(data.business?.id || data.business || "")
+        setSupplier(data.supplier?.id || data.supplier || "")
+        setName(data.name || "")
+        setDescription(data.description || "")
+        setUnitPrice(data.unit_price || "")
+      } finally {
+        setLoading(false)
       }
-      load()
-    }, [id])
-
+    }
+    load()
+  }, [id])
 
   async function handleUpdate(e) {
     e.preventDefault()
 
     const payload = {
       business_id: business,
-      supplier_id: supplier,  
+      supplier_id: supplier,
       name: name,
       description: description,
       unit_price: unitPrice,
@@ -57,25 +56,30 @@ export function useWorkServiceEditForm() {
   }
 
   async function handleDelete() {
-      const confirmed = await confirm({
-        title: "Excluir serviço?",
-        message: "Esta ação não pode ser desfeita.",
-        confirmText: "Excluir",
-        danger: true,
-      })
-      if (!confirmed) return
-      await WorkService.deleteWorkService(id)
-      navigate("/servicos")
-    }
+    const confirmed = await confirm({
+      title: "Excluir serviço?",
+      message: "Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+    await WorkService.deleteWorkService(id)
+    navigate("/servicos")
+  }
 
   return {
-    business, setBusiness,
-    supplier, setSupplier,  
-    name, setName,
-    description, setDescription,
-    unitPrice, setUnitPrice,
+    business,
+    setBusiness,
+    supplier,
+    setSupplier,
+    name,
+    setName,
+    description,
+    setDescription,
+    unitPrice,
+    setUnitPrice,
     loading,
     handleUpdate,
-    handleDelete
+    handleDelete,
   }
 }

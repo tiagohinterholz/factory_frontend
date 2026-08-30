@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/modules/auth/context/auth-context";
-import { useToast } from "@/modules/core/feedback/toast-context";
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
 
 export default function Login() {
   const navigate = useNavigate()
@@ -15,7 +15,7 @@ export default function Login() {
 
     try {
       await login({ email, password })
-      navigate('/dashboard')
+      navigate("/dashboard")
     } catch {
       toast.error("Credenciais inválidas")
     }
@@ -24,16 +24,11 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
-          Entrar no Sistema
-        </h2>
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Entrar no Sistema</h2>
 
         <form className="space-y-5" onSubmit={handleLogin}>
           <div>
-            <label className="block text-gray-700 mb-1 font-medium">
-              Email
-            </label>
+            <label className="block text-gray-700 mb-1 font-medium">Email</label>
             <input
               type="email"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -44,9 +39,7 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-1 font-medium">
-              Senha
-            </label>
+            <label className="block text-gray-700 mb-1 font-medium">Senha</label>
             <input
               type="password"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -64,20 +57,14 @@ export default function Login() {
         </form>
 
         <div className="mt-6 text-center space-y-2">
-          <a
-            href="#forgot"
-            className="block text-blue-600 hover:underline text-sm"
-          >
+          <a href="#forgot" className="block text-blue-600 hover:underline text-sm">
             Esqueceu a senha?
           </a>
-          <a
-            href="#register"
-            className="block text-gray-700 hover:underline text-sm"
-          >
+          <a href="#register" className="block text-gray-700 hover:underline text-sm">
             Criar uma conta
           </a>
         </div>
       </div>
     </div>
-  );
+  )
 }

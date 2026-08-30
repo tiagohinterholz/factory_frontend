@@ -9,31 +9,37 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useEffect } from "react"
 import { useAuth } from "@/modules/auth/context/auth-context"
 
-
 export default function AppointmentCreate() {
   const {
-    business, setBusiness,
-    client, setClient,
-    vehicle, setVehicle,
-    date, setDate,
-    time, setTime,
-    observation, setObservation,
-    order, setOrder,
-    handleSubmit
+    business,
+    setBusiness,
+    client,
+    setClient,
+    vehicle,
+    setVehicle,
+    date,
+    setDate,
+    time,
+    setTime,
+    observation,
+    setObservation,
+    order,
+    setOrder,
+    handleSubmit,
   } = useAppointmentForm()
-  
+
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { client: clients, loading: loadingClients } = useClient()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicle()
   const { orders, loading: loadingOrders } = useOrder()
 
-  const { isSuperUser} = useAuth()
+  const { isSuperUser } = useAuth()
 
   useEffect(() => {
     if (isSuperUser) {
-        setClient("")
-        setVehicle("")
-        setOrder("")
+      setClient("")
+      setVehicle("")
+      setOrder("")
     }
   }, [business, isSuperUser, setClient, setVehicle, setOrder])
 
@@ -46,39 +52,39 @@ export default function AppointmentCreate() {
     setOrder("")
   }, [vehicle, setOrder])
 
-  const businessOptions = businesses.map(b => ({
+  const businessOptions = businesses.map((b) => ({
     id: b.id,
-    name: b.corporate_name
+    name: b.corporate_name,
   }))
 
   const clientOptions = clients
-    .filter(c => {
-      const bizId = c.business?.id || c.business;
-      return !business || bizId === parseInt(business);
+    .filter((c) => {
+      const bizId = c.business?.id || c.business
+      return !business || bizId === parseInt(business)
     })
-    .map(c => ({
+    .map((c) => ({
       id: c.id,
-      name: c.first_name + " " + c.last_name
+      name: c.first_name + " " + c.last_name,
     }))
 
   const vehicleOptions = vehicles
-    .filter(v => {
-      const clId = v.client?.id || v.client;
-      return !client || clId === parseInt(client);
+    .filter((v) => {
+      const clId = v.client?.id || v.client
+      return !client || clId === parseInt(client)
     })
-    .map(v => ({
+    .map((v) => ({
       id: v.id,
-      name: (v.manufacturer || "") + " " + (v.model || "") + " " + (v.year || "")
+      name: (v.manufacturer || "") + " " + (v.model || "") + " " + (v.year || ""),
     }))
 
   const orderOptions = orders
-    .filter(o => {
-      const vhId = o.vehicle?.id || o.vehicle;
-      return !vehicle || vhId === parseInt(vehicle);
+    .filter((o) => {
+      const vhId = o.vehicle?.id || o.vehicle
+      return !vehicle || vhId === parseInt(vehicle)
     })
-    .map(o => ({
+    .map((o) => ({
       id: o.id,
-      name: `OS ${o.id} - ${o.plate || ""}`
+      name: `OS ${o.id} - ${o.plate || ""}`,
     }))
 
   if (loadingBusinesses || loadingClients || loadingVehicles || loadingOrders) {
@@ -91,16 +97,18 @@ export default function AppointmentCreate() {
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Novo Agendamento</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">Agende um horário para atendimento</p>
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+          Novo Agendamento
+        </h1>
+        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+          Agende um horário para atendimento
+        </p>
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={handleSubmit}>
-
             {isSuperUser && (
-              <SelectField 
+              <SelectField
                 label="Empreendimento"
                 value={business}
                 onChange={(e) => setBusiness(e.target.value)}
@@ -108,38 +116,38 @@ export default function AppointmentCreate() {
               />
             )}
 
-            <SelectField 
-                label="Cliente Proprietário"
-                value={client}
-                onChange={(e) => setClient(e.target.value)}
-                options={clientOptions}
-                disabled={!business && isSuperUser}
-              />
-            
-            <SelectField 
-                label="Veículo"
-                value={vehicle}
-                onChange={(e) => setVehicle(e.target.value)}
-                options={vehicleOptions}
-                disabled={!client}
-              />
+            <SelectField
+              label="Cliente Proprietário"
+              value={client}
+              onChange={(e) => setClient(e.target.value)}
+              options={clientOptions}
+              disabled={!business && isSuperUser}
+            />
 
-            <SelectField 
-                label="Ordem de Serviço"
-                value={order}
-                onChange={(e) => setOrder(e.target.value)}
-                options={orderOptions}
-                disabled={!vehicle}
-              />
+            <SelectField
+              label="Veículo"
+              value={vehicle}
+              onChange={(e) => setVehicle(e.target.value)}
+              options={vehicleOptions}
+              disabled={!client}
+            />
+
+            <SelectField
+              label="Ordem de Serviço"
+              value={order}
+              onChange={(e) => setOrder(e.target.value)}
+              options={orderOptions}
+              disabled={!vehicle}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Data"
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
               />
-              <FormField 
+              <FormField
                 label="Hora"
                 type="time"
                 value={time}
@@ -149,7 +157,7 @@ export default function AppointmentCreate() {
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-              <FormField 
+              <FormField
                 label="Observações"
                 value={observation}
                 onChange={(e) => setObservation(e.target.value)}
@@ -158,11 +166,8 @@ export default function AppointmentCreate() {
             </div>
 
             <div className="pt-4">
-              <PrimaryButton type="submit">
-                Salvar Agendamento
-              </PrimaryButton>
+              <PrimaryButton type="submit">Salvar Agendamento</PrimaryButton>
             </div>
-
           </form>
         </div>
       </div>

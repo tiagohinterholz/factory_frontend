@@ -13,7 +13,7 @@ export function useLicenseForm() {
   const [business, setBusiness] = useState(businessId || "")
   const [period, setPeriod] = useState("MENSAL")
   const [max_users, setMaxUsers] = useState("1")
-  const [activation_date, setActivationDate] = useState(new Date().toISOString().split('T')[0])
+  const [activation_date, setActivationDate] = useState(new Date().toISOString().split("T")[0])
   const [businesses, setBusinesses] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -46,20 +46,27 @@ export function useLicenseForm() {
       navigate("/empreendimentos/licencas")
     } catch (error) {
       console.error(error)
-      toast.error(parseApiError(error, "Erro ao configurar/renovar licença. Verifique se o empreendimento já possui uma base de licença.").message)
+      toast.error(
+        parseApiError(
+          error,
+          "Erro ao configurar/renovar licença. Verifique se o empreendimento já possui uma base de licença.",
+        ).message,
+      )
     }
   }
 
   return {
-    business, setBusiness,  
-    period, setPeriod,
-    max_users, setMaxUsers,
-    activation_date, setActivationDate,
+    business,
+    setBusiness,
+    period,
+    setPeriod,
+    max_users,
+    setMaxUsers,
+    activation_date,
+    setActivationDate,
     businesses,
     isSuperUser,
     loading,
-    handleSubmit
+    handleSubmit,
   }
 }
-
-

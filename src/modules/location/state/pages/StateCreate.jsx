@@ -4,20 +4,15 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Globe, Save } from "lucide-react"
 
 export default function StateCreate() {
-  const {
-    name,
-    setName,
-    abbreviation,
-    setAbbreviation,
-    handleSubmit
-  } = useStateForm()
+  const { name, setName, abbreviation, setAbbreviation, handleSubmit } = useStateForm()
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-xl mx-auto">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Novo Estado</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">Cadastre uma nova unidade federativa</p>
+        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+          Cadastre uma nova unidade federativa
+        </p>
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
@@ -30,14 +25,14 @@ export default function StateCreate() {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">
-                <FormField 
+                <FormField
                   label="Nome do Estado"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ex: Minas Gerais"
                 />
               </div>
-              <FormField 
+              <FormField
                 label="Sigla"
                 value={abbreviation}
                 onChange={(e) => setAbbreviation(e.target.value)}

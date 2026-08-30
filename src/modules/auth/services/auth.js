@@ -16,7 +16,7 @@ export const AuthService = {
       await api.post(
         "/usuarios/logout/",
         { refresh },
-        { headers: { Authorization: `Bearer ${access}` } }
+        { headers: { Authorization: `Bearer ${access}` } },
       )
     } catch (error) {
       console.error("Erro no logout:", error)

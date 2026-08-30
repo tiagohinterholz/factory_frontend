@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
   // e re-renderizaria todos os consumidores à toa.
   const value = useMemo(
     () => ({ user: state.user, loading: state.loading, login, logout }),
-    [state.user, state.loading, login, logout]
+    [state.user, state.loading, login, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

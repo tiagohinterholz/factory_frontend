@@ -2,13 +2,13 @@ import { api } from "@/api/http"
 
 export class ClientService {
   static async getClient(params = {}) {
-    const response = await api.get('/clientes/', { params });
-    return response.data;
+    const response = await api.get("/clientes/", { params })
+    return response.data
   }
 
   static async getClientById(id) {
-    const response = await api.get(`/clientes/${id}/`);
-    return response.data;
+    const response = await api.get(`/clientes/${id}/`)
+    return response.data
   }
 
   static async createClient(payload) {
@@ -22,12 +22,12 @@ export class ClientService {
   }
 
   static async deleteClient(id) {
-    const response = await api.delete(`/clientes/${id}/`);
-    return response.data;
+    const response = await api.delete(`/clientes/${id}/`)
+    return response.data
   }
 
   static async vehicleByClient(id) {
-    const response = await api.get(`/clientes/${id}/veiculos/`);
-    return response.data;
+    const response = await api.get(`/clientes/${id}/veiculos/`)
+    return response.data
   }
 }

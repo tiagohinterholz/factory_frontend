@@ -30,11 +30,11 @@ export function useBudgetEditForm() {
       setVehicle(data.vehicle?.id || data.vehicle || "")
       setProducts(data.budget_products || [])
       setServices(data.budget_services || [])
-      
+
       if (data.valid_until) {
         setValidUntil(data.valid_until.slice(0, 10))
       }
-      
+
       setStatus(data.status || "")
       setTotal(data.total || "0.00")
     } finally {
@@ -45,7 +45,6 @@ export function useBudgetEditForm() {
   useEffect(() => {
     load()
   }, [load])
-
 
   async function handleUpdate(e) {
     e.preventDefault()
@@ -115,19 +114,27 @@ export function useBudgetEditForm() {
   const refresh = load
 
   return {
-    business, setBusiness,
-    client, setClient,  
-    vehicle, setVehicle,
-    products, setProducts,
-    services, setServices,
-    validUntil, setValidUntil,
-    status, setStatus,
-    total, setTotal,
+    business,
+    setBusiness,
+    client,
+    setClient,
+    vehicle,
+    setVehicle,
+    products,
+    setProducts,
+    services,
+    setServices,
+    validUntil,
+    setValidUntil,
+    status,
+    setStatus,
+    total,
+    setTotal,
     loading,
     handleUpdate,
     handleDelete,
     handleApprove,
     handleCancel,
-    refresh
+    refresh,
   }
 }

@@ -34,10 +34,10 @@ export function useOrderEditForm() {
       setBudget(data.budget?.id || data.budget)
       setProducts(data.order_products || [])
       setServices(data.order_services || [])
-      
+
       if (data.service_date) setServiceDate(data.service_date.slice(0, 10))
       if (data.billing_date) setBillingDate(data.billing_date.slice(0, 10))
-      
+
       setStatus(data.status)
       setNotes(data.notes)
       setTotal(data.total)
@@ -49,7 +49,6 @@ export function useOrderEditForm() {
   useEffect(() => {
     load()
   }, [load])
-
 
   async function handleUpdate(e) {
     e.preventDefault()
@@ -103,21 +102,32 @@ export function useOrderEditForm() {
   }
 
   return {
-    business, setBusiness,
-    client, setClient,  
-    vehicle, setVehicle,
-    budget, setBudget,
-    products, setProducts,
-    services, setServices,
-    serviceDate, setServiceDate,
-    billingDate, setBillingDate,
-    status, setStatus,
-    notes, setNotes,
-    total, setTotal,
+    business,
+    setBusiness,
+    client,
+    setClient,
+    vehicle,
+    setVehicle,
+    budget,
+    setBudget,
+    products,
+    setProducts,
+    services,
+    setServices,
+    serviceDate,
+    setServiceDate,
+    billingDate,
+    setBillingDate,
+    status,
+    setStatus,
+    notes,
+    setNotes,
+    total,
+    setTotal,
     loading,
     handleUpdate,
     handleDelete,
     handleInvoice,
-    refresh: load
+    refresh: load,
   }
 }

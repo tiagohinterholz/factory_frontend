@@ -19,21 +19,20 @@ export function useBusinessForm() {
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
 
-
   async function handleSubmit(e) {
     e.preventDefault()
 
     const payload = {
-      corporate_name: corporateName,  
+      corporate_name: corporateName,
       trade_name: tradeName,
       cnpj: cnpj,
       state_id: stateId,
       city_id: cityId,
-      address:address,
+      address: address,
       number: number,
       complement: complement,
       phone: phone,
-      email: email
+      email: email,
     }
 
     try {
@@ -46,18 +45,26 @@ export function useBusinessForm() {
   }
 
   return {
-    corporateName, setCorporateName,  
-    tradeName, setTradeName,
-    cnpj, setCnpj,
-    stateId, setStateId,
-    cityId, setCityId,
-    address, setAddress,
-    number, setNumber,
-    complement, setComplement,
-    phone, setPhone,
-    email, setEmail,
-    handleSubmit
+    corporateName,
+    setCorporateName,
+    tradeName,
+    setTradeName,
+    cnpj,
+    setCnpj,
+    stateId,
+    setStateId,
+    cityId,
+    setCityId,
+    address,
+    setAddress,
+    number,
+    setNumber,
+    complement,
+    setComplement,
+    phone,
+    setPhone,
+    email,
+    setEmail,
+    handleSubmit,
   }
 }
-
-

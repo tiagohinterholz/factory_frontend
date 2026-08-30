@@ -5,7 +5,6 @@ import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 
-
 export function useWorkServiceForm() {
   const navigate = useNavigate()
   const toast = useToast()
@@ -13,7 +12,7 @@ export function useWorkServiceForm() {
   const { businessId } = useAuth()
 
   const [business, setBusiness] = useState(businessId || "")
-  const [supplier, setSupplier] = useState(location.state?.supplierId || "")  
+  const [supplier, setSupplier] = useState(location.state?.supplierId || "")
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [unitPrice, setUnitPrice] = useState("")
@@ -23,7 +22,7 @@ export function useWorkServiceForm() {
 
     const payload = {
       business_id: business,
-      supplier_id: supplier,  
+      supplier_id: supplier,
       name: name,
       description: description,
       unit_price: unitPrice,
@@ -39,13 +38,16 @@ export function useWorkServiceForm() {
   }
 
   return {
-    business, setBusiness,
-    supplier, setSupplier,  
-    name, setName,
-    description, setDescription,
-    unitPrice, setUnitPrice,
-    handleSubmit
+    business,
+    setBusiness,
+    supplier,
+    setSupplier,
+    name,
+    setName,
+    description,
+    setDescription,
+    unitPrice,
+    setUnitPrice,
+    handleSubmit,
   }
 }
-
-

@@ -10,31 +10,36 @@ import { Settings, Edit2, Trash2 } from "lucide-react"
 
 export default function WorkServiceDetail() {
   useParams()
-  
+
   const {
-    business, setBusiness,
-    supplier, setSupplier,  
-    name, setName,
-    description, setDescription,
-    unitPrice, setUnitPrice,
+    business,
+    setBusiness,
+    supplier,
+    setSupplier,
+    name,
+    setName,
+    description,
+    setDescription,
+    unitPrice,
+    setUnitPrice,
     loading,
     handleUpdate,
-    handleDelete
+    handleDelete,
   } = useWorkServiceEditForm()
-  
+
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplier()
 
   const { isSuperUser } = useAuth()
 
-  const businessOptions = businesses.map(b => ({
+  const businessOptions = businesses.map((b) => ({
     id: b.id,
-    name: b.corporate_name
+    name: b.corporate_name,
   }))
 
-  const supplierOptions = suppliers.map(s => ({
+  const supplierOptions = suppliers.map((s) => ({
     id: s.id,
-    name: s.corporate_name
+    name: s.corporate_name,
   }))
 
   if (loading || loadingBusinesses || loadingSuppliers) {
@@ -50,8 +55,12 @@ export default function WorkServiceDetail() {
       <div className="max-w-2xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Detalhes do Serviço</h1>
-            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">Gestão de Mão de Obra</p>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              Detalhes do Serviço
+            </h1>
+            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
+              Gestão de Mão de Obra
+            </p>
           </div>
           <button
             onClick={handleDelete}
@@ -73,7 +82,7 @@ export default function WorkServiceDetail() {
           <form className="space-y-6" onSubmit={handleUpdate}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {isSuperUser && (
-                <SelectField 
+                <SelectField
                   label="Empreendimento"
                   value={business}
                   onChange={(e) => setBusiness(e.target.value)}
@@ -81,7 +90,7 @@ export default function WorkServiceDetail() {
                 />
               )}
 
-              <SelectField 
+              <SelectField
                 label="Fornecedor (Opcional)"
                 value={supplier}
                 onChange={(e) => setSupplier(e.target.value)}
@@ -89,13 +98,13 @@ export default function WorkServiceDetail() {
               />
             </div>
 
-            <FormField 
+            <FormField
               label="Nome do Serviço"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
 
-            <FormField 
+            <FormField
               label="Descrição / Detalhes"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -103,7 +112,7 @@ export default function WorkServiceDetail() {
             />
 
             <div className="max-w-xs">
-              <FormField 
+              <FormField
                 label="Preço do Serviço (Mão de Obra)"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}

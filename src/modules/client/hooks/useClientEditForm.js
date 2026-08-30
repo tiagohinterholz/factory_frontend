@@ -26,43 +26,42 @@ export function useClientEditForm() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-      async function load() {
-        try {
-          const data = await ClientService.getClientById(id)
-          setBusiness(data.business?.id || data.business || "")
-          setFirstName(data.first_name || "")
-          setLastName(data.last_name || "")
-          setCpf(data.cpf || "")
-          setStateId(data.state?.id || data.state || "")
-          setCityId(data.city?.id || data.city || "")
-          setAddress(data.address || "")
-          setNumber(data.number || "")
-          setComplement(data.complement || "")
-          setPhone(data.phone || "")
-          setEmail(data.email || "")
-        } finally {
-          setLoading(false)
-        }
+    async function load() {
+      try {
+        const data = await ClientService.getClientById(id)
+        setBusiness(data.business?.id || data.business || "")
+        setFirstName(data.first_name || "")
+        setLastName(data.last_name || "")
+        setCpf(data.cpf || "")
+        setStateId(data.state?.id || data.state || "")
+        setCityId(data.city?.id || data.city || "")
+        setAddress(data.address || "")
+        setNumber(data.number || "")
+        setComplement(data.complement || "")
+        setPhone(data.phone || "")
+        setEmail(data.email || "")
+      } finally {
+        setLoading(false)
       }
-      load()
-    }, [id])
-
+    }
+    load()
+  }, [id])
 
   async function handleUpdate(e) {
     e.preventDefault()
 
     const payload = {
       business_id: business,
-      first_name: firstName,  
+      first_name: firstName,
       last_name: lastName,
       cpf: cpf,
       state_id: stateId,
       city_id: cityId,
-      address:address,
+      address: address,
       number: number,
       complement: complement,
       phone: phone,
-      email: email
+      email: email,
     }
 
     try {
@@ -75,31 +74,42 @@ export function useClientEditForm() {
   }
 
   async function handleDelete() {
-      const confirmed = await confirm({
-        title: "Excluir cliente?",
-        message: "Esta ação não pode ser desfeita.",
-        confirmText: "Excluir",
-        danger: true,
-      })
-      if (!confirmed) return
-      await ClientService.deleteClient(id)
-      navigate("/clientes")
-    }
+    const confirmed = await confirm({
+      title: "Excluir cliente?",
+      message: "Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      danger: true,
+    })
+    if (!confirmed) return
+    await ClientService.deleteClient(id)
+    navigate("/clientes")
+  }
 
   return {
-    business, setBusiness,
-    firstName, setFirstName,  
-    lastName, setLastName,
-    cpf, setCpf,
-    stateId, setStateId,
-    cityId, setCityId,
-    address, setAddress,
-    number, setNumber,
-    complement, setComplement,
-    phone, setPhone,
-    email, setEmail,
+    business,
+    setBusiness,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    cpf,
+    setCpf,
+    stateId,
+    setStateId,
+    cityId,
+    setCityId,
+    address,
+    setAddress,
+    number,
+    setNumber,
+    complement,
+    setComplement,
+    phone,
+    setPhone,
+    email,
+    setEmail,
     loading,
     handleUpdate,
-    handleDelete
+    handleDelete,
   }
 }

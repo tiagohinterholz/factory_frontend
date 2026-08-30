@@ -13,7 +13,7 @@ export default function SelectField({ label, value, onChange, options = [] }) {
           <option value="">Selecione o(a) {label?.toLowerCase()}</option>
           {options.map((option) => (
             <option key={option.id} value={option.id}>
-                {option.name}
+              {option.name}
             </option>
           ))}
         </select>

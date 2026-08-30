@@ -28,8 +28,6 @@ export function useStateForm() {
     setName,
     abbreviation,
     setAbbreviation,
-    handleSubmit
+    handleSubmit,
   }
 }
-
-

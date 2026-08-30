@@ -8,37 +8,44 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { Package, Edit2, Trash2 } from "lucide-react"
 
-
 export default function ProductDetail() {
   useParams()
-  
+
   const {
-    business, setBusiness,
-    supplier, setSupplier,  
-    name, setName,
-    brand, setBrand,
-    reference, setReference,
-    description, setDescription,
-    stockQuantity, setStockQuantity,
-    unitPrice, setUnitPrice,
+    business,
+    setBusiness,
+    supplier,
+    setSupplier,
+    name,
+    setName,
+    brand,
+    setBrand,
+    reference,
+    setReference,
+    description,
+    setDescription,
+    stockQuantity,
+    setStockQuantity,
+    unitPrice,
+    setUnitPrice,
     loading,
     handleUpdate,
-    handleDelete
+    handleDelete,
   } = useProductEditForm()
-  
+
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplier()
 
   const { isSuperUser } = useAuth()
 
-  const businessOptions = businesses.map(b => ({
+  const businessOptions = businesses.map((b) => ({
     id: b.id,
-    name: b.corporate_name
+    name: b.corporate_name,
   }))
 
-  const supplierOptions = suppliers.map(s => ({
+  const supplierOptions = suppliers.map((s) => ({
     id: s.id,
-    name: s.corporate_name
+    name: s.corporate_name,
   }))
 
   if (loading || loadingBusinesses || loadingSuppliers) {
@@ -51,12 +58,15 @@ export default function ProductDetail() {
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-2xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Detalhes do Produto</h1>
-            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">Gestão técnica de estoque</p>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              Detalhes do Produto
+            </h1>
+            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
+              Gestão técnica de estoque
+            </p>
           </div>
           <button
             onClick={handleDelete}
@@ -76,10 +86,9 @@ export default function ProductDetail() {
           </div>
 
           <form className="space-y-6" onSubmit={handleUpdate}>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {isSuperUser && (
-                <SelectField 
+                <SelectField
                   label="Empreendimento"
                   value={business}
                   onChange={(e) => setBusiness(e.target.value)}
@@ -87,7 +96,7 @@ export default function ProductDetail() {
                 />
               )}
 
-              <SelectField 
+              <SelectField
                 label="Fornecedor"
                 value={supplier}
                 onChange={(e) => setSupplier(e.target.value)}
@@ -96,38 +105,30 @@ export default function ProductDetail() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
-                label="Nome"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <FormField 
-                label="Marca"
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-              />
+              <FormField label="Nome" value={name} onChange={(e) => setName(e.target.value)} />
+              <FormField label="Marca" value={brand} onChange={(e) => setBrand(e.target.value)} />
             </div>
 
-            <FormField 
+            <FormField
               label="Referência/SKU"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
             />
 
-            <FormField 
+            <FormField
               label="Descrição"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Qtd em Estoque"
                 value={stockQuantity}
                 onChange={(e) => setStockQuantity(e.target.value)}
                 type="number"
               />
-              <FormField 
+              <FormField
                 label="Preço Unitário"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}

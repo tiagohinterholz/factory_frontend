@@ -9,21 +9,30 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { fuelOptions } from "../constants/vehicle"
 
-
 export default function VehicleCreate() {
   const location = useLocation()
   const {
-    business, setBusiness,
-    client, setClient,
-    model, setModel,
-    year, setYear,
-    year_model, setYearModel,
-    plate, setPlate,
-    color, setColor,
-    manufacturer, setManufacturer,
-    fuel, setFuel,
-    mileage, setMileage,
-    handleSubmit
+    business,
+    setBusiness,
+    client,
+    setClient,
+    model,
+    setModel,
+    year,
+    setYear,
+    year_model,
+    setYearModel,
+    plate,
+    setPlate,
+    color,
+    setColor,
+    manufacturer,
+    setManufacturer,
+    fuel,
+    setFuel,
+    mileage,
+    setMileage,
+    handleSubmit,
   } = useVehicleForm()
 
   useEffect(() => {
@@ -31,20 +40,20 @@ export default function VehicleCreate() {
       setClient(location.state.clientId)
     }
   }, [location.state, setClient])
-  
+
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { client: clients, loading: loadingClients } = useClient()
 
   const { isSuperUser } = useAuth()
 
-  const businessOptions = businesses.map(b => ({
+  const businessOptions = businesses.map((b) => ({
     id: b.id,
-    name: b.corporate_name
+    name: b.corporate_name,
   }))
 
-  const clientOptions = clients.map(c => ({
+  const clientOptions = clients.map((c) => ({
     id: c.id,
-    name: c.first_name + " " + c.last_name
+    name: c.first_name + " " + c.last_name,
   }))
 
   if (loadingBusinesses || loadingClients) {
@@ -57,16 +66,16 @@ export default function VehicleCreate() {
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Novo Veículo</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">Cadastre as informações técnicas do veículo</p>
+        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+          Cadastre as informações técnicas do veículo
+        </p>
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={handleSubmit}>
-
             {isSuperUser && (
-              <SelectField 
+              <SelectField
                 label="Empreendimento"
                 value={business}
                 onChange={(e) => setBusiness(e.target.value)}
@@ -74,21 +83,21 @@ export default function VehicleCreate() {
               />
             )}
 
-            <SelectField 
-                label="Cliente Proprietário"
-                value={client}
-                onChange={(e) => setClient(e.target.value)}
-                options={clientOptions}
-              />
+            <SelectField
+              label="Cliente Proprietário"
+              value={client}
+              onChange={(e) => setClient(e.target.value)}
+              options={clientOptions}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Fabricante"
                 value={manufacturer}
                 onChange={(e) => setManufacturer(e.target.value)}
                 placeholder="Ex: Toyota"
               />
-              <FormField 
+              <FormField
                 label="Modelo"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
@@ -97,13 +106,13 @@ export default function VehicleCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Ano de Fabricação"
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
                 placeholder="2023"
               />
-              <FormField 
+              <FormField
                 label="Ano do Modelo"
                 value={year_model}
                 onChange={(e) => setYearModel(e.target.value)}
@@ -112,13 +121,13 @@ export default function VehicleCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Placa"
                 value={plate}
                 onChange={(e) => setPlate(e.target.value)}
                 placeholder="ABC-1234"
               />
-              <FormField 
+              <FormField
                 label="Cor"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
@@ -127,13 +136,13 @@ export default function VehicleCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <SelectField 
+              <SelectField
                 label="Combustível"
                 value={fuel}
                 onChange={(e) => setFuel(e.target.value)}
                 options={fuelOptions}
               />
-              <FormField 
+              <FormField
                 label="Quilometragem"
                 value={mileage}
                 onChange={(e) => setMileage(e.target.value)}
@@ -142,11 +151,8 @@ export default function VehicleCreate() {
             </div>
 
             <div className="pt-4">
-              <PrimaryButton type="submit">
-                Salvar Veículo
-              </PrimaryButton>
+              <PrimaryButton type="submit">Salvar Veículo</PrimaryButton>
             </div>
-
           </form>
         </div>
       </div>

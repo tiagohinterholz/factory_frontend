@@ -35,11 +35,11 @@ O ambiente Frontend foi idealizado para ser limpo moderno:
 
 O sistema foi componentizado em módulos de negócio _Stand-Alone_, garantindo controle de dependência e facilidade de manutenção.
 
-*   🏢 **Business (Empreendimentos)**: Cadastro multilocatário, logotipos customizados e configurações locais de empresa.
-*   🔑 **License (Licenças/Faturamento)**: Acompanhamento de **status rigoroso gerido pelo backend** (`TRIAL`, `ACTIVE`, `EXPIRED`). Visualização de DIAS RESTANTES e controle automático de teto máximo de usuários por sistema.
-*   📦 **Suppliers & Products (Catálogos)**: Entidades interligadas para gestão da base de distribuição.
-*   📅 **Appointments (Agendamentos)**: Sistema relacional sofisticado, cruzando Clientes, Veículos e Serviços.
-*   📍 **Location (Cidades e Estados)**: Rotas auxiliares para construção escalável de endereços BR.
+- 🏢 **Business (Empreendimentos)**: Cadastro multilocatário, logotipos customizados e configurações locais de empresa.
+- 🔑 **License (Licenças/Faturamento)**: Acompanhamento de **status rigoroso gerido pelo backend** (`TRIAL`, `ACTIVE`, `EXPIRED`). Visualização de DIAS RESTANTES e controle automático de teto máximo de usuários por sistema.
+- 📦 **Suppliers & Products (Catálogos)**: Entidades interligadas para gestão da base de distribuição.
+- 📅 **Appointments (Agendamentos)**: Sistema relacional sofisticado, cruzando Clientes, Veículos e Serviços.
+- 📍 **Location (Cidades e Estados)**: Rotas auxiliares para construção escalável de endereços BR.
 
 ---
 
@@ -48,18 +48,21 @@ O sistema foi componentizado em módulos de negócio _Stand-Alone_, garantindo c
 Siga os passos abaixo para configurar e rodar o Factory Frontend na sua máquina:
 
 1. **Clone o repositório**
+
    ```bash
    git clone https://github.com/seu-usuario/factory_project_frontend.git
    cd factory_project_frontend
    ```
 
 2. **Instale as dependências**
+
    ```bash
    npm install
    ```
 
 3. **Configure o ambiente**
    Copie `.env.example` para `.env` e ajuste a URL da API:
+
    ```bash
    cp .env.example .env
    # .env
@@ -67,9 +70,11 @@ Siga os passos abaixo para configurar e rodar o Factory Frontend na sua máquina
    ```
 
 4. **Inicie o servidor de desenvolvimento**
+
    ```bash
    npm run dev
    ```
+
    A aplicação sobe em `http://localhost:5173`.
 
 5. **Certifique-se do Backend**
@@ -82,6 +87,7 @@ Siga os passos abaixo para configurar e rodar o Factory Frontend na sua máquina
 A forma mais rápida e recomendada de rodar o ambiente é através do Docker, garantindo que todas as dependências estejam isoladas.
 
 1. **Suba o container do Frontend**
+
    ```bash
    docker compose up --build -d
    ```
@@ -94,6 +100,7 @@ A forma mais rápida e recomendada de rodar o ambiente é através do Docker, ga
 ## 🖌️ Design System e Padronização de Componentes
 
 O sistema opera embasado em **Custom Hooks** `(ex: useLicenseForm, useSupplierForm)` e Componentes Core Reutilizáveis localizados na pasta `src/modules/core/components/`, tais como:
+
 - `ListHeader` e `ListTable`: Cabeçallho de filtragem com Tabelas responsivas assíncronas padrão.
 - `FormField` e `SelectField`: Elementos de transição suave com `focus-within:text-indigo-600`
 - `PrimaryButton`: UX unificada para chamadas de ação primárias.

@@ -54,13 +54,17 @@ export function useLicenseEditForm() {
   }
 
   return {
-    business, setBusiness,
+    business,
+    setBusiness,
     status,
-    period, setPeriod,
-    max_users, setMaxUsers,
-    activation_date, setActivationDate,
+    period,
+    setPeriod,
+    max_users,
+    setMaxUsers,
+    activation_date,
+    setActivationDate,
     expiration_date,
     loading,
-    handleRenewSubmit
+    handleRenewSubmit,
   }
 }

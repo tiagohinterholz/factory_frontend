@@ -5,12 +5,11 @@ import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 
-
 export function useSupplierForm() {
   const navigate = useNavigate()
   const toast = useToast()
   const { businessId } = useAuth()
-  
+
   const [business, setBusiness] = useState(businessId || "")
   const [corporateName, setCorporateName] = useState("")
   const [tradeName, setTradeName] = useState("")
@@ -28,16 +27,16 @@ export function useSupplierForm() {
 
     const payload = {
       business_id: business,
-      corporate_name: corporateName,  
+      corporate_name: corporateName,
       trade_name: tradeName,
       cnpj: cnpj,
       state_id: stateId,
       city_id: cityId,
-      address:address,
+      address: address,
       number: number,
       complement: complement,
       phone: phone,
-      email: email
+      email: email,
     }
 
     try {
@@ -50,19 +49,28 @@ export function useSupplierForm() {
   }
 
   return {
-    business, setBusiness,
-    corporateName, setCorporateName,  
-    tradeName, setTradeName,
-    cnpj, setCnpj,
-    stateId, setStateId,
-    cityId, setCityId,
-    address, setAddress,
-    number, setNumber,
-    complement, setComplement,
-    phone, setPhone,
-    email, setEmail,
-    handleSubmit
+    business,
+    setBusiness,
+    corporateName,
+    setCorporateName,
+    tradeName,
+    setTradeName,
+    cnpj,
+    setCnpj,
+    stateId,
+    setStateId,
+    cityId,
+    setCityId,
+    address,
+    setAddress,
+    number,
+    setNumber,
+    complement,
+    setComplement,
+    phone,
+    setPhone,
+    email,
+    setEmail,
+    handleSubmit,
   }
 }
-
-

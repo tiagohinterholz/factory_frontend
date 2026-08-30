@@ -4,18 +4,17 @@ import StatCard from "@/modules/dashboard/components/StatCard"
 import HighlightCard from "@/modules/dashboard/components/HighlightCard"
 
 export default function Dashboard() {
-  const { loading, data } = useDashboard();
+  const { loading, data } = useDashboard()
 
   if (loading) {
-    return <div className="p-10 text-center text-gray-600">Carregando dashboard...</div>;
+    return <div className="p-10 text-center text-gray-600">Carregando dashboard...</div>
   }
 
-  const summary = data.summary_business;
-  const detail = data.detail_business;
+  const summary = data.summary_business
+  const detail = data.detail_business
 
   return (
     <div className="p-6 space-y-6">
-
       <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <SummaryCard
           title="Orçamentos em análise"
@@ -65,48 +64,23 @@ export default function Dashboard() {
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Clientes"
-          value={summary.clients ?? 0}
-          icon="👥"
-          color="bg-blue-600"
-        />
-        <StatCard
-          title="Veículos"
-          value={summary.vehicles ?? 0}
-          icon="🚗"
-          color="bg-purple-600"
-        />
+        <StatCard title="Clientes" value={summary.clients ?? 0} icon="👥" color="bg-blue-600" />
+        <StatCard title="Veículos" value={summary.vehicles ?? 0} icon="🚗" color="bg-purple-600" />
         <StatCard
           title="Fornecedores"
           value={summary.suppliers ?? 0}
           icon="🏭"
           color="bg-blue-500"
         />
-        <StatCard
-          title="Produtos"
-          value={summary.products ?? 0}
-          icon="📦"
-          color="bg-sky-500"
-        />
-        <StatCard
-          title="Serviços"
-          value={summary.services ?? 0}
-          icon="🛠"
-          color="bg-sky-500"
-        />
+        <StatCard title="Produtos" value={summary.products ?? 0} icon="📦" color="bg-sky-500" />
+        <StatCard title="Serviços" value={summary.services ?? 0} icon="🛠" color="bg-sky-500" />
         <StatCard
           title="Agendamentos"
           value={summary.appointments ?? 0}
           icon="📅"
           color="bg-blue-600"
         />
-        <StatCard
-          title="Orçamentos"
-          value={summary.budgets ?? 0}
-          icon="🧾"
-          color="bg-blue-600"
-        />
+        <StatCard title="Orçamentos" value={summary.budgets ?? 0} icon="🧾" color="bg-blue-600" />
         <StatCard
           title="Ordens de Serviço"
           value={summary.orders ?? 0}
@@ -115,5 +89,5 @@ export default function Dashboard() {
         />
       </section>
     </div>
-  );
+  )
 }
