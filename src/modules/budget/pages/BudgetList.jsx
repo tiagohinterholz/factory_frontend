@@ -14,7 +14,8 @@ export default function BudgetList() {
     currentPage, 
     setCurrentPage, 
     totalItems,
-    load
+    load,
+    error
   } = useBudget()
 
   const toast = useToast()
@@ -68,6 +69,8 @@ export default function BudgetList() {
         editLinkPrefix="/orcamentos"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

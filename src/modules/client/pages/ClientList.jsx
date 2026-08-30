@@ -14,7 +14,8 @@ export default function ClientList() {
     currentPage,
     setCurrentPage,
     totalItems,
-    load
+    load,
+    error
   } = useClient()
 
   const toast = useToast()
@@ -57,6 +58,8 @@ export default function ClientList() {
         editLinkPrefix="/clientes"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

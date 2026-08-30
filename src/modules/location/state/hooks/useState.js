@@ -4,11 +4,13 @@ import { StateService } from "@/modules/location/state/services/state"
 export function useStates() {
   const [data, setData] = useState({ results: [], count: 0 })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
+    setError(null)
     try {
       const response = await StateService.getStates({ search, page })
       if (Array.isArray(response)) {
@@ -20,6 +22,7 @@ export function useStates() {
       }
     } catch (error) {
       console.error('Erro ao carregar estados:', error)
+      setError(error)
       setData({ results: [], count: 0 })
     } finally {
       setLoading(false)
@@ -42,6 +45,7 @@ export function useStates() {
     setSearchTerm, 
     currentPage,
     setCurrentPage,
-    load
+    load,
+    error
   }
 }

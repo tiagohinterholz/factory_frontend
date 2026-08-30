@@ -4,11 +4,13 @@ import { ProductService } from '@/modules/product/services/product'
 export function useProduct() {
   const [data, setData] = useState({ results: [], count: 0 })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
+    setError(null)
     try {
       const response = await ProductService.getProduct({ search, page })
       if (Array.isArray(response)) {
@@ -20,6 +22,7 @@ export function useProduct() {
       }
     } catch (error) {
       console.error('Erro ao buscar produtos:', error)
+      setError(error)
       setData({ results: [], count: 0 })
     } finally {
       setLoading(false)
@@ -42,6 +45,7 @@ export function useProduct() {
     setSearchTerm, 
     currentPage,
     setCurrentPage,
-    load
+    load,
+    error
   }
 }

@@ -14,7 +14,8 @@ export default function BusinessList() {
     currentPage,
     setCurrentPage,
     totalItems,
-    load
+    load,
+    error
   } = useBusiness()
 
   const toast = useToast()
@@ -57,6 +58,8 @@ export default function BusinessList() {
         editLinkPrefix="/empreendimentos"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

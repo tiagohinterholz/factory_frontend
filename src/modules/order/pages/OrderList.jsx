@@ -14,7 +14,8 @@ export default function OrderList() {
     currentPage, 
     setCurrentPage, 
     totalItems,
-    load
+    load,
+    error
   } = useOrder()
 
   const toast = useToast()
@@ -68,6 +69,8 @@ export default function OrderList() {
         editLinkPrefix="/ordens"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

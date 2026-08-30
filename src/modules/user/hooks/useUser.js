@@ -7,11 +7,13 @@ export function useUser() {
 
   const [data, setData] = useState({ results: [], count: 0 })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
+    setError(null)
     try {
       const response = await UserService.getUser({ search, page })
       if (Array.isArray(response)) {
@@ -23,6 +25,7 @@ export function useUser() {
       }
     } catch (error) {
       console.error('Erro ao buscar usuários:', error)
+      setError(error)
       setData({ results: [], count: 0 })
     } finally {
       setLoading(false)
@@ -62,6 +65,8 @@ export function useUser() {
     setSearchTerm, 
     currentPage, 
     setCurrentPage,
-    handleDelete
+    handleDelete,
+    load,
+    error
   }
 }

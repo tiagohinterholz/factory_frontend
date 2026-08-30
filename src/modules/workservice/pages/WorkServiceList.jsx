@@ -14,7 +14,8 @@ export default function WorkServiceList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load
+    load,
+    error
   } = useWorkService()
 
   const toast = useToast()
@@ -57,6 +58,8 @@ export default function WorkServiceList() {
         editLinkPrefix="/servicos"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

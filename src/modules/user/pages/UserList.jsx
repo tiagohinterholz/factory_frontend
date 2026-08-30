@@ -12,7 +12,9 @@ export default function UserList() {
     currentPage, 
     setCurrentPage,
     handleDelete: removeUser,
-    totalItems 
+    totalItems,
+    load,
+    error
   } = useUser()
 
   const confirm = useConfirm()
@@ -48,6 +50,8 @@ export default function UserList() {
         editLinkPrefix="/usuarios"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

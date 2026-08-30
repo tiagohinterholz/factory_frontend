@@ -14,7 +14,8 @@ export default function StateList() {
     currentPage,
     setCurrentPage,
     totalItems,
-    load
+    load,
+    error
   } = useStates()
 
   const toast = useToast()
@@ -56,6 +57,8 @@ export default function StateList() {
         editLinkPrefix="/estados"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

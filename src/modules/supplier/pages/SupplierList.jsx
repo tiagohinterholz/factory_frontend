@@ -14,7 +14,8 @@ export default function SupplierList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load
+    load,
+    error
   } = useSupplier()
 
   const toast = useToast()
@@ -57,6 +58,8 @@ export default function SupplierList() {
         editLinkPrefix="/fornecedores"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

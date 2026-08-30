@@ -1,12 +1,14 @@
-import { Search, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Edit2, Trash2, ChevronLeft, ChevronRight, AlertTriangle, RefreshCw } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-export default function ListTable({ 
-  columns, 
-  data = [], 
-  onDelete, 
-  editLinkPrefix, 
-  loading, 
+export default function ListTable({
+  columns,
+  data = [],
+  onDelete,
+  editLinkPrefix,
+  loading,
+  error,
+  onRetry,
   renderActions,
   searchTerm,
   setSearchTerm,
@@ -63,6 +65,26 @@ export default function ListTable({
                    </td>
                  </tr>
                ))
+            ) : error ? (
+              <tr>
+                <td colSpan={columns.length + 1} className='px-6 py-12 text-center'>
+                  <div className='flex flex-col items-center gap-3'>
+                    <div className='flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600'>
+                      <AlertTriangle className='h-5 w-5' />
+                    </div>
+                    <p className='text-sm font-medium text-slate-600'>Não foi possível carregar os dados.</p>
+                    {onRetry && (
+                      <button
+                        onClick={onRetry}
+                        className='inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50'
+                      >
+                        <RefreshCw className='h-4 w-4' />
+                        Tentar de novo
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
             ) : data && data.length > 0 ? (
               data.map((item, idx) => (
                 <tr key={item.id || idx} className='group hover:bg-slate-50/30 transition-colors duration-200'>

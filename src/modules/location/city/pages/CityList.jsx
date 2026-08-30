@@ -14,7 +14,8 @@ export default function CityList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load
+    load,
+    error
   } = useCities()
 
   const toast = useToast()
@@ -58,6 +59,8 @@ export default function CityList() {
         editLinkPrefix="/cidades"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

@@ -14,7 +14,8 @@ export default function VehicleList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load
+    load,
+    error
   } = useVehicle()
 
   const toast = useToast()
@@ -58,6 +59,8 @@ export default function VehicleList() {
         editLinkPrefix="/veiculos"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}

@@ -5,11 +5,13 @@ import { StateService } from "@/modules/location/state/services/state"
 export function useCities() {
   const [data, setData] = useState({ results: [], count: 0 })
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
   const load = useCallback(async (search = '', page = 1) => {
     setLoading(true)
+    setError(null)
     try {
       const response = await CityService.getCities({ search, page })
       if (Array.isArray(response)) {
@@ -21,6 +23,7 @@ export function useCities() {
       }
     } catch (error) {
       console.error('Erro ao carregar cidades:', error)
+      setError(error)
       setData({ results: [], count: 0 })
     } finally {
       setLoading(false)
@@ -43,7 +46,8 @@ export function useCities() {
     setSearchTerm, 
     currentPage,
     setCurrentPage,
-    load
+    load,
+    error
   }
 }
 

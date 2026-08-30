@@ -14,7 +14,8 @@ export default function ProductList() {
     currentPage, 
     setCurrentPage,
     totalItems,
-    load
+    load,
+    error
   } = useProduct()
 
   const toast = useToast()
@@ -58,6 +59,8 @@ export default function ProductList() {
         editLinkPrefix="/produtos"
         onDelete={handleDelete}
         loading={loading}
+        error={error}
+        onRetry={() => load(searchTerm, currentPage)}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         currentPage={currentPage}
