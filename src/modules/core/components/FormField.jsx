@@ -17,19 +17,19 @@ export default function FormField({
 
   return (
     <div className="flex flex-col group">
-      <label className="label-premium group-focus-within:text-indigo-600 transition duration-300">
+      <label className="label-premium group-focus-within:text-brand transition-colors">
         {label}
       </label>
       <input
         type={type}
-        className={`input-premium shadow-sm shadow-slate-200/50 ${
-          error ? "border-rose-400 focus:border-rose-500 focus:ring-rose-500/10" : ""
+        className={`input-premium ${
+          error ? "border-danger focus:border-danger focus:ring-danger/15" : ""
         }`}
         placeholder={placeholder || `Digite o(a) ${label?.toLowerCase()}`}
         {...inputProps}
         {...rest}
       />
-      {error && <span className="mt-1 text-xs font-medium text-rose-500">{error}</span>}
+      {error && <span className="mt-1 text-xs text-danger">{error}</span>}
     </div>
   )
 }

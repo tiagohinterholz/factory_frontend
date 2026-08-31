@@ -75,14 +75,12 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
       className={`flex items-center gap-3 px-4 py-3 rounded-xl transition duration-300 group ${
         collapsed ? "lg:justify-center lg:px-0" : ""
       } ${
-        isActive(path)
-          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-          : "text-slate-400 hover:bg-slate-800 hover:text-indigo-400"
+        isActive(path) ? "bg-brand text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"
       }`}
     >
       <Icon
-        className={`w-5 h-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${
-          isActive(path) ? "text-white" : "text-slate-500 group-hover:text-indigo-400"
+        className={`w-5 h-5 shrink-0 ${
+          isActive(path) ? "text-white" : "text-slate-500 group-hover:text-white"
         }`}
       />
       <span className={`font-medium text-[15px] ${collapsed ? "lg:hidden" : ""}`}>{name}</span>
@@ -98,15 +96,13 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
         className={`w-full flex justify-between items-center px-4 py-3 rounded-xl transition duration-300 group ${
           collapsed ? "lg:justify-center lg:px-0" : ""
         } ${
-          highlighted
-            ? "text-indigo-400 bg-slate-800/50"
-            : "text-slate-400 hover:bg-slate-800 hover:text-indigo-400"
+          highlighted ? "text-white bg-white/5" : "text-slate-400 hover:bg-white/5 hover:text-white"
         }`}
       >
         <div className="flex items-center gap-3">
           <Icon
             className={`w-5 h-5 shrink-0 ${
-              highlighted ? "text-indigo-400" : "text-slate-500 group-hover:text-indigo-400"
+              highlighted ? "text-white" : "text-slate-500 group-hover:text-white"
             }`}
           />
           <span className={`font-medium text-[15px] ${collapsed ? "lg:hidden" : ""}`}>{label}</span>
@@ -120,7 +116,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
 
   const subLinkClass = (activeCondition) =>
     `block py-2 text-sm transition duration-300 ${
-      activeCondition ? "text-white font-medium" : "text-slate-500 hover:text-indigo-400"
+      activeCondition ? "text-white font-medium" : "text-slate-500 hover:text-white"
     }`
 
   return (
@@ -152,12 +148,12 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             collapsed ? "lg:px-0 lg:justify-center" : ""
           }`}
         >
-          <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
+          <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center shrink-0">
             <Factory className="text-white w-6 h-6" />
           </div>
           <div className={collapsed ? "lg:hidden" : ""}>
             <h1 className="text-xl font-bold text-white tracking-tight leading-none">THDev</h1>
-            <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mt-1 block">
+            <span className="text-[10px] text-brand-muted font-semibold uppercase tracking-wide mt-1 block">
               Factory System
             </span>
           </div>
@@ -284,7 +280,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
               collapsed ? "lg:justify-center lg:px-0" : ""
             }`}
           >
-            <Settings className="w-5 h-5 shrink-0 group-hover:rotate-45 duration-500" />
+            <Settings className="w-5 h-5 shrink-0" />
             <span className={`font-medium ${collapsed ? "lg:hidden" : ""}`}>Configurações</span>
           </button>
         </div>
