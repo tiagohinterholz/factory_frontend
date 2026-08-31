@@ -54,14 +54,14 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <HighlightCard
             flat
-            title="Faturar hoje"
+            title="Quantidade de OS a faturar hoje"
             icon={Hourglass}
             tone="warn"
             value={detail.to_invoice_today?.length ?? 0}
           />
           <HighlightCard
             flat
-            title="A faturar"
+            title="Total de OS em andamento a faturar"
             icon={MapPin}
             tone="danger"
             value={detail.to_invoice_all?.length ?? 0}
@@ -85,14 +85,14 @@ export default function Dashboard() {
           />
           <SummaryCard
             flat
-            title="A faturar"
+            title="A faturar (R$)"
             value={brl(summary.orders_to_invoice)}
             icon={Wallet}
             tone="info"
           />
           <SummaryCard
             flat
-            title="Faturado"
+            title="Faturado (R$)"
             value={brl(summary.orders_invoiced)}
             icon={CheckCircle2}
             tone="ok"
