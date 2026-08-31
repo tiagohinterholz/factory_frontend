@@ -1,7 +1,9 @@
+import { lazy } from "react"
 import { Route } from "react-router-dom"
-import OrderList from "./pages/OrderList"
-import OrderCreate from "./pages/OrderCreate"
-import OrderEdit from "./pages/OrderEdit"
+
+const OrderList = lazy(() => import("./pages/OrderList"))
+const OrderCreate = lazy(() => import("./pages/OrderCreate"))
+const OrderEdit = lazy(() => import("./pages/OrderEdit"))
 
 const OrderRoutes = [
   <Route key="order-list" path="/ordens" element={<OrderList />} />,

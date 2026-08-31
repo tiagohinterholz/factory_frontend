@@ -1,65 +1,23 @@
-import { useState, useEffect } from "react"
-import { LicenseService } from "@/modules/license/services/license"
-import { BusinessService } from "@/modules/business/services/business"
-import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
+import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { LicenseService } from "@/modules/license/services/license"
+import { licenseSchema, licenseDefaults, toLicensePayload } from "../license.schema"
 
 export function useLicenseForm() {
-  const navigate = useNavigate()
   const { businessId, isSuperUser } = useAuth()
-  const toast = useToast()
-  const [business, setBusiness] = useState(businessId || "")
-  const [period, setPeriod] = useState("MENSAL")
-  const [max_users, setMaxUsers] = useState("1")
-  const [activation_date, setActivationDate] = useState(new Date().toISOString().split('T')[0])
-  const [businesses, setBusinesses] = useState([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function loadBusinesses() {
-      if (isSuperUser) {
-        try {
-          const data = await BusinessService.getBusiness()
-          setBusinesses(data)
-        } catch (err) {
-          console.error(err)
-        }
-      }
-      setLoading(false)
-    }
-    loadBusinesses()
-  }, [isSuperUser])
+  const { form, onSubmit } = useResourceForm({
+    schema: licenseSchema,
+    defaultValues: {
+      ...licenseDefaults,
+      business_id: businessId ? String(businessId) : "",
+    },
+    submit: (values) =>
+      LicenseService.getLicenseRenew(values.business_id, toLicensePayload(values)),
+    redirectTo: "/empreendimentos/licencas",
+    errorFallback:
+      "Erro ao configurar/renovar licença. Verifique se o empreendimento já possui uma base de licença.",
+  })
 
-  async function handleSubmit(e) {
-    e.preventDefault()
-
-    const payload = {
-      period: period,
-      max_users: parseInt(max_users),
-      activation_date: activation_date ? new Date(activation_date).toISOString() : undefined,
-    }
-
-    try {
-      await LicenseService.getLicenseRenew(business, payload)
-      navigate("/empreendimentos/licencas")
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao configurar/renovar licença. Verifique se o empreendimento já possui uma base de licença.").message)
-    }
-  }
-
-  return {
-    business, setBusiness,  
-    period, setPeriod,
-    max_users, setMaxUsers,
-    activation_date, setActivationDate,
-    businesses,
-    isSuperUser,
-    loading,
-    handleSubmit
-  }
+  return { form, onSubmit, isSuperUser }
 }
-
-

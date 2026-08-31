@@ -1,37 +1,43 @@
+import { useState } from "react"
+import { useParams } from "react-router-dom"
 import { useOrderEditForm } from "../hooks/useOrderEditForm"
+import { OrderService } from "../services/order"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import { useClient } from "@/modules/client/hooks/useClient"
 import { useVehicle } from "@/modules/vehicle/hooks/useVehicle"
 import { useBudget } from "@/modules/budget/hooks/useBudget"
+import { useProduct } from "@/modules/product/hooks/useProduct"
+import { useWorkService } from "@/modules/workservice/hooks/useWorkService"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Plus, Trash2 } from "lucide-react"
-import { useState } from "react"
-import { useParams } from "react-router-dom"
-import { OrderService } from "../services/order"
-import { useProduct } from "@/modules/product/hooks/useProduct"
-import { useWorkService } from "@/modules/workservice/hooks/useWorkService"
 
 export default function OrderEdit() {
   const { id } = useParams()
+  const toast = useToast()
   const {
-    business, setBusiness,
-    client, setClient,
-    vehicle, setVehicle,
-    budget, setBudget,
-    serviceDate, setServiceDate,
-    billingDate, setBillingDate,
-    status,
-    notes, setNotes,
-    products, 
-    services,
+    form,
+    onSubmit,
     loading,
-    handleUpdate,
+    products,
+    services,
+    status,
     handleDelete,
     handleInvoice,
-    refresh
+    refresh,
   } = useOrderEditForm()
+  const {
+    register,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = form
+
+  const businessId = watch("business_id")
+  const clientId = watch("client_id")
 
   const { business: businesses } = useBusiness()
   const { client: clients } = useClient()
@@ -44,81 +50,97 @@ export default function OrderEdit() {
   const [quantity, setQuantity] = useState(1)
   const [selectedService, setSelectedService] = useState("")
 
-  const handleAddProduct = async (e) => {
-    e.preventDefault()
+  async function handleAddProduct(event) {
+    event.preventDefault()
     if (!selectedProduct) return
-    const product = allProducts.find(p => p.id === parseInt(selectedProduct))
-    
+    const product = allProducts.find((item) => String(item.id) === String(selectedProduct))
     try {
-      await OrderService.orderProductCreate(id, { 
-        product_id: selectedProduct, 
+      await OrderService.orderProductCreate(id, {
+        product_id: selectedProduct,
         order_id: id,
         quantity,
-        unit_price: product?.unit_price
+        unit_price: product?.unit_price,
       })
       setSelectedProduct("")
       setQuantity(1)
       refresh()
     } catch (error) {
       console.error(error)
+      toast.error(parseApiError(error, "Erro ao adicionar produto").message)
     }
   }
 
-  const handleAddService = async (e) => {
-    e.preventDefault()
+  async function handleAddService(event) {
+    event.preventDefault()
     if (!selectedService) return
-    const service = allServices.find(s => s.id === parseInt(selectedService))
-
+    const service = allServices.find((item) => String(item.id) === String(selectedService))
     try {
-      await OrderService.orderServiceCreate(id, { 
+      await OrderService.orderServiceCreate(id, {
         service_id: selectedService,
         order_id: id,
-        unit_price: service?.unit_price
+        unit_price: service?.unit_price,
       })
       setSelectedService("")
       refresh()
     } catch (error) {
       console.error(error)
+      toast.error(parseApiError(error, "Erro ao adicionar serviço").message)
     }
   }
 
-  const handleDeleteProduct = async (itemId) => {
-    await OrderService.orderProductDelete(id, itemId)
-    refresh()
+  async function handleDeleteProduct(itemId) {
+    try {
+      await OrderService.orderProductDelete(id, itemId)
+      refresh()
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao remover produto").message)
+    }
   }
 
-  const handleDeleteService = async (itemId) => {
-    await OrderService.orderServiceDelete(id, itemId)
-    refresh()
+  async function handleDeleteService(itemId) {
+    try {
+      await OrderService.orderServiceDelete(id, itemId)
+      refresh()
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao remover serviço").message)
+    }
   }
 
   if (loading) return <div className="p-6 text-center">Carregando...</div>
 
-  const businessOptions = businesses.map(b => ({ id: b.id, name: b.corporate_name }))
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients
-    .filter(c => !business || (c.business?.id || c.business) === parseInt(business))
-    .map(c => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
+    .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
+    .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
   const vehicleOptions = vehicles
-    .filter(v => !client || (v.client?.id || v.client) === parseInt(client))
-    .map(v => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
-  const budgetOptions = budgets.map(b => ({ id: b.id, name: `Orçamento #${b.id}` }))
+    .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
+    .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
+  const budgetOptions = budgets.map((b) => ({ id: b.id, name: `Orçamento #${b.id}` }))
 
   return (
     <div className="p-6 space-y-8">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Editar Ordem de Serviço</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            Editar Ordem de Serviço
+          </h1>
           <div className="flex items-center gap-3 mt-1 text-sm uppercase font-bold tracking-wider">
             <p className="text-slate-400">Gestão técnica e faturamento</p>
-            <span className={`px-2 py-0.5 rounded-md ${
-              status === 'faturado' ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'
-            }`}>
+            <span
+              className={`px-2 py-0.5 rounded-md ${
+                status === "faturado"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-indigo-100 text-indigo-700"
+              }`}
+            >
               {status}
             </span>
           </div>
         </div>
         <div className="flex gap-2">
-          {status === 'a faturar' && (
+          {status === "a faturar" && (
             <button
               type="button"
               onClick={handleInvoice}
@@ -127,7 +149,11 @@ export default function OrderEdit() {
               Faturar OS
             </button>
           )}
-          <button type="button" onClick={handleDelete} className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 font-bold text-sm">
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 font-bold text-sm"
+          >
             Deletar OS
           </button>
         </div>
@@ -137,50 +163,58 @@ export default function OrderEdit() {
         <div className="lg:col-span-1 space-y-6">
           <div className="card-premium">
             <h2 className="text-lg font-bold text-slate-800 mb-6">Informações Gerais</h2>
-            <form onSubmit={handleUpdate} className="space-y-4">
-              <SelectField 
+            <form onSubmit={onSubmit} className="space-y-4">
+              <SelectField
                 label="Empreendimento"
-                value={business}
-                onChange={(e) => setBusiness(e.target.value)}
                 options={businessOptions}
+                error={errors.business_id?.message}
+                registration={register("business_id", {
+                  onChange: () => {
+                    setValue("client_id", "")
+                    setValue("vehicle_id", "")
+                  },
+                })}
               />
-              <SelectField 
+              <SelectField
                 label="Cliente"
-                value={client}
-                onChange={(e) => setClient(e.target.value)}
                 options={clientOptions}
+                error={errors.client_id?.message}
+                registration={register("client_id", {
+                  onChange: () => setValue("vehicle_id", ""),
+                })}
               />
-              <SelectField 
+              <SelectField
                 label="Veículo"
-                value={vehicle}
-                onChange={(e) => setVehicle(e.target.value)}
                 options={vehicleOptions}
+                error={errors.vehicle_id?.message}
+                registration={register("vehicle_id")}
               />
-              <SelectField 
+              <SelectField
                 label="Orçamento"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
                 options={budgetOptions}
+                error={errors.budget_id?.message}
+                registration={register("budget_id")}
               />
-              <FormField 
+              <FormField
                 label="Data do Serviço"
                 type="date"
-                value={serviceDate}
-                onChange={(e) => setServiceDate(e.target.value)}
+                error={errors.service_date?.message}
+                registration={register("service_date")}
               />
-              <FormField 
+              <FormField
                 label="Data do Faturamento"
                 type="date"
-                value={billingDate}
-                onChange={(e) => setBillingDate(e.target.value)}
+                error={errors.billing_date?.message}
+                registration={register("billing_date")}
               />
-              <FormField 
+              <FormField
                 label="Observações"
-                isTextArea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                error={errors.notes?.message}
+                registration={register("notes")}
               />
-              <PrimaryButton type="submit">Atualizar OS</PrimaryButton>
+              <PrimaryButton type="submit" disabled={isSubmitting}>
+                Atualizar OS
+              </PrimaryButton>
             </form>
           </div>
         </div>
@@ -190,42 +224,61 @@ export default function OrderEdit() {
             <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
               <Plus size={20} className="text-indigo-600" /> Peças e Produtos
             </h2>
-            
-            <form onSubmit={handleAddProduct} className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl">
+
+            <form
+              onSubmit={handleAddProduct}
+              className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
+            >
               <div className="flex-1 min-w-[200px]">
-                <SelectField 
+                <SelectField
                   label="Selecionar Produto"
                   value={selectedProduct}
-                  onChange={(e) => setSelectedProduct(e.target.value)}
-                  options={allProducts.map(p => ({ id: p.id, name: `${p.name} (R$ ${p.unit_price})` }))}
+                  onChange={(event) => setSelectedProduct(event.target.value)}
+                  options={allProducts.map((p) => ({
+                    id: p.id,
+                    name: `${p.name} (R$ ${p.unit_price})`,
+                  }))}
                 />
               </div>
               <div className="w-24">
-                <FormField 
+                <FormField
                   label="Qtd"
                   type="number"
                   value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
+                  onChange={(event) => setQuantity(event.target.value)}
                 />
               </div>
-              <button type="submit" className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
+              <button
+                type="submit"
+                className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+              >
                 <Plus size={24} />
               </button>
             </form>
 
             <div className="divide-y divide-slate-100">
-              {products.map(item => (
+              {products.map((item) => (
                 <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span>{item.product?.name} (x{item.quantity})</span>
+                  <span>
+                    {item.product?.name} (x{item.quantity})
+                  </span>
                   <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">R$ {parseFloat(item.total || 0).toFixed(2)}</span>
-                    <button onClick={() => handleDeleteProduct(item.id)} className="text-rose-400 hover:text-rose-600">
+                    <span className="font-bold text-slate-700">
+                      R$ {parseFloat(item.total || 0).toFixed(2)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteProduct(item.id)}
+                      className="text-rose-400 hover:text-rose-600"
+                    >
                       <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
               ))}
-              {products.length === 0 && <p className="text-slate-400 py-4 text-center">Nenhum produto adicionado.</p>}
+              {products.length === 0 && (
+                <p className="text-slate-400 py-4 text-center">Nenhum produto adicionado.</p>
+              )}
             </div>
           </div>
 
@@ -234,33 +287,50 @@ export default function OrderEdit() {
               <Plus size={20} className="text-indigo-600" /> Mão de Obra e Serviços
             </h2>
 
-            <form onSubmit={handleAddService} className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl">
+            <form
+              onSubmit={handleAddService}
+              className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
+            >
               <div className="flex-1 min-w-[200px]">
-                <SelectField 
+                <SelectField
                   label="Selecionar Serviço"
                   value={selectedService}
-                  onChange={(e) => setSelectedService(e.target.value)}
-                  options={allServices.map(s => ({ id: s.id, name: `${s.name} (R$ ${s.unit_price})` }))}
+                  onChange={(event) => setSelectedService(event.target.value)}
+                  options={allServices.map((s) => ({
+                    id: s.id,
+                    name: `${s.name} (R$ ${s.unit_price})`,
+                  }))}
                 />
               </div>
-              <button type="submit" className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
+              <button
+                type="submit"
+                className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+              >
                 <Plus size={24} />
               </button>
             </form>
 
             <div className="divide-y divide-slate-100">
-              {services.map(item => (
+              {services.map((item) => (
                 <div key={item.id} className="py-3 flex justify-between items-center text-sm">
                   <span>{item.service?.name}</span>
                   <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">R$ {parseFloat(item.unit_price || 0).toFixed(2)}</span>
-                    <button onClick={() => handleDeleteService(item.id)} className="text-rose-400 hover:text-rose-600">
+                    <span className="font-bold text-slate-700">
+                      R$ {parseFloat(item.unit_price || 0).toFixed(2)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteService(item.id)}
+                      className="text-rose-400 hover:text-rose-600"
+                    >
                       <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
               ))}
-              {services.length === 0 && <p className="text-slate-400 py-4 text-center">Nenhum serviço adicionado.</p>}
+              {services.length === 0 && (
+                <p className="text-slate-400 py-4 text-center">Nenhum serviço adicionado.</p>
+              )}
             </div>
           </div>
         </div>

@@ -1,45 +1,25 @@
-import { useParams } from "react-router-dom"
 import { useProductEditForm } from "@/modules/product/hooks/useProductEditForm"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import { useSupplier } from "@/modules/supplier/hooks/useSupplier"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
 import { Package, Edit2, Trash2 } from "lucide-react"
 
-
 export default function ProductDetail() {
-  useParams()
-  
+  const { form, onSubmit, loading, handleDelete } = useProductEditForm()
   const {
-    business, setBusiness,
-    supplier, setSupplier,  
-    name, setName,
-    brand, setBrand,
-    reference, setReference,
-    description, setDescription,
-    stockQuantity, setStockQuantity,
-    unitPrice, setUnitPrice,
-    loading,
-    handleUpdate,
-    handleDelete
-  } = useProductEditForm()
-  
+    register,
+    formState: { errors, isSubmitting },
+  } = form
+
+  const { isSuperUser } = useAuth()
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplier()
 
-  const { isSuperUser } = useAuth()
-
-  const businessOptions = businesses.map(b => ({
-    id: b.id,
-    name: b.corporate_name
-  }))
-
-  const supplierOptions = suppliers.map(s => ({
-    id: s.id,
-    name: s.corporate_name
-  }))
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
+  const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
 
   if (loading || loadingBusinesses || loadingSuppliers) {
     return (
@@ -51,12 +31,15 @@ export default function ProductDetail() {
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-2xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Detalhes do Produto</h1>
-            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">Gestão técnica de estoque</p>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              Detalhes do Produto
+            </h1>
+            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
+              Gestão técnica de estoque
+            </p>
           </div>
           <button
             onClick={handleDelete}
@@ -75,69 +58,68 @@ export default function ProductDetail() {
             <h3 className="font-bold text-slate-800 tracking-tight">Informações do Produto</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={handleUpdate}>
-            
+          <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {isSuperUser && (
-                <SelectField 
+                <SelectField
                   label="Empreendimento"
-                  value={business}
-                  onChange={(e) => setBusiness(e.target.value)}
                   options={businessOptions}
+                  error={errors.business_id?.message}
+                  registration={register("business_id")}
                 />
               )}
 
-              <SelectField 
+              <SelectField
                 label="Fornecedor"
-                value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
                 options={supplierOptions}
+                error={errors.supplier_id?.message}
+                registration={register("supplier_id")}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Nome"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                error={errors.name?.message}
+                registration={register("name")}
               />
-              <FormField 
+              <FormField
                 label="Marca"
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
+                error={errors.brand?.message}
+                registration={register("brand")}
               />
             </div>
 
-            <FormField 
+            <FormField
               label="Referência/SKU"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
+              error={errors.reference?.message}
+              registration={register("reference")}
             />
 
-            <FormField 
+            <FormField
               label="Descrição"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              error={errors.description?.message}
+              registration={register("description")}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Qtd em Estoque"
-                value={stockQuantity}
-                onChange={(e) => setStockQuantity(e.target.value)}
                 type="number"
+                error={errors.stock_quantity?.message}
+                registration={register("stock_quantity")}
               />
-              <FormField 
+              <FormField
                 label="Preço Unitário"
-                value={unitPrice}
-                onChange={(e) => setUnitPrice(e.target.value)}
                 type="number"
                 step="0.01"
+                error={errors.unit_price?.message}
+                registration={register("unit_price")}
               />
             </div>
 
             <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Edit2} fullWidth={false}>
+              <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
                 Salvar Alterações
               </PrimaryButton>
             </div>

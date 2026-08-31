@@ -5,8 +5,8 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function BusinessList() {
-  const { 
-    business, 
+  const {
+    business,
     loading,
     searchTerm,
     setSearchTerm,
@@ -15,16 +15,16 @@ export default function BusinessList() {
     totalItems,
     refetch,
     remove,
-    error
+    error,
   } = useBusiness()
 
   const toast = useToast()
   const confirm = useConfirm()
 
   const columns = [
-    { header: 'Razão Social', accessor: (item) => item.corporate_name },
-    { header: 'CNPJ', accessor: (item) => item.cnpj },
-    { header: 'Email', accessor: (item) => item.email },
+    { header: "Razão Social", accessor: (item) => item.corporate_name },
+    { header: "CNPJ", accessor: (item) => item.cnpj },
+    { header: "Email", accessor: (item) => item.email },
   ]
 
   const handleDelete = async (item) => {
@@ -47,11 +47,11 @@ export default function BusinessList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
-        title='Empreendimentos'
-        buttonText='Novo Empreendimento'
-        buttonLink='/empreendimentos/novo'
+        title="Empreendimentos"
+        buttonText="Novo Empreendimento"
+        buttonLink="/empreendimentos/novo"
       />
-      <ListTable 
+      <ListTable
         columns={columns}
         data={business}
         editLinkPrefix="/empreendimentos"

@@ -1,34 +1,19 @@
-import { useState } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
-import { Milestone, Save } from "lucide-react"
+import { useCityForm } from "@/modules/location/city/hooks/useCityForm"
 import { useStates } from "@/modules/location/state/hooks/useState"
-import { CityService } from "../services/city"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
+import { Milestone, Save } from "lucide-react"
 
 export default function CityCreate() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const toast = useToast()
+  const { form, onSubmit } = useCityForm()
+  const {
+    register,
+    formState: { errors, isSubmitting },
+  } = form
 
-  const [name, setName] = useState("")
-  const [stateId, setStateId] = useState(location.state?.stateId || "")
   const { states, loading } = useStates()
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-
-    try {
-      await CityService.createCity({ name, state_id: stateId })
-      navigate("/cidades")
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao criar cidade").message)
-    }
-  }
+  const stateOptions = states.map((s) => ({ id: s.id, name: `${s.name} (${s.abbreviation})` }))
 
   if (loading) {
     return (
@@ -40,10 +25,11 @@ export default function CityCreate() {
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-xl mx-auto">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Nova Cidade</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">Adicione um novo município ao sistema</p>
+        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+          Adicione um novo município ao sistema
+        </p>
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
@@ -53,23 +39,23 @@ export default function CityCreate() {
             <h3 className="font-bold text-slate-800 tracking-tight">Cadastro Municipal</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             <FormField
               label="Nome da Cidade"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Curitiba"
+              error={errors.name?.message}
+              registration={register("name")}
             />
-            
+
             <SelectField
               label="Estado"
-              value={stateId}
-              onChange={(e) => setStateId(e.target.value)}
-              options={states.map(s => ({ id: s.id, name: `${s.name} (${s.abbreviation})` }))}
+              options={stateOptions}
+              error={errors.state_id?.message}
+              registration={register("state_id")}
             />
 
             <div className="pt-4">
-              <PrimaryButton type="submit" icon={Save}>
+              <PrimaryButton type="submit" icon={Save} disabled={isSubmitting}>
                 Salvar Cidade
               </PrimaryButton>
             </div>

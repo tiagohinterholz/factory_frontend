@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import { useVehicleForm } from "@/modules/vehicle/hooks/useVehicleForm"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
@@ -8,43 +7,26 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { fuelOptions } from "../constants/vehicle"
-
+import { Save } from "lucide-react"
 
 export default function VehicleCreate() {
   const location = useLocation()
+  const { form, onSubmit } = useVehicleForm({ clientId: location.state?.clientId })
   const {
-    business, setBusiness,
-    client, setClient,
-    model, setModel,
-    year, setYear,
-    year_model, setYearModel,
-    plate, setPlate,
-    color, setColor,
-    manufacturer, setManufacturer,
-    fuel, setFuel,
-    mileage, setMileage,
-    handleSubmit
-  } = useVehicleForm()
-
-  useEffect(() => {
-    if (location.state?.clientId) {
-      setClient(location.state.clientId)
-    }
-  }, [location.state, setClient])
-  
-  const { business: businesses, loading: loadingBusinesses } = useBusiness()
-  const { client: clients, loading: loadingClients } = useClient()
+    register,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = form
 
   const { isSuperUser } = useAuth()
 
-  const businessOptions = businesses.map(b => ({
-    id: b.id,
-    name: b.corporate_name
-  }))
+  const { business: businesses, loading: loadingBusinesses } = useBusiness()
+  const { client: clients, loading: loadingClients } = useClient()
 
-  const clientOptions = clients.map(c => ({
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
+  const clientOptions = clients.map((c) => ({
     id: c.id,
-    name: c.first_name + " " + c.last_name
+    name: `${c.first_name} ${c.last_name}`,
   }))
 
   if (loadingBusinesses || loadingClients) {
@@ -57,96 +39,100 @@ export default function VehicleCreate() {
 
   return (
     <div className="p-6 space-y-6">
-      
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Novo Veículo</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">Cadastre as informações técnicas do veículo</p>
+        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+          Cadastre as informações técnicas do veículo
+        </p>
 
         <div className="card-premium">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-
+          <form className="space-y-6" onSubmit={onSubmit}>
             {isSuperUser && (
-              <SelectField 
+              <SelectField
                 label="Empreendimento"
-                value={business}
-                onChange={(e) => setBusiness(e.target.value)}
                 options={businessOptions}
+                error={errors.business_id?.message}
+                registration={register("business_id")}
               />
             )}
 
-            <SelectField 
-                label="Cliente Proprietário"
-                value={client}
-                onChange={(e) => setClient(e.target.value)}
-                options={clientOptions}
-              />
+            <SelectField
+              label="Cliente Proprietário"
+              options={clientOptions}
+              error={errors.client_id?.message}
+              registration={register("client_id")}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Fabricante"
-                value={manufacturer}
-                onChange={(e) => setManufacturer(e.target.value)}
                 placeholder="Ex: Toyota"
+                error={errors.manufacturer?.message}
+                registration={register("manufacturer")}
               />
-              <FormField 
+              <FormField
                 label="Modelo"
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
                 placeholder="Ex: Corolla"
+                error={errors.model?.message}
+                registration={register("model")}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Ano de Fabricação"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
+                type="number"
                 placeholder="2023"
+                error={errors.year?.message}
+                registration={register("year")}
               />
-              <FormField 
+              <FormField
                 label="Ano do Modelo"
-                value={year_model}
-                onChange={(e) => setYearModel(e.target.value)}
+                type="number"
                 placeholder="2024"
+                error={errors.year_model?.message}
+                registration={register("year_model")}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField 
+              <FormField
                 label="Placa"
-                value={plate}
-                onChange={(e) => setPlate(e.target.value)}
                 placeholder="ABC-1234"
+                error={errors.plate?.message}
+                registration={register("plate", {
+                  onChange: (event) => setValue("plate", event.target.value.toUpperCase()),
+                })}
               />
-              <FormField 
+              <FormField
                 label="Cor"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
                 placeholder="Prata"
+                error={errors.color?.message}
+                registration={register("color")}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <SelectField 
+              <SelectField
                 label="Combustível"
-                value={fuel}
-                onChange={(e) => setFuel(e.target.value)}
                 options={fuelOptions}
+                error={errors.fuel?.message}
+                registration={register("fuel")}
               />
-              <FormField 
+              <FormField
                 label="Quilometragem"
-                value={mileage}
-                onChange={(e) => setMileage(e.target.value)}
+                type="number"
                 placeholder="0"
+                error={errors.mileage?.message}
+                registration={register("mileage")}
               />
             </div>
 
             <div className="pt-4">
-              <PrimaryButton type="submit">
+              <PrimaryButton type="submit" icon={Save} disabled={isSubmitting}>
                 Salvar Veículo
               </PrimaryButton>
             </div>
-
           </form>
         </div>
       </div>

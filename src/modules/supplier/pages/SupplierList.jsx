@@ -5,26 +5,26 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function SupplierList() {
-  const { 
-    supplier, 
+  const {
+    supplier,
     loading,
-    searchTerm, 
-    setSearchTerm, 
-    currentPage, 
+    searchTerm,
+    setSearchTerm,
+    currentPage,
     setCurrentPage,
     totalItems,
     refetch,
     remove,
-    error
+    error,
   } = useSupplier()
 
   const toast = useToast()
   const confirm = useConfirm()
 
   const columns = [
-    { header: 'Razão Social', accessor: (item) => item.corporate_name },
-    { header: 'CNPJ', accessor: (item) => item.cnpj },
-    { header: 'Telefone', accessor: (item) => item.phone },
+    { header: "Razão Social", accessor: (item) => item.corporate_name },
+    { header: "CNPJ", accessor: (item) => item.cnpj },
+    { header: "Telefone", accessor: (item) => item.phone },
   ]
 
   const handleDelete = async (item) => {
@@ -47,11 +47,11 @@ export default function SupplierList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
-        title='Fornecedores'
-        buttonText='Novo Fornecedor'
-        buttonLink='/fornecedores/novo'
+        title="Fornecedores"
+        buttonText="Novo Fornecedor"
+        buttonLink="/fornecedores/novo"
       />
-      <ListTable 
+      <ListTable
         columns={columns}
         data={supplier}
         editLinkPrefix="/fornecedores"

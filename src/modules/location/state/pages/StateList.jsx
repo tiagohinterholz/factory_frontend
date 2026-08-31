@@ -5,8 +5,8 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function StateList() {
-  const { 
-    states, 
+  const {
+    states,
     loading,
     searchTerm,
     setSearchTerm,
@@ -15,15 +15,15 @@ export default function StateList() {
     totalItems,
     refetch,
     remove,
-    error
+    error,
   } = useStates()
 
   const toast = useToast()
   const confirm = useConfirm()
 
   const columns = [
-    { header: 'Sigla', accessor: (item) => item.abbreviation },
-    { header: 'Estado', accessor: (item) => item.name },
+    { header: "Sigla", accessor: (item) => item.abbreviation },
+    { header: "Estado", accessor: (item) => item.name },
   ]
 
   const handleDelete = async (item) => {
@@ -45,12 +45,8 @@ export default function StateList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader
-        title='Estados'
-        buttonText='Novo Estado'
-        buttonLink='/estados/novo'
-      />
-      <ListTable 
+      <ListHeader title="Estados" buttonText="Novo Estado" buttonLink="/estados/novo" />
+      <ListTable
         columns={columns}
         data={states}
         editLinkPrefix="/estados"

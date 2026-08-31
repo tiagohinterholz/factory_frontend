@@ -1,5 +1,5 @@
-import axios from 'axios'
-import { authStorage } from '@/api/auth-storage'
+import axios from "axios"
+import { authStorage } from "@/api/auth-storage"
 
 const API_URL = import.meta.env.VITE_API_URL
 if (!API_URL) {
@@ -7,7 +7,7 @@ if (!API_URL) {
 }
 
 export const api = axios.create({
-    baseURL: API_URL
+  baseURL: API_URL,
 })
 
 api.interceptors.request.use((config) => {
@@ -15,7 +15,7 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
-  return config;
+  return config
 })
 
 // Single-flight: no máximo um refresh em andamento. Requests que tomam 401
@@ -39,24 +39,24 @@ function refreshAccessToken() {
 }
 
 api.interceptors.response.use(
-    (response) => response,
+  (response) => response,
 
-    async (error) => {
-        const originalRequest = error.config
+  async (error) => {
+    const originalRequest = error.config
 
-        if (error.response?.status !== 401 || originalRequest._retry) {
-            return Promise.reject(error)
-        }
-        originalRequest._retry = true
-
-        try {
-            const newAccess = await refreshAccessToken()
-            originalRequest.headers.Authorization = `Bearer ${newAccess}`
-            return api(originalRequest)
-        } catch (refreshError) {
-            authStorage.clear()
-            window.location.href = "/"
-            return Promise.reject(refreshError)
-        }
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error)
     }
+    originalRequest._retry = true
+
+    try {
+      const newAccess = await refreshAccessToken()
+      originalRequest.headers.Authorization = `Bearer ${newAccess}`
+      return api(originalRequest)
+    } catch (refreshError) {
+      authStorage.clear()
+      window.location.href = "/"
+      return Promise.reject(refreshError)
+    }
+  },
 )

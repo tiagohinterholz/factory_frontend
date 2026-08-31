@@ -1,15 +1,15 @@
 import { Link } from "react-router-dom"
 import { ChevronRight, PlusCircle } from "lucide-react"
 
-export default function RelatedDataCard({ 
-  title, 
-  items = [], 
-  loading = false, 
+export default function RelatedDataCard({
+  title,
+  items = [],
+  loading = false,
   emptyMessage = "Nenhum registro encontrado.",
   icon: Icon,
   viewAllLink,
   onAddClick,
-  renderItem
+  renderItem,
 }) {
   return (
     <div className="card-premium h-full flex flex-col">
@@ -24,7 +24,7 @@ export default function RelatedDataCard({
         </div>
 
         {onAddClick && (
-          <button 
+          <button
             onClick={onAddClick}
             className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition duration-300"
           >
@@ -46,15 +46,21 @@ export default function RelatedDataCard({
         ) : (
           items.map((item, index) => (
             <div key={item.id || index}>
-              {renderItem ? renderItem(item) : (
+              {renderItem ? (
+                renderItem(item)
+              ) : (
                 <div className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between group transition duration-300 hover:bg-white hover:border-indigo-100 hover:shadow-sm">
-                   <div>
-                      <p className="font-bold text-slate-700 text-sm">{item.name || item.title || "Registro"}</p>
-                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-0.5">{item.subtitle || ""}</p>
-                   </div>
-                   <div className="text-slate-300 group-hover:text-indigo-600 transition duration-300">
-                      <ChevronRight className="w-4 h-4" />
-                   </div>
+                  <div>
+                    <p className="font-bold text-slate-700 text-sm">
+                      {item.name || item.title || "Registro"}
+                    </p>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-0.5">
+                      {item.subtitle || ""}
+                    </p>
+                  </div>
+                  <div className="text-slate-300 group-hover:text-indigo-600 transition duration-300">
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
                 </div>
               )}
             </div>
@@ -63,7 +69,7 @@ export default function RelatedDataCard({
       </div>
 
       {viewAllLink && items.length > 0 && (
-        <Link 
+        <Link
           to={viewAllLink}
           className="mt-6 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition duration-300 py-2 border-t border-slate-50 pt-4"
         >

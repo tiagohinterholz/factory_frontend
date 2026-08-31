@@ -1,35 +1,25 @@
-import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
+import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { StateService } from "../services/state"
+import { stateSchema, stateDefaults } from "../state.schema"
 
 export function useStateEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const confirm = useConfirm()
 
-  const [name, setName] = useState("")
-  const [abbreviation, setAbbreviation] = useState("")
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await StateService.getState(id)
-        setName(data.name)
-        setAbbreviation(data.abbreviation)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [id])
-
-  async function handleUpdate(e) {
-    e.preventDefault()
-    await StateService.updateState(id, { name, abbreviation })
-    navigate("/estados")
-  }
+  const { form, onSubmit, loading } = useResourceForm({
+    schema: stateSchema,
+    defaultValues: stateDefaults,
+    load: async () => {
+      const data = await StateService.getState(id)
+      return { name: data.name ?? "", abbreviation: data.abbreviation ?? "" }
+    },
+    submit: (values) => StateService.updateState(id, values),
+    redirectTo: "/estados",
+    errorFallback: "Erro ao atualizar estado",
+  })
 
   async function handleDelete() {
     const confirmed = await confirm({
@@ -43,13 +33,5 @@ export function useStateEditForm() {
     navigate("/estados")
   }
 
-  return {
-    name,
-    setName,
-    abbreviation,
-    setAbbreviation,
-    loading,
-    handleUpdate,
-    handleDelete,
-  }
+  return { form, onSubmit, loading, handleDelete }
 }

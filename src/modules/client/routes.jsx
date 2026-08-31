@@ -1,7 +1,9 @@
-import { Route } from "react-router-dom";
-import ClientList from "./pages/ClientList";
-import ClientEdit from "./pages/ClientDetail";
-import ClientCreate from "./pages/ClientCreate";
+import { lazy } from "react"
+import { Route } from "react-router-dom"
+
+const ClientList = lazy(() => import("./pages/ClientList"))
+const ClientCreate = lazy(() => import("./pages/ClientCreate"))
+const ClientEdit = lazy(() => import("./pages/ClientDetail"))
 
 const ClientRoutes = (
   <>
@@ -9,6 +11,6 @@ const ClientRoutes = (
     <Route path="/clientes/novo" element={<ClientCreate />} />
     <Route path="/clientes/:id" element={<ClientEdit />} />
   </>
-);
+)
 
-export default ClientRoutes;
+export default ClientRoutes

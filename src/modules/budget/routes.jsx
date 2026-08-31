@@ -1,7 +1,9 @@
+import { lazy } from "react"
 import { Route } from "react-router-dom"
-import BudgetList from "./pages/BudgetList"
-import BudgetCreate from "./pages/BudgetCreate"
-import BudgetEdit from "./pages/BudgetEdit"
+
+const BudgetList = lazy(() => import("./pages/BudgetList"))
+const BudgetCreate = lazy(() => import("./pages/BudgetCreate"))
+const BudgetEdit = lazy(() => import("./pages/BudgetEdit"))
 
 const BudgetRoutes = [
   <Route key="budget-list" path="/orcamentos" element={<BudgetList />} />,

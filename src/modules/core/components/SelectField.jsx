@@ -1,4 +1,7 @@
-export default function SelectField({ label, value, onChange, options = [] }) {
+// Mesmo esquema do FormField: value/onChange (legado) OU registration (rhf) + error.
+export default function SelectField({ label, options = [], error, value, onChange, registration }) {
+  const selectProps = registration ?? { value, onChange }
+
   return (
     <div className="flex flex-col group">
       <label className="label-premium group-focus-within:text-indigo-600 transition duration-300">
@@ -6,14 +9,15 @@ export default function SelectField({ label, value, onChange, options = [] }) {
       </label>
       <div className="relative">
         <select
-          className="input-premium appearance-none pr-10 cursor-pointer shadow-sm shadow-slate-200/50"
-          value={value}
-          onChange={onChange}
+          className={`input-premium appearance-none pr-10 cursor-pointer shadow-sm shadow-slate-200/50 ${
+            error ? "border-rose-400 focus:border-rose-500 focus:ring-rose-500/10" : ""
+          }`}
+          {...selectProps}
         >
           <option value="">Selecione o(a) {label?.toLowerCase()}</option>
           {options.map((option) => (
             <option key={option.id} value={option.id}>
-                {option.name}
+              {option.name}
             </option>
           ))}
         </select>
@@ -23,6 +27,7 @@ export default function SelectField({ label, value, onChange, options = [] }) {
           </svg>
         </div>
       </div>
+      {error && <span className="mt-1 text-xs font-medium text-rose-500">{error}</span>}
     </div>
   )
 }

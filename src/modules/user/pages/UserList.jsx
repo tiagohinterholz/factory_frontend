@@ -4,26 +4,26 @@ import ListTable from "@/modules/core/components/ListTable"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function UserList() {
-  const { 
-    user, 
+  const {
+    user,
     loading,
-    searchTerm, 
-    setSearchTerm, 
-    currentPage, 
+    searchTerm,
+    setSearchTerm,
+    currentPage,
     setCurrentPage,
     handleDelete: removeUser,
     totalItems,
     refetch,
-    error
+    error,
   } = useUser()
 
   const confirm = useConfirm()
 
   const columns = [
-    { header: 'Nome', accessor: (item) => item.name },
-    { header: 'Email', accessor: (item) => item.email },
-    { header: 'Perfil', accessor: (item) => item.role },
-    { header: 'Empreendimento', accessor: (item) => item.business?.corporate_name || '-' },
+    { header: "Nome", accessor: (item) => item.name },
+    { header: "Email", accessor: (item) => item.email },
+    { header: "Perfil", accessor: (item) => item.role },
+    { header: "Empreendimento", accessor: (item) => item.business?.corporate_name || "-" },
   ]
 
   const handleDelete = async (item) => {
@@ -39,12 +39,8 @@ export default function UserList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader
-        title='Usuários'
-        buttonText='Novo Usuário'
-        buttonLink='/usuarios/novo'
-      />
-      <ListTable 
+      <ListHeader title="Usuários" buttonText="Novo Usuário" buttonLink="/usuarios/novo" />
+      <ListTable
         columns={columns}
         data={user}
         editLinkPrefix="/usuarios"

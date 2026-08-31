@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Clock, User } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import React, { useState, useMemo } from "react"
+import { ChevronLeft, ChevronRight, Plus, Clock, User } from "lucide-react"
+import { Link } from "react-router-dom"
 
 export default function AppointmentCalendar({ appointments, loading }) {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -38,22 +38,26 @@ export default function AppointmentCalendar({ appointments, loading }) {
   }
 
   const formatMonth = (date) => {
-    return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+    return date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
   }
 
   const isToday = (date) => {
     const now = new Date()
-    return date.getDate() === now.getDate() &&
+    return (
+      date.getDate() === now.getDate() &&
       date.getMonth() === now.getMonth() &&
       date.getFullYear() === now.getFullYear()
+    )
   }
 
   const getAppointmentsForDay = (date) => {
-    return appointments.filter(app => {
-      const appDate = new Date(app.date + 'T00:00:00')
-      return appDate.getDate() === date.getDate() &&
+    return appointments.filter((app) => {
+      const appDate = new Date(app.date + "T00:00:00")
+      return (
+        appDate.getDate() === date.getDate() &&
         appDate.getMonth() === date.getMonth() &&
         appDate.getFullYear() === date.getFullYear()
+      )
     })
   }
 
@@ -66,20 +70,29 @@ export default function AppointmentCalendar({ appointments, loading }) {
             {formatMonth(currentDate)}
           </h2>
           <div className="flex bg-white rounded-xl border border-slate-200 p-1 shadow-sm">
-            <button onClick={prevWeek} className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-600 transition-colors">
+            <button
+              onClick={prevWeek}
+              className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-600 transition-colors"
+            >
               <ChevronLeft size={18} />
             </button>
-            <button onClick={today} className="px-3 py-1.5 text-xs font-bold hover:bg-slate-50 rounded-lg text-slate-600 transition-colors">
+            <button
+              onClick={today}
+              className="px-3 py-1.5 text-xs font-bold hover:bg-slate-50 rounded-lg text-slate-600 transition-colors"
+            >
               Hoje
             </button>
-            <button onClick={nextWeek} className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-600 transition-colors">
+            <button
+              onClick={nextWeek}
+              className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-600 transition-colors"
+            >
               <ChevronRight size={18} />
             </button>
           </div>
         </div>
-        
-        <Link 
-          to="/agendamentos/novo" 
+
+        <Link
+          to="/agendamentos/novo"
           className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-200 active:scale-95"
         >
           <Plus size={18} />
@@ -102,14 +115,23 @@ export default function AppointmentCalendar({ appointments, loading }) {
           <div className="grid grid-cols-8 border-b border-slate-100 bg-white">
             <div className="p-4 border-r border-slate-50"></div>
             {weekDays.map((date, i) => (
-              <div key={i} className={`p-4 text-center border-r border-slate-50 last:border-r-0 ${isToday(date) ? 'bg-indigo-50/30' : ''}`}>
-                <p className={`text-xs font-bold uppercase tracking-wider ${isToday(date) ? 'text-indigo-600' : 'text-slate-400'}`}>
-                  {date.toLocaleDateString('pt-BR', { weekday: 'short' })}
+              <div
+                key={i}
+                className={`p-4 text-center border-r border-slate-50 last:border-r-0 ${isToday(date) ? "bg-indigo-50/30" : ""}`}
+              >
+                <p
+                  className={`text-xs font-bold uppercase tracking-wider ${isToday(date) ? "text-indigo-600" : "text-slate-400"}`}
+                >
+                  {date.toLocaleDateString("pt-BR", { weekday: "short" })}
                 </p>
-                <p className={`text-2xl font-black mt-1 ${isToday(date) ? 'text-indigo-600' : 'text-slate-700'}`}>
+                <p
+                  className={`text-2xl font-black mt-1 ${isToday(date) ? "text-indigo-600" : "text-slate-700"}`}
+                >
                   {date.getDate()}
                 </p>
-                {isToday(date) && <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full mx-auto mt-1"></div>}
+                {isToday(date) && (
+                  <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full mx-auto mt-1"></div>
+                )}
               </div>
             ))}
           </div>
@@ -117,15 +139,21 @@ export default function AppointmentCalendar({ appointments, loading }) {
           {/* Time Slots */}
           <div className="relative h-[700px] overflow-y-auto">
             {hours.map((hour) => (
-              <div key={hour} className="grid grid-cols-8 min-h-[60px] border-b border-slate-50 group">
+              <div
+                key={hour}
+                className="grid grid-cols-8 min-h-[60px] border-b border-slate-50 group"
+              >
                 <div className="p-2 text-right text-[10px] font-bold text-slate-400 border-r border-slate-50">
-                  {hour.toString().padStart(2, '0')}:00
+                  {hour.toString().padStart(2, "0")}:00
                 </div>
                 {weekDays.map((date, i) => (
-                  <div key={i} className={`relative border-r border-slate-50 last:border-r-0 group-hover:bg-slate-50/30 transition-colors ${isToday(date) ? 'bg-indigo-50/10' : ''}`}>
+                  <div
+                    key={i}
+                    className={`relative border-r border-slate-50 last:border-r-0 group-hover:bg-slate-50/30 transition-colors ${isToday(date) ? "bg-indigo-50/10" : ""}`}
+                  >
                     {/* Appointments for this day and hour */}
                     {getAppointmentsForDay(date)
-                      .filter(app => parseInt(app.time.split(':')[0]) === hour)
+                      .filter((app) => parseInt(app.time.split(":")[0]) === hour)
                       .map((app) => (
                         <Link
                           key={app.id}
@@ -135,7 +163,7 @@ export default function AppointmentCalendar({ appointments, loading }) {
                           <div>
                             <p className="text-[10px] font-black text-indigo-600 truncate uppercase flex items-center gap-1">
                               <User size={10} />
-                              {app.client?.first_name || 'Cliente'}
+                              {app.client?.first_name || "Cliente"}
                             </p>
                             <p className="text-[9px] font-bold text-slate-500 truncate flex items-center gap-1 mt-0.5">
                               <Clock size={10} />
@@ -143,7 +171,7 @@ export default function AppointmentCalendar({ appointments, loading }) {
                             </p>
                           </div>
                           <div className="w-full h-1 bg-indigo-100 rounded-full mt-1 overflow-hidden">
-                             <div className="h-full bg-indigo-500 w-full animate-pulse-slow"></div>
+                            <div className="h-full bg-indigo-500 w-full animate-pulse-slow"></div>
                           </div>
                         </Link>
                       ))}

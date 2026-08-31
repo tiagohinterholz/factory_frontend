@@ -5,27 +5,36 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function ProductList() {
-  const { 
-    product, 
+  const {
+    product,
     loading,
-    searchTerm, 
-    setSearchTerm, 
-    currentPage, 
+    searchTerm,
+    setSearchTerm,
+    currentPage,
     setCurrentPage,
     totalItems,
     refetch,
     remove,
-    error
+    error,
   } = useProduct()
 
   const toast = useToast()
   const confirm = useConfirm()
 
   const columns = [
-    { header: 'Produto', accessor: (item) => item.name },
-    { header: 'Referência', accessor: (item) => item.reference ? item.reference : '-' },
-    { header: 'Preço Venda', accessor: (item) => item.unit_price ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace('.', ',')}` : 'R$ 0,00' },
-    { header : 'Qtde. em estoque', accessor: (item) => item.stock_quantity ? item.stock_quantity : '0'}
+    { header: "Produto", accessor: (item) => item.name },
+    { header: "Referência", accessor: (item) => (item.reference ? item.reference : "-") },
+    {
+      header: "Preço Venda",
+      accessor: (item) =>
+        item.unit_price
+          ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace(".", ",")}`
+          : "R$ 0,00",
+    },
+    {
+      header: "Qtde. em estoque",
+      accessor: (item) => (item.stock_quantity ? item.stock_quantity : "0"),
+    },
   ]
 
   const handleDelete = async (item) => {
@@ -47,12 +56,8 @@ export default function ProductList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader
-        title='Produtos'
-        buttonText='Novo Produto'
-        buttonLink='/produtos/novo'
-      />
-      <ListTable 
+      <ListHeader title="Produtos" buttonText="Novo Produto" buttonLink="/produtos/novo" />
+      <ListTable
         columns={columns}
         data={product}
         editLinkPrefix="/produtos"

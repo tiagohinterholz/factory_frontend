@@ -1,8 +1,8 @@
-import { Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
+import { lazy } from "react"
+import { Route } from "react-router-dom"
 
-const DashboardRoutes = (
-  <Route path="/dashboard" element={<Dashboard />} />
-);
+const Dashboard = lazy(() => import("./pages/Dashboard"))
 
-export default DashboardRoutes;
+const DashboardRoutes = <Route path="/dashboard" element={<Dashboard />} />
+
+export default DashboardRoutes

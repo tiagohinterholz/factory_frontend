@@ -5,26 +5,26 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function CityList() {
-  const { 
-    cities, 
-    loading, 
-    searchTerm, 
-    setSearchTerm, 
-    currentPage, 
+  const {
+    cities,
+    loading,
+    searchTerm,
+    setSearchTerm,
+    currentPage,
     setCurrentPage,
     totalItems,
     refetch,
     remove,
-    error
+    error,
   } = useCities()
 
   const toast = useToast()
   const confirm = useConfirm()
 
   const columns = [
-    { header: 'Sigla', accessor: (item) => item.state.abbreviation },
-    { header: 'Cidade', accessor: (item) => item.name },
-    { header: 'Estado', accessor: (item) => item.state.name },
+    { header: "Sigla", accessor: (item) => item.state.abbreviation },
+    { header: "Cidade", accessor: (item) => item.name },
+    { header: "Estado", accessor: (item) => item.state.name },
   ]
 
   const handleDelete = async (item) => {
@@ -46,13 +46,8 @@ export default function CityList() {
 
   return (
     <div className="p-6 space-y-4">
-
-      <ListHeader
-        title='Cidades'
-        buttonText='Nova Cidade'
-        buttonLink='/cidades/novo'
-      />
-      <ListTable 
+      <ListHeader title="Cidades" buttonText="Nova Cidade" buttonLink="/cidades/novo" />
+      <ListTable
         columns={columns}
         data={cities}
         editLinkPrefix="/cidades"

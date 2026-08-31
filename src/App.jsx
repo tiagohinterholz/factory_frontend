@@ -36,7 +36,13 @@ export default function App() {
                   {AuthRoutes}
 
                   {/* Dashboard routes (Private & Layout wrapped) */}
-                  <Route element={<PrivateRoute><DashboardLayout /></PrivateRoute>}>
+                  <Route
+                    element={
+                      <PrivateRoute>
+                        <DashboardLayout />
+                      </PrivateRoute>
+                    }
+                  >
                     {LicenseRoutes}
                     {DashboardRoutes}
                     {BusinessRoutes}
@@ -58,5 +64,5 @@ export default function App() {
         </AuthProvider>
       </ToastProvider>
     </QueryClientProvider>
-  );
+  )
 }

@@ -1,7 +1,9 @@
-import { Route } from "react-router-dom";
-import AppointmentList from "./pages/AppointmentList";
-import AppointmentEdit from "./pages/AppointmentDetail";
-import AppointmentCreate from "./pages/AppointmentCreate";
+import { lazy } from "react"
+import { Route } from "react-router-dom"
+
+const AppointmentList = lazy(() => import("./pages/AppointmentList"))
+const AppointmentCreate = lazy(() => import("./pages/AppointmentCreate"))
+const AppointmentEdit = lazy(() => import("./pages/AppointmentDetail"))
 
 const AppointmentRoutes = (
   <>
@@ -9,6 +11,6 @@ const AppointmentRoutes = (
     <Route path="/agendamentos/novo" element={<AppointmentCreate />} />
     <Route path="/agendamentos/:id" element={<AppointmentEdit />} />
   </>
-);
+)
 
-export default AppointmentRoutes;
+export default AppointmentRoutes

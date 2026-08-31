@@ -67,7 +67,7 @@ function ConfirmDialog({ open, options, onConfirm, onCancel }) {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   )
 }
 
