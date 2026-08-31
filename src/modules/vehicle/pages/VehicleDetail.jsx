@@ -4,6 +4,7 @@ import { useClientOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import BackLink from "@/modules/core/components/BackLink"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { fuelOptions } from "../constants/vehicle"
 
@@ -33,6 +34,7 @@ export default function VehicleEdit() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
+        <BackLink to="/veiculos" />
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Editar Veículo</h1>

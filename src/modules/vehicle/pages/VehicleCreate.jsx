@@ -6,6 +6,7 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
+import BackLink from "@/modules/core/components/BackLink"
 import { fuelOptions } from "../constants/vehicle"
 import { Save } from "lucide-react"
 
@@ -40,6 +41,7 @@ export default function VehicleCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
+        <BackLink to="/veiculos" />
         <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Novo Veículo</h1>
         <p className="text-slate-400 font-medium text-sm mb-8">
           Cadastre as informações técnicas do veículo
