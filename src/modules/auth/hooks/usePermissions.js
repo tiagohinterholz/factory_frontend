@@ -1,18 +1,23 @@
 import { useAuth } from "@/modules/auth/context/auth-context"
 
 // Decisões de permissão derivadas do usuário logado. As telas consultam isto
-// em vez de reinterpretar `isSuperUser` cru — é o ponto único pra evoluir quando
-// surgirem papéis mais finos (gerente, operador, etc).
+// em vez de reinterpretar `isSuperUser` / `role` crus — é o ponto único pra
+// evoluir quando o backend granularizar os papéis.
 export function usePermissions() {
-  const { isSuperUser, businessId } = useAuth()
+  const { user, isSuperUser, businessId } = useAuth()
+
+  // admin do próprio empreendimento (ou superusuário, que é admin de todos)
+  const isAdmin = isSuperUser || user?.role === "admin"
 
   return {
     isSuperUser,
+    isAdmin,
     businessId,
-    // superusuário escolhe o empreendimento no formulário; o usuário de um
-    // empreendimento fica sempre preso ao próprio.
+    // só o superusuário escolhe entre empreendimentos no formulário;
+    // o usuário de um empreendimento fica preso ao próprio
     canChooseBusiness: isSuperUser,
-    canManageLicenses: isSuperUser,
-    canManageUsers: isSuperUser,
+    // admin gerencia usuários e a licença do próprio empreendimento
+    canManageUsers: isAdmin,
+    canManageLicenses: isAdmin,
   }
 }

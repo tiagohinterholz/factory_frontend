@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useNavigate } from "react-router-dom"
+import { useQueryClient } from "@tanstack/react-query"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 
@@ -25,6 +26,7 @@ export function useResourceForm({
 }) {
   const navigate = useNavigate()
   const toast = useToast()
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(Boolean(load))
 
   const form = useForm({ resolver: zodResolver(schema), defaultValues })
@@ -52,6 +54,9 @@ export function useResourceForm({
   const onSubmit = form.handleSubmit(async (values) => {
     try {
       await submit(values)
+      // marca todo o cache como stale — a lista pra onde voltamos refaz
+      // sozinha em vez de mostrar o dado antigo (staleTime de 30s).
+      queryClient.invalidateQueries()
       if (redirectTo) navigate(redirectTo)
     } catch (error) {
       console.error(error)

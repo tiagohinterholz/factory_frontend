@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { renderHook, act, waitFor } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { z } from "zod"
 import { ToastProvider } from "@/modules/core/feedback/ToastProvider"
 import { useResourceForm } from "./useResourceForm"
@@ -14,11 +15,16 @@ vi.mock("react-router-dom", async (importOriginal) => {
 
 const schema = z.object({ name: z.string().min(1, "Obrigatório") })
 
-const wrapper = ({ children }) => (
-  <ToastProvider>
-    <MemoryRouter>{children}</MemoryRouter>
-  </ToastProvider>
-)
+const wrapper = ({ children }) => {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ToastProvider>
+        <MemoryRouter>{children}</MemoryRouter>
+      </ToastProvider>
+    </QueryClientProvider>
+  )
+}
 
 // O formState do RHF é um proxy: só re-renderiza pros campos lidos durante o
 // render. Tocar em `errors` aqui garante que o result.current acompanhe.
