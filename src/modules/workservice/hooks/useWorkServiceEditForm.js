@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
-import { WorkService } from "@/modules/workservice/services/workservice"
+import { WorkServiceService } from "@/modules/workservice/services/workservice"
 import { serviceSchema, serviceDefaults } from "../service.schema"
 
 function toServiceForm(data) {
@@ -23,8 +23,8 @@ export function useWorkServiceEditForm() {
   const { form, onSubmit, loading } = useResourceForm({
     schema: serviceSchema,
     defaultValues: serviceDefaults,
-    load: async () => toServiceForm(await WorkService.getWorkServiceById(id)),
-    submit: (values) => WorkService.updateWorkService(id, values),
+    load: async () => toServiceForm(await WorkServiceService.getWorkServiceById(id)),
+    submit: (values) => WorkServiceService.updateWorkService(id, values),
     redirectTo: "/servicos",
     errorFallback: "Erro ao atualizar serviço",
   })
@@ -37,7 +37,7 @@ export function useWorkServiceEditForm() {
       danger: true,
     })
     if (!confirmed) return
-    await WorkService.deleteWorkService(id)
+    await WorkServiceService.deleteWorkService(id)
     navigate("/servicos")
   }
 

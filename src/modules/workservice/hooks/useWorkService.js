@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
-import { WorkService } from "@/modules/workservice/services/workservice"
+import { WorkServiceService } from "@/modules/workservice/services/workservice"
 import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
 import { normalizeList } from "@/api/normalize-list"
 
@@ -14,13 +14,13 @@ export function useWorkService() {
 
   const query = useQuery({
     queryKey: [QUERY_KEY, { search, page: currentPage }],
-    queryFn: () => WorkService.getWorkService({ search, page: currentPage }),
+    queryFn: () => WorkServiceService.getWorkService({ search, page: currentPage }),
     placeholderData: keepPreviousData,
     select: normalizeList,
   })
 
   const removeMutation = useMutation({
-    mutationFn: (id) => WorkService.deleteWorkService(id),
+    mutationFn: (id) => WorkServiceService.deleteWorkService(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   })
 
