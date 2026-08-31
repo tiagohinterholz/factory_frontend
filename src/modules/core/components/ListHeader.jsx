@@ -6,7 +6,10 @@ export default function ListHeader({
   subtitle = "Gerencie seus registros",
   buttonText,
   buttonLink,
+  actions,
 }) {
+  const hasButton = buttonText && buttonLink
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
       <div>
@@ -14,11 +17,16 @@ export default function ListHeader({
         <p className="text-[13px] text-muted mt-0.5">{subtitle}</p>
       </div>
 
-      {buttonText && buttonLink && (
-        <Link to={buttonLink} className="btn-primary">
-          <Plus className="w-4 h-4" />
-          <span>{buttonText}</span>
-        </Link>
+      {(actions || hasButton) && (
+        <div className="flex items-center gap-2">
+          {actions}
+          {hasButton && (
+            <Link to={buttonLink} className="btn-primary">
+              <Plus className="w-4 h-4" />
+              <span>{buttonText}</span>
+            </Link>
+          )}
+        </div>
       )}
     </div>
   )

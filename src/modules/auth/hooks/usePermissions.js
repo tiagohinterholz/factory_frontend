@@ -19,5 +19,7 @@ export function usePermissions() {
     // admin gerencia usuários e a licença do próprio empreendimento
     canManageUsers: isAdmin,
     canManageLicenses: isAdmin,
+    // exportar relatórios (backend: IsSuperUser | IsAdminUser)
+    canExportReports: isAdmin,
   }
 }

@@ -1,5 +1,6 @@
 import { useBudget } from "../hooks/useBudget"
 import ListHeader from "@/modules/core/components/ListHeader"
+import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
@@ -68,7 +69,12 @@ export default function BudgetList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader title="Orçamentos" buttonText="Novo Orçamento" buttonLink="/orcamentos/novo" />
+      <ListHeader
+        title="Orçamentos"
+        buttonText="Novo Orçamento"
+        buttonLink="/orcamentos/novo"
+        actions={<ExportReportButton type="budgets" />}
+      />
       <ListTable
         columns={columns}
         data={budgets}

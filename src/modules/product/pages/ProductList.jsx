@@ -1,5 +1,6 @@
 import { useProduct } from "../hooks/useProduct"
 import ListHeader from "@/modules/core/components/ListHeader"
+import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
@@ -56,7 +57,12 @@ export default function ProductList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader title="Produtos" buttonText="Novo Produto" buttonLink="/produtos/novo" />
+      <ListHeader
+        title="Produtos"
+        buttonText="Novo Produto"
+        buttonLink="/produtos/novo"
+        actions={<ExportReportButton type="stock" />}
+      />
       <ListTable
         columns={columns}
         data={product}
