@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useClientEditForm } from "@/modules/client/hooks/useClientEditForm"
+import { useClientVehicles } from "@/modules/client/hooks/useClientVehicles"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
-import { ClientService } from "@/modules/client/services/client"
 import { useAuth } from "@/modules/auth/context/auth-context"
 
 import FormField from "@/modules/core/components/FormField"
@@ -36,22 +35,7 @@ export default function ClientDetail() {
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
-  const [vehicles, setVehicles] = useState([])
-  const [loadingVehicles, setLoadingVehicles] = useState(true)
-
-  useEffect(() => {
-    async function loadVehicles() {
-      try {
-        const data = await ClientService.vehicleByClient(id)
-        setVehicles(data.results || (Array.isArray(data) ? data : []))
-      } catch (err) {
-        console.error("Erro ao carregar veículos", err)
-      } finally {
-        setLoadingVehicles(false)
-      }
-    }
-    if (id) loadVehicles()
-  }, [id])
+  const { vehicles, loading: loadingVehicles } = useClientVehicles(id)
 
   if (loading || loadingStates || loadingBusinesses || (stateId && loadingCities)) {
     return (

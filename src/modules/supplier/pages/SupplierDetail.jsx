@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useSupplierEditForm } from "@/modules/supplier/hooks/useSupplierEditForm"
+import { useSupplierRelations } from "@/modules/supplier/hooks/useSupplierRelations"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
-import { SupplierService } from "@/modules/supplier/services/supplier"
 
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -37,28 +37,8 @@ export default function SupplierDetail() {
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
-  const [products, setProducts] = useState([])
-  const [services, setServices] = useState([])
-  const [loadingRelated, setLoadingRelated] = useState(true)
   const [activeTab, setActiveTab] = useState("products")
-
-  useEffect(() => {
-    async function loadRelatedData() {
-      try {
-        const [prodData, servData] = await Promise.all([
-          SupplierService.getProductBySupplier(id),
-          SupplierService.getServiceBySupplier(id),
-        ])
-        setProducts(prodData.results || (Array.isArray(prodData) ? prodData : []))
-        setServices(servData.results || (Array.isArray(servData) ? servData : []))
-      } catch (error) {
-        console.error("Erro ao carregar dados relacionados", error)
-      } finally {
-        setLoadingRelated(false)
-      }
-    }
-    if (id) loadRelatedData()
-  }, [id])
+  const { products, services, loading: loadingRelated } = useSupplierRelations(id)
 
   if (loading || loadingStates || loadingBusinesses || (stateId && loadingCities)) {
     return (
