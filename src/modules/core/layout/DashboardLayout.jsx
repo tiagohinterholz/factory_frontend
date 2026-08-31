@@ -1,21 +1,54 @@
-import { Suspense } from "react"
+import { Suspense, useState } from "react"
 import { Outlet, useLocation } from "react-router-dom"
 import Sidebar from "../components/Sidebar"
 import Topbar from "../components/Topbar"
 import { ErrorBoundary } from "@/modules/core/components/ErrorBoundary"
 import PageLoader from "@/modules/core/components/PageLoader"
 
+const COLLAPSED_KEY = "sidebar:collapsed"
+
+function readCollapsed() {
+  try {
+    return localStorage.getItem(COLLAPSED_KEY) === "1"
+  } catch {
+    return false
+  }
+}
+
 export default function DashboardLayout({ children }) {
   const location = useLocation()
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(readCollapsed)
+
+  function toggleCollapsed() {
+    setCollapsed((current) => {
+      const next = !current
+      try {
+        localStorage.setItem(COLLAPSED_KEY, next ? "1" : "0")
+      } catch {
+        // storage indisponível: mantém só em memória
+      }
+      return next
+    })
+  }
 
   return (
-    <div className="min-h-screen flex bg-slate-50 relative">
-      <Sidebar />
+    <div className="min-h-screen bg-slate-50">
+      <Sidebar
+        collapsed={collapsed}
+        onToggleCollapse={toggleCollapsed}
+        mobileOpen={mobileOpen}
+        onCloseMobile={() => setMobileOpen(false)}
+      />
 
-      <div className="flex-1 ml-72 flex flex-col min-h-screen">
-        <Topbar />
+      <div
+        className={`flex flex-col min-h-screen transition-[margin] duration-300 ${
+          collapsed ? "lg:ml-20" : "lg:ml-72"
+        }`}
+      >
+        <Topbar onOpenMobile={() => setMobileOpen(true)} />
 
-        <main className="p-8 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-700">
+        <main className="p-4 sm:p-8 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-700">
           <div className="max-w-[1400px] mx-auto">
             <ErrorBoundary key={location.pathname}>
               <Suspense fallback={<PageLoader />}>{children || <Outlet />}</Suspense>

@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
-import { LogOut, Bell, User } from "lucide-react"
+import { LogOut, Bell, User, Menu } from "lucide-react"
 
-export default function Topbar() {
+export default function Topbar({ onOpenMobile }) {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
 
@@ -12,15 +12,25 @@ export default function Topbar() {
   }
 
   return (
-    <header className="h-20 w-full bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-8 sticky top-0 z-40 transition-all duration-300">
-      <div className="flex flex-col">
-        <h2 className="text-lg font-bold text-slate-800 tracking-tight">Sistema de Gestão</h2>
-        <p className="text-[11px] text-slate-400 font-medium uppercase tracking-[0.2em]">
-          Painel de Controle v1.0
-        </p>
+    <header className="h-20 w-full bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-40 transition-all duration-300">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onOpenMobile}
+          aria-label="Abrir menu"
+          className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-indigo-600 transition duration-300"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        <div className="flex flex-col">
+          <h2 className="text-lg font-bold text-slate-800 tracking-tight">Sistema de Gestão</h2>
+          <p className="hidden sm:block text-[11px] text-slate-400 font-medium uppercase tracking-[0.2em]">
+            Painel de Controle
+          </p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4 sm:gap-6">
         <button className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-indigo-600 transition duration-300">
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white animate-pulse"></span>
@@ -29,7 +39,7 @@ export default function Topbar() {
         <div className="h-8 w-[1px] bg-slate-100"></div>
 
         <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end mr-1">
+          <div className="hidden sm:flex flex-col items-end mr-1">
             <span className="text-sm font-bold text-slate-700 leading-none">{user?.email}</span>
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
               {user?.role || "Colaborador"}
