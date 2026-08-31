@@ -21,7 +21,7 @@ async function waitForFile(id) {
 }
 
 // Dispara a exportação de um tipo e acompanha até o arquivo ficar pronto,
-// abrindo o CSV numa nova aba. `exportingType` guarda o tipo em andamento
+// abrindo o PDF numa nova aba. `exportingType` guarda o tipo em andamento
 // pra desabilitar só aquele botão.
 export function useReportExport() {
   const toast = useToast()

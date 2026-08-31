@@ -2,9 +2,9 @@ import { FileDown, Loader2 } from "lucide-react"
 import { useReportExport } from "@/modules/core/hooks/useReportExport"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
-// Botão de exportar relatório (CSV). Só aparece pra quem pode exportar
+// Botão de exportar relatório (PDF). Só aparece pra quem pode exportar
 // (superusuário ou admin do empreendimento). `type`: "orders" | "budgets" | "stock".
-export default function ExportReportButton({ type, label = "Exportar CSV" }) {
+export default function ExportReportButton({ type, label = "Exportar PDF" }) {
   const { canExportReports } = usePermissions()
   const { exportReport, isExporting } = useReportExport()
 
