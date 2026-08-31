@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (credentials) => {
     const data = await AuthService.login(credentials)
-    authStorage.setSession({ access: data.access, refresh: data.refresh, user: data })
+    authStorage.setSession({ access: data.access, user: data })
     dispatch({ type: "LOGIN", user: data })
     return data
   }, [])

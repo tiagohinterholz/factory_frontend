@@ -35,9 +35,10 @@ describe("useAuth", () => {
   })
 
   it("login() grava a sessão e seta o user", async () => {
+    // o backend não devolve mais `refresh` no corpo (vai no cookie HttpOnly)
     server.use(
       http.post(`${API}/usuarios/login/`, () =>
-        HttpResponse.json({ access: "AT", refresh: "RT", email: "x@x.com", business_id: 9 }),
+        HttpResponse.json({ access: "AT", email: "x@x.com", business_id: 9 }),
       ),
     )
     const { result } = renderHook(() => useAuth(), { wrapper })
@@ -49,12 +50,11 @@ describe("useAuth", () => {
     expect(result.current.user.email).toBe("x@x.com")
     expect(result.current.isAuthenticated).toBe(true)
     expect(localStorage.getItem("access")).toBe("AT")
-    expect(localStorage.getItem("refresh")).toBe("RT")
+    expect(localStorage.getItem("refresh")).toBe(null)
   })
 
   it("logout() limpa a sessão", async () => {
     localStorage.setItem("access", "AT")
-    localStorage.setItem("refresh", "RT")
     localStorage.setItem("user", JSON.stringify({ email: "y@y.com" }))
     server.use(http.post(`${API}/usuarios/logout/`, () => new HttpResponse(null, { status: 204 })))
 

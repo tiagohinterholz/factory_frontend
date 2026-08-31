@@ -19,7 +19,7 @@ describe("http interceptors", () => {
   })
 
   it("401 -> um refresh -> repete o request e resolve", async () => {
-    authStorage.setSession({ access: "OLD", refresh: "RT" })
+    authStorage.setSession({ access: "OLD" })
     let refreshCalls = 0
     server.use(
       http.get(`${API}/protected`, ({ request }) =>
@@ -40,7 +40,7 @@ describe("http interceptors", () => {
   })
 
   it("401 simultâneos -> apenas UM refresh (single-flight)", async () => {
-    authStorage.setSession({ access: "OLD", refresh: "RT" })
+    authStorage.setSession({ access: "OLD" })
     let refreshCalls = 0
     server.use(
       http.get(`${API}/protected`, ({ request }) =>
@@ -66,7 +66,7 @@ describe("http interceptors", () => {
   it("refresh falha -> limpa a sessão", async () => {
     // O redirect (window.location.href = "/") não é asserido: mexer em
     // window.location no jsdom quebra o XHR. A limpeza já prova que o catch rodou.
-    authStorage.setSession({ access: "OLD", refresh: "RT", user: { email: "a@a" } })
+    authStorage.setSession({ access: "OLD", user: { email: "a@a" } })
     server.use(
       http.get(`${API}/protected`, () => new HttpResponse(null, { status: 401 })),
       http.post(`${API}/usuarios/refresh-token/`, () => new HttpResponse(null, { status: 401 })),
@@ -78,7 +78,7 @@ describe("http interceptors", () => {
   })
 
   it("erro não-401 passa direto, sem refresh", async () => {
-    authStorage.setSession({ access: "OLD", refresh: "RT" })
+    authStorage.setSession({ access: "OLD" })
     let refreshCalls = 0
     server.use(
       http.get(`${API}/boom`, () => new HttpResponse(null, { status: 500 })),

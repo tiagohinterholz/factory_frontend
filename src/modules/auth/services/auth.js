@@ -1,5 +1,4 @@
 import { api } from "@/api/http"
-import { authStorage } from "@/api/auth-storage"
 
 export const AuthService = {
   async login(payload) {
@@ -8,16 +7,10 @@ export const AuthService = {
   },
 
   // Só a chamada de API. Limpar a sessão é responsabilidade do AuthContext.
+  // O refresh vai no cookie HttpOnly; o backend o lê de lá e o invalida.
   async logout() {
-    const refresh = authStorage.getRefresh()
-    const access = authStorage.getAccess()
-
     try {
-      await api.post(
-        "/usuarios/logout/",
-        { refresh },
-        { headers: { Authorization: `Bearer ${access}` } },
-      )
+      await api.post("/usuarios/logout/", {})
     } catch (error) {
       console.error("Erro no logout:", error)
     }

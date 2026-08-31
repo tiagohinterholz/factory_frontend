@@ -1,17 +1,15 @@
 // Único lugar que conhece as chaves de sessão no localStorage.
 // Quem precisa de token/usuário passa por aqui — nada de localStorage.getItem("access") espalhado.
+//
+// O `refresh` NÃO fica aqui: ele vive num cookie HttpOnly setado pelo backend
+// e o navegador o anexa sozinho nas rotas de /usuarios/. JS nunca o vê.
 
 const ACCESS = "access"
-const REFRESH = "refresh"
 const USER = "user"
 
 export const authStorage = {
   getAccess() {
     return localStorage.getItem(ACCESS)
-  },
-
-  getRefresh() {
-    return localStorage.getItem(REFRESH)
   },
 
   getUser() {
@@ -23,9 +21,8 @@ export const authStorage = {
     }
   },
 
-  setSession({ access, refresh, user }) {
+  setSession({ access, user }) {
     if (access !== undefined) localStorage.setItem(ACCESS, access)
-    if (refresh !== undefined) localStorage.setItem(REFRESH, refresh)
     if (user !== undefined) localStorage.setItem(USER, JSON.stringify(user))
   },
 
@@ -35,7 +32,6 @@ export const authStorage = {
 
   clear() {
     localStorage.removeItem(ACCESS)
-    localStorage.removeItem(REFRESH)
     localStorage.removeItem(USER)
   },
 }

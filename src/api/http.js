@@ -8,6 +8,7 @@ if (!API_URL) {
 
 export const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true, // envia/recebe o cookie HttpOnly do refresh
 })
 
 api.interceptors.request.use((config) => {
@@ -24,8 +25,9 @@ let refreshPromise = null
 
 function refreshAccessToken() {
   if (!refreshPromise) {
+    // body vazio: o refresh vai no cookie HttpOnly, anexado pelo navegador
     refreshPromise = axios
-      .post(`${API_URL}/usuarios/refresh-token/`, { refresh: authStorage.getRefresh() })
+      .post(`${API_URL}/usuarios/refresh-token/`, {}, { withCredentials: true })
       .then((response) => {
         const newAccess = response.data.access
         authStorage.setAccess(newAccess)
