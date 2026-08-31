@@ -1,36 +1,36 @@
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
-import { StateService } from "../services/state"
-import { stateSchema, stateDefaults } from "../state.schema"
+import { CityService } from "@/modules/location/city/services/city"
+import { citySchema, cityDefaults } from "../city.schema"
 
-export function useStateEditForm() {
+export function useCityEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const confirm = useConfirm()
 
   const { form, onSubmit, loading } = useResourceForm({
-    schema: stateSchema,
-    defaultValues: stateDefaults,
+    schema: citySchema,
+    defaultValues: cityDefaults,
     load: async () => {
-      const data = await StateService.getState(id)
-      return { name: data.name ?? "", abbreviation: data.abbreviation ?? "" }
+      const data = await CityService.getCity(id)
+      return { name: data.name ?? "", state_id: String(data.state?.id ?? data.state ?? "") }
     },
-    submit: (values) => StateService.updateState(id, values),
-    redirectTo: "/estados",
-    errorFallback: "Erro ao atualizar estado",
+    submit: (values) => CityService.updateCity(id, values),
+    redirectTo: "/cidades",
+    errorFallback: "Erro ao atualizar cidade",
   })
 
   async function handleDelete() {
     const confirmed = await confirm({
-      title: "Excluir estado?",
+      title: "Excluir cidade?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
     })
     if (!confirmed) return
-    await StateService.deleteState(id)
-    navigate("/estados")
+    await CityService.deleteCity(id)
+    navigate("/cidades")
   }
 
   return { form, onSubmit, loading, handleDelete }

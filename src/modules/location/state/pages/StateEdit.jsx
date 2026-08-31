@@ -11,8 +11,11 @@ export default function StateEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const { name, setName, abbreviation, setAbbreviation, loading, handleUpdate, handleDelete } =
-    useStateEditForm()
+  const { form, onSubmit, loading, handleDelete } = useStateEditForm()
+  const {
+    register,
+    formState: { errors, isSubmitting },
+  } = form
 
   const { citiesByState, loading: loadingCities } = useCitiesByState(id)
 
@@ -55,26 +58,26 @@ export default function StateEdit() {
               <h3 className="font-bold text-slate-800 tracking-tight">Informações do Estado</h3>
             </div>
 
-            <form className="space-y-6" onSubmit={handleUpdate}>
+            <form className="space-y-6" onSubmit={onSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
                   <FormField
                     label="Nome do Estado"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
                     placeholder="Ex: São Paulo"
+                    error={errors.name?.message}
+                    registration={register("name")}
                   />
                 </div>
                 <FormField
                   label="Sigla"
-                  value={abbreviation}
-                  onChange={(e) => setAbbreviation(e.target.value)}
                   placeholder="EX: SP"
+                  error={errors.abbreviation?.message}
+                  registration={register("abbreviation")}
                 />
               </div>
 
               <div className="pt-4 flex justify-end">
-                <PrimaryButton type="submit" icon={Edit2} fullWidth={false}>
+                <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
                   Salvar Alterações
                 </PrimaryButton>
               </div>

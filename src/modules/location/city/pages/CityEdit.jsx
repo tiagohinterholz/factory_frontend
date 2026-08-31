@@ -1,64 +1,21 @@
-import { useEffect, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useCityEditForm } from "@/modules/location/city/hooks/useCityEditForm"
+import { useStates } from "@/modules/location/state/hooks/useState"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Milestone, Trash2, Edit2 } from "lucide-react"
-import { CityService } from "../services/city"
-import { useStates } from "@/modules/location/state/hooks/useState"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function CityEdit() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const toast = useToast()
-  const confirm = useConfirm()
-
-  const [name, setName] = useState("")
-  const [stateId, setStateId] = useState("")
-  const [loadingCity, setLoadingCity] = useState(true)
+  const { form, onSubmit, loading, handleDelete } = useCityEditForm()
+  const {
+    register,
+    formState: { errors, isSubmitting },
+  } = form
 
   const { states, loading: loadingStates } = useStates()
+  const stateOptions = states.map((s) => ({ id: s.id, name: `${s.name} (${s.abbreviation})` }))
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await CityService.getCity(id)
-        setName(data.name)
-        setStateId(data.state.id)
-      } finally {
-        setLoadingCity(false)
-      }
-    }
-    if (id) load()
-  }, [id])
-
-  async function handleUpdate(e) {
-    e.preventDefault()
-    try {
-      await CityService.updateCity(id, { name, state_id: stateId })
-      navigate("/cidades")
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao atualizar cidade").message)
-    }
-  }
-
-  async function handleDelete() {
-    const confirmed = await confirm({
-      title: "Excluir cidade?",
-      message: "Esta ação não pode ser desfeita.",
-      confirmText: "Excluir",
-      danger: true,
-    })
-    if (!confirmed) return
-    await CityService.deleteCity(id)
-    navigate("/cidades")
-  }
-
-  if (loadingCity || loadingStates) {
+  if (loading || loadingStates) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
@@ -95,23 +52,23 @@ export default function CityEdit() {
             <h3 className="font-bold text-slate-800 tracking-tight">Cadastro Municipal</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={handleUpdate}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             <FormField
               label="Nome da Cidade"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
               placeholder="Ex: São Paulo"
+              error={errors.name?.message}
+              registration={register("name")}
             />
 
             <SelectField
               label="Estado"
-              value={stateId}
-              onChange={(e) => setStateId(e.target.value)}
-              options={states.map((s) => ({ id: s.id, name: `${s.name} (${s.abbreviation})` }))}
+              options={stateOptions}
+              error={errors.state_id?.message}
+              registration={register("state_id")}
             />
 
             <div className="pt-4">
-              <PrimaryButton type="submit" icon={Edit2}>
+              <PrimaryButton type="submit" icon={Edit2} disabled={isSubmitting}>
                 Salvar Alterações
               </PrimaryButton>
             </div>

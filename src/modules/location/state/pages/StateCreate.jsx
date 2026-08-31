@@ -4,7 +4,11 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Globe, Save } from "lucide-react"
 
 export default function StateCreate() {
-  const { name, setName, abbreviation, setAbbreviation, handleSubmit } = useStateForm()
+  const { form, onSubmit } = useStateForm()
+  const {
+    register,
+    formState: { errors, isSubmitting },
+  } = form
 
   return (
     <div className="p-6 space-y-6">
@@ -22,26 +26,26 @@ export default function StateCreate() {
             <h3 className="font-bold text-slate-800 tracking-tight">Informações Geográficas</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">
                 <FormField
                   label="Nome do Estado"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
                   placeholder="Ex: Minas Gerais"
+                  error={errors.name?.message}
+                  registration={register("name")}
                 />
               </div>
               <FormField
                 label="Sigla"
-                value={abbreviation}
-                onChange={(e) => setAbbreviation(e.target.value)}
                 placeholder="EX: MG"
+                error={errors.abbreviation?.message}
+                registration={register("abbreviation")}
               />
             </div>
 
             <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Save} fullWidth={false}>
+              <PrimaryButton type="submit" icon={Save} fullWidth={false} disabled={isSubmitting}>
                 Salvar Estado
               </PrimaryButton>
             </div>
