@@ -5,7 +5,7 @@ import { useClient } from "@/modules/client/hooks/useClient"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { fuelOptions } from "../constants/vehicle"
 import { Save } from "lucide-react"
 
@@ -18,7 +18,7 @@ export default function VehicleCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
 
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { client: clients, loading: loadingClients } = useClient()
@@ -47,7 +47,7 @@ export default function VehicleCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            {isSuperUser && (
+            {canChooseBusiness && (
               <SelectField
                 label="Empreendimento"
                 options={businessOptions}

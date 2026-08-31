@@ -5,7 +5,7 @@ import { useVehicle } from "@/modules/vehicle/hooks/useVehicle"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 export default function BudgetCreate() {
   const { form, onSubmit } = useBudgetForm()
@@ -16,7 +16,7 @@ export default function BudgetCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
 
   const businessId = watch("business_id")
   const clientId = watch("client_id")
@@ -53,7 +53,7 @@ export default function BudgetCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            {isSuperUser && (
+            {canChooseBusiness && (
               <SelectField
                 label="Empreendimento"
                 options={businessOptions}

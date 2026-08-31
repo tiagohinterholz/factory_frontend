@@ -3,7 +3,7 @@ import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { Briefcase, Edit2 } from "lucide-react"
 import { LicenseOptions } from "@/modules/license/constants/license"
 
@@ -26,7 +26,7 @@ export default function LicenseDetail() {
   } = form
 
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
 
   if (loading || loadingBusinesses) {
     return (
@@ -72,7 +72,7 @@ export default function LicenseDetail() {
           </div>
 
           <form className="space-y-6" onSubmit={onSubmit}>
-            {isSuperUser ? (
+            {canChooseBusiness ? (
               <SelectField
                 label="Empreendimento"
                 options={businessOptions}

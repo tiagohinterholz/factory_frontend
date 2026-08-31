@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import {
   LayoutDashboard,
   Briefcase,
@@ -37,6 +38,7 @@ const servicesItems = [
 
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
   const location = useLocation()
+  const { canManageLicenses, canManageUsers } = usePermissions()
   const [locationOpen, setLocationOpen] = useState(
     location.pathname.startsWith("/estados") || location.pathname.startsWith("/cidades"),
   )
@@ -195,20 +197,24 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                 >
                   Gestão
                 </Link>
-                <Link
-                  to="/empreendimentos/licencas"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/empreendimentos/licencas"))}
-                >
-                  Licenças
-                </Link>
-                <Link
-                  to="/usuarios"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/usuarios"))}
-                >
-                  Usuários
-                </Link>
+                {canManageLicenses && (
+                  <Link
+                    to="/empreendimentos/licencas"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/empreendimentos/licencas"))}
+                  >
+                    Licenças
+                  </Link>
+                )}
+                {canManageUsers && (
+                  <Link
+                    to="/usuarios"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/usuarios"))}
+                  >
+                    Usuários
+                  </Link>
+                )}
               </div>
             )}
           </div>

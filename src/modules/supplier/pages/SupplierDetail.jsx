@@ -10,7 +10,7 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 
@@ -29,7 +29,7 @@ export default function SupplierDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
   const stateId = watch("state_id")
 
   const { states, loading: loadingStates } = useStates()
@@ -81,7 +81,7 @@ export default function SupplierDetail() {
             </div>
 
             <form className="space-y-6" onSubmit={onSubmit}>
-              {isSuperUser && (
+              {canChooseBusiness && (
                 <SelectField
                   label="Empreendimento"
                   options={businessOptions}

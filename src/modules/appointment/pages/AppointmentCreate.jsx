@@ -6,7 +6,7 @@ import { useOrder } from "@/modules/order/hooks/useOrder"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { Save } from "lucide-react"
 
 export default function AppointmentCreate() {
@@ -18,7 +18,7 @@ export default function AppointmentCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
 
   const businessId = watch("business_id")
   const clientId = watch("client_id")
@@ -79,7 +79,7 @@ export default function AppointmentCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            {isSuperUser && (
+            {canChooseBusiness && (
               <SelectField
                 label="Empreendimento"
                 options={businessOptions}

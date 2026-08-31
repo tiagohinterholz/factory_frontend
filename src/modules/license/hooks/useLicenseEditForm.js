@@ -1,12 +1,12 @@
 import { useState } from "react"
 import { useParams } from "react-router-dom"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { idOf } from "@/api/dto"
 import { LicenseService } from "@/modules/license/services/license"
 import { licenseSchema, licenseDefaults, toLicensePayload } from "../license.schema"
 
 // dto da API -> shape do form
 function toLicenseForm(data) {
-  const idOf = (value) => String(value?.id ?? value ?? "")
   return {
     business_id: idOf(data.business),
     period: data.period ?? "MENSAL",

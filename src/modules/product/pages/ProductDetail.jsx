@@ -1,7 +1,7 @@
 import { useProductEditForm } from "@/modules/product/hooks/useProductEditForm"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import { useSupplier } from "@/modules/supplier/hooks/useSupplier"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -14,7 +14,7 @@ export default function ProductDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplier()
 
@@ -60,7 +60,7 @@ export default function ProductDetail() {
 
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {isSuperUser && (
+              {canChooseBusiness && (
                 <SelectField
                   label="Empreendimento"
                   options={businessOptions}

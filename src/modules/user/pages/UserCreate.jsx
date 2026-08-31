@@ -1,6 +1,7 @@
 import { useUserForm } from "@/modules/user/hooks/useUserForm"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -13,7 +14,8 @@ export default function UserCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { user: loggedUser, isSuperUser } = useAuth()
+  const { user: loggedUser } = useAuth()
+  const { isSuperUser } = usePermissions()
   const loggedRole = loggedUser?.role
   const { business: businesses } = useBusiness()
 

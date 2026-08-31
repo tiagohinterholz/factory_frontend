@@ -4,7 +4,7 @@ import { useClientVehicles } from "@/modules/client/hooks/useClientVehicles"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -27,7 +27,7 @@ export default function ClientDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
   const stateId = watch("state_id")
 
   const { states, loading: loadingStates } = useStates()
@@ -77,7 +77,7 @@ export default function ClientDetail() {
             </div>
 
             <form className="space-y-6" onSubmit={onSubmit}>
-              {isSuperUser && (
+              {canChooseBusiness && (
                 <SelectField
                   label="Empreendimento"
                   options={businessOptions}

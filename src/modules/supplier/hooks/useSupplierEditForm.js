@@ -1,12 +1,12 @@
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { idOf } from "@/api/dto"
 import { SupplierService } from "@/modules/supplier/services/supplier"
 import { supplierSchema, supplierDefaults } from "../supplier.schema"
 
 // dto da API -> shape do form (ids como string)
 function toSupplierForm(data) {
-  const idOf = (value) => String(value?.id ?? value ?? "")
   return {
     business_id: idOf(data.business),
     corporate_name: data.corporate_name ?? "",
