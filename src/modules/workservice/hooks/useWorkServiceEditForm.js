@@ -1,59 +1,33 @@
-import { useState, useEffect } from "react"
-import { WorkService } from "@/modules/workservice/services/workservice"
 import { useNavigate, useParams } from "react-router-dom"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
+import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { WorkService } from "@/modules/workservice/services/workservice"
+import { serviceSchema, serviceDefaults } from "../service.schema"
+
+function toServiceForm(data) {
+  const idOf = (value) => String(value?.id ?? value ?? "")
+  return {
+    business_id: idOf(data.business),
+    supplier_id: idOf(data.supplier),
+    name: data.name ?? "",
+    description: data.description ?? "",
+    unit_price: data.unit_price ?? "",
+  }
+}
 
 export function useWorkServiceEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const toast = useToast()
   const confirm = useConfirm()
 
-  const [business, setBusiness] = useState("")
-  const [supplier, setSupplier] = useState("")
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [unitPrice, setUnitPrice] = useState("")
-
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await WorkService.getWorkServiceById(id)
-        setBusiness(data.business?.id || data.business || "")
-        setSupplier(data.supplier?.id || data.supplier || "")
-        setName(data.name || "")
-        setDescription(data.description || "")
-        setUnitPrice(data.unit_price || "")
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [id])
-
-  async function handleUpdate(e) {
-    e.preventDefault()
-
-    const payload = {
-      business_id: business,
-      supplier_id: supplier,
-      name: name,
-      description: description,
-      unit_price: unitPrice,
-    }
-
-    try {
-      await WorkService.updateWorkService(id, payload)
-      navigate(`/servicos/`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao atualizar serviço").message)
-    }
-  }
+  const { form, onSubmit, loading } = useResourceForm({
+    schema: serviceSchema,
+    defaultValues: serviceDefaults,
+    load: async () => toServiceForm(await WorkService.getWorkServiceById(id)),
+    submit: (values) => WorkService.updateWorkService(id, values),
+    redirectTo: "/servicos",
+    errorFallback: "Erro ao atualizar serviço",
+  })
 
   async function handleDelete() {
     const confirmed = await confirm({
@@ -67,19 +41,5 @@ export function useWorkServiceEditForm() {
     navigate("/servicos")
   }
 
-  return {
-    business,
-    setBusiness,
-    supplier,
-    setSupplier,
-    name,
-    setName,
-    description,
-    setDescription,
-    unitPrice,
-    setUnitPrice,
-    loading,
-    handleUpdate,
-    handleDelete,
-  }
+  return { form, onSubmit, loading, handleDelete }
 }

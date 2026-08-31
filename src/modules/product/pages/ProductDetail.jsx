@@ -1,52 +1,25 @@
-import { useParams } from "react-router-dom"
 import { useProductEditForm } from "@/modules/product/hooks/useProductEditForm"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import { useSupplier } from "@/modules/supplier/hooks/useSupplier"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
 import { Package, Edit2, Trash2 } from "lucide-react"
 
 export default function ProductDetail() {
-  useParams()
-
+  const { form, onSubmit, loading, handleDelete } = useProductEditForm()
   const {
-    business,
-    setBusiness,
-    supplier,
-    setSupplier,
-    name,
-    setName,
-    brand,
-    setBrand,
-    reference,
-    setReference,
-    description,
-    setDescription,
-    stockQuantity,
-    setStockQuantity,
-    unitPrice,
-    setUnitPrice,
-    loading,
-    handleUpdate,
-    handleDelete,
-  } = useProductEditForm()
+    register,
+    formState: { errors, isSubmitting },
+  } = form
 
+  const { isSuperUser } = useAuth()
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplier()
 
-  const { isSuperUser } = useAuth()
-
-  const businessOptions = businesses.map((b) => ({
-    id: b.id,
-    name: b.corporate_name,
-  }))
-
-  const supplierOptions = suppliers.map((s) => ({
-    id: s.id,
-    name: s.corporate_name,
-  }))
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
+  const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
 
   if (loading || loadingBusinesses || loadingSuppliers) {
     return (
@@ -85,60 +58,68 @@ export default function ProductDetail() {
             <h3 className="font-bold text-slate-800 tracking-tight">Informações do Produto</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={handleUpdate}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {isSuperUser && (
                 <SelectField
                   label="Empreendimento"
-                  value={business}
-                  onChange={(e) => setBusiness(e.target.value)}
                   options={businessOptions}
+                  error={errors.business_id?.message}
+                  registration={register("business_id")}
                 />
               )}
 
               <SelectField
                 label="Fornecedor"
-                value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
                 options={supplierOptions}
+                error={errors.supplier_id?.message}
+                registration={register("supplier_id")}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField label="Nome" value={name} onChange={(e) => setName(e.target.value)} />
-              <FormField label="Marca" value={brand} onChange={(e) => setBrand(e.target.value)} />
+              <FormField
+                label="Nome"
+                error={errors.name?.message}
+                registration={register("name")}
+              />
+              <FormField
+                label="Marca"
+                error={errors.brand?.message}
+                registration={register("brand")}
+              />
             </div>
 
             <FormField
               label="Referência/SKU"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
+              error={errors.reference?.message}
+              registration={register("reference")}
             />
 
             <FormField
               label="Descrição"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              error={errors.description?.message}
+              registration={register("description")}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 label="Qtd em Estoque"
-                value={stockQuantity}
-                onChange={(e) => setStockQuantity(e.target.value)}
                 type="number"
+                error={errors.stock_quantity?.message}
+                registration={register("stock_quantity")}
               />
               <FormField
                 label="Preço Unitário"
-                value={unitPrice}
-                onChange={(e) => setUnitPrice(e.target.value)}
                 type="number"
                 step="0.01"
+                error={errors.unit_price?.message}
+                registration={register("unit_price")}
               />
             </div>
 
             <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Edit2} fullWidth={false}>
+              <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
                 Salvar Alterações
               </PrimaryButton>
             </div>

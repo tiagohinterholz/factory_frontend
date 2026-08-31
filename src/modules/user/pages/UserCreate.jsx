@@ -1,46 +1,30 @@
 import { useUserForm } from "@/modules/user/hooks/useUserForm"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
 import { UserPlus, Save, Lock } from "lucide-react"
 
 export default function UserCreate() {
+  const { form, onSubmit } = useUserForm()
   const {
-    email,
-    setEmail,
-    name,
-    setName,
-    business,
-    setBusiness,
-    role,
-    setRole,
-    password,
-    setPassword,
-    confirmPassword,
-    setConfirmPassword,
-    handleSubmit,
-  } = useUserForm()
-
-  const { business: businesses } = useBusiness()
+    register,
+    formState: { errors, isSubmitting },
+  } = form
 
   const { user: loggedUser, isSuperUser } = useAuth()
   const loggedRole = loggedUser?.role
+  const { business: businesses } = useBusiness()
 
-  const businessOptions =
-    businesses?.map((b) => ({
-      id: b.id,
-      name: b.corporate_name,
-    })) || []
+  const businessOptions = (businesses ?? []).map((b) => ({ id: b.id, name: b.corporate_name }))
 
   const roleOptions = [
     ...(isSuperUser ? [{ id: "admin", name: "Administrador" }] : []),
     { id: "colaborador", name: "Colaborador" },
-  ].filter((option) => {
+  ].filter(() => {
     if (isSuperUser) return true
-    if (loggedRole === "admin") return option.id === "colaborador"
-    return false
+    return loggedRole === "admin"
   })
 
   return (
@@ -59,41 +43,37 @@ export default function UserCreate() {
             <h3 className="font-bold text-slate-800 tracking-tight">Dados Cadastrais</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 label="Nome Completo"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: João da Silva"
-                required
+                error={errors.name?.message}
+                registration={register("name")}
               />
               <FormField
                 label="E-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 placeholder="joao@empresa.com"
-                required
+                error={errors.email?.message}
+                registration={register("email")}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SelectField
                 label="Perfil (Role)"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
                 options={roleOptions}
-                required
+                error={errors.role?.message}
+                registration={register("role")}
               />
 
               {isSuperUser ? (
                 <SelectField
                   label="Empreendimento"
-                  value={business}
-                  onChange={(e) => setBusiness(e.target.value)}
                   options={businessOptions}
-                  required
+                  error={errors.business_id?.message}
+                  registration={register("business_id")}
                 />
               ) : (
                 <FormField
@@ -117,22 +97,20 @@ export default function UserCreate() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 label="Senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 type="password"
-                required
+                error={errors.password?.message}
+                registration={register("password")}
               />
               <FormField
                 label="Confirmar Senha"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
                 type="password"
-                required
+                error={errors.confirmPassword?.message}
+                registration={register("confirmPassword")}
               />
             </div>
 
             <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Save} fullWidth={false}>
+              <PrimaryButton type="submit" icon={Save} fullWidth={false} disabled={isSubmitting}>
                 Salvar Usuário
               </PrimaryButton>
             </div>

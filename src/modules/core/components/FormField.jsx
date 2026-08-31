@@ -1,6 +1,7 @@
 // Aceita os dois modos:
 //   - controlado (legado):   value + onChange
 //   - react-hook-form:        registration={register("campo")}
+// Atributos extras (step, min, readOnly, ...) passam direto pro <input>.
 // Mostra `error` (string) com borda e mensagem em vermelho.
 export default function FormField({
   label,
@@ -10,6 +11,7 @@ export default function FormField({
   value,
   onChange,
   registration,
+  ...rest
 }) {
   const inputProps = registration ?? { value, onChange }
 
@@ -25,6 +27,7 @@ export default function FormField({
         }`}
         placeholder={placeholder || `Digite o(a) ${label?.toLowerCase()}`}
         {...inputProps}
+        {...rest}
       />
       {error && <span className="mt-1 text-xs font-medium text-rose-500">{error}</span>}
     </div>

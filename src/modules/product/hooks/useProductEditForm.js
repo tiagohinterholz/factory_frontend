@@ -1,68 +1,36 @@
-import { useState, useEffect } from "react"
-import { ProductService } from "@/modules/product/services/product"
 import { useNavigate, useParams } from "react-router-dom"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
+import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { ProductService } from "@/modules/product/services/product"
+import { productSchema, productDefaults } from "../product.schema"
+
+function toProductForm(data) {
+  const idOf = (value) => String(value?.id ?? value ?? "")
+  return {
+    business_id: idOf(data.business),
+    supplier_id: idOf(data.supplier),
+    name: data.name ?? "",
+    brand: data.brand ?? "",
+    reference: data.reference ?? "",
+    description: data.description ?? "",
+    stock_quantity: data.stock_quantity ?? "",
+    unit_price: data.unit_price ?? "",
+  }
+}
 
 export function useProductEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const toast = useToast()
   const confirm = useConfirm()
 
-  const [business, setBusiness] = useState("")
-  const [supplier, setSupplier] = useState("")
-  const [name, setName] = useState("")
-  const [brand, setBrand] = useState("")
-  const [reference, setReference] = useState("")
-  const [description, setDescription] = useState("")
-  const [stockQuantity, setStockQuantity] = useState("")
-  const [unitPrice, setUnitPrice] = useState("")
-
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await ProductService.getProductById(id)
-        setBusiness(data.business?.id || data.business || "")
-        setSupplier(data.supplier?.id || data.supplier || "")
-        setName(data.name || "")
-        setBrand(data.brand || "")
-        setReference(data.reference || "")
-        setDescription(data.description || "")
-        setStockQuantity(data.stock_quantity || "")
-        setUnitPrice(data.unit_price || "")
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [id])
-
-  async function handleUpdate(e) {
-    e.preventDefault()
-
-    const payload = {
-      business_id: business,
-      supplier_id: supplier,
-      name: name,
-      brand: brand,
-      reference: reference,
-      description: description,
-      stock_quantity: stockQuantity,
-      unit_price: unitPrice,
-    }
-
-    try {
-      await ProductService.updateProduct(id, payload)
-      navigate(`/produtos/`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao atualizar produto").message)
-    }
-  }
+  const { form, onSubmit, loading } = useResourceForm({
+    schema: productSchema,
+    defaultValues: productDefaults,
+    load: async () => toProductForm(await ProductService.getProductById(id)),
+    submit: (values) => ProductService.updateProduct(id, values),
+    redirectTo: "/produtos",
+    errorFallback: "Erro ao atualizar produto",
+  })
 
   async function handleDelete() {
     const confirmed = await confirm({
@@ -76,25 +44,5 @@ export function useProductEditForm() {
     navigate("/produtos")
   }
 
-  return {
-    business,
-    setBusiness,
-    supplier,
-    setSupplier,
-    name,
-    setName,
-    brand,
-    setBrand,
-    reference,
-    setReference,
-    description,
-    setDescription,
-    stockQuantity,
-    setStockQuantity,
-    unitPrice,
-    setUnitPrice,
-    loading,
-    handleUpdate,
-    handleDelete,
-  }
+  return { form, onSubmit, loading, handleDelete }
 }

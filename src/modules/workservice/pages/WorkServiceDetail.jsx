@@ -1,46 +1,25 @@
-import { useParams } from "react-router-dom"
 import { useWorkServiceEditForm } from "@/modules/workservice/hooks/useWorkServiceEditForm"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import { useSupplier } from "@/modules/supplier/hooks/useSupplier"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
 import { Settings, Edit2, Trash2 } from "lucide-react"
 
 export default function WorkServiceDetail() {
-  useParams()
-
+  const { form, onSubmit, loading, handleDelete } = useWorkServiceEditForm()
   const {
-    business,
-    setBusiness,
-    supplier,
-    setSupplier,
-    name,
-    setName,
-    description,
-    setDescription,
-    unitPrice,
-    setUnitPrice,
-    loading,
-    handleUpdate,
-    handleDelete,
-  } = useWorkServiceEditForm()
+    register,
+    formState: { errors, isSubmitting },
+  } = form
 
+  const { isSuperUser } = useAuth()
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplier()
 
-  const { isSuperUser } = useAuth()
-
-  const businessOptions = businesses.map((b) => ({
-    id: b.id,
-    name: b.corporate_name,
-  }))
-
-  const supplierOptions = suppliers.map((s) => ({
-    id: s.id,
-    name: s.corporate_name,
-  }))
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
+  const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
 
   if (loading || loadingBusinesses || loadingSuppliers) {
     return (
@@ -79,50 +58,49 @@ export default function WorkServiceDetail() {
             <h3 className="font-bold text-slate-800 tracking-tight">Informações do Serviço</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={handleUpdate}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {isSuperUser && (
                 <SelectField
                   label="Empreendimento"
-                  value={business}
-                  onChange={(e) => setBusiness(e.target.value)}
                   options={businessOptions}
+                  error={errors.business_id?.message}
+                  registration={register("business_id")}
                 />
               )}
 
               <SelectField
-                label="Fornecedor (Opcional)"
-                value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
+                label="Fornecedor"
                 options={supplierOptions}
+                error={errors.supplier_id?.message}
+                registration={register("supplier_id")}
               />
             </div>
 
             <FormField
               label="Nome do Serviço"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              error={errors.name?.message}
+              registration={register("name")}
             />
 
             <FormField
               label="Descrição / Detalhes"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              isTextArea
+              error={errors.description?.message}
+              registration={register("description")}
             />
 
             <div className="max-w-xs">
               <FormField
                 label="Preço do Serviço (Mão de Obra)"
-                value={unitPrice}
-                onChange={(e) => setUnitPrice(e.target.value)}
                 type="number"
                 step="0.01"
+                error={errors.unit_price?.message}
+                registration={register("unit_price")}
               />
             </div>
 
             <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Edit2} fullWidth={false}>
+              <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
                 Salvar Alterações
               </PrimaryButton>
             </div>
