@@ -1,4 +1,5 @@
 import { useLicenseEditForm } from "@/modules/license/hooks/useLicenseEditForm"
+import BackLink from "@/modules/core/components/BackLink"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -45,6 +46,7 @@ export default function LicenseDetail() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
+        <BackLink to="/empreendimentos/licencas" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">

@@ -1,4 +1,5 @@
 import { useBusinessEditForm } from "@/modules/business/hooks/useBusinessEditForm"
+import BackLink from "@/modules/core/components/BackLink"
 import { useStateOptions } from "@/modules/core/hooks/options"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
@@ -33,6 +34,7 @@ export default function BusinessEdit() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
+        <BackLink to="/empreendimentos" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">

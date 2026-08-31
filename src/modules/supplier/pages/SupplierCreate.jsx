@@ -1,4 +1,5 @@
 import { useSupplierForm } from "@/modules/supplier/hooks/useSupplierForm"
+import BackLink from "@/modules/core/components/BackLink"
 import { useStateOptions } from "@/modules/core/hooks/options"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
@@ -39,6 +40,7 @@ export default function SupplierCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
+        <BackLink to="/fornecedores" />
         <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Novo Fornecedor</h1>
         <p className="text-slate-400 font-medium text-sm mb-8">Gestão de parcerias e catálogos</p>
 

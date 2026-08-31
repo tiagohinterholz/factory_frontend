@@ -1,4 +1,5 @@
 import { useLicenseForm } from "@/modules/license/hooks/useLicenseForm"
+import BackLink from "@/modules/core/components/BackLink"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -33,6 +34,7 @@ export default function LicenseCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
+        <BackLink to="/empreendimentos/licencas" />
         <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Configurar Licença</h1>
         <p className="text-slate-400 font-medium text-sm mb-8">Renovação e limites</p>
 

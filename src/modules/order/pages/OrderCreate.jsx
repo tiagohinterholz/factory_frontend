@@ -1,4 +1,5 @@
 import { useOrderForm } from "@/modules/order/hooks/useOrderForm"
+import BackLink from "@/modules/core/components/BackLink"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
@@ -44,6 +45,7 @@ export default function OrderCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
+        <BackLink to="/ordens" />
         <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">
           Nova Ordem de Serviço
         </h1>

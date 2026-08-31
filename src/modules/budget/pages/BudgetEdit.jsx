@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 import { useBudgetEditForm } from "../hooks/useBudgetEditForm"
 import { BudgetService } from "../services/budgets"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
+import BackLink from "@/modules/core/components/BackLink"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
@@ -121,6 +122,7 @@ export default function BudgetEdit() {
 
   return (
     <div className="p-6 space-y-8">
+      <BackLink to="/orcamentos" />
       <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-xl font-semibold text-ink tracking-tight">Editar Orçamento</h1>

@@ -1,4 +1,5 @@
 import { useAppointmentEditForm } from "@/modules/appointment/hooks/useAppointmentEditForm"
+import BackLink from "@/modules/core/components/BackLink"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
@@ -66,6 +67,7 @@ export default function AppointmentDetail() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
+        <BackLink to="/agendamentos" />
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">

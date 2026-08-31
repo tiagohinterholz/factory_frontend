@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom"
 import FormField from "@/modules/core/components/FormField"
+import BackLink from "@/modules/core/components/BackLink"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import { useStateEditForm } from "@/modules/location/state/hooks/useStateEditForm"
@@ -29,6 +30,7 @@ export default function StateEdit() {
 
   return (
     <div className="p-6 space-y-6">
+      <BackLink to="/estados" />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div>
           <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Editar Estado</h1>

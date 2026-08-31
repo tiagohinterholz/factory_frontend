@@ -1,4 +1,5 @@
 import { useBusinessForm } from "@/modules/business/hooks/useBusinessForm"
+import BackLink from "@/modules/core/components/BackLink"
 import { useStateOptions } from "@/modules/core/hooks/options"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
@@ -33,6 +34,7 @@ export default function BusinessCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
+        <BackLink to="/empreendimentos" />
         <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Novo Empreendimento</h1>
         <p className="text-slate-400 font-medium text-sm mb-8">Cadastre os dados da sua empresa</p>
 

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useSupplierEditForm } from "@/modules/supplier/hooks/useSupplierEditForm"
+import BackLink from "@/modules/core/components/BackLink"
 import { useSupplierRelations } from "@/modules/supplier/hooks/useSupplierRelations"
 import { useStateOptions } from "@/modules/core/hooks/options"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
@@ -50,6 +51,7 @@ export default function SupplierDetail() {
 
   return (
     <div className="p-6 space-y-6">
+      <BackLink to="/fornecedores" />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div>
           <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">

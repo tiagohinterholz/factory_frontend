@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 import { useOrderEditForm } from "../hooks/useOrderEditForm"
 import { OrderService } from "../services/order"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
+import BackLink from "@/modules/core/components/BackLink"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useBudget } from "@/modules/budget/hooks/useBudget"
@@ -121,6 +122,7 @@ export default function OrderEdit() {
 
   return (
     <div className="p-6 space-y-8">
+      <BackLink to="/ordens" />
       <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-xl font-semibold text-ink tracking-tight">Editar Ordem de Serviço</h1>
