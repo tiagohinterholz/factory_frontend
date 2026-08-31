@@ -37,4 +37,14 @@ export default defineConfig([
       "react/prop-types": "off",
     },
   },
+  {
+    // Testes: rodam em Node, e o helper de render exporta função (não componente).
+    files: ["src/test/**", "**/*.test.{js,jsx}"],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 ])
