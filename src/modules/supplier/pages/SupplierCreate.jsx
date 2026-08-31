@@ -2,54 +2,31 @@ import { useSupplierForm } from "@/modules/supplier/hooks/useSupplierForm"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
+import { useAuth } from "@/modules/auth/context/auth-context"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 import { Factory, Save, Milestone } from "lucide-react"
 
 export default function SupplierCreate() {
+  const { form, onSubmit } = useSupplierForm()
   const {
-    business,
-    setBusiness,
-    corporateName,
-    setCorporateName,
-    tradeName,
-    setTradeName,
-    cnpj,
-    setCnpj,
-    stateId,
-    setStateId,
-    cityId,
-    setCityId,
-    address,
-    setAddress,
-    number,
-    setNumber,
-    complement,
-    setComplement,
-    phone,
-    setPhone,
-    email,
-    setEmail,
-    handleSubmit,
-  } = useSupplierForm()
+    register,
+    control,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = form
+
+  const { isSuperUser } = useAuth()
+  const stateId = watch("state_id")
 
   const { states, loading: loadingStates } = useStates()
   const { citiesByState, loading: loadingCities } = useCitiesByState(stateId)
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
-
-  const { isSuperUser } = useAuth()
-
-  const businessOptions = businesses.map((b) => ({
-    id: b.id,
-    name: b.corporate_name,
-  }))
-
-  const handleStateChange = (e) => {
-    setStateId(e.target.value)
-    setCityId("")
-  }
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
   if (loadingStates || loadingBusinesses || (stateId && loadingCities)) {
     return (
@@ -77,41 +54,57 @@ export default function SupplierCreate() {
             <h3 className="font-bold text-slate-800 tracking-tight">Dados Cadastrais</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             {isSuperUser && (
               <SelectField
                 label="Empreendimento"
-                value={business}
-                onChange={(e) => setBusiness(e.target.value)}
                 options={businessOptions}
-                required
+                error={errors.business_id?.message}
+                registration={register("business_id")}
               />
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 label="Razão Social"
-                value={tradeName}
-                onChange={(e) => setTradeName(e.target.value)}
+                placeholder="Ex: Fornecedora de Insumos LTDA"
+                error={errors.corporate_name?.message}
+                registration={register("corporate_name")}
               />
               <FormField
                 label="Nome Fantasia"
-                value={corporateName}
-                onChange={(e) => setCorporateName(e.target.value)}
+                placeholder="Ex: Insumos Brasil"
+                error={errors.trade_name?.message}
+                registration={register("trade_name")}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField label="CNPJ" value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
+              <MaskedField
+                control={control}
+                name="cnpj"
+                label="CNPJ"
+                mask={CNPJ_MASK}
+                placeholder="00.000.000/0000-00"
+                error={errors.cnpj?.message}
+              />
               <FormField
                 label="E-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 type="email"
+                placeholder="contato@fornecedor.com"
+                error={errors.email?.message}
+                registration={register("email")}
               />
             </div>
 
-            <FormField label="Telefone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <MaskedField
+              control={control}
+              name="phone"
+              label="Telefone"
+              mask={PHONE_MASK}
+              placeholder="(00) 00000-0000"
+              error={errors.phone?.message}
+            />
 
             <div className="pt-6 pb-2">
               <div className="flex items-center gap-3 mb-6">
@@ -125,15 +118,15 @@ export default function SupplierCreate() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SelectField
                 label="Estado"
-                value={stateId}
-                onChange={handleStateChange}
                 options={states}
+                error={errors.state_id?.message}
+                registration={register("state_id", { onChange: () => setValue("city_id", "") })}
               />
               <SelectField
                 label="Cidade"
-                value={cityId}
-                onChange={(e) => setCityId(e.target.value)}
                 options={citiesByState}
+                error={errors.city_id?.message}
+                registration={register("city_id")}
               />
             </div>
 
@@ -141,25 +134,28 @@ export default function SupplierCreate() {
               <div className="md:col-span-2">
                 <FormField
                   label="Endereço"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Rua, Avenida, etc."
+                  error={errors.address?.message}
+                  registration={register("address")}
                 />
               </div>
               <FormField
                 label="Número"
-                value={number}
-                onChange={(e) => setNumber(e.target.value)}
+                placeholder="123"
+                error={errors.number?.message}
+                registration={register("number")}
               />
             </div>
 
             <FormField
               label="Complemento"
-              value={complement}
-              onChange={(e) => setComplement(e.target.value)}
+              placeholder="Sala, Bloco, etc."
+              error={errors.complement?.message}
+              registration={register("complement")}
             />
 
             <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Save} fullWidth={false}>
+              <PrimaryButton type="submit" icon={Save} fullWidth={false} disabled={isSubmitting}>
                 Salvar Fornecedor
               </PrimaryButton>
             </div>

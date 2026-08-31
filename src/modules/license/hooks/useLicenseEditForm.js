@@ -1,70 +1,40 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useParams } from "react-router-dom"
+import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { LicenseService } from "@/modules/license/services/license"
-import { useNavigate, useParams } from "react-router-dom"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
+import { licenseSchema, licenseDefaults, toLicensePayload } from "../license.schema"
+
+// dto da API -> shape do form
+function toLicenseForm(data) {
+  const idOf = (value) => String(value?.id ?? value ?? "")
+  return {
+    business_id: idOf(data.business),
+    period: data.period ?? "MENSAL",
+    max_users: String(data.max_users ?? 1),
+    activation_date: data.activation_date ? data.activation_date.split("T")[0] : "",
+  }
+}
 
 export function useLicenseEditForm() {
   const { id } = useParams()
-  const navigate = useNavigate()
-  const toast = useToast()
+  const [meta, setMeta] = useState({ status: "", businessName: "" })
 
-  const [business, setBusiness] = useState(null)
-  const [status, setStatus] = useState("")
-  const [period, setPeriod] = useState("MENSAL")
-  const [max_users, setMaxUsers] = useState("1")
-  const [activation_date, setActivationDate] = useState("")
-  const [expiration_date, setExpirationDate] = useState("")
-  const [loading, setLoading] = useState(true)
+  const { form, onSubmit, loading } = useResourceForm({
+    schema: licenseSchema,
+    defaultValues: licenseDefaults,
+    load: async () => {
+      const data = await LicenseService.getLicenseById(id)
+      setMeta({
+        status: data.status ?? "",
+        businessName: data.business?.trade_name || data.business?.corporate_name || "",
+      })
+      return toLicenseForm(data)
+    },
+    submit: (values) =>
+      LicenseService.getLicenseRenew(values.business_id, toLicensePayload(values)),
+    redirectTo: "/empreendimentos/licencas",
+    errorFallback: "Erro ao processar renovação",
+  })
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await LicenseService.getLicenseById(id)
-        setBusiness(data.business)
-        setStatus(data.status)
-        setPeriod(data.period)
-        setMaxUsers(data.max_users.toString())
-        setActivationDate(data.activation_date)
-        setExpirationDate(data.expiration_date)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [id])
-
-  async function handleRenewSubmit(e) {
-    e.preventDefault()
-    const payload = {
-      period: period,
-      max_users: parseInt(max_users),
-      activation_date: activation_date ? new Date(activation_date).toISOString() : undefined,
-    }
-
-    try {
-      // Usamos o business_id (pode ser objeto carregado ou string do combo)
-      const businessIdToRenew = business?.id || business
-      await LicenseService.getLicenseRenew(businessIdToRenew, payload)
-      navigate(`/empreendimentos/licencas`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao processar renovação").message)
-    }
-  }
-
-  return {
-    business,
-    setBusiness,
-    status,
-    period,
-    setPeriod,
-    max_users,
-    setMaxUsers,
-    activation_date,
-    setActivationDate,
-    expiration_date,
-    loading,
-    handleRenewSubmit,
-  }
+  return { form, onSubmit, loading, status: meta.status, businessName: meta.businessName }
 }

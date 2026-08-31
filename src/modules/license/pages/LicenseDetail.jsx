@@ -4,23 +4,26 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useAuth } from "@/modules/auth/context/auth-context"
-import { Briefcase, Milestone, Edit2, Trash2 } from "lucide-react"
+import { Briefcase, Edit2 } from "lucide-react"
 import { LicenseOptions } from "@/modules/license/constants/license"
 
+const userLimitOptions = Array.from({ length: 10 }, (_, index) => ({
+  id: String(index + 1),
+  name: `${index + 1} Usuários`,
+}))
+
+const statusMap = {
+  TRIAL: { label: "Em Teste", color: "text-amber-600 bg-amber-50" },
+  ACTIVE: { label: "Ativa", color: "text-emerald-600 bg-emerald-50" },
+  EXPIRED: { label: "Expirada", color: "text-rose-600 bg-rose-50" },
+}
+
 export default function LicenseDetail() {
+  const { form, onSubmit, loading, status, businessName } = useLicenseEditForm()
   const {
-    business,
-    setBusiness,
-    status,
-    period,
-    setPeriod,
-    max_users,
-    setMaxUsers,
-    activation_date,
-    setActivationDate,
-    loading,
-    handleRenewSubmit,
-  } = useLicenseEditForm()
+    register,
+    formState: { errors, isSubmitting },
+  } = form
 
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { isSuperUser } = useAuth()
@@ -33,18 +36,11 @@ export default function LicenseDetail() {
     )
   }
 
-  const businessOptions =
-    businesses?.map((b) => ({
-      id: b.id,
-      name: b.corporate_name,
-    })) || []
-
-  const statusMap = {
-    TRIAL: { label: "Em Teste", color: "text-amber-600 bg-amber-50" },
-    ACTIVE: { label: "Ativa", color: "text-emerald-600 bg-emerald-50" },
-    EXPIRED: { label: "Expirada", color: "text-rose-600 bg-rose-50" },
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
+  const currentStatus = statusMap[status] || {
+    label: status,
+    color: "text-slate-400 bg-slate-50",
   }
-  const currentStatus = statusMap[status] || { label: status, color: "text-slate-400 bg-slate-50" }
 
   return (
     <div className="p-6 space-y-6">
@@ -75,56 +71,44 @@ export default function LicenseDetail() {
             <h3 className="font-bold text-slate-800 tracking-tight">Dados Organizacionais</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={handleRenewSubmit}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             {isSuperUser ? (
               <SelectField
                 label="Empreendimento"
-                value={business?.id || business || ""}
-                onChange={(e) => setBusiness(e.target.value)}
                 options={businessOptions}
-                required
+                error={errors.business_id?.message}
+                registration={register("business_id")}
               />
             ) : (
-              <FormField
-                label="Empreendimento"
-                value={business?.trade_name || business?.corporate_name || "Carregando..."}
-                onChange={() => {}}
-                readOnly
-              />
+              <FormField label="Empreendimento" value={businessName} onChange={() => {}} readOnly />
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SelectField
                 label="Período de Renovação"
-                value={period}
-                onChange={(e) => setPeriod(e.target.value)}
                 options={LicenseOptions}
-                required
+                error={errors.period?.message}
+                registration={register("period")}
               />
               <SelectField
                 label="Limite de Usuários"
-                value={max_users}
-                onChange={(e) => setMaxUsers(e.target.value)}
-                options={Array.from({ length: 10 }, (_, i) => ({
-                  id: (i + 1).toString(),
-                  name: `${i + 1} Usuários`,
-                }))}
-                required
+                options={userLimitOptions}
+                error={errors.max_users?.message}
+                registration={register("max_users")}
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-slate-50 pt-6">
+            <div className="border-t border-slate-50 pt-6">
               <FormField
                 label="Início da Vigência (Nova ou Atual)"
-                value={activation_date ? new Date(activation_date).toISOString().split("T")[0] : ""}
-                onChange={(e) => setActivationDate(e.target.value)}
                 type="date"
-                required
+                error={errors.activation_date?.message}
+                registration={register("activation_date")}
               />
             </div>
 
             <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Edit2} fullWidth={false}>
+              <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
                 Atualizar e Renovar
               </PrimaryButton>
             </div>

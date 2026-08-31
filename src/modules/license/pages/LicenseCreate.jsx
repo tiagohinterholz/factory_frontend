@@ -1,33 +1,34 @@
 import { useLicenseForm } from "@/modules/license/hooks/useLicenseForm"
+import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Briefcase, Save } from "lucide-react"
 import { LicenseOptions } from "@/modules/license/constants/license"
 
-export default function LicenseCreate() {
-  const {
-    business,
-    setBusiness,
-    period,
-    setPeriod,
-    max_users,
-    setMaxUsers,
-    activation_date,
-    setActivationDate,
-    businesses,
-    isSuperUser,
-    loading,
-    handleSubmit,
-  } = useLicenseForm()
+const userLimitOptions = Array.from({ length: 10 }, (_, index) => ({
+  id: String(index + 1),
+  name: `${index + 1} Usuários`,
+}))
 
-  if (loading) {
+export default function LicenseCreate() {
+  const { form, onSubmit, isSuperUser } = useLicenseForm()
+  const {
+    register,
+    formState: { errors, isSubmitting },
+  } = form
+
+  const { business: businesses, loading: loadingBusinesses } = useBusiness()
+
+  if (isSuperUser && loadingBusinesses) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
+
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
   return (
     <div className="p-6 space-y-6">
@@ -47,52 +48,41 @@ export default function LicenseCreate() {
             <h3 className="font-bold text-slate-800 tracking-tight">Dados da Licença</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {isSuperUser ? (
+          <form className="space-y-6" onSubmit={onSubmit}>
+            {isSuperUser && (
               <SelectField
                 label="Empreendimento"
-                value={business}
-                onChange={(e) => setBusiness(e.target.value)}
-                options={businesses.map((b) => ({ id: b.id, name: b.corporate_name }))}
-                required
+                options={businessOptions}
+                error={errors.business_id?.message}
+                registration={register("business_id")}
               />
-            ) : (
-              <FormField label="Empreendimento" value={business} disabled />
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
               <SelectField
                 label="Período de Renovação"
-                value={period}
-                onChange={(e) => setPeriod(e.target.value)}
                 options={LicenseOptions}
-                required
+                error={errors.period?.message}
+                registration={register("period")}
               />
 
               <SelectField
                 label="Limite de Usuários"
-                value={max_users}
-                onChange={(e) => setMaxUsers(e.target.value)}
-                options={Array.from({ length: 10 }, (_, i) => ({
-                  id: (i + 1).toString(),
-                  name: `${i + 1} Usuários`,
-                }))}
-                required
+                options={userLimitOptions}
+                error={errors.max_users?.message}
+                registration={register("max_users")}
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
-              <FormField
-                label="Data de Ativação (Início)"
-                value={activation_date}
-                onChange={(e) => setActivationDate(e.target.value)}
-                type="date"
-                required
-              />
-            </div>
+            <FormField
+              label="Data de Ativação (Início)"
+              type="date"
+              error={errors.activation_date?.message}
+              registration={register("activation_date")}
+            />
 
             <div className="pt-8 flex justify-end">
-              <PrimaryButton type="submit" icon={Save} fullWidth={false}>
+              <PrimaryButton type="submit" icon={Save} fullWidth={false} disabled={isSubmitting}>
                 Confirmar Configuração
               </PrimaryButton>
             </div>

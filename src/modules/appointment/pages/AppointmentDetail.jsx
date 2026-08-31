@@ -1,92 +1,64 @@
 import { useAppointmentEditForm } from "@/modules/appointment/hooks/useAppointmentEditForm"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import { useClient } from "@/modules/client/hooks/useClient"
+import { useVehicle } from "@/modules/vehicle/hooks/useVehicle"
+import { useOrder } from "@/modules/order/hooks/useOrder"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useVehicle } from "@/modules/vehicle/hooks/useVehicle"
-import { useOrder } from "@/modules/order/hooks/useOrder"
-import { useEffect } from "react"
 import { useAuth } from "@/modules/auth/context/auth-context"
 
 import { Edit, Trash2 } from "lucide-react"
 
 export default function AppointmentDetail() {
+  const { form, onSubmit, loading, handleDelete } = useAppointmentEditForm()
   const {
-    business,
-    setBusiness,
-    client,
-    setClient,
-    vehicle,
-    setVehicle,
-    order,
-    setOrder,
-    date,
-    setDate,
-    time,
-    setTime,
-    observation,
-    setObservation,
-    loading,
-    handleUpdate,
-    handleDelete,
-  } = useAppointmentEditForm()
+    register,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = form
+
+  const { isSuperUser } = useAuth()
+
+  const businessId = watch("business_id")
+  const clientId = watch("client_id")
+  const vehicleId = watch("vehicle_id")
 
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { client: clients, loading: loadingClients } = useClient()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicle()
   const { orders, loading: loadingOrders } = useOrder()
 
-  const { isSuperUser, user } = useAuth()
-
-  // Inicializar business se não for superuser e estiver vazio
-  useEffect(() => {
-    if (!loading && !isSuperUser && user.business_id && !business) {
-      setBusiness(user.business_id)
-    }
-  }, [loading, isSuperUser, user.business_id, business, setBusiness])
-
-  // Limpar seleções dependentes ao trocar o pai, mas ignorar o primeiro carregamento
-  useEffect(() => {
-    if (!loading && isSuperUser) {
-      // Logic can be added here if needed for superuser switching business
-    }
-  }, [business, client, vehicle, loading, isSuperUser])
-
-  const businessOptions = businesses.map((b) => ({
-    id: b.id,
-    name: b.corporate_name,
-  }))
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
   const clientOptions = clients
     .filter((c) => {
       const bizId = c.business?.id || c.business
-      return !business || bizId === parseInt(business)
+      return !businessId || String(bizId) === String(businessId)
     })
-    .map((c) => ({
-      id: c.id,
-      name: c.first_name + " " + c.last_name,
-    }))
+    .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
 
   const vehicleOptions = vehicles
     .filter((v) => {
-      const clId = v.client?.id || v.client
-      return !client || clId === parseInt(client)
+      const ownerId = v.client?.id || v.client
+      return !clientId || String(ownerId) === String(clientId)
     })
     .map((v) => ({
       id: v.id,
-      name: (v.manufacturer || "") + " " + (v.model || "") + " " + (v.year || ""),
+      name: `${v.manufacturer || ""} ${v.model || ""} ${v.year || ""}`.trim(),
     }))
 
   const orderOptions = orders
     .filter((o) => {
-      const vhId = o.vehicle?.id || o.vehicle
-      return !vehicle || vhId === parseInt(vehicle)
+      const orderVehicleId = o.vehicle?.id || o.vehicle
+      return !vehicleId || String(orderVehicleId) === String(vehicleId)
     })
-    .map((o) => ({
-      id: o.id,
-      name: `OS ${o.id} - ${o.plate || ""}`,
-    }))
+    .map((o) => ({ id: o.id, name: `OS ${o.id} - ${o.plate || ""}` }))
+
+  function resetChildren(...names) {
+    names.forEach((name) => setValue(name, ""))
+  }
 
   if (loading || loadingBusinesses || loadingClients || loadingVehicles || loadingOrders)
     return <p className="p-6 text-slate-500 font-medium">Carregando...</p>
@@ -104,6 +76,7 @@ export default function AppointmentDetail() {
             </p>
           </div>
           <button
+            type="button"
             onClick={handleDelete}
             className="flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition duration-300 font-bold text-sm"
           >
@@ -113,67 +86,68 @@ export default function AppointmentDetail() {
         </div>
 
         <div className="card-premium">
-          <form className="space-y-6" onSubmit={handleUpdate}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             {isSuperUser && (
               <SelectField
                 label="Empreendimento"
-                value={business}
-                onChange={(e) => setBusiness(e.target.value)}
                 options={businessOptions}
+                error={errors.business_id?.message}
+                registration={register("business_id", {
+                  onChange: () => resetChildren("client_id", "vehicle_id", "order_id"),
+                })}
               />
             )}
 
             <SelectField
               label="Cliente Proprietário"
-              value={client}
-              onChange={(e) => setClient(e.target.value)}
               options={clientOptions}
-              disabled={!business && isSuperUser}
+              error={errors.client_id?.message}
+              registration={register("client_id", {
+                onChange: () => resetChildren("vehicle_id", "order_id"),
+              })}
             />
 
             <SelectField
               label="Veículo"
-              value={vehicle}
-              onChange={(e) => setVehicle(e.target.value)}
               options={vehicleOptions}
-              disabled={!client}
+              error={errors.vehicle_id?.message}
+              registration={register("vehicle_id", {
+                onChange: () => resetChildren("order_id"),
+              })}
             />
 
             <SelectField
               label="Ordem de Serviço"
-              value={order}
-              onChange={(e) => setOrder(e.target.value)}
               options={orderOptions}
-              disabled={!vehicle}
+              error={errors.order_id?.message}
+              registration={register("order_id")}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 label="Data"
                 type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                error={errors.date?.message}
+                registration={register("date")}
               />
               <FormField
                 label="Hora"
                 type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
                 placeholder="00:00"
+                error={errors.time?.message}
+                registration={register("time")}
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
-              <FormField
-                label="Observações"
-                value={observation}
-                onChange={(e) => setObservation(e.target.value)}
-                placeholder="Detalhes sobre o agendamento..."
-              />
-            </div>
+            <FormField
+              label="Observações"
+              placeholder="Detalhes sobre o agendamento..."
+              error={errors.observation?.message}
+              registration={register("observation")}
+            />
 
             <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Edit} fullWidth={false}>
+              <PrimaryButton type="submit" icon={Edit} fullWidth={false} disabled={isSubmitting}>
                 Salvar Alterações
               </PrimaryButton>
             </div>

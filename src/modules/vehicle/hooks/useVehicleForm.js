@@ -1,72 +1,20 @@
-import { useState } from "react"
-import { VehicleService } from "@/modules/vehicle/services/vehicle"
-import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
+import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { VehicleService } from "@/modules/vehicle/services/vehicle"
+import { vehicleSchema, vehicleDefaults } from "../vehicle.schema"
 
-export function useVehicleForm() {
-  const navigate = useNavigate()
-  const toast = useToast()
+export function useVehicleForm({ clientId } = {}) {
   const { businessId } = useAuth()
 
-  const [business, setBusiness] = useState(businessId || "")
-  const [client, setClient] = useState("")
-  const [model, setModel] = useState("")
-  const [year, setYear] = useState("")
-  const [year_model, setYearModel] = useState("")
-  const [plate, setPlate] = useState("")
-  const [color, setColor] = useState("")
-  const [manufacturer, setManufacturer] = useState("")
-  const [fuel, setFuel] = useState("")
-  const [mileage, setMileage] = useState("")
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-
-    const payload = {
-      business_id: business,
-      client_id: client,
-      model: model,
-      year: year,
-      year_model: year_model,
-      plate: plate,
-      color: color,
-      manufacturer: manufacturer,
-      fuel: fuel,
-      mileage: mileage,
-    }
-
-    try {
-      await VehicleService.createVehicle(payload)
-      navigate("/veiculos")
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao criar veículo").message)
-    }
-  }
-
-  return {
-    business,
-    setBusiness,
-    client,
-    setClient,
-    model,
-    setModel,
-    year,
-    setYear,
-    year_model,
-    setYearModel,
-    plate,
-    setPlate,
-    color,
-    setColor,
-    manufacturer,
-    setManufacturer,
-    fuel,
-    setFuel,
-    mileage,
-    setMileage,
-    handleSubmit,
-  }
+  return useResourceForm({
+    schema: vehicleSchema,
+    defaultValues: {
+      ...vehicleDefaults,
+      business_id: businessId ? String(businessId) : "",
+      client_id: clientId ? String(clientId) : "",
+    },
+    submit: (values) => VehicleService.createVehicle(values),
+    redirectTo: "/veiculos",
+    errorFallback: "Erro ao criar veículo",
+  })
 }

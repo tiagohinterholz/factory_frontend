@@ -8,47 +8,34 @@ import { SupplierService } from "@/modules/supplier/services/supplier"
 
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
+import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 
-import { Factory, Package, Hammer, Edit2, Trash2, Milestone, ChevronRight } from "lucide-react"
+import { Factory, Package, Hammer, Edit2, Trash2, Milestone } from "lucide-react"
 
 export default function SupplierDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
 
+  const { form, onSubmit, loading, handleDelete } = useSupplierEditForm()
   const {
-    business,
-    setBusiness,
-    corporateName,
-    setCorporateName,
-    tradeName,
-    setTradeName,
-    cnpj,
-    setCnpj,
-    stateId,
-    setStateId,
-    cityId,
-    setCityId,
-    address,
-    setAddress,
-    number,
-    setNumber,
-    complement,
-    setComplement,
-    phone,
-    setPhone,
-    email,
-    setEmail,
-    loading,
-    handleUpdate,
-    handleDelete,
-  } = useSupplierEditForm()
+    register,
+    control,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = form
+
+  const { isSuperUser } = useAuth()
+  const stateId = watch("state_id")
 
   const { states, loading: loadingStates } = useStates()
   const { citiesByState, loading: loadingCities } = useCitiesByState(stateId)
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
   const [products, setProducts] = useState([])
   const [services, setServices] = useState([])
@@ -62,30 +49,16 @@ export default function SupplierDetail() {
           SupplierService.getProductBySupplier(id),
           SupplierService.getServiceBySupplier(id),
         ])
-
-        // Handle pagination if exists
         setProducts(prodData.results || (Array.isArray(prodData) ? prodData : []))
         setServices(servData.results || (Array.isArray(servData) ? servData : []))
-      } catch (err) {
-        console.error("Erro ao carregar dados relacionados", err)
+      } catch (error) {
+        console.error("Erro ao carregar dados relacionados", error)
       } finally {
         setLoadingRelated(false)
       }
     }
     if (id) loadRelatedData()
   }, [id])
-
-  const { isSuperUser } = useAuth()
-
-  const businessOptions = businesses.map((b) => ({
-    id: b.id,
-    name: b.corporate_name,
-  }))
-
-  const handleStateChange = (e) => {
-    setStateId(e.target.value)
-    setCityId("")
-  }
 
   if (loading || loadingStates || loadingBusinesses || (stateId && loadingCities)) {
     return (
@@ -107,6 +80,7 @@ export default function SupplierDetail() {
           </p>
         </div>
         <button
+          type="button"
           onClick={handleDelete}
           className="flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition duration-300 font-bold text-sm"
         >
@@ -126,43 +100,56 @@ export default function SupplierDetail() {
               <h3 className="font-bold text-slate-800 tracking-tight">Dados Cadastrais</h3>
             </div>
 
-            <form className="space-y-6" onSubmit={handleUpdate}>
+            <form className="space-y-6" onSubmit={onSubmit}>
               {isSuperUser && (
                 <SelectField
                   label="Empreendimento"
-                  value={business}
-                  onChange={(e) => setBusiness(e.target.value)}
                   options={businessOptions}
+                  error={errors.business_id?.message}
+                  registration={register("business_id")}
                 />
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   label="Razão Social"
-                  value={tradeName}
-                  onChange={(e) => setTradeName(e.target.value)}
+                  placeholder="Ex: Fornecedora de Insumos LTDA"
+                  error={errors.corporate_name?.message}
+                  registration={register("corporate_name")}
                 />
                 <FormField
                   label="Nome Fantasia"
-                  value={corporateName}
-                  onChange={(e) => setCorporateName(e.target.value)}
+                  placeholder="Ex: Insumos Brasil"
+                  error={errors.trade_name?.message}
+                  registration={register("trade_name")}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField label="CNPJ" value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
+                <MaskedField
+                  control={control}
+                  name="cnpj"
+                  label="CNPJ"
+                  mask={CNPJ_MASK}
+                  placeholder="00.000.000/0000-00"
+                  error={errors.cnpj?.message}
+                />
                 <FormField
                   label="E-mail"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                   type="email"
+                  placeholder="contato@fornecedor.com"
+                  error={errors.email?.message}
+                  registration={register("email")}
                 />
               </div>
 
-              <FormField
+              <MaskedField
+                control={control}
+                name="phone"
                 label="Telefone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                mask={PHONE_MASK}
+                placeholder="(00) 00000-0000"
+                error={errors.phone?.message}
               />
 
               <div className="pt-6 pb-2">
@@ -179,15 +166,15 @@ export default function SupplierDetail() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <SelectField
                   label="Estado"
-                  value={stateId}
-                  onChange={handleStateChange}
                   options={states}
+                  error={errors.state_id?.message}
+                  registration={register("state_id", { onChange: () => setValue("city_id", "") })}
                 />
                 <SelectField
                   label="Cidade"
-                  value={cityId}
-                  onChange={(e) => setCityId(e.target.value)}
                   options={citiesByState}
+                  error={errors.city_id?.message}
+                  registration={register("city_id")}
                 />
               </div>
 
@@ -195,25 +182,28 @@ export default function SupplierDetail() {
                 <div className="md:col-span-2">
                   <FormField
                     label="Endereço"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Rua, Avenida, etc."
+                    error={errors.address?.message}
+                    registration={register("address")}
                   />
                 </div>
                 <FormField
                   label="Número"
-                  value={number}
-                  onChange={(e) => setNumber(e.target.value)}
+                  placeholder="123"
+                  error={errors.number?.message}
+                  registration={register("number")}
                 />
               </div>
 
               <FormField
                 label="Complemento"
-                value={complement}
-                onChange={(e) => setComplement(e.target.value)}
+                placeholder="Sala, Bloco, etc."
+                error={errors.complement?.message}
+                registration={register("complement")}
               />
 
               <div className="pt-4 flex justify-end">
-                <PrimaryButton type="submit" icon={Edit2} fullWidth={false}>
+                <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
                   Salvar Alterações
                 </PrimaryButton>
               </div>
@@ -224,9 +214,9 @@ export default function SupplierDetail() {
         {/* Lado Direito: Produtos e Serviços com Abas */}
         <div className="lg:col-span-5 h-full">
           <div className="card-premium h-full flex flex-col p-4">
-            {/* Cabeçalho de Abas */}
             <div className="flex p-1 bg-slate-50/80 rounded-2xl border border-slate-100 mb-6 shadow-inner">
               <button
+                type="button"
                 onClick={() => setActiveTab("products")}
                 className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${
                   activeTab === "products"
@@ -249,6 +239,7 @@ export default function SupplierDetail() {
                 )}
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab("services")}
                 className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${
                   activeTab === "services"
@@ -272,7 +263,6 @@ export default function SupplierDetail() {
               </button>
             </div>
 
-            {/* Conteúdo da Aba Ativa */}
             <div className="flex-1 min-h-[400px]">
               {activeTab === "products" ? (
                 <RelatedDataCard

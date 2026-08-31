@@ -1,74 +1,39 @@
-import { useState, useEffect } from "react"
-import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useNavigate, useParams } from "react-router-dom"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
+import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { VehicleService } from "@/modules/vehicle/services/vehicle"
+import { vehicleSchema, vehicleDefaults } from "../vehicle.schema"
+
+// dto da API -> shape do form (ids como string)
+function toVehicleForm(data) {
+  const idOf = (value) => String(value?.id ?? value ?? "")
+  return {
+    business_id: idOf(data.business),
+    client_id: idOf(data.client),
+    manufacturer: data.manufacturer ?? "",
+    model: data.model ?? "",
+    year: data.year ?? "",
+    year_model: data.year_model ?? "",
+    plate: data.plate ?? "",
+    color: data.color ?? "",
+    fuel: data.fuel ?? "",
+    mileage: data.mileage ?? "",
+  }
+}
 
 export function useVehicleEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const toast = useToast()
   const confirm = useConfirm()
 
-  const [business, setBusiness] = useState("")
-  const [client, setClient] = useState("")
-  const [model, setModel] = useState("")
-  const [year, setYear] = useState("")
-  const [year_model, setYearModel] = useState("")
-  const [plate, setPlate] = useState("")
-  const [color, setColor] = useState("")
-  const [manufacturer, setManufacturer] = useState("")
-  const [fuel, setFuel] = useState("")
-  const [mileage, setMileage] = useState("")
-
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await VehicleService.getVehicleById(id)
-        setBusiness(data.business?.id || data.business || "")
-        setClient(data.client?.id || data.client || "")
-        setModel(data.model || "")
-        setYear(data.year || "")
-        setYearModel(data.year_model || "")
-        setPlate(data.plate || "")
-        setColor(data.color || "")
-        setManufacturer(data.manufacturer || "")
-        setFuel(data.fuel || "")
-        setMileage(data.mileage || "")
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [id])
-
-  async function handleUpdate(e) {
-    e.preventDefault()
-
-    const payload = {
-      business_id: business,
-      client_id: client,
-      model: model,
-      year: year,
-      year_model: year_model,
-      plate: plate,
-      color: color,
-      manufacturer: manufacturer,
-      fuel: fuel,
-      mileage: mileage,
-    }
-
-    try {
-      await VehicleService.updateVehicle(id, payload)
-      navigate(`/veiculos/`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao atualizar veículo").message)
-    }
-  }
+  const { form, onSubmit, loading } = useResourceForm({
+    schema: vehicleSchema,
+    defaultValues: vehicleDefaults,
+    load: async () => toVehicleForm(await VehicleService.getVehicleById(id)),
+    submit: (values) => VehicleService.updateVehicle(id, values),
+    redirectTo: "/veiculos",
+    errorFallback: "Erro ao atualizar veículo",
+  })
 
   async function handleDelete() {
     const confirmed = await confirm({
@@ -82,29 +47,5 @@ export function useVehicleEditForm() {
     navigate("/veiculos")
   }
 
-  return {
-    business,
-    setBusiness,
-    client,
-    setClient,
-    model,
-    setModel,
-    year,
-    setYear,
-    year_model,
-    setYearModel,
-    plate,
-    setPlate,
-    color,
-    setColor,
-    manufacturer,
-    setManufacturer,
-    fuel,
-    setFuel,
-    mileage,
-    setMileage,
-    loading,
-    handleUpdate,
-    handleDelete,
-  }
+  return { form, onSubmit, loading, handleDelete }
 }
