@@ -123,16 +123,14 @@ export default function OrderEdit() {
     <div className="p-6 space-y-8">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Editar Ordem de Serviço
-          </h1>
+          <h1 className="text-xl font-semibold text-ink tracking-tight">Editar Ordem de Serviço</h1>
           <div className="flex items-center gap-3 mt-1 text-sm uppercase font-bold tracking-wider">
             <p className="text-slate-400">Gestão técnica e faturamento</p>
             <span
               className={`px-2 py-0.5 rounded-md ${
                 status === "faturado"
                   ? "bg-emerald-100 text-emerald-700"
-                  : "bg-indigo-100 text-indigo-700"
+                  : "bg-brand-subtle text-brand"
               }`}
             >
               {status}
@@ -152,7 +150,7 @@ export default function OrderEdit() {
           <button
             type="button"
             onClick={handleDelete}
-            className="p-3 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 font-bold text-sm"
+            className="p-3 bg-danger-subtle text-danger rounded-xl hover:bg-rose-100 font-bold text-sm"
           >
             Deletar OS
           </button>
@@ -222,7 +220,7 @@ export default function OrderEdit() {
         <div className="lg:col-span-2 space-y-8">
           <div className="card-premium">
             <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <Plus size={20} className="text-indigo-600" /> Peças e Produtos
+              <Plus size={20} className="text-brand" /> Peças e Produtos
             </h2>
 
             <form
@@ -250,7 +248,7 @@ export default function OrderEdit() {
               </div>
               <button
                 type="submit"
-                className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+                className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover"
               >
                 <Plus size={24} />
               </button>
@@ -269,7 +267,7 @@ export default function OrderEdit() {
                     <button
                       type="button"
                       onClick={() => handleDeleteProduct(item.id)}
-                      className="text-rose-400 hover:text-rose-600"
+                      className="text-rose-400 hover:text-danger"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -284,7 +282,7 @@ export default function OrderEdit() {
 
           <div className="card-premium">
             <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <Plus size={20} className="text-indigo-600" /> Mão de Obra e Serviços
+              <Plus size={20} className="text-brand" /> Mão de Obra e Serviços
             </h2>
 
             <form
@@ -304,7 +302,7 @@ export default function OrderEdit() {
               </div>
               <button
                 type="submit"
-                className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+                className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover"
               >
                 <Plus size={24} />
               </button>
@@ -321,7 +319,7 @@ export default function OrderEdit() {
                     <button
                       type="button"
                       onClick={() => handleDeleteService(item.id)}
-                      className="text-rose-400 hover:text-rose-600"
+                      className="text-rose-400 hover:text-danger"
                     >
                       <Trash2 size={16} />
                     </button>

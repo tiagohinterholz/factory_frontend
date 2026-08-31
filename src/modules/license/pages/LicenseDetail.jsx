@@ -15,7 +15,7 @@ const userLimitOptions = Array.from({ length: 10 }, (_, index) => ({
 const statusMap = {
   TRIAL: { label: "Em Teste", color: "text-amber-600 bg-amber-50" },
   ACTIVE: { label: "Ativa", color: "text-emerald-600 bg-emerald-50" },
-  EXPIRED: { label: "Expirada", color: "text-rose-600 bg-rose-50" },
+  EXPIRED: { label: "Expirada", color: "text-danger bg-danger-subtle" },
 }
 
 export default function LicenseDetail() {
@@ -31,7 +31,7 @@ export default function LicenseDetail() {
   if (loading || loadingBusinesses) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -47,13 +47,11 @@ export default function LicenseDetail() {
       <div className="max-w-2xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+            <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">
               Gestão de Licença
             </h1>
             <div className="flex items-center gap-2">
-              <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
-                Configurar renovação
-              </p>
+              <p className="text-slate-400 font-medium text-sm">Configurar renovação</p>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${currentStatus.color}`}
               >
@@ -65,7 +63,7 @@ export default function LicenseDetail() {
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+            <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
               <Briefcase className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-800 tracking-tight">Dados Organizacionais</h3>

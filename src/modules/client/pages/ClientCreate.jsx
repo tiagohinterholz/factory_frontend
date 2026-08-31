@@ -31,7 +31,7 @@ export default function ClientCreate() {
   if (loadingStates || loadingBusinesses || (stateId && loadingCities)) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -39,14 +39,12 @@ export default function ClientCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Novo Cliente</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
-          Gestão de clientes e parcerias
-        </p>
+        <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Novo Cliente</h1>
+        <p className="text-slate-400 font-medium text-sm mb-8">Gestão de clientes e parcerias</p>
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+            <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
               <User className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-800 tracking-tight">Dados Pessoais</h3>

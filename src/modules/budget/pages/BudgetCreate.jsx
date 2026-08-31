@@ -36,7 +36,7 @@ export default function BudgetCreate() {
   if (loadingBusinesses || loadingClients || loadingVehicles) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -44,10 +44,8 @@ export default function BudgetCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-          Novo Orçamento
-        </h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+        <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Novo Orçamento</h1>
+        <p className="text-slate-400 font-medium text-sm mb-8">
           Crie a estrutura básica do orçamento
         </p>
 

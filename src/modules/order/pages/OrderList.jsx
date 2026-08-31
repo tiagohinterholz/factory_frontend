@@ -44,7 +44,7 @@ export default function OrderList() {
             item.status === "faturado"
               ? "bg-emerald-100 text-emerald-700"
               : item.status === "a faturar"
-                ? "bg-indigo-100 text-indigo-700"
+                ? "bg-brand-subtle text-brand"
                 : "bg-slate-100 text-slate-700"
           }`}
         >

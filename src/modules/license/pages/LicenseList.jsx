@@ -16,7 +16,7 @@ export default function LicenseList() {
         const statusMap = {
           TRIAL: { label: "Em Teste", color: "bg-amber-50 text-amber-600" },
           ACTIVE: { label: "Ativo", color: "bg-emerald-50 text-emerald-600" },
-          EXPIRED: { label: "Expirado", color: "bg-rose-50 text-rose-600" },
+          EXPIRED: { label: "Expirado", color: "bg-danger-subtle text-danger" },
         }
         const config = statusMap[item.status] || {
           label: item.status,
@@ -41,7 +41,7 @@ export default function LicenseList() {
       accessor: (item) => (
         <div className="flex flex-col">
           <span
-            className={`font-bold ${item.remaining_days < 5 ? "text-rose-500" : "text-slate-700"}`}
+            className={`font-bold ${item.remaining_days < 5 ? "text-danger" : "text-slate-700"}`}
           >
             {item.remaining_days} dias
           </span>
@@ -69,7 +69,7 @@ export default function LicenseList() {
         renderActions={(item) => (
           <button
             onClick={() => navigate(`/empreendimentos/licencas/${item.id}`)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg transition-all duration-300 font-bold text-[10px] uppercase tracking-wider"
+            className="flex items-center gap-2 px-3 py-1.5 bg-brand-subtle text-brand hover:bg-brand hover:text-white rounded-lg transition-all duration-300 font-bold text-[10px] uppercase tracking-wider"
           >
             <RefreshCw size={14} className="animate-hover-spin" />
             Configurar / Renovar
