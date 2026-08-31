@@ -1,5 +1,5 @@
 import { useCityForm } from "@/modules/location/city/hooks/useCityForm"
-import { useStates } from "@/modules/location/state/hooks/useState"
+import { useStateOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -12,7 +12,7 @@ export default function CityCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { states, loading } = useStates()
+  const { states, loading } = useStateOptions()
   const stateOptions = states.map((s) => ({ id: s.id, name: `${s.name} (${s.abbreviation})` }))
 
   if (loading) {

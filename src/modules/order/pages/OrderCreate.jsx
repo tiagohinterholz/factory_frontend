@@ -1,7 +1,7 @@
 import { useOrderForm } from "@/modules/order/hooks/useOrderForm"
-import { useBusiness } from "@/modules/business/hooks/useBusiness"
-import { useClient } from "@/modules/client/hooks/useClient"
-import { useVehicle } from "@/modules/vehicle/hooks/useVehicle"
+import { useBusinessOptions } from "@/modules/core/hooks/options"
+import { useClientOptions } from "@/modules/core/hooks/options"
+import { useVehicleOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -21,9 +21,9 @@ export default function OrderCreate() {
   const businessId = watch("business_id")
   const clientId = watch("client_id")
 
-  const { business: businesses, loading: loadingBusinesses } = useBusiness()
-  const { client: clients, loading: loadingClients } = useClient()
-  const { vehicle: vehicles, loading: loadingVehicles } = useVehicle()
+  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
+  const { client: clients, loading: loadingClients } = useClientOptions()
+  const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
 
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients

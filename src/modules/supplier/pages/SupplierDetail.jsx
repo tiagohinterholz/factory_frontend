@@ -2,9 +2,9 @@ import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useSupplierEditForm } from "@/modules/supplier/hooks/useSupplierEditForm"
 import { useSupplierRelations } from "@/modules/supplier/hooks/useSupplierRelations"
-import { useStates } from "@/modules/location/state/hooks/useState"
-import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
-import { useBusiness } from "@/modules/business/hooks/useBusiness"
+import { useStateOptions } from "@/modules/core/hooks/options"
+import { useCityOptionsByState } from "@/modules/core/hooks/options"
+import { useBusinessOptions } from "@/modules/core/hooks/options"
 
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -32,9 +32,9 @@ export default function SupplierDetail() {
   const { canChooseBusiness } = usePermissions()
   const stateId = watch("state_id")
 
-  const { states, loading: loadingStates } = useStates()
-  const { citiesByState, loading: loadingCities } = useCitiesByState(stateId)
-  const { business: businesses, loading: loadingBusinesses } = useBusiness()
+  const { states, loading: loadingStates } = useStateOptions()
+  const { citiesByState, loading: loadingCities } = useCityOptionsByState(stateId)
+  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
   const [activeTab, setActiveTab] = useState("products")

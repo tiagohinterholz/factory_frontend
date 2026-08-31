@@ -26,8 +26,8 @@ export const StateService = {
     return response.data
   },
 
-  async getCitiesByState(id) {
-    const response = await api.get(`estados/${id}/cidades/`)
+  async getCitiesByState(id, page) {
+    const response = await api.get(`estados/${id}/cidades/`, { params: { page } })
     return response.data
   },
 }

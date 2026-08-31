@@ -1,5 +1,5 @@
 import { useUserForm } from "@/modules/user/hooks/useUserForm"
-import { useBusiness } from "@/modules/business/hooks/useBusiness"
+import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
@@ -17,7 +17,7 @@ export default function UserCreate() {
   const { user: loggedUser } = useAuth()
   const { isSuperUser } = usePermissions()
   const loggedRole = loggedUser?.role
-  const { business: businesses } = useBusiness()
+  const { business: businesses } = useBusinessOptions()
 
   const businessOptions = (businesses ?? []).map((b) => ({ id: b.id, name: b.corporate_name }))
 

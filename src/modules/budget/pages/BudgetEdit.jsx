@@ -2,11 +2,11 @@ import { useState } from "react"
 import { useParams } from "react-router-dom"
 import { useBudgetEditForm } from "../hooks/useBudgetEditForm"
 import { BudgetService } from "../services/budgets"
-import { useBusiness } from "@/modules/business/hooks/useBusiness"
-import { useClient } from "@/modules/client/hooks/useClient"
-import { useVehicle } from "@/modules/vehicle/hooks/useVehicle"
-import { useProduct } from "@/modules/product/hooks/useProduct"
-import { useWorkService } from "@/modules/workservice/hooks/useWorkService"
+import { useBusinessOptions } from "@/modules/core/hooks/options"
+import { useClientOptions } from "@/modules/core/hooks/options"
+import { useVehicleOptions } from "@/modules/core/hooks/options"
+import { useProductOptions } from "@/modules/core/hooks/options"
+import { useWorkServiceOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 import FormField from "@/modules/core/components/FormField"
@@ -39,11 +39,11 @@ export default function BudgetEdit() {
   const businessId = watch("business_id")
   const clientId = watch("client_id")
 
-  const { business: businesses } = useBusiness()
-  const { client: clients } = useClient()
-  const { vehicle: vehicles } = useVehicle()
-  const { product: allProducts } = useProduct()
-  const { workservice: allServices } = useWorkService()
+  const { business: businesses } = useBusinessOptions()
+  const { client: clients } = useClientOptions()
+  const { vehicle: vehicles } = useVehicleOptions()
+  const { product: allProducts } = useProductOptions()
+  const { workservice: allServices } = useWorkServiceOptions()
 
   const [selectedProduct, setSelectedProduct] = useState("")
   const [quantity, setQuantity] = useState(1)

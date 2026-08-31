@@ -1,5 +1,5 @@
 import { useCityEditForm } from "@/modules/location/city/hooks/useCityEditForm"
-import { useStates } from "@/modules/location/state/hooks/useState"
+import { useStateOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -12,7 +12,7 @@ export default function CityEdit() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { states, loading: loadingStates } = useStates()
+  const { states, loading: loadingStates } = useStateOptions()
   const stateOptions = states.map((s) => ({ id: s.id, name: `${s.name} (${s.abbreviation})` }))
 
   if (loading || loadingStates) {

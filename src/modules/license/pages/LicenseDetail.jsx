@@ -1,5 +1,5 @@
 import { useLicenseEditForm } from "@/modules/license/hooks/useLicenseEditForm"
-import { useBusiness } from "@/modules/business/hooks/useBusiness"
+import { useBusinessOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -25,7 +25,7 @@ export default function LicenseDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { business: businesses, loading: loadingBusinesses } = useBusiness()
+  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { canChooseBusiness } = usePermissions()
 
   if (loading || loadingBusinesses) {

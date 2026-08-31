@@ -3,7 +3,7 @@ import FormField from "@/modules/core/components/FormField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import { useStateEditForm } from "@/modules/location/state/hooks/useStateEditForm"
-import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
+import { useCityOptionsByState } from "@/modules/core/hooks/options"
 
 import { MapPin, Globe, Edit2, Trash2, Milestone } from "lucide-react"
 
@@ -17,7 +17,7 @@ export default function StateEdit() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { citiesByState, loading: loadingCities } = useCitiesByState(id)
+  const { citiesByState, loading: loadingCities } = useCityOptionsByState(id)
 
   if (loading) {
     return (

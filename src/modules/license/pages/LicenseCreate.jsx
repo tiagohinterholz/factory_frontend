@@ -1,5 +1,5 @@
 import { useLicenseForm } from "@/modules/license/hooks/useLicenseForm"
-import { useBusiness } from "@/modules/business/hooks/useBusiness"
+import { useBusinessOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -18,7 +18,7 @@ export default function LicenseCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { business: businesses, loading: loadingBusinesses } = useBusiness()
+  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
 
   if (isSuperUser && loadingBusinesses) {
     return (

@@ -1,6 +1,6 @@
 import { useWorkServiceEditForm } from "@/modules/workservice/hooks/useWorkServiceEditForm"
-import { useBusiness } from "@/modules/business/hooks/useBusiness"
-import { useSupplier } from "@/modules/supplier/hooks/useSupplier"
+import { useBusinessOptions } from "@/modules/core/hooks/options"
+import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -15,8 +15,8 @@ export default function WorkServiceDetail() {
   } = form
 
   const { canChooseBusiness } = usePermissions()
-  const { business: businesses, loading: loadingBusinesses } = useBusiness()
-  const { supplier: suppliers, loading: loadingSuppliers } = useSupplier()
+  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
+  const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
 
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))

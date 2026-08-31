@@ -1,6 +1,6 @@
 import { useBusinessEditForm } from "@/modules/business/hooks/useBusinessEditForm"
-import { useStates } from "@/modules/location/state/hooks/useState"
-import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
+import { useStateOptions } from "@/modules/core/hooks/options"
+import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
@@ -19,8 +19,8 @@ export default function BusinessEdit() {
   } = form
 
   const stateId = watch("state_id")
-  const { states, loading: loadingStates } = useStates()
-  const { citiesByState, loading: loadingCities } = useCitiesByState(stateId)
+  const { states, loading: loadingStates } = useStateOptions()
+  const { citiesByState, loading: loadingCities } = useCityOptionsByState(stateId)
 
   if (loading || loadingStates || (stateId && loadingCities)) {
     return (
