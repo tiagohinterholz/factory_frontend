@@ -6,7 +6,11 @@
 
 @layer base {
   body {
-    @apply font-sans bg-ground text-ink antialiased text-[14px] leading-normal;
+    @apply font-sans antialiased text-[14px] leading-normal;
+    /* mesmos valores dos tokens colors.ground / colors.ink — literais aqui
+       pra o base layer não depender da resolução de tema */
+    background-color: #f5f7f7;
+    color: #1f2937;
   }
 }
 
