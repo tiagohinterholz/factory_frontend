@@ -1,69 +1,51 @@
-import { useState, useEffect, useCallback } from "react"
-import { BudgetService } from "@/modules/budget/services/budgets"
+import { useState, useCallback } from "react"
 import { useNavigate, useParams } from "react-router-dom"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
+import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { BudgetService } from "@/modules/budget/services/budgets"
+import { budgetSchema, budgetDefaults, toBudgetPayload } from "../budget.schema"
+
+// dto da API -> shape do form (ids como string, data em YYYY-MM-DD)
+function toBudgetForm(data) {
+  const idOf = (value) => String(value?.id ?? value ?? "")
+  return {
+    business_id: idOf(data.business),
+    client_id: idOf(data.client),
+    vehicle_id: idOf(data.vehicle),
+    valid_until: data.valid_until ? data.valid_until.slice(0, 10) : "",
+  }
+}
 
 export function useBudgetEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const toast = useToast()
   const confirm = useConfirm()
+  const toast = useToast()
 
-  const [client, setClient] = useState("")
-  const [business, setBusiness] = useState("")
-  const [vehicle, setVehicle] = useState("")
-  const [products, setProducts] = useState([])
-  const [services, setServices] = useState([])
-  const [validUntil, setValidUntil] = useState("")
-  const [status, setStatus] = useState("")
-  const [total, setTotal] = useState("")
+  // itens de linha, status e total são somente leitura aqui; vivem fora do form.
+  const [meta, setMeta] = useState({ products: [], services: [], status: "", total: "" })
 
-  const [loading, setLoading] = useState(true)
-
-  const load = useCallback(async () => {
-    try {
-      const data = await BudgetService.getBudgetById(id)
-      setBusiness(data.business?.id || data.business || "")
-      setClient(data.client?.id || data.client || "")
-      setVehicle(data.vehicle?.id || data.vehicle || "")
-      setProducts(data.budget_products || [])
-      setServices(data.budget_services || [])
-
-      if (data.valid_until) {
-        setValidUntil(data.valid_until.slice(0, 10))
-      }
-
-      setStatus(data.status || "")
-      setTotal(data.total || "0.00")
-    } finally {
-      setLoading(false)
-    }
+  const fetchMeta = useCallback(async () => {
+    const data = await BudgetService.getBudgetById(id)
+    setMeta({
+      products: data.budget_products ?? [],
+      services: data.budget_services ?? [],
+      status: data.status ?? "",
+      total: data.total ?? "0.00",
+    })
+    return data
   }, [id])
 
-  useEffect(() => {
-    load()
-  }, [load])
-
-  async function handleUpdate(e) {
-    e.preventDefault()
-
-    const payload = {
-      business_id: business || null,
-      client_id: client || null,
-      vehicle_id: vehicle || null,
-      valid_until: validUntil || null,
-    }
-
-    try {
-      await BudgetService.updateBudget(id, payload)
-      navigate(`/orcamentos/`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao atualizar o orçamento").message)
-    }
-  }
+  const { form, onSubmit, loading } = useResourceForm({
+    schema: budgetSchema,
+    defaultValues: budgetDefaults,
+    load: async () => toBudgetForm(await fetchMeta()),
+    submit: (values) => BudgetService.updateBudget(id, toBudgetPayload(values)),
+    redirectTo: "/orcamentos",
+    errorFallback: "Erro ao atualizar o orçamento",
+  })
 
   async function handleDelete() {
     const confirmed = await confirm({
@@ -86,7 +68,7 @@ export function useBudgetEditForm() {
     if (!confirmed) return
     try {
       await BudgetService.approveBudget(id)
-      refresh()
+      await fetchMeta()
       toast.success("Orçamento aprovado com sucesso!")
     } catch (error) {
       console.error(error)
@@ -104,37 +86,24 @@ export function useBudgetEditForm() {
     if (!confirmed) return
     try {
       await BudgetService.cancelBudget(id)
-      refresh()
+      await fetchMeta()
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao cancelar orçamento").message)
     }
   }
 
-  const refresh = load
-
   return {
-    business,
-    setBusiness,
-    client,
-    setClient,
-    vehicle,
-    setVehicle,
-    products,
-    setProducts,
-    services,
-    setServices,
-    validUntil,
-    setValidUntil,
-    status,
-    setStatus,
-    total,
-    setTotal,
+    form,
+    onSubmit,
     loading,
-    handleUpdate,
+    products: meta.products,
+    services: meta.services,
+    status: meta.status,
+    total: meta.total,
+    refresh: fetchMeta,
     handleDelete,
     handleApprove,
     handleCancel,
-    refresh,
   }
 }

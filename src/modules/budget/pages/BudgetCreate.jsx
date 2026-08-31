@@ -8,30 +8,29 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useAuth } from "@/modules/auth/context/auth-context"
 
 export default function BudgetCreate() {
+  const { form, onSubmit } = useBudgetForm()
   const {
-    business,
-    setBusiness,
-    client,
-    setClient,
-    vehicle,
-    setVehicle,
-    validUntil,
-    setValidUntil,
-    handleSubmit,
-  } = useBudgetForm()
+    register,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = form
+
+  const { isSuperUser } = useAuth()
+
+  const businessId = watch("business_id")
+  const clientId = watch("client_id")
 
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { client: clients, loading: loadingClients } = useClient()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicle()
 
-  const { isSuperUser } = useAuth()
-
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients
-    .filter((c) => !business || (c.business?.id || c.business) === parseInt(business))
+    .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
     .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
   const vehicleOptions = vehicles
-    .filter((v) => !client || (v.client?.id || v.client) === parseInt(client))
+    .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
     .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
 
   if (loadingBusinesses || loadingClients || loadingVehicles) {
@@ -53,38 +52,44 @@ export default function BudgetCreate() {
         </p>
 
         <div className="card-premium">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={onSubmit}>
             {isSuperUser && (
               <SelectField
                 label="Empreendimento"
-                value={business}
-                onChange={(e) => setBusiness(e.target.value)}
                 options={businessOptions}
-                required
+                error={errors.business_id?.message}
+                registration={register("business_id", {
+                  onChange: () => {
+                    setValue("client_id", "")
+                    setValue("vehicle_id", "")
+                  },
+                })}
               />
             )}
             <SelectField
               label="Cliente"
-              value={client}
-              onChange={(e) => setClient(e.target.value)}
               options={clientOptions}
-              disabled={!business && isSuperUser}
+              error={errors.client_id?.message}
+              registration={register("client_id", {
+                onChange: () => setValue("vehicle_id", ""),
+              })}
             />
             <SelectField
               label="Veículo"
-              value={vehicle}
-              onChange={(e) => setVehicle(e.target.value)}
               options={vehicleOptions}
-              disabled={!client}
+              error={errors.vehicle_id?.message}
+              registration={register("vehicle_id")}
             />
             <FormField
               label="Validade"
               type="date"
-              value={validUntil}
-              onChange={(e) => setValidUntil(e.target.value)}
+              error={errors.valid_until?.message}
+              registration={register("valid_until")}
             />
             <div className="pt-4">
-              <PrimaryButton type="submit">Prosseguir para Itens</PrimaryButton>
+              <PrimaryButton type="submit" disabled={isSubmitting}>
+                Prosseguir para Itens
+              </PrimaryButton>
             </div>
           </form>
         </div>
