@@ -5,9 +5,13 @@ const TONES = {
   info: "bg-info-subtle text-info",
 }
 
-export default function SummaryCard({ title, value, icon: Icon, tone = "brand" }) {
+export default function SummaryCard({ title, value, icon: Icon, tone = "brand", flat = false }) {
   return (
-    <div className="flex items-center gap-3 bg-surface rounded-xl border border-line shadow-card p-4">
+    <div
+      className={`flex items-center gap-3 bg-surface rounded-xl border border-line p-4 ${
+        flat ? "" : "shadow-card"
+      }`}
+    >
       <div
         className={`w-10 h-10 flex items-center justify-center rounded-lg shrink-0 ${TONES[tone]}`}
       >

@@ -1,16 +1,18 @@
 const TONES = {
-  brand: "border-l-brand text-brand",
-  ok: "border-l-ok text-ok",
-  warn: "border-l-warn text-warn",
-  danger: "border-l-danger text-danger",
-  info: "border-l-info text-info",
+  brand: "border-l-brand text-brand bg-brand-subtle/30",
+  ok: "border-l-ok text-ok bg-ok-subtle/30",
+  warn: "border-l-warn text-warn bg-warn-subtle/30",
+  danger: "border-l-danger text-danger bg-danger-subtle/30",
+  info: "border-l-info text-info bg-info-subtle/30",
 }
 
-export default function HighlightCard({ title, icon: Icon, tone = "brand", value }) {
-  const [border, text] = (TONES[tone] || TONES.brand).split(" ")
+export default function HighlightCard({ title, icon: Icon, tone = "brand", value, flat = false }) {
+  const [border, text, wash] = (TONES[tone] || TONES.brand).split(" ")
   return (
     <div
-      className={`bg-surface rounded-xl border border-line border-l-4 ${border} shadow-card p-4`}
+      className={`rounded-xl border border-line border-l-4 ${border} ${wash} ${
+        flat ? "" : "shadow-card"
+      } p-4`}
     >
       <div className={`flex items-center gap-2 ${text}`}>
         {Icon && <Icon className="w-4 h-4" />}

@@ -44,58 +44,87 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard
-          title="Orçamentos em análise"
-          value={summary.budgets_wait ?? 0}
-          icon={Clock}
-          tone="warn"
-        />
-        <SummaryCard
-          title="A faturar"
-          value={brl(summary.orders_to_invoice)}
-          icon={Wallet}
-          tone="info"
-        />
-        <SummaryCard
-          title="Faturado"
-          value={brl(summary.orders_invoiced)}
-          icon={CheckCircle2}
-          tone="ok"
-        />
-        <SummaryCard
-          title="Agendados na semana"
-          value={summary.orders_on_week ?? 0}
-          icon={CalendarDays}
-          tone="brand"
-        />
+      {/* Movimento — números que mudam ao longo do dia */}
+      <section className="rounded-xl border border-line bg-ground p-4 sm:p-5 space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-ink">Movimento</h2>
+          <p className="text-[12.5px] text-muted mt-0.5">Números que mudam ao longo do dia</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <HighlightCard
+            flat
+            title="Faturar hoje"
+            icon={Hourglass}
+            tone="warn"
+            value={detail.to_invoice_today?.length ?? 0}
+          />
+          <HighlightCard
+            flat
+            title="A faturar"
+            icon={MapPin}
+            tone="danger"
+            value={detail.to_invoice_all?.length ?? 0}
+          />
+          <HighlightCard
+            flat
+            title="Clientes da semana"
+            icon={Users}
+            tone="info"
+            value={detail.clients_on_week?.length ?? 0}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <SummaryCard
+            flat
+            title="Orçamentos em análise"
+            value={summary.budgets_wait ?? 0}
+            icon={Clock}
+            tone="warn"
+          />
+          <SummaryCard
+            flat
+            title="A faturar"
+            value={brl(summary.orders_to_invoice)}
+            icon={Wallet}
+            tone="info"
+          />
+          <SummaryCard
+            flat
+            title="Faturado"
+            value={brl(summary.orders_invoiced)}
+            icon={CheckCircle2}
+            tone="ok"
+          />
+          <SummaryCard
+            flat
+            title="Agendados na semana"
+            value={summary.orders_on_week ?? 0}
+            icon={CalendarDays}
+            tone="brand"
+          />
+        </div>
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <HighlightCard
-          title="Faturar hoje"
-          icon={Hourglass}
-          tone="warn"
-          value={detail.to_invoice_today?.length ?? 0}
-        />
-        <HighlightCard
-          title="A faturar"
-          icon={MapPin}
-          tone="danger"
-          value={detail.to_invoice_all?.length ?? 0}
-        />
-        <HighlightCard
-          title="Clientes da semana"
-          icon={Users}
-          tone="info"
-          value={detail.clients_on_week?.length ?? 0}
-        />
-      </section>
+      {/* Cadastros — totais do empreendimento */}
+      <section className="rounded-xl border border-line bg-ground p-4 sm:p-5 space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-ink">Cadastros</h2>
+          <p className="text-[12.5px] text-muted mt-0.5">Totais do empreendimento</p>
+        </div>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <StatCard key={stat.title} title={stat.title} value={stat.value} icon={stat.icon} />
-        ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {stats.map((stat) => (
+            <StatCard
+              key={stat.title}
+              flat
+              title={stat.title}
+              value={stat.value}
+              icon={stat.icon}
+            />
+          ))}
+        </div>
       </section>
     </div>
   )
