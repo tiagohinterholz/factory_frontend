@@ -1,6 +1,8 @@
+import { lazy } from "react"
 import { Route } from "react-router-dom"
-import UserList from "./pages/UserList"
-import UserCreate from "./pages/UserCreate"
+
+const UserList = lazy(() => import("./pages/UserList"))
+const UserCreate = lazy(() => import("./pages/UserCreate"))
 
 const UserRoutes = (
   <>

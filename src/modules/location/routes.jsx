@@ -1,10 +1,12 @@
+import { lazy } from "react"
 import { Route } from "react-router-dom"
-import StateList from "./state/pages/StateList"
-import StateCreate from "./state/pages/StateCreate"
-import StateEdit from "./state/pages/StateEdit"
-import CityList from "./city/pages/CityList"
-import CityCreate from "./city/pages/CityCreate"
-import CityEdit from "./city/pages/CityEdit"
+
+const StateList = lazy(() => import("./state/pages/StateList"))
+const StateCreate = lazy(() => import("./state/pages/StateCreate"))
+const StateEdit = lazy(() => import("./state/pages/StateEdit"))
+const CityList = lazy(() => import("./city/pages/CityList"))
+const CityCreate = lazy(() => import("./city/pages/CityCreate"))
+const CityEdit = lazy(() => import("./city/pages/CityEdit"))
 
 const LocationRoutes = (
   <>

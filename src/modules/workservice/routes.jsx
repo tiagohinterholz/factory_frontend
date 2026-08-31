@@ -1,7 +1,9 @@
+import { lazy } from "react"
 import { Route } from "react-router-dom"
-import WorkServiceList from "./pages/WorkServiceList"
-import WorkServiceEdit from "./pages/WorkServiceDetail"
-import WorkServiceCreate from "./pages/WorkServiceCreate"
+
+const WorkServiceList = lazy(() => import("./pages/WorkServiceList"))
+const WorkServiceCreate = lazy(() => import("./pages/WorkServiceCreate"))
+const WorkServiceEdit = lazy(() => import("./pages/WorkServiceDetail"))
 
 const WorkServiceRoutes = (
   <>

@@ -1,7 +1,9 @@
+import { Suspense } from "react"
 import { Outlet, useLocation } from "react-router-dom"
 import Sidebar from "../components/Sidebar"
 import Topbar from "../components/Topbar"
 import { ErrorBoundary } from "@/modules/core/components/ErrorBoundary"
+import PageLoader from "@/modules/core/components/PageLoader"
 
 export default function DashboardLayout({ children }) {
   const location = useLocation()
@@ -15,7 +17,9 @@ export default function DashboardLayout({ children }) {
 
         <main className="p-8 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-700">
           <div className="max-w-[1400px] mx-auto">
-            <ErrorBoundary key={location.pathname}>{children || <Outlet />}</ErrorBoundary>
+            <ErrorBoundary key={location.pathname}>
+              <Suspense fallback={<PageLoader />}>{children || <Outlet />}</Suspense>
+            </ErrorBoundary>
           </div>
         </main>
 

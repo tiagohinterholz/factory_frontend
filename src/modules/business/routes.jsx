@@ -1,7 +1,9 @@
+import { lazy } from "react"
 import { Route } from "react-router-dom"
-import BusinessList from "./pages/BusinessList"
-import BusinessDetail from "./pages/BusinessDetail"
-import BusinessCreate from "./pages/BusinessCreate"
+
+const BusinessList = lazy(() => import("./pages/BusinessList"))
+const BusinessCreate = lazy(() => import("./pages/BusinessCreate"))
+const BusinessDetail = lazy(() => import("./pages/BusinessDetail"))
 
 const BusinessRoutes = (
   <>

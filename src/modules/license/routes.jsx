@@ -1,7 +1,9 @@
+import { lazy } from "react"
 import { Route } from "react-router-dom"
-import LicenseCreate from "./pages/LicenseCreate"
-import LicenseDetail from "./pages/LicenseDetail"
-import LicenseList from "./pages/LicenseList"
+
+const LicenseList = lazy(() => import("./pages/LicenseList"))
+const LicenseCreate = lazy(() => import("./pages/LicenseCreate"))
+const LicenseDetail = lazy(() => import("./pages/LicenseDetail"))
 
 const LicenseRoutes = (
   <>

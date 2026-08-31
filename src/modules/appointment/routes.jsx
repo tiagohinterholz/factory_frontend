@@ -1,7 +1,9 @@
+import { lazy } from "react"
 import { Route } from "react-router-dom"
-import AppointmentList from "./pages/AppointmentList"
-import AppointmentEdit from "./pages/AppointmentDetail"
-import AppointmentCreate from "./pages/AppointmentCreate"
+
+const AppointmentList = lazy(() => import("./pages/AppointmentList"))
+const AppointmentCreate = lazy(() => import("./pages/AppointmentCreate"))
+const AppointmentEdit = lazy(() => import("./pages/AppointmentDetail"))
 
 const AppointmentRoutes = (
   <>
