@@ -1,12 +1,12 @@
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { idOf } from "@/api/dto"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { appointmentSchema, appointmentDefaults, toAppointmentPayload } from "../appointment.schema"
 
 // dto da API -> shape do form (ids como string)
 function toAppointmentForm(data) {
-  const idOf = (value) => String(value?.id ?? value ?? "")
   return {
     business_id: idOf(data.business),
     client_id: idOf(data.client),

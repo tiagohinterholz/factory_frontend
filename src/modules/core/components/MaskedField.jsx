@@ -19,22 +19,22 @@ export default function MaskedField({
       name={name}
       render={({ field }) => (
         <div className="flex flex-col group">
-          <label className="label-premium group-focus-within:text-indigo-600 transition duration-300">
+          <label className="label-premium group-focus-within:text-brand transition-colors">
             {label}
           </label>
           <InputMask
             mask={mask}
             replacement={replacement}
             placeholder={placeholder}
-            className={`input-premium shadow-sm shadow-slate-200/50 ${
-              error ? "border-rose-400 focus:border-rose-500 focus:ring-rose-500/10" : ""
+            className={`input-premium ${
+              error ? "border-danger focus:border-danger focus:ring-danger/15" : ""
             }`}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
             ref={field.ref}
           />
-          {error && <span className="mt-1 text-xs font-medium text-rose-500">{error}</span>}
+          {error && <span className="mt-1 text-xs text-danger">{error}</span>}
         </div>
       )}
     />

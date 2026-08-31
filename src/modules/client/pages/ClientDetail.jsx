@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useClientEditForm } from "@/modules/client/hooks/useClientEditForm"
+import { useClientVehicles } from "@/modules/client/hooks/useClientVehicles"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
-import { ClientService } from "@/modules/client/services/client"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -28,7 +27,7 @@ export default function ClientDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
   const stateId = watch("state_id")
 
   const { states, loading: loadingStates } = useStates()
@@ -36,27 +35,12 @@ export default function ClientDetail() {
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
-  const [vehicles, setVehicles] = useState([])
-  const [loadingVehicles, setLoadingVehicles] = useState(true)
-
-  useEffect(() => {
-    async function loadVehicles() {
-      try {
-        const data = await ClientService.vehicleByClient(id)
-        setVehicles(data.results || (Array.isArray(data) ? data : []))
-      } catch (err) {
-        console.error("Erro ao carregar veículos", err)
-      } finally {
-        setLoadingVehicles(false)
-      }
-    }
-    if (id) loadVehicles()
-  }, [id])
+  const { vehicles, loading: loadingVehicles } = useClientVehicles(id)
 
   if (loading || loadingStates || loadingBusinesses || (stateId && loadingCities)) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -65,16 +49,16 @@ export default function ClientDetail() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+          <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">
             Detalhes do Cliente
           </h1>
-          <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
+          <p className="text-slate-400 font-medium text-sm">
             Gestão completa e histórico do cliente
           </p>
         </div>
         <button
           onClick={handleDelete}
-          className="flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition duration-300 font-bold text-sm"
+          className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
         >
           <Trash2 className="w-4 h-4" />
           Excluir Cliente
@@ -86,14 +70,14 @@ export default function ClientDetail() {
         <div className="lg:col-span-7 space-y-6">
           <div className="card-premium">
             <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-              <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+              <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
                 <User className="w-5 h-5" />
               </div>
               <h3 className="font-bold text-slate-800 tracking-tight">Informações Pessoais</h3>
             </div>
 
             <form className="space-y-6" onSubmit={onSubmit}>
-              {isSuperUser && (
+              {canChooseBusiness && (
                 <SelectField
                   label="Empreendimento"
                   options={businessOptions}
@@ -213,14 +197,14 @@ export default function ClientDetail() {
             renderItem={(item) => (
               <div
                 onClick={() => navigate(`/veiculos/${item.id}`)}
-                className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between group cursor-pointer transition duration-300 hover:bg-white hover:border-indigo-100 hover:shadow-md"
+                className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between group cursor-pointer transition duration-300 hover:bg-white hover:border-line hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition duration-300 shadow-sm border border-slate-100">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-slate-400 group-hover:text-brand transition duration-300 shadow-sm border border-slate-100">
                     <Car className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-700 text-sm group-hover:text-indigo-600 transition duration-300">
+                    <p className="font-bold text-slate-700 text-sm group-hover:text-brand transition duration-300">
                       {item.name}
                     </p>
                     <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-0.5">
@@ -228,7 +212,7 @@ export default function ClientDetail() {
                     </p>
                   </div>
                 </div>
-                <div className="text-slate-300 group-hover:text-indigo-600 transition duration-300 translate-x-0 group-hover:translate-x-1">
+                <div className="text-slate-300 group-hover:text-brand transition duration-300 translate-x-0 group-hover:translate-x-1">
                   <ChevronRight className="w-5 h-5" />
                 </div>
               </div>

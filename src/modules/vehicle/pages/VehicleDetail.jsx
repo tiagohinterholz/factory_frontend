@@ -4,7 +4,7 @@ import { useClient } from "@/modules/client/hooks/useClient"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { fuelOptions } from "../constants/vehicle"
 
 import { Edit, Trash2 } from "lucide-react"
@@ -17,7 +17,7 @@ export default function VehicleEdit() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
 
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { client: clients, loading: loadingClients } = useClient()
@@ -35,17 +35,13 @@ export default function VehicleEdit() {
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-              Editar Veículo
-            </h1>
-            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
-              Sincronize os dados técnicos
-            </p>
+            <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Editar Veículo</h1>
+            <p className="text-slate-400 font-medium text-sm">Sincronize os dados técnicos</p>
           </div>
           <button
             type="button"
             onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition duration-300 font-bold text-sm"
+            className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
           >
             <Trash2 className="w-4 h-4" />
             Excluir
@@ -54,7 +50,7 @@ export default function VehicleEdit() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            {isSuperUser && (
+            {canChooseBusiness && (
               <SelectField
                 label="Empreendimento"
                 options={businessOptions}

@@ -1,11 +1,11 @@
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { idOf } from "@/api/dto"
 import { BusinessService } from "@/modules/business/services/business"
 import { businessSchema, businessDefaults } from "../business.schema"
 
 function toBusinessForm(data) {
-  const idOf = (value) => String(value?.id ?? value ?? "")
   return {
     corporate_name: data.corporate_name ?? "",
     trade_name: data.trade_name ?? "",

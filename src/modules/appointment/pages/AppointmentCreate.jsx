@@ -6,7 +6,7 @@ import { useOrder } from "@/modules/order/hooks/useOrder"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { Save } from "lucide-react"
 
 export default function AppointmentCreate() {
@@ -18,7 +18,7 @@ export default function AppointmentCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
 
   const businessId = watch("business_id")
   const clientId = watch("client_id")
@@ -62,7 +62,7 @@ export default function AppointmentCreate() {
   if (loadingBusinesses || loadingClients || loadingVehicles || loadingOrders) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -70,16 +70,14 @@ export default function AppointmentCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-          Novo Agendamento
-        </h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+        <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Novo Agendamento</h1>
+        <p className="text-slate-400 font-medium text-sm mb-8">
           Agende um horário para atendimento
         </p>
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            {isSuperUser && (
+            {canChooseBusiness && (
               <SelectField
                 label="Empreendimento"
                 options={businessOptions}

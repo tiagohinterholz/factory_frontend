@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,43 +6,33 @@
 
 @layer base {
   body {
-    @apply font-['Outfit'] bg-slate-50 text-slate-900 antialiased;
+    @apply font-sans antialiased text-[14px] leading-normal;
+    /* mesmos valores dos tokens colors.ground / colors.ink — literais aqui
+       pra o base layer não depender da resolução de tema */
+    background-color: #f5f7f7;
+    color: #1f2937;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl transition duration-300 shadow-md shadow-indigo-100 hover:scale-[1.02] active:scale-[0.98] focus:ring-2 focus:ring-indigo-500/20 outline-none flex items-center justify-center gap-2;
+    @apply inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-hover text-brand-fg font-medium text-sm px-4 py-2 rounded-lg transition-colors duration-150 focus:ring-2 focus:ring-brand/25 outline-none disabled:opacity-60 disabled:pointer-events-none;
   }
 
   .card-premium {
-    @apply bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-200/50 p-6 transition duration-300 hover:shadow-md;
+    @apply bg-surface rounded-xl border border-line shadow-card p-5;
   }
 
   .input-premium {
-    @apply w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 transition duration-300 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none text-slate-700 placeholder:text-slate-400;
+    @apply w-full bg-surface border border-line rounded-lg px-3 py-2 text-sm text-ink transition-colors duration-150 focus:border-brand focus:ring-2 focus:ring-brand/15 outline-none placeholder:text-muted/70;
   }
 
   .label-premium {
-    @apply block text-sm font-medium text-slate-600 mb-2 transition duration-300 ml-0.5;
+    @apply block text-[13px] font-medium text-muted mb-1.5;
   }
 
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 #f8fafc;
-  }
-
-  @keyframes pulse-slow {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.6;
-    }
-  }
-
-  .animate-pulse-slow {
-    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    scrollbar-color: #cbd5e1 #f1f5f5;
   }
 }

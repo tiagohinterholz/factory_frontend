@@ -1,6 +1,7 @@
 import { useUserForm } from "@/modules/user/hooks/useUserForm"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -13,7 +14,8 @@ export default function UserCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { user: loggedUser, isSuperUser } = useAuth()
+  const { user: loggedUser } = useAuth()
+  const { isSuperUser } = usePermissions()
   const loggedRole = loggedUser?.role
   const { business: businesses } = useBusiness()
 
@@ -30,14 +32,12 @@ export default function UserCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Novo Usuário</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
-          Cadastre os dados de acesso
-        </p>
+        <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Novo Usuário</h1>
+        <p className="text-slate-400 font-medium text-sm mb-8">Cadastre os dados de acesso</p>
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+            <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
               <UserPlus className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-800 tracking-tight">Dados Cadastrais</h3>

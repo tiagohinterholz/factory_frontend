@@ -1,28 +1,28 @@
 import { api } from "@/api/http"
 
-export class CityService {
-  static async getCities(params = {}) {
+export const CityService = {
+  async getCities(params = {}) {
     const response = await api.get("/cidades/", { params })
     return response.data
-  }
+  },
 
-  static async getCity(id) {
+  async getCity(id) {
     const response = await api.get(`/cidades/${id}/`)
     return response.data
-  }
+  },
 
-  static async createCity(payload) {
+  async createCity(payload) {
     const response = await api.post("/cidades/", payload)
     return response.data
-  }
+  },
 
-  static async updateCity(id, payload) {
+  async updateCity(id, payload) {
     const response = await api.put(`/cidades/${id}/`, payload)
     return response.data
-  }
+  },
 
-  static async deleteCity(id) {
+  async deleteCity(id) {
     const response = await api.delete(`/cidades/${id}/`)
     return response.data
-  }
+  },
 }

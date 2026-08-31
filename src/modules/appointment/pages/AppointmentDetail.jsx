@@ -6,7 +6,7 @@ import { useOrder } from "@/modules/order/hooks/useOrder"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 import { Edit, Trash2 } from "lucide-react"
 
@@ -19,7 +19,7 @@ export default function AppointmentDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
 
   const businessId = watch("business_id")
   const clientId = watch("client_id")
@@ -68,17 +68,15 @@ export default function AppointmentDetail() {
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+            <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">
               Editar Agendamento
             </h1>
-            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
-              Sincronize os dados do agendamento
-            </p>
+            <p className="text-slate-400 font-medium text-sm">Sincronize os dados do agendamento</p>
           </div>
           <button
             type="button"
             onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition duration-300 font-bold text-sm"
+            className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
           >
             <Trash2 className="w-4 h-4" />
             Excluir
@@ -87,7 +85,7 @@ export default function AppointmentDetail() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            {isSuperUser && (
+            {canChooseBusiness && (
               <SelectField
                 label="Empreendimento"
                 options={businessOptions}

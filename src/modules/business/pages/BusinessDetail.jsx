@@ -25,7 +25,7 @@ export default function BusinessEdit() {
   if (loading || loadingStates || (stateId && loadingCities)) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -35,17 +35,15 @@ export default function BusinessEdit() {
       <div className="max-w-2xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+            <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">
               Editar Empreendimento
             </h1>
-            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
-              Gestão de dados corporativos
-            </p>
+            <p className="text-slate-400 font-medium text-sm">Gestão de dados corporativos</p>
           </div>
           <button
             type="button"
             onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition duration-300 font-bold text-sm"
+            className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
           >
             <Trash2 className="w-4 h-4" />
             Excluir Empresa
@@ -54,7 +52,7 @@ export default function BusinessEdit() {
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+            <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
               <Briefcase className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-800 tracking-tight">Dados Organizacionais</h3>

@@ -13,14 +13,14 @@ export default function StateCreate() {
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Novo Estado</h1>
-        <p className="text-slate-400 font-medium text-sm mb-8 uppercase tracking-[0.15em]">
+        <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Novo Estado</h1>
+        <p className="text-slate-400 font-medium text-sm mb-8">
           Cadastre uma nova unidade federativa
         </p>
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+            <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
               <Globe className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-800 tracking-tight">Informações Geográficas</h3>

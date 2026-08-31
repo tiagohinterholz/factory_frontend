@@ -1,23 +1,23 @@
 import { api } from "@/api/http"
 
-export class LicenseService {
-  static async getLicense() {
+export const LicenseService = {
+  async getLicense() {
     const response = await api.get("/empreendimentos/licencas/")
     return response.data
-  }
+  },
 
-  static async getLicenseById(id) {
+  async getLicenseById(id) {
     const response = await api.get(`/empreendimentos/licencas/${id}/`)
     return response.data
-  }
+  },
 
-  static async getLicenseRenew(businessId, data = {}) {
+  async getLicenseRenew(businessId, data = {}) {
     const response = await api.patch(`/empreendimentos/licencas/${businessId}/renovar/`, data)
     return response.data
-  }
+  },
 
-  static async LicenseRemaingDaysView() {
+  async LicenseRemaingDaysView() {
     const response = await api.get(`/empreendimentos/licencas/dias-restantes/`)
     return response.data
-  }
+  },
 }

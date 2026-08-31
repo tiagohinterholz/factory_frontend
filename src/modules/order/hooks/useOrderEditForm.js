@@ -4,19 +4,19 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { idOf, toDateInput } from "@/api/dto"
 import { OrderService } from "@/modules/order/services/order"
 import { orderSchema, orderDefaults, toOrderPayload } from "../order.schema"
 
 // dto da API -> shape do form (ids como string, datas em YYYY-MM-DD)
 function toOrderForm(data) {
-  const idOf = (value) => String(value?.id ?? value ?? "")
   return {
     business_id: idOf(data.business),
     client_id: idOf(data.client),
     vehicle_id: idOf(data.vehicle),
     budget_id: idOf(data.budget),
-    service_date: data.service_date ? data.service_date.slice(0, 10) : "",
-    billing_date: data.billing_date ? data.billing_date.slice(0, 10) : "",
+    service_date: toDateInput(data.service_date),
+    billing_date: toDateInput(data.billing_date),
     notes: data.notes ?? "",
   }
 }

@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useSupplierEditForm } from "@/modules/supplier/hooks/useSupplierEditForm"
+import { useSupplierRelations } from "@/modules/supplier/hooks/useSupplierRelations"
 import { useStates } from "@/modules/location/state/hooks/useState"
 import { useCitiesByState } from "@/modules/location/city/hooks/useCity"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
-import { SupplierService } from "@/modules/supplier/services/supplier"
 
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 
@@ -29,7 +29,7 @@ export default function SupplierDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
   const stateId = watch("state_id")
 
   const { states, loading: loadingStates } = useStates()
@@ -37,33 +37,13 @@ export default function SupplierDetail() {
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
-  const [products, setProducts] = useState([])
-  const [services, setServices] = useState([])
-  const [loadingRelated, setLoadingRelated] = useState(true)
   const [activeTab, setActiveTab] = useState("products")
-
-  useEffect(() => {
-    async function loadRelatedData() {
-      try {
-        const [prodData, servData] = await Promise.all([
-          SupplierService.getProductBySupplier(id),
-          SupplierService.getServiceBySupplier(id),
-        ])
-        setProducts(prodData.results || (Array.isArray(prodData) ? prodData : []))
-        setServices(servData.results || (Array.isArray(servData) ? servData : []))
-      } catch (error) {
-        console.error("Erro ao carregar dados relacionados", error)
-      } finally {
-        setLoadingRelated(false)
-      }
-    }
-    if (id) loadRelatedData()
-  }, [id])
+  const { products, services, loading: loadingRelated } = useSupplierRelations(id)
 
   if (loading || loadingStates || loadingBusinesses || (stateId && loadingCities)) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -72,17 +52,15 @@ export default function SupplierDetail() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+          <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">
             Detalhes do Fornecedor
           </h1>
-          <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
-            Gestão de parcerias e catálogos
-          </p>
+          <p className="text-slate-400 font-medium text-sm">Gestão de parcerias e catálogos</p>
         </div>
         <button
           type="button"
           onClick={handleDelete}
-          className="flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition duration-300 font-bold text-sm"
+          className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
         >
           <Trash2 className="w-4 h-4" />
           Excluir Fornecedor
@@ -94,14 +72,14 @@ export default function SupplierDetail() {
         <div className="lg:col-span-7 space-y-6">
           <div className="card-premium">
             <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-              <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+              <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
                 <Factory className="w-5 h-5" />
               </div>
               <h3 className="font-bold text-slate-800 tracking-tight">Dados Cadastrais</h3>
             </div>
 
             <form className="space-y-6" onSubmit={onSubmit}>
-              {isSuperUser && (
+              {canChooseBusiness && (
                 <SelectField
                   label="Empreendimento"
                   options={businessOptions}
@@ -220,7 +198,7 @@ export default function SupplierDetail() {
                 onClick={() => setActiveTab("products")}
                 className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${
                   activeTab === "products"
-                    ? "bg-white text-indigo-600 shadow-sm border border-indigo-50 hover:scale-[1.02]"
+                    ? "bg-white text-brand shadow-sm border border-line"
                     : "text-slate-400 hover:text-slate-500"
                 }`}
               >
@@ -230,7 +208,7 @@ export default function SupplierDetail() {
                   <span
                     className={`ml-1.5 text-[10px] px-2 py-0.5 rounded-full ${
                       activeTab === "products"
-                        ? "bg-indigo-50 text-indigo-600"
+                        ? "bg-brand-subtle text-brand"
                         : "bg-slate-200 text-slate-500"
                     }`}
                   >
@@ -243,7 +221,7 @@ export default function SupplierDetail() {
                 onClick={() => setActiveTab("services")}
                 className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${
                   activeTab === "services"
-                    ? "bg-white text-indigo-600 shadow-sm border border-indigo-50 hover:scale-[1.02]"
+                    ? "bg-white text-brand shadow-sm border border-line"
                     : "text-slate-400 hover:text-slate-500"
                 }`}
               >
@@ -253,7 +231,7 @@ export default function SupplierDetail() {
                   <span
                     className={`ml-1.5 text-[10px] px-2 py-0.5 rounded-full ${
                       activeTab === "services"
-                        ? "bg-indigo-50 text-indigo-600"
+                        ? "bg-brand-subtle text-brand"
                         : "bg-slate-200 text-slate-500"
                     }`}
                   >

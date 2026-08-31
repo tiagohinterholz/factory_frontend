@@ -1,7 +1,7 @@
 import { useProductEditForm } from "@/modules/product/hooks/useProductEditForm"
 import { useBusiness } from "@/modules/business/hooks/useBusiness"
 import { useSupplier } from "@/modules/supplier/hooks/useSupplier"
-import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -14,7 +14,7 @@ export default function ProductDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser } = useAuth()
+  const { canChooseBusiness } = usePermissions()
   const { business: businesses, loading: loadingBusinesses } = useBusiness()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplier()
 
@@ -24,7 +24,7 @@ export default function ProductDetail() {
   if (loading || loadingBusinesses || loadingSuppliers) {
     return (
       <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -34,16 +34,14 @@ export default function ProductDetail() {
       <div className="max-w-2xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+            <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">
               Detalhes do Produto
             </h1>
-            <p className="text-slate-400 font-medium text-sm uppercase tracking-[0.15em]">
-              Gestão técnica de estoque
-            </p>
+            <p className="text-slate-400 font-medium text-sm">Gestão técnica de estoque</p>
           </div>
           <button
             onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition duration-300 font-bold text-sm"
+            className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
           >
             <Trash2 className="w-4 h-4" />
             Excluir Produto
@@ -52,7 +50,7 @@ export default function ProductDetail() {
 
         <div className="card-premium">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+            <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
               <Package className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-800 tracking-tight">Informações do Produto</h3>
@@ -60,7 +58,7 @@ export default function ProductDetail() {
 
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {isSuperUser && (
+              {canChooseBusiness && (
                 <SelectField
                   label="Empreendimento"
                   options={businessOptions}
