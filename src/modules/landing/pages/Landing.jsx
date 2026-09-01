@@ -76,6 +76,22 @@ const STEPS = [
   },
 ]
 
+// Preços provisórios — ajustar aqui. Todo plano: 1 admin + 3 usuários.
+// Curva: quanto mais longo o ciclo, menor o R$/mês (mensal 250 -> anual 190).
+const PLANS = [
+  { period: "Quinzenal", price: "150", cycle: "a cada 15 dias", equiv: "R$ 300/mês" },
+  { period: "Mensal", price: "250", cycle: "por mês", equiv: null },
+  {
+    period: "Trimestral",
+    price: "660",
+    cycle: "a cada 3 meses",
+    equiv: "R$ 220/mês",
+    tag: "Mais popular",
+  },
+  { period: "Semestral", price: "1.260", cycle: "a cada 6 meses", equiv: "R$ 210/mês" },
+  { period: "Anual", price: "2.280", cycle: "por ano", equiv: "R$ 190/mês", tag: "Melhor preço" },
+]
+
 function Brand({ className = "" }) {
   return (
     <span
@@ -115,6 +131,9 @@ export default function Landing() {
             </a>
             <a href="#como" className="hover:text-ink transition-colors">
               Como funciona
+            </a>
+            <a href="#planos" className="hover:text-ink transition-colors">
+              Planos
             </a>
           </nav>
           <span className="flex-1" />
@@ -298,6 +317,67 @@ export default function Landing() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ---------- planos ---------- */}
+        <section id="planos" className="py-[62px]">
+          <div className="max-w-[1120px] mx-auto px-[22px]">
+            <p className={kicker}>Planos</p>
+            <h2 className={h2}>Escolha o ciclo que cabe no caixa.</h2>
+            <p className="max-w-[52ch] text-muted mt-3">
+              É o sistema completo em qualquer plano — muda só a periodicidade. Todo plano inclui{" "}
+              <span className="text-ink font-medium">1 administrador + 3 usuários</span>.
+            </p>
+
+            <div className="grid gap-4 mt-[34px] sm:grid-cols-2 lg:grid-cols-5">
+              {PLANS.map(({ period, price, cycle, equiv, tag }) => (
+                <div
+                  key={period}
+                  className={`flex flex-col rounded-2xl border bg-surface p-5 ${
+                    tag ? "border-brand shadow-card" : "border-line"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-display font-bold text-[15px]">{period}</span>
+                    {tag && (
+                      <span className="text-[10.5px] font-bold uppercase tracking-wide bg-brand-subtle text-brand rounded-full px-2 py-0.5">
+                        {tag}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-3 font-display font-extrabold tracking-tight text-[26px] tabular-nums">
+                    <span className="text-[15px] font-semibold text-muted align-top">R$ </span>
+                    {price}
+                  </div>
+                  <div className="text-[12.5px] text-muted">{cycle}</div>
+                  <div className="text-[12px] text-muted mt-1 min-h-[16px]">
+                    {equiv ? `equivale a ${equiv}` : ""}
+                  </div>
+                  <div className="border-t border-line mt-4 pt-4 text-[13px] text-muted">
+                    1 admin + 3 usuários
+                  </div>
+                  <Link
+                    to="/login"
+                    className={`mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold transition-colors ${
+                      tag
+                        ? "bg-brand text-brand-fg hover:bg-brand-hover"
+                        : "border border-line text-ink hover:bg-ground"
+                    }`}
+                  >
+                    Assinar
+                  </Link>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-[13px] text-muted mt-5">
+              Precisa de mais usuários ou de algo específico?{" "}
+              <span className="text-ink font-medium">
+                Fale com a gente para consultar condições.
+              </span>{" "}
+              A contratação e a renovação são feitas junto ao time.
+            </p>
           </div>
         </section>
 
