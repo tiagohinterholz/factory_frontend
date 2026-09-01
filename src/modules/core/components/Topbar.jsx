@@ -8,7 +8,7 @@ export default function Topbar({ onOpenMobile }) {
 
   async function handleLogout() {
     await logout()
-    navigate("/")
+    navigate("/login")
   }
 
   return (

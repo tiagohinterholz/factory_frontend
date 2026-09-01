@@ -5,12 +5,14 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
+        display: ["Archivo", "Inter", "system-ui", "sans-serif"],
       },
       colors: {
         // acento (teal-petróleo)
         brand: {
           DEFAULT: "#0f6b6b",
           hover: "#0c5757",
+          deep: "#0b2b2b",
           fg: "#ffffff",
           subtle: "#e6f0f0",
           muted: "#4f8a8a",
