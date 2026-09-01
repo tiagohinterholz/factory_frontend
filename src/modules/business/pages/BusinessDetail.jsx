@@ -7,7 +7,8 @@ import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
-import { Briefcase, Milestone, Edit2, Trash2 } from "lucide-react"
+import { TAX_REGIME_OPTIONS } from "@/modules/business/business.schema"
+import { Briefcase, Milestone, Edit2, Trash2, Landmark } from "lucide-react"
 
 export default function BusinessEdit() {
   const { form, onSubmit, loading, handleDelete } = useBusinessEditForm()
@@ -101,6 +102,37 @@ export default function BusinessEdit() {
               mask={PHONE_MASK}
               placeholder="(00) 00000-0000"
               error={errors.phone?.message}
+            />
+
+            <div className="pt-6 pb-2">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm">
+                  <Landmark className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-800 tracking-tight">Dados Fiscais</h3>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                label="Inscrição Estadual"
+                placeholder="Opcional"
+                error={errors.state_registration?.message}
+                registration={register("state_registration")}
+              />
+              <FormField
+                label="Inscrição Municipal"
+                placeholder="Opcional"
+                error={errors.municipal_registration?.message}
+                registration={register("municipal_registration")}
+              />
+            </div>
+
+            <SelectField
+              label="Regime Tributário"
+              options={TAX_REGIME_OPTIONS}
+              error={errors.tax_regime?.message}
+              registration={register("tax_regime")}
             />
 
             <div className="pt-6 pb-2">
