@@ -4,6 +4,7 @@ import { useOrderEditForm } from "../hooks/useOrderEditForm"
 import { OrderService } from "../services/order"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import BackLink from "@/modules/core/components/BackLink"
+import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useBudget } from "@/modules/budget/hooks/useBudget"
@@ -140,6 +141,7 @@ export default function OrderEdit() {
           </div>
         </div>
         <div className="flex gap-2">
+          <RecordPdfButton request={() => OrderService.getOrderPdf(id)} />
           {status === "a faturar" && (
             <button
               type="button"

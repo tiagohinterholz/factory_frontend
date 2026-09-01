@@ -4,6 +4,7 @@ import { useBudgetEditForm } from "../hooks/useBudgetEditForm"
 import { BudgetService } from "../services/budgets"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import BackLink from "@/modules/core/components/BackLink"
+import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
@@ -142,6 +143,7 @@ export default function BudgetEdit() {
           </div>
         </div>
         <div className="flex gap-2">
+          <RecordPdfButton request={() => BudgetService.getBudgetPdf(id)} />
           {isPending && (
             <>
               <button

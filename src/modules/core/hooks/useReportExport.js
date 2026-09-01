@@ -27,12 +27,12 @@ export function useReportExport() {
   const toast = useToast()
   const [exportingType, setExportingType] = useState(null)
 
-  async function exportReport(type) {
+  async function exportReport(type, filters) {
     if (exportingType) return
     setExportingType(type)
     toast.info("Gerando relatório…")
     try {
-      const created = await ReportService.requestExport(type)
+      const created = await ReportService.requestExport(type, filters)
       const done = await waitForFile(created.id)
       if (done.file_url) {
         window.open(done.file_url, "_blank", "noopener")

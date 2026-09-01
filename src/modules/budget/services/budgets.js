@@ -36,6 +36,11 @@ export const BudgetService = {
     return response.data
   },
 
+  async getBudgetPdf(id) {
+    const response = await api.get(`/orcamentos/${id}/pdf/`, { responseType: "blob" })
+    return response.data
+  },
+
   async budgetProduct(id) {
     const response = await api.get(`/orcamentos/${id}/produtos/`)
     return response.data
