@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { queryClient } from "@/api/query-client"
@@ -5,10 +6,12 @@ import { AuthProvider } from "@/modules/auth/context/AuthProvider"
 import { ToastProvider } from "@/modules/core/feedback/ToastProvider"
 import { ConfirmProvider } from "@/modules/core/feedback/ConfirmProvider"
 import { ErrorBoundary } from "@/modules/core/components/ErrorBoundary"
+import PageLoader from "@/modules/core/components/PageLoader"
 import PrivateRoute from "@/routes/PrivateRoute"
 import DashboardLayout from "@/modules/core/layout/DashboardLayout"
 
 import AuthRoutes from "@/modules/auth/routes"
+import LegalRoutes from "@/modules/legal/routes"
 import DashboardRoutes from "@/modules/dashboard/routes"
 import BusinessRoutes from "@/modules/business/routes"
 import LocationRoutes from "@/modules/location/routes"
@@ -31,33 +34,36 @@ export default function App() {
           <ConfirmProvider>
             <BrowserRouter>
               <ErrorBoundary>
-                <Routes>
-                  {/* Auth routes (Public) */}
-                  {AuthRoutes}
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* Public routes */}
+                    {AuthRoutes}
+                    {LegalRoutes}
 
-                  {/* Dashboard routes (Private & Layout wrapped) */}
-                  <Route
-                    element={
-                      <PrivateRoute>
-                        <DashboardLayout />
-                      </PrivateRoute>
-                    }
-                  >
-                    {LicenseRoutes}
-                    {DashboardRoutes}
-                    {BusinessRoutes}
-                    {LocationRoutes}
-                    {SupplierRoutes}
-                    {ClientRoutes}
-                    {VehicleRoutes}
-                    {ProductRoutes}
-                    {WorkServiceRoutes}
-                    {AppointmentRoutes}
-                    {BudgetRoutes}
-                    {OrderRoutes}
-                    {UserRoutes}
-                  </Route>
-                </Routes>
+                    {/* Dashboard routes (Private & Layout wrapped) */}
+                    <Route
+                      element={
+                        <PrivateRoute>
+                          <DashboardLayout />
+                        </PrivateRoute>
+                      }
+                    >
+                      {LicenseRoutes}
+                      {DashboardRoutes}
+                      {BusinessRoutes}
+                      {LocationRoutes}
+                      {SupplierRoutes}
+                      {ClientRoutes}
+                      {VehicleRoutes}
+                      {ProductRoutes}
+                      {WorkServiceRoutes}
+                      {AppointmentRoutes}
+                      {BudgetRoutes}
+                      {OrderRoutes}
+                      {UserRoutes}
+                    </Route>
+                  </Routes>
+                </Suspense>
               </ErrorBoundary>
             </BrowserRouter>
           </ConfirmProvider>

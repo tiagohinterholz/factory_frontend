@@ -26,6 +26,13 @@ export const ClientService = {
     return response.data
   },
 
+  // LGPD: apaga nome/cpf/telefone/email/endereço e inativa o cliente,
+  // mantendo a linha pro histórico de veículos/OS/orçamentos. Irreversível.
+  async anonymizeClient(id) {
+    const response = await api.post(`/clientes/${id}/anonimizar/`)
+    return response.data
+  },
+
   async vehicleByClient(id) {
     const response = await api.get(`/clientes/${id}/veiculos/`)
     return response.data

@@ -1,5 +1,5 @@
 import { Suspense, useState } from "react"
-import { Outlet, useLocation } from "react-router-dom"
+import { Outlet, useLocation, Link } from "react-router-dom"
 import Sidebar from "../components/Sidebar"
 import Topbar from "../components/Topbar"
 import { ErrorBoundary } from "@/modules/core/components/ErrorBoundary"
@@ -58,6 +58,10 @@ export default function DashboardLayout({ children }) {
 
         <footer className="p-6 text-center text-[10px] text-slate-400 font-medium uppercase tracking-widest border-t border-slate-100 bg-white/50">
           © 2026 - THDev Factory System. Todos os direitos reservados.
+          {" · "}
+          <Link to="/privacidade" className="hover:text-slate-600">
+            Aviso de Privacidade
+          </Link>
         </footer>
       </div>
     </div>
