@@ -57,7 +57,7 @@ api.interceptors.response.use(
       return api(originalRequest)
     } catch (refreshError) {
       authStorage.clear()
-      window.location.href = "/"
+      window.location.href = "/login"
       return Promise.reject(refreshError)
     }
   },

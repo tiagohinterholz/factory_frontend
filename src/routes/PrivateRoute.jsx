@@ -9,7 +9,7 @@ export default function PrivateRoute({ children }) {
   // pelo interceptor do http.js (refresh via cookie) e, se o cookie também
   // morreu, ele limpa a sessão e redireciona pro login.
   if (!isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/login" replace />
   }
 
   return children || <Outlet />

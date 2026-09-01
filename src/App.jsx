@@ -10,6 +10,7 @@ import PageLoader from "@/modules/core/components/PageLoader"
 import PrivateRoute from "@/routes/PrivateRoute"
 import DashboardLayout from "@/modules/core/layout/DashboardLayout"
 
+import LandingRoutes from "@/modules/landing/routes"
 import AuthRoutes from "@/modules/auth/routes"
 import LegalRoutes from "@/modules/legal/routes"
 import DashboardRoutes from "@/modules/dashboard/routes"
@@ -37,6 +38,7 @@ export default function App() {
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     {/* Public routes */}
+                    {LandingRoutes}
                     {AuthRoutes}
                     {LegalRoutes}
 

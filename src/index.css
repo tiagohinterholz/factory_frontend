@@ -5,6 +5,10 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply font-sans antialiased text-[14px] leading-normal;
     /* mesmos valores dos tokens colors.ground / colors.ink — literais aqui
