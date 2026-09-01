@@ -5,6 +5,7 @@ import { OrderService } from "../services/order"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
+import FiscalNotePanel from "@/modules/order/components/FiscalNotePanel"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useBudget } from "@/modules/budget/hooks/useBudget"
@@ -219,6 +220,8 @@ export default function OrderEdit() {
               </PrimaryButton>
             </form>
           </div>
+
+          {status === "faturado" && <FiscalNotePanel orderId={id} />}
         </div>
 
         <div className="lg:col-span-2 space-y-8">
