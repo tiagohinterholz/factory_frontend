@@ -1,11 +1,16 @@
 import { useParams, useNavigate } from "react-router-dom"
+import { useQueryClient } from "@tanstack/react-query"
 import { useClientEditForm } from "@/modules/client/hooks/useClientEditForm"
+import { ClientService } from "@/modules/client/services/client"
 import BackLink from "@/modules/core/components/BackLink"
 import { useClientVehicles } from "@/modules/client/hooks/useClientVehicles"
 import { useStateOptions } from "@/modules/core/hooks/options"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { useConfirm } from "@/modules/core/feedback/confirm-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -13,7 +18,7 @@ import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 
-import { User, Car, Edit2, Trash2, Milestone, ChevronRight } from "lucide-react"
+import { User, Car, Edit2, Trash2, Milestone, ChevronRight, ShieldOff } from "lucide-react"
 
 export default function ClientDetail() {
   const { id } = useParams()
@@ -28,8 +33,33 @@ export default function ClientDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { canChooseBusiness } = usePermissions()
+  const { canChooseBusiness, isAdmin } = usePermissions()
+  const toast = useToast()
+  const confirm = useConfirm()
+  const queryClient = useQueryClient()
   const stateId = watch("state_id")
+
+  async function handleAnonymize() {
+    const confirmed = await confirm({
+      title: "Anonimizar cliente? (LGPD)",
+      message:
+        "Nome, CPF, telefone, e-mail e endereço serão apagados em definitivo e o " +
+        "cliente ficará inativo. O histórico de veículos, orçamentos e ordens é " +
+        "mantido. Esta ação NÃO pode ser desfeita.",
+      confirmText: "Anonimizar",
+      danger: true,
+    })
+    if (!confirmed) return
+    try {
+      await ClientService.anonymizeClient(id)
+      queryClient.invalidateQueries()
+      toast.success("Cliente anonimizado.")
+      navigate("/clientes")
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Não foi possível anonimizar o cliente.").message)
+    }
+  }
 
   const { states, loading: loadingStates } = useStateOptions()
   const { citiesByState, loading: loadingCities } = useCityOptionsByState(stateId)
@@ -58,13 +88,26 @@ export default function ClientDetail() {
             Gestão completa e histórico do cliente
           </p>
         </div>
-        <button
-          onClick={handleDelete}
-          className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
-        >
-          <Trash2 className="w-4 h-4" />
-          Excluir Cliente
-        </button>
+        <div className="flex gap-2">
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={handleAnonymize}
+              className="flex items-center gap-2 px-4 py-2 text-muted hover:bg-ground hover:text-ink rounded-xl transition-colors font-bold text-sm border border-line"
+            >
+              <ShieldOff className="w-4 h-4" />
+              Anonimizar (LGPD)
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
+          >
+            <Trash2 className="w-4 h-4" />
+            Excluir Cliente
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
