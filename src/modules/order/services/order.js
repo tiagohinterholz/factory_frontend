@@ -31,6 +31,11 @@ export const OrderService = {
     return response.data
   },
 
+  async getOrderPdf(id) {
+    const response = await api.get(`/ordens/${id}/pdf/`, { responseType: "blob" })
+    return response.data
+  },
+
   async orderProduct(id) {
     const response = await api.get(`/ordens/${id}/produtos/`)
     return response.data
