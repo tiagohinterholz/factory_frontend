@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 
@@ -63,6 +63,9 @@ export default function Login() {
           <a href="#register" className="block text-gray-700 hover:underline text-sm">
             Criar uma conta
           </a>
+          <Link to="/privacidade" className="block text-gray-500 hover:underline text-xs pt-2">
+            Aviso de Privacidade
+          </Link>
         </div>
       </div>
     </div>
