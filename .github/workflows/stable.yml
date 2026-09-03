@@ -42,20 +42,24 @@ jobs:
       - name: Instalar Vercel CLI
         run: npm install --global vercel@latest
 
+      - name: Diagnóstico — quem é o token
+        run: vercel whoami --token="${{ secrets.VERCEL_TOKEN }}"
+
       - name: Linkar projeto Vercel
         run: |
           mkdir -p .vercel
           printf '{"projectId":"%s","orgId":"%s"}' "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
+          cat .vercel/project.json
 
       - name: Baixar env de preview
-        run: vercel pull --yes --environment=preview --token="${{ secrets.VERCEL_TOKEN }}"
+        run: vercel pull --yes --environment=preview --scope=th-dev1 --token="${{ secrets.VERCEL_TOKEN }}"
 
       - name: Build de preview
         run: vercel build --token="${{ secrets.VERCEL_TOKEN }}"
 
       - name: Deploy pré-buildado + alias -> homolog
         run: |
-          url=$(vercel deploy --prebuilt --token="${{ secrets.VERCEL_TOKEN }}")
+          url=$(vercel deploy --prebuilt --scope=th-dev1 --token="${{ secrets.VERCEL_TOKEN }}")
           echo "Deploy: $url" >> "$GITHUB_STEP_SUMMARY"
-          vercel alias set "$url" homolog-app.autoflowcenter.com.br --token="${{ secrets.VERCEL_TOKEN }}"
+          vercel alias set "$url" homolog-app.autoflowcenter.com.br --scope=th-dev1 --token="${{ secrets.VERCEL_TOKEN }}"
           echo "Domínio: https://homolog-app.autoflowcenter.com.br" >> "$GITHUB_STEP_SUMMARY"
