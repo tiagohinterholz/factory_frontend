@@ -27,6 +27,7 @@ import UserRoutes from "@/modules/user/routes"
 import BudgetRoutes from "@/modules/budget/routes"
 import OrderRoutes from "@/modules/order/routes"
 import FiscalRoutes from "@/modules/fiscal/routes"
+import SettingsRoutes from "@/modules/settings/routes"
 
 export default function App() {
   return (
@@ -64,6 +65,7 @@ export default function App() {
                       {BudgetRoutes}
                       {OrderRoutes}
                       {FiscalRoutes}
+                      {SettingsRoutes}
                       {UserRoutes}
                     </Route>
                   </Routes>

@@ -294,15 +294,21 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             <span className={collapsed ? "lg:hidden" : ""}>Recolher menu</span>
           </button>
 
-          <button
+          <Link
+            to="/configuracoes"
+            onClick={onCloseMobile}
             title={collapsed ? "Configurações" : undefined}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-white hover:bg-slate-800 transition duration-300 rounded-xl group ${
+            className={`w-full flex items-center gap-3 px-4 py-3 transition duration-300 rounded-xl group ${
               collapsed ? "lg:justify-center lg:px-0" : ""
+            } ${
+              isActive("/configuracoes")
+                ? "bg-brand text-white"
+                : "text-slate-500 hover:text-white hover:bg-slate-800"
             }`}
           >
             <Settings className="w-5 h-5 shrink-0" />
             <span className={`font-medium ${collapsed ? "lg:hidden" : ""}`}>Configurações</span>
-          </button>
+          </Link>
         </div>
       </aside>
     </>
