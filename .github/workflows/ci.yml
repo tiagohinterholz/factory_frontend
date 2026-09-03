@@ -1,25 +1,58 @@
 name: CI
 
+# push em master  -> checks -> deploy de PRODUÇÃO (app.autoflowcenter.com.br)
+# pull request     -> só checks
+#
+# A Vercel NÃO deploya sozinha (Ignored Build Step = "Don't build anything").
+# O build acontece aqui no runner e sobe pré-buildado, então o deploy só
+# ocorre depois do job `checks` passar.
 on:
   push:
     branches: [master]
   pull_request:
     branches: [master, stable]
 
-# Um push novo cancela o build anterior do mesmo ref.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   checks:
     uses: ./.github/workflows/checks.yml
 
-  # push em master -> deploy de PREVIEW (não roda em PR)
   deploy:
     if: github.event_name == 'push'
     needs: checks
-    uses: ./.github/workflows/deploy.yml
-    with:
-      production: false
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: https://app.autoflowcenter.com.br
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Baixar env de produção
+        run: vercel pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Build de produção
+        run: vercel build --prod --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Deploy pré-buildado -> produção
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}")
+          echo "Deploy de produção: $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "Domínio: https://app.autoflowcenter.com.br" >> "$GITHUB_STEP_SUMMARY"
