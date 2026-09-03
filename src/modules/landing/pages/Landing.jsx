@@ -12,6 +12,7 @@ import {
   PaintBucket,
   Zap,
   Droplet,
+  Sparkles,
   ArrowRight,
   ChevronDown,
 } from "lucide-react"
@@ -20,9 +21,9 @@ const SEGMENTS = [
   { icon: Gauge, label: "Oficina mecânica" },
   { icon: PaintBucket, label: "Funilaria e pintura" },
   { icon: Wrench, label: "Auto center" },
-  { icon: Droplet, label: "Troca de óleo" },
   { icon: Zap, label: "Elétrica automotiva" },
-  { icon: Gauge, label: "Retífica" },
+  { icon: Sparkles, label: "Estética automotiva" },
+  { icon: Droplet, label: "Lavagens" },
 ]
 
 const FEATURES = [
@@ -100,7 +101,7 @@ function Brand({ className = "" }) {
       <span className="w-[30px] h-[30px] rounded-lg bg-brand text-brand-fg grid place-items-center">
         <Wrench className="w-[17px] h-[17px]" />
       </span>
-      THDev <span className="font-sans font-medium text-muted">Factory</span>
+      AutoFlow <span className="font-sans font-medium text-muted">Center</span>
     </span>
   )
 }
@@ -154,9 +155,11 @@ export default function Landing() {
         >
           <div className="max-w-[1120px] mx-auto px-[22px] grid lg:grid-cols-[1.05fr_0.95fr] gap-[54px] items-center">
             <div>
-              <p className={`${kicker} mb-4`}>Gestão para oficinas e prestadores de serviço</p>
+              <p className={`${kicker} mb-4`}>
+                Gestão para setor de prestação de serviços automotivos
+              </p>
               <h1 className="font-display font-extrabold tracking-[-0.03em] text-[clamp(34px,5vw,52px)] leading-[1.05] text-balance">
-                Do orçamento à nota fiscal, num sistema só.
+                Do orçamento à nota fiscal, em um único sistema.
               </h1>
               <p className="text-[17.5px] text-muted max-w-[30ch] mt-[18px] mb-[26px]">
                 Clientes, veículos, orçamentos, ordens de serviço, estoque e agenda — com emissão de
@@ -192,7 +195,7 @@ export default function Landing() {
             <div
               className="rounded-2xl border border-line bg-surface overflow-hidden rotate-[0.4deg] shadow-[0_24px_60px_-24px_rgba(11,43,43,0.35)]"
               role="img"
-              aria-label="Prévia do painel do Factory System"
+              aria-label="Prévia do painel do AutoFlow Center"
             >
               <div className="h-[38px] bg-brand-deep flex items-center gap-1.5 px-3.5">
                 <i className="w-2 h-2 rounded-full bg-white/25" />
@@ -249,8 +252,8 @@ export default function Landing() {
         {/* ---------- pra quem ---------- */}
         <section className="py-[62px] bg-ground border-y border-line">
           <div className="max-w-[1120px] mx-auto px-[22px]">
-            <p className={kicker}>Feito pra quem trabalha com carro</p>
-            <h2 className={h2}>Um sistema, vários tipos de oficina.</h2>
+            <p className={kicker}>Feito pra quem trabalha com veículos</p>
+            <h2 className={h2}>Um sistema, vários tipos de estabelecimento.</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-[30px]">
               {SEGMENTS.map(({ icon: Icon, label }, index) => (
                 <span
@@ -269,7 +272,7 @@ export default function Landing() {
         <section id="recursos" className="py-[62px]">
           <div className="max-w-[1120px] mx-auto px-[22px]">
             <p className={kicker}>Recursos</p>
-            <h2 className={h2}>Tudo o que a oficina precisa registrar.</h2>
+            <h2 className={h2}>Tudo o que o estabelecimento precisa registrar.</h2>
             <p className="max-w-[46ch] text-muted mt-3">
               Cada peça conversa com a próxima: o orçamento vira OS, a OS baixa o estoque, a OS
               faturada emite a nota.
@@ -320,8 +323,22 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* ---------- pronto pra começar (leva pros planos) ---------- */}
+        <section className="pt-[62px] pb-10 text-center">
+          <div className="max-w-[1120px] mx-auto px-[22px]">
+            <p className={kicker}>Pronto pra começar</p>
+            <h2 className={`${h2} mb-5`}>Tire seu estabelecimento do caderno ainda hoje.</h2>
+            <a
+              href="#planos"
+              className="inline-flex items-center gap-2 rounded-[11px] bg-brand px-[22px] py-[13px] text-[15px] font-semibold text-brand-fg hover:bg-brand-hover transition-colors"
+            >
+              Contrate um de nossos planos <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+        </section>
+
         {/* ---------- planos ---------- */}
-        <section id="planos" className="py-[62px]">
+        <section id="planos" className="pb-[62px]">
           <div className="max-w-[1120px] mx-auto px-[22px]">
             <p className={kicker}>Planos</p>
             <h2 className={h2}>Escolha o ciclo que cabe no caixa.</h2>
@@ -382,7 +399,7 @@ export default function Landing() {
         </section>
 
         {/* ---------- confiança / LGPD ---------- */}
-        <section className="py-[62px] bg-ground border-y border-line">
+        <section className="py-[62px] bg-ground border-t border-line">
           <div className="max-w-[1120px] mx-auto px-[22px]">
             <p className={kicker}>Segurança e privacidade</p>
             <h2 className={h2}>Dados dos seus clientes, tratados como deve ser.</h2>
@@ -391,29 +408,17 @@ export default function Landing() {
                 <ShieldCheck className="w-[22px] h-[22px]" />
               </div>
               <p className="text-muted text-[15px]">
-                Login com token de curta duração e renovação em cookie protegido. Aviso de
-                privacidade público e anonimização de cliente sob demanda — o histórico de serviço
-                continua, os dados pessoais são apagados. Em conformidade com a LGPD.
+                As informações dos seus clientes ficam protegidas e sob o seu controle, do jeito que
+                a LGPD exige. Só quem tem permissão acessa cada dado e, quando um cliente pede, os
+                dados pessoais são removidos — o histórico de serviços do veículo continua
+                registrado. Você fica em dia com a lei sem ter que pensar nisso, e passa essa mesma
+                segurança pro seu cliente.
                 <br />
                 <Link to="/privacidade" className="text-brand font-semibold">
                   Ler o aviso de privacidade →
                 </Link>
               </p>
             </div>
-          </div>
-        </section>
-
-        {/* ---------- CTA final ---------- */}
-        <section className="py-[62px] text-center">
-          <div className="max-w-[1120px] mx-auto px-[22px]">
-            <p className={kicker}>Pronto pra começar</p>
-            <h2 className={`${h2} mb-5`}>Tire a oficina do caderno hoje.</h2>
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-2 rounded-[11px] bg-brand px-[22px] py-[13px] text-[15px] font-semibold text-brand-fg hover:bg-brand-hover transition-colors"
-            >
-              Entrar no sistema <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </section>
       </main>
@@ -428,7 +433,20 @@ export default function Landing() {
           <Link to="/privacidade" className="hover:text-ink transition-colors">
             Aviso de Privacidade
           </Link>
-          <span>© 2026 THDev</span>
+          <span>© 2026 AutoFlow Center</span>
+          <div className="basis-full border-t border-line pt-4 leading-relaxed">
+            <span className="font-medium text-ink">THDev Soluções Tecnológicas LTDA</span> · CNPJ
+            67.824.254/0001-03
+            <br />
+            Bento Gonçalves — RS ·{" "}
+            <a href="mailto:thdevsolucoes@gmail.com" className="hover:text-ink transition-colors">
+              thdevsolucoes@gmail.com
+            </a>{" "}
+            ·{" "}
+            <a href="tel:+5555999930333" className="hover:text-ink transition-colors">
+              (55) 99993-0333
+            </a>
+          </div>
         </div>
       </footer>
     </div>
