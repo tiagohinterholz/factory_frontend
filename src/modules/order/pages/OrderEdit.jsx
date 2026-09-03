@@ -42,9 +42,9 @@ export default function OrderEdit() {
   const businessId = watch("business_id")
   const clientId = watch("client_id")
 
-  const { business: businesses } = useBusinessOptions()
-  const { client: clients } = useClientOptions()
-  const { vehicle: vehicles } = useVehicleOptions()
+  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
+  const { client: clients, loading: loadingClients } = useClientOptions()
+  const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { budgets } = useBudget()
   const { product: allProducts } = useProductOptions()
   const { workservice: allServices } = useWorkServiceOptions()
@@ -111,7 +111,10 @@ export default function OrderEdit() {
     }
   }
 
-  if (loading) return <div className="p-6 text-center">Carregando...</div>
+  // espera as listas de opção antes de montar os <select> — senão o
+  // form.reset roda antes das <option> existirem e o campo fica vazio (BUG-1)
+  if (loading || loadingBusinesses || loadingClients || loadingVehicles)
+    return <div className="p-6 text-center">Carregando...</div>
 
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients
