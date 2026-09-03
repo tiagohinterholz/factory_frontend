@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
@@ -22,6 +23,7 @@ export function useAppointmentEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const confirm = useConfirm()
+  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: appointmentSchema,
@@ -41,6 +43,7 @@ export function useAppointmentEditForm() {
     })
     if (!confirmed) return
     await AppointmentService.deleteAppointment(id)
+    queryClient.invalidateQueries()
     navigate("/agendamentos")
   }
 

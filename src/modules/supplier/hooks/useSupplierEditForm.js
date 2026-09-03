@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
@@ -26,6 +27,7 @@ export function useSupplierEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const confirm = useConfirm()
+  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: supplierSchema,
@@ -45,6 +47,7 @@ export function useSupplierEditForm() {
     })
     if (!confirmed) return
     await SupplierService.deleteSupplier(id)
+    queryClient.invalidateQueries()
     navigate("/fornecedores")
   }
 

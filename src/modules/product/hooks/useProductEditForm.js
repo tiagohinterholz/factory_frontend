@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
@@ -22,6 +23,7 @@ export function useProductEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const confirm = useConfirm()
+  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: productSchema,
@@ -41,6 +43,7 @@ export function useProductEditForm() {
     })
     if (!confirmed) return
     await ProductService.deleteProduct(id)
+    queryClient.invalidateQueries()
     navigate("/produtos")
   }
 
