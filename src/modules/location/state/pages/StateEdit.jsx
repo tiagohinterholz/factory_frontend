@@ -6,16 +6,16 @@ import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import { useStateEditForm } from "@/modules/location/state/hooks/useStateEditForm"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
 
-import { MapPin, Globe, Edit2, Trash2, Milestone } from "lucide-react"
+import { MapPin, Globe, Edit2, Milestone } from "lucide-react"
 
 export default function StateEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const { form, onSubmit, loading, handleDelete } = useStateEditForm()
+  const { form, onSubmit, loading } = useStateEditForm()
   const {
     register,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = form
 
   const { citiesByState, loading: loadingCities } = useCityOptionsByState(id)
@@ -36,13 +36,6 @@ export default function StateEdit() {
           <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Editar Estado</h1>
           <p className="text-slate-400 font-medium text-sm">Gestão de divisões territoriais</p>
         </div>
-        <button
-          onClick={handleDelete}
-          className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
-        >
-          <Trash2 className="w-4 h-4" />
-          Excluir Estado
-        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -59,20 +52,23 @@ export default function StateEdit() {
             <form className="space-y-6" onSubmit={onSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
-                  <FormField
-                    label="Nome do Estado"
-                    placeholder="Ex: São Paulo"
-                    error={errors.name?.message}
-                    registration={register("name")}
-                  />
+                  <FormField label="Nome do Estado" readOnly registration={register("name")} />
                 </div>
-                <FormField
-                  label="Sigla"
-                  placeholder="EX: SP"
-                  error={errors.abbreviation?.message}
-                  registration={register("abbreviation")}
-                />
+                <FormField label="Sigla" readOnly registration={register("abbreviation")} />
               </div>
+
+              <p className="text-xs text-muted -mt-2">
+                Nome e sigla são definidos pelo sistema e não podem ser editados.
+              </p>
+
+              <label className="flex items-center gap-3 text-sm font-medium text-ink">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-line text-brand focus:ring-brand"
+                  {...register("is_active")}
+                />
+                Estado ativo
+              </label>
 
               <div className="pt-4 flex justify-end">
                 <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
