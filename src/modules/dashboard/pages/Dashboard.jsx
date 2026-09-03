@@ -1,131 +1,154 @@
 import {
-  Clock,
+  Hourglass,
+  ClipboardList,
+  ClipboardCheck,
   Wallet,
   CheckCircle2,
-  CalendarDays,
-  Hourglass,
-  MapPin,
+  FileText,
   Users,
   Car,
   Factory,
   Package,
   Wrench,
-  Receipt,
-  ClipboardList,
+  CalendarDays,
 } from "lucide-react"
 import { useDashboard } from "@/modules/dashboard/hooks/useDashboard"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
+import HighlightCard from "@/modules/dashboard/components/HighlightCard"
 import SummaryCard from "@/modules/dashboard/components/SummaryCard"
 import StatCard from "@/modules/dashboard/components/StatCard"
-import HighlightCard from "@/modules/dashboard/components/HighlightCard"
+import AppointmentCard from "@/modules/dashboard/components/AppointmentCard"
 
 const brl = (value) =>
   `R$ ${Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
 
+function Quadro({ title, subtitle, children }) {
+  return (
+    <section className="rounded-xl border border-line bg-ground p-4 sm:p-5 space-y-4">
+      <div>
+        <h2 className="text-sm font-semibold text-ink">{title}</h2>
+        {subtitle && <p className="text-[12.5px] text-muted mt-0.5">{subtitle}</p>}
+      </div>
+      {children}
+    </section>
+  )
+}
+
 export default function Dashboard() {
-  const { loading, data } = useDashboard()
+  const { loading, error, data, refetch } = useDashboard()
+  const { isAdmin } = usePermissions()
 
   if (loading) {
     return <div className="p-10 text-center text-muted">Carregando dashboard...</div>
   }
 
-  const summary = data.summary_business
-  const detail = data.detail_business
+  if (error || !data) {
+    return (
+      <div className="p-10 text-center space-y-3">
+        <p className="text-sm text-muted">Não foi possível carregar o dashboard.</p>
+        <button type="button" onClick={() => refetch()} className="btn-primary mx-auto">
+          Tentar de novo
+        </button>
+      </div>
+    )
+  }
 
-  const stats = [
-    { title: "Clientes", value: summary.clients ?? 0, icon: Users },
-    { title: "Veículos", value: summary.vehicles ?? 0, icon: Car },
-    { title: "Fornecedores", value: summary.suppliers ?? 0, icon: Factory },
-    { title: "Produtos", value: summary.products ?? 0, icon: Package },
-    { title: "Serviços", value: summary.services ?? 0, icon: Wrench },
-    { title: "Agendamentos", value: summary.appointments ?? 0, icon: CalendarDays },
-    { title: "Orçamentos", value: summary.budgets ?? 0, icon: Receipt },
-    { title: "Ordens de Serviço", value: summary.orders ?? 0, icon: ClipboardList },
+  const movimentacao = data.movimentacao ?? {}
+  const atendimentos = data.atendimentos?.clientes_semana ?? []
+  const financeira = data.financeiro ?? null
+  const resumo = data.resumo ?? {}
+
+  const resumoStats = [
+    { title: "Clientes", value: resumo.clients ?? 0, icon: Users },
+    { title: "Veículos", value: resumo.vehicles ?? 0, icon: Car },
+    { title: "Fornecedores", value: resumo.suppliers ?? 0, icon: Factory },
+    { title: "Produtos", value: resumo.products ?? 0, icon: Package },
+    { title: "Serviços", value: resumo.services ?? 0, icon: Wrench },
+    { title: "Agendamentos", value: resumo.appointments ?? 0, icon: CalendarDays },
+    { title: "Orçamentos", value: resumo.budgets ?? 0, icon: FileText },
+    { title: "Ordens de Serviço", value: resumo.orders ?? 0, icon: ClipboardList },
   ]
 
   return (
     <div className="space-y-6">
-      {/* Movimento — números que mudam ao longo do dia */}
-      <section className="rounded-xl border border-line bg-ground p-4 sm:p-5 space-y-4">
-        <div>
-          <h2 className="text-sm font-semibold text-ink">Movimento</h2>
-          <p className="text-[12.5px] text-muted mt-0.5">Números que mudam ao longo do dia</p>
-        </div>
-
+      <Quadro title="Movimentação" subtitle="Ordens de serviço em números">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <HighlightCard
             flat
-            title="Quantidade de OS a faturar hoje"
+            tone="warn"
             icon={Hourglass}
-            tone="warn"
-            value={detail.to_invoice_today?.length ?? 0}
+            title="OS a faturar hoje"
+            value={movimentacao.os_a_faturar_hoje ?? 0}
           />
           <HighlightCard
             flat
-            title="Total de OS em andamento a faturar"
-            icon={MapPin}
             tone="danger"
-            value={detail.to_invoice_all?.length ?? 0}
+            icon={ClipboardList}
+            title="OS a faturar (histórico)"
+            value={movimentacao.os_a_faturar ?? 0}
           />
           <HighlightCard
             flat
-            title="Clientes da semana"
-            icon={Users}
-            tone="info"
-            value={detail.clients_on_week?.length ?? 0}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <SummaryCard
-            flat
-            title="Orçamentos em análise"
-            value={summary.budgets_wait ?? 0}
-            icon={Clock}
-            tone="warn"
-          />
-          <SummaryCard
-            flat
-            title="A faturar (R$)"
-            value={brl(summary.orders_to_invoice)}
-            icon={Wallet}
-            tone="info"
-          />
-          <SummaryCard
-            flat
-            title="Faturado (R$)"
-            value={brl(summary.orders_invoiced)}
-            icon={CheckCircle2}
             tone="ok"
-          />
-          <SummaryCard
-            flat
-            title="Agendados na semana"
-            value={summary.orders_on_week ?? 0}
-            icon={CalendarDays}
-            tone="brand"
+            icon={ClipboardCheck}
+            title="OS faturadas"
+            value={movimentacao.os_faturadas ?? 0}
           />
         </div>
-      </section>
+      </Quadro>
 
-      {/* Cadastros — totais do empreendimento */}
-      <section className="rounded-xl border border-line bg-ground p-4 sm:p-5 space-y-4">
-        <div>
-          <h2 className="text-sm font-semibold text-ink">Cadastros</h2>
-          <p className="text-[12.5px] text-muted mt-0.5">Totais do empreendimento</p>
-        </div>
+      <Quadro title="Atendimentos" subtitle="Clientes agendados nesta semana">
+        {atendimentos.length === 0 ? (
+          <p className="text-[13px] text-muted">Nenhum atendimento agendado para a semana.</p>
+        ) : (
+          <div className="max-h-96 overflow-y-auto pr-1">
+            <div className="flex flex-wrap items-start gap-3">
+              {atendimentos.map((item) => (
+                <AppointmentCard
+                  key={item.id ?? `${item.client_name}-${item.date}-${item.time}`}
+                  item={item}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </Quadro>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <StatCard
-              key={stat.title}
+      {isAdmin && financeira && (
+        <Quadro title="Financeiro do mês" subtitle="Operação do mês vigente">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <SummaryCard
               flat
-              title={stat.title}
-              value={stat.value}
-              icon={stat.icon}
+              tone="info"
+              icon={Wallet}
+              title="A faturar"
+              value={brl(financeira.a_faturar_total)}
             />
+            <SummaryCard
+              flat
+              tone="ok"
+              icon={CheckCircle2}
+              title="Faturado"
+              value={brl(financeira.faturado_total)}
+            />
+            <SummaryCard
+              flat
+              tone="warn"
+              icon={FileText}
+              title="Orçamentos em aberto"
+              value={brl(financeira.orcamentos_em_aberto_total)}
+            />
+          </div>
+        </Quadro>
+      )}
+
+      <Quadro title="Resumo" subtitle="Totais do empreendimento">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {resumoStats.map((stat) => (
+            <StatCard key={stat.title} flat title={stat.title} value={stat.value} icon={stat.icon} />
           ))}
         </div>
-      </section>
+      </Quadro>
     </div>
   )
 }
