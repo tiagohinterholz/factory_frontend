@@ -1,6 +1,7 @@
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
-import { LogOut, Bell, User, Menu } from "lucide-react"
+import { LogOut, User, Menu, Settings } from "lucide-react"
+import LicenseNotification from "@/modules/core/components/LicenseNotification"
 
 export default function Topbar({ onOpenMobile }) {
   const navigate = useNavigate()
@@ -31,10 +32,7 @@ export default function Topbar({ onOpenMobile }) {
       </div>
 
       <div className="flex items-center gap-4 sm:gap-6">
-        <button className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-brand transition duration-300">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-danger rounded-full border-2 border-white"></span>
-        </button>
+        <LicenseNotification />
 
         <div className="h-8 w-[1px] bg-slate-100"></div>
 
@@ -52,6 +50,16 @@ export default function Topbar({ onOpenMobile }) {
             </button>
 
             <div className="absolute right-0 top-full mt-3 w-48 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-50 p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+              <Link
+                to="/configuracoes"
+                className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-brand-subtle hover:text-brand rounded-xl transition duration-300"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="text-sm font-semibold">Configurações</span>
+              </Link>
+
+              <div className="my-1 h-px bg-slate-100"></div>
+
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-danger-subtle hover:text-danger rounded-xl transition duration-300"

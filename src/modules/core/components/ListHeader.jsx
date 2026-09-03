@@ -18,7 +18,7 @@ export default function ListHeader({
       </div>
 
       {(actions || hasButton) && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {actions}
           {hasButton && (
             <Link to={buttonLink} className="btn-primary">

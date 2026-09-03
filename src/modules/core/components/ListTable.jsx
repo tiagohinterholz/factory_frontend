@@ -110,7 +110,7 @@ export default function ListTable({
                     </td>
                   ))}
                   <td className="px-5 py-2.5 text-right">
-                    <div className="flex justify-end gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-end gap-1">
                       {renderActions ? (
                         renderActions(item)
                       ) : (
