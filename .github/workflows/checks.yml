@@ -1,6 +1,6 @@
 name: Checks
 
-# Passos de verificação compartilhados por ci.yml (master/PR) e stable.yml.
+# Verificação compartilhada por ci.yml (master/PR) e stable.yml.
 on:
   workflow_call:
 

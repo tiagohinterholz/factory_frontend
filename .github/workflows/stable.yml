@@ -1,22 +1,65 @@
 name: Stable
 
+# push em stable -> checks -> deploy de HOMOLOGAÇÃO (homolog-app.autoflowcenter.com.br)
+#
+# Deploy de preview pré-buildado + alias fixo pro domínio de homolog. Só roda
+# depois do job `checks` passar. A Vercel não deploya sozinha.
 on:
   push:
     branches: [stable]
 
-# Cada commit em stable é candidato a produção — não cancelar builds em andamento.
 concurrency:
-  group: stable-${{ github.ref }}
+  group: stable
   cancel-in-progress: false
+
+permissions:
+  contents: read
+
+# IDs do projeto Vercel (não são segredo — identificam o projeto, não dão acesso).
+env:
+  VERCEL_ORG_ID: team_Q0ScqjxQdz88nTwHplhdxqx2
+  VERCEL_PROJECT_ID: prj_2ni5NI3yCqsiOk1LNodi3kzWvPso
 
 jobs:
   checks:
     uses: ./.github/workflows/checks.yml
 
-  # push em stable -> deploy de PRODUÇÃO, só se os checks passarem
   deploy:
     needs: checks
-    uses: ./.github/workflows/deploy.yml
-    with:
-      production: true
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: homologacao
+      url: https://homolog-app.autoflowcenter.com.br
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Diagnóstico — quem é o token
+        run: vercel whoami --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Linkar projeto Vercel
+        run: |
+          mkdir -p .vercel
+          printf '{"projectId":"%s","orgId":"%s"}' "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
+          cat .vercel/project.json
+
+      - name: Baixar env de preview
+        run: vercel pull --yes --environment=preview --scope=th-dev1 --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Build de preview
+        run: vercel build --token="${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Deploy pré-buildado + alias -> homolog
+        run: |
+          url=$(vercel deploy --prebuilt --scope=th-dev1 --token="${{ secrets.VERCEL_TOKEN }}")
+          echo "Deploy: $url" >> "$GITHUB_STEP_SUMMARY"
+          vercel alias set "$url" homolog-app.autoflowcenter.com.br --scope=th-dev1 --token="${{ secrets.VERCEL_TOKEN }}"
+          echo "Domínio: https://homolog-app.autoflowcenter.com.br" >> "$GITHUB_STEP_SUMMARY"
