@@ -57,7 +57,7 @@ export default function DashboardLayout({ children }) {
         </main>
 
         <footer className="p-6 text-center text-[10px] text-slate-400 font-medium uppercase tracking-widest border-t border-slate-100 bg-white/50">
-          © 2026 - THDev Factory System. Todos os direitos reservados.
+          © 2026 - AutoFlow Center. Todos os direitos reservados.
           {" · "}
           <Link to="/privacidade" className="hover:text-slate-600">
             Aviso de Privacidade

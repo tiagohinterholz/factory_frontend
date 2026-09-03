@@ -74,7 +74,7 @@ export default function PrivacyPolicy() {
           <span className="w-8 h-8 rounded-lg bg-brand text-brand-fg grid place-items-center">
             <Factory className="w-4 h-4" />
           </span>
-          <span className="font-semibold text-ink">THDev Factory System</span>
+          <span className="font-semibold text-ink">AutoFlow Center</span>
         </div>
       </header>
 
