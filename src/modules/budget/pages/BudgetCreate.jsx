@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom"
 import { useBudgetForm } from "@/modules/budget/hooks/useBudgetForm"
 import BackLink from "@/modules/core/components/BackLink"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
@@ -9,7 +10,11 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 export default function BudgetCreate() {
-  const { form, onSubmit } = useBudgetForm()
+  const location = useLocation()
+  const { form, onSubmit } = useBudgetForm({
+    clientId: location.state?.clientId,
+    vehicleId: location.state?.vehicleId,
+  })
   const {
     register,
     watch,

@@ -25,4 +25,15 @@ export const VehicleService = {
     const response = await api.delete(`/veiculos/${id}/`)
     return response.data
   },
+
+  // Histórico do veículo — arrays diretos (não paginados).
+  async getVehicleOrders(vehicleId) {
+    const response = await api.get(`/ordens/veiculo/${vehicleId}/`)
+    return response.data
+  },
+
+  async getVehicleBudgets(vehicleId) {
+    const response = await api.get(`/orcamentos/veiculo/${vehicleId}/`)
+    return response.data
+  },
 }
