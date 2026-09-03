@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
@@ -25,6 +26,7 @@ export function useVehicleEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const confirm = useConfirm()
+  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: vehicleSchema,
@@ -44,6 +46,7 @@ export function useVehicleEditForm() {
     })
     if (!confirmed) return
     await VehicleService.deleteVehicle(id)
+    queryClient.invalidateQueries()
     navigate("/veiculos")
   }
 
