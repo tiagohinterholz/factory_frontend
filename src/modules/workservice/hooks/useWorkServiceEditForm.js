@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
@@ -19,6 +20,7 @@ export function useWorkServiceEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const confirm = useConfirm()
+  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: serviceSchema,
@@ -38,6 +40,7 @@ export function useWorkServiceEditForm() {
     })
     if (!confirmed) return
     await WorkServiceService.deleteWorkService(id)
+    queryClient.invalidateQueries()
     navigate("/servicos")
   }
 

@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
@@ -27,6 +28,7 @@ export function useBusinessEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const confirm = useConfirm()
+  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: businessSchema,
@@ -46,6 +48,7 @@ export function useBusinessEditForm() {
     })
     if (!confirmed) return
     await BusinessService.deleteBusiness(id)
+    queryClient.invalidateQueries()
     navigate("/empreendimentos")
   }
 

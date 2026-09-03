@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -23,6 +24,7 @@ export function useBudgetEditForm() {
   const navigate = useNavigate()
   const confirm = useConfirm()
   const toast = useToast()
+  const queryClient = useQueryClient()
 
   // itens de linha, status e total são somente leitura aqui; vivem fora do form.
   const [meta, setMeta] = useState({ products: [], services: [], status: "", total: "" })
@@ -56,6 +58,7 @@ export function useBudgetEditForm() {
     })
     if (!confirmed) return
     await BudgetService.deleteBudget(id)
+    queryClient.invalidateQueries()
     navigate("/orcamentos")
   }
 
