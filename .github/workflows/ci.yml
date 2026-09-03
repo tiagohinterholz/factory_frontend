@@ -19,6 +19,11 @@ concurrency:
 permissions:
   contents: read
 
+# IDs do projeto Vercel (não são segredo — identificam o projeto, não dão acesso).
+env:
+  VERCEL_ORG_ID: team_Q0ScqjxQdz88nTwHplhdxqx2
+  VERCEL_PROJECT_ID: prj_2ni5NI3yCqsiOk1LNodi3kzWvPso
+
 jobs:
   checks:
     uses: ./.github/workflows/checks.yml
@@ -31,9 +36,6 @@ jobs:
     environment:
       name: production
       url: https://app.autoflowcenter.com.br
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +46,11 @@ jobs:
 
       - name: Instalar Vercel CLI
         run: npm install --global vercel@latest
+
+      - name: Linkar projeto Vercel
+        run: |
+          mkdir -p .vercel
+          printf '{"projectId":"%s","orgId":"%s"}' "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
 
       - name: Baixar env de produção
         run: vercel pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
