@@ -8,9 +8,9 @@ import {
   Car,
   MapPin,
   ClipboardList,
-  Package,
+  Boxes,
   Factory,
-  Hammer,
+  FileText,
   Calendar,
   ChevronDown,
   ChevronRight,
@@ -21,19 +21,15 @@ import {
   X,
 } from "lucide-react"
 
-const navItems = [
-  { path: "/dashboard", name: "Dashboard", icon: LayoutDashboard },
-  { path: "/orcamentos", name: "Orçamentos", icon: TrendingUp },
-  { path: "/clientes", name: "Clientes", icon: Users },
-  { path: "/veiculos", name: "Veículos", icon: Car },
-]
+const primaryItems = [{ path: "/dashboard", name: "Dashboard", icon: LayoutDashboard }]
 
-const servicesItems = [
-  { path: "/ordens", name: "Ordens de Serviço", icon: ClipboardList },
-  { path: "/produtos", name: "Produtos", icon: Package },
-  { path: "/fornecedores", name: "Fornecedores", icon: Factory },
-  { path: "/servicos", name: "Serviços", icon: Hammer },
+const operationItems = [
+  { path: "/clientes", name: "Clientes", icon: Users },
   { path: "/agendamentos", name: "Agendamentos", icon: Calendar },
+  { path: "/veiculos", name: "Veículos", icon: Car },
+  { path: "/orcamentos", name: "Orçamentos", icon: TrendingUp },
+  { path: "/ordens", name: "Ordens de Serviço", icon: ClipboardList },
+  { path: "/notas-fiscais", name: "Notas Fiscais", icon: FileText },
 ]
 
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
@@ -42,7 +38,12 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
   const [locationOpen, setLocationOpen] = useState(
     location.pathname.startsWith("/estados") || location.pathname.startsWith("/cidades"),
   )
-  const [businessOpen, setBusinessOpen] = useState(location.pathname.startsWith("/empreendimentos"))
+  const [businessOpen, setBusinessOpen] = useState(
+    location.pathname.startsWith("/empreendimentos") || location.pathname.startsWith("/usuarios"),
+  )
+  const [suppliesOpen, setSuppliesOpen] = useState(
+    ["/fornecedores", "/produtos", "/servicos"].some((path) => location.pathname.startsWith(path)),
+  )
 
   const isActive = (path) => location.pathname.startsWith(path)
 
@@ -160,60 +161,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
         </div>
 
         <nav className="flex-1 space-y-1.5 overflow-y-auto no-scrollbar pr-1 scrollbar-thin">
-          <p
-            className={`px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ${
-              collapsed ? "lg:hidden" : ""
-            }`}
-          >
-            Principal
-          </p>
-
-          {navItems.map(renderNavItem)}
-
-          {/* Empreendimentos */}
-          <div className="pt-2">
-            {renderGroupButton(
-              "Empreendimentos",
-              Briefcase,
-              businessOpen,
-              ["/empreendimentos"],
-              handleGroup(setBusinessOpen),
-            )}
-
-            {businessOpen && !collapsed && (
-              <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
-                <Link
-                  to="/empreendimentos"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(
-                    isActive("/empreendimentos") &&
-                      !location.pathname.includes("/licencas") &&
-                      !location.pathname.includes("/usuarios"),
-                  )}
-                >
-                  Gestão
-                </Link>
-                {canManageLicenses && (
-                  <Link
-                    to="/empreendimentos/licencas"
-                    onClick={onCloseMobile}
-                    className={subLinkClass(isActive("/empreendimentos/licencas"))}
-                  >
-                    Licenças
-                  </Link>
-                )}
-                {canManageUsers && (
-                  <Link
-                    to="/usuarios"
-                    onClick={onCloseMobile}
-                    className={subLinkClass(isActive("/usuarios"))}
-                  >
-                    Usuários
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
+          {primaryItems.map(renderNavItem)}
 
           {/* Localização */}
           <div className="pt-2">
@@ -245,15 +193,87 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             )}
           </div>
 
-          <p
-            className={`px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 ${
-              collapsed ? "lg:hidden" : ""
-            }`}
-          >
-            Serviços & Catálogos
-          </p>
+          {/* Empreendimentos */}
+          <div className="pt-2">
+            {renderGroupButton(
+              "Empreendimentos",
+              Briefcase,
+              businessOpen,
+              ["/empreendimentos", "/usuarios"],
+              handleGroup(setBusinessOpen),
+            )}
 
-          {servicesItems.map(renderNavItem)}
+            {businessOpen && !collapsed && (
+              <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
+                <Link
+                  to="/empreendimentos"
+                  onClick={onCloseMobile}
+                  className={subLinkClass(
+                    isActive("/empreendimentos") && !location.pathname.includes("/licencas"),
+                  )}
+                >
+                  Gestão
+                </Link>
+                {canManageLicenses && (
+                  <Link
+                    to="/empreendimentos/licencas"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/empreendimentos/licencas"))}
+                  >
+                    Licenças
+                  </Link>
+                )}
+                {canManageUsers && (
+                  <Link
+                    to="/usuarios"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/usuarios"))}
+                  >
+                    Usuários
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Suprimentos */}
+          <div className="pt-2">
+            {renderGroupButton(
+              "Suprimentos",
+              Boxes,
+              suppliesOpen,
+              ["/fornecedores", "/produtos", "/servicos"],
+              handleGroup(setSuppliesOpen),
+            )}
+
+            {suppliesOpen && !collapsed && (
+              <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
+                <Link
+                  to="/fornecedores"
+                  onClick={onCloseMobile}
+                  className={subLinkClass(isActive("/fornecedores"))}
+                >
+                  Fornecedores
+                </Link>
+                <Link
+                  to="/produtos"
+                  onClick={onCloseMobile}
+                  className={subLinkClass(isActive("/produtos"))}
+                >
+                  Produtos
+                </Link>
+                <Link
+                  to="/servicos"
+                  onClick={onCloseMobile}
+                  className={subLinkClass(isActive("/servicos"))}
+                >
+                  Serviços
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <div className="pt-2 space-y-1.5">{operationItems.map(renderNavItem)}</div>
         </nav>
 
         <div className="mt-8 pt-6 border-t border-white/5 space-y-1">
