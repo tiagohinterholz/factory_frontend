@@ -125,6 +125,8 @@ export default function ClientCreate() {
               <SelectField
                 label="Cidade"
                 options={citiesByState}
+                disabled={!stateId}
+                disabledHint="Selecione o estado primeiro"
                 error={errors.city_id?.message}
                 registration={register("city_id")}
               />

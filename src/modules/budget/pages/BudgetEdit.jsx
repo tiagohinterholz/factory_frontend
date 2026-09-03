@@ -194,6 +194,8 @@ export default function BudgetEdit() {
               <SelectField
                 label="Cliente"
                 options={clientOptions}
+                disabled={!businessId}
+                disabledHint="Selecione o empreendimento primeiro"
                 error={errors.client_id?.message}
                 registration={register("client_id", {
                   onChange: () => setValue("vehicle_id", ""),
@@ -202,6 +204,8 @@ export default function BudgetEdit() {
               <SelectField
                 label="Veículo"
                 options={vehicleOptions}
+                disabled={!clientId}
+                disabledHint="Selecione o cliente primeiro"
                 error={errors.vehicle_id?.message}
                 registration={register("vehicle_id")}
               />

@@ -101,6 +101,8 @@ export default function AppointmentDetail() {
             <SelectField
               label="Cliente Proprietário"
               options={clientOptions}
+              disabled={!businessId}
+              disabledHint="Selecione o empreendimento primeiro"
               error={errors.client_id?.message}
               registration={register("client_id", {
                 onChange: () => resetChildren("vehicle_id", "order_id"),
@@ -110,6 +112,8 @@ export default function AppointmentDetail() {
             <SelectField
               label="Veículo"
               options={vehicleOptions}
+              disabled={!clientId}
+              disabledHint="Selecione o cliente primeiro"
               error={errors.vehicle_id?.message}
               registration={register("vehicle_id", {
                 onChange: () => resetChildren("order_id"),
@@ -119,6 +123,8 @@ export default function AppointmentDetail() {
             <SelectField
               label="Ordem de Serviço"
               options={orderOptions}
+              disabled={!vehicleId}
+              disabledHint="Selecione o veículo primeiro"
               error={errors.order_id?.message}
               registration={register("order_id")}
             />

@@ -1,6 +1,19 @@
 // Mesmo esquema do FormField: value/onChange (legado) OU registration (rhf) + error.
-export default function SelectField({ label, options = [], error, value, onChange, registration }) {
+// `disabled` + `disabledHint`: pra dropdown que depende de outra escolha (ex.: cidade
+// só libera depois do estado, veículo só depois do cliente).
+export default function SelectField({
+  label,
+  options = [],
+  error,
+  value,
+  onChange,
+  registration,
+  disabled = false,
+  disabledHint,
+}) {
   const selectProps = registration ?? { value, onChange }
+  const placeholder =
+    disabled && disabledHint ? disabledHint : `Selecione o(a) ${label?.toLowerCase()}`
 
   return (
     <div className="flex flex-col group">
@@ -9,12 +22,13 @@ export default function SelectField({ label, options = [], error, value, onChang
       </label>
       <div className="relative">
         <select
-          className={`input-premium appearance-none pr-10 cursor-pointer ${
-            error ? "border-danger focus:border-danger focus:ring-danger/15" : ""
-          }`}
+          disabled={disabled}
+          className={`input-premium appearance-none pr-10 ${
+            disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+          } ${error ? "border-danger focus:border-danger focus:ring-danger/15" : ""}`}
           {...selectProps}
         >
-          <option value="">Selecione o(a) {label?.toLowerCase()}</option>
+          <option value="">{placeholder}</option>
           {options.map((option) => (
             <option key={option.id} value={option.id}>
               {option.name}
