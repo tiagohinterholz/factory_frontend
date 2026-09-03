@@ -152,9 +152,9 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             <Factory className="text-white w-6 h-6" />
           </div>
           <div className={collapsed ? "lg:hidden" : ""}>
-            <h1 className="text-xl font-bold text-white tracking-tight leading-none">THDev</h1>
+            <h1 className="text-xl font-bold text-white tracking-tight leading-none">AutoFlow</h1>
             <span className="text-[10px] text-brand-muted font-semibold uppercase tracking-wide mt-1 block">
-              Factory System
+              Center
             </span>
           </div>
         </div>
