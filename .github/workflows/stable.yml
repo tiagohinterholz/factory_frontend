@@ -1,0 +1,22 @@
+name: Stable
+
+on:
+  push:
+    branches: [stable]
+
+# Cada commit em stable é candidato a produção — não cancelar builds em andamento.
+concurrency:
+  group: stable-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+
+  # push em stable -> deploy de PRODUÇÃO, só se os checks passarem
+  deploy:
+    needs: checks
+    uses: ./.github/workflows/deploy.yml
+    with:
+      production: true
+    secrets: inherit

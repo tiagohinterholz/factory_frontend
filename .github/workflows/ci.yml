@@ -4,30 +4,22 @@ on:
   push:
     branches: [master]
   pull_request:
+    branches: [master, stable]
+
+# Um push novo cancela o build anterior do mesmo ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  checks:
+    uses: ./.github/workflows/checks.yml
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm ci
-
-      - name: Lint
-        run: npx eslint . --max-warnings 0
-
-      - name: Format check
-        run: npm run format:check
-
-      - name: Test
-        run: npm test
-
-      - name: Build
-        run: npm run build
-        env:
-          VITE_API_URL: http://localhost:8000
+  # push em master -> deploy de PREVIEW (não roda em PR)
+  deploy:
+    if: github.event_name == 'push'
+    needs: checks
+    uses: ./.github/workflows/deploy.yml
+    with:
+      production: false
+    secrets: inherit
