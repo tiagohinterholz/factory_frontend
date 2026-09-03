@@ -37,7 +37,7 @@ function FilterPopover({ type, onSubmit }) {
   const supplierOpts = supplier.map((s) => ({ id: s.id, name: s.trade_name || s.corporate_name }))
 
   return (
-    <div className="absolute right-0 top-full mt-2 w-72 rounded-xl border border-line bg-surface shadow-pop p-4 z-30 space-y-3">
+    <div className="fixed inset-x-3 top-24 z-40 max-h-[70vh] overflow-y-auto rounded-xl border border-line bg-surface shadow-pop p-4 space-y-3 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 sm:max-h-none sm:overflow-visible">
       <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
 
       <SelectField
