@@ -40,4 +40,16 @@ export const BusinessService = {
     const response = await api.delete(`/empreendimentos/${id}/`)
     return response.data
   },
+
+  // Horário de funcionamento por dia da semana (0=segunda ... 6=domingo).
+  // GET libera pra superuser/admin/colaborador; PATCH só superuser/admin.
+  async getBusinessHours(businessId) {
+    const response = await api.get(`/empreendimentos/${businessId}/horarios/`)
+    return response.data
+  },
+
+  async updateBusinessHour(businessId, weekday, payload) {
+    const response = await api.patch(`/empreendimentos/${businessId}/horarios/${weekday}/`, payload)
+    return response.data
+  },
 }

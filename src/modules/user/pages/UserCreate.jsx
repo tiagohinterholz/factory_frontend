@@ -1,34 +1,23 @@
 import { useUserForm } from "@/modules/user/hooks/useUserForm"
+import { useUserFormOptions } from "@/modules/user/hooks/useUserFormOptions"
 import BackLink from "@/modules/core/components/BackLink"
-import { useBusinessOptions } from "@/modules/core/hooks/options"
-import { useAuth } from "@/modules/auth/context/auth-context"
-import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import PasswordFields from "@/modules/user/components/PasswordFields"
 import { UserPlus, Save, Lock } from "lucide-react"
 
 export default function UserCreate() {
   const { form, onSubmit } = useUserForm()
   const {
     register,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = form
 
-  const { user: loggedUser } = useAuth()
-  const { isSuperUser } = usePermissions()
-  const loggedRole = loggedUser?.role
-  const { business: businesses } = useBusinessOptions()
-
-  const businessOptions = (businesses ?? []).map((b) => ({ id: b.id, name: b.corporate_name }))
-
-  const roleOptions = [
-    ...(isSuperUser ? [{ id: "admin", name: "Administrador" }] : []),
-    { id: "colaborador", name: "Colaborador" },
-  ].filter(() => {
-    if (isSuperUser) return true
-    return loggedRole === "admin"
-  })
+  const { isSuperUser, businessOptions, currentBusinessName, loadingBusinesses, roleOptions } =
+    useUserFormOptions()
 
   return (
     <div className="p-6 space-y-6">
@@ -80,7 +69,7 @@ export default function UserCreate() {
               ) : (
                 <FormField
                   label="Empreendimento"
-                  value={loggedUser?.business?.name || "Meu Empreendimento"}
+                  value={currentBusinessName || (loadingBusinesses ? "Carregando…" : "—")}
                   onChange={() => {}}
                   readOnly
                 />
@@ -96,20 +85,7 @@ export default function UserCreate() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Senha"
-                type="password"
-                error={errors.password?.message}
-                registration={register("password")}
-              />
-              <FormField
-                label="Confirmar Senha"
-                type="password"
-                error={errors.confirmPassword?.message}
-                registration={register("confirmPassword")}
-              />
-            </div>
+            <PasswordFields register={register} watch={watch} setValue={setValue} errors={errors} />
 
             <div className="pt-4 flex justify-end">
               <PrimaryButton type="submit" icon={Save} fullWidth={false} disabled={isSubmitting}>

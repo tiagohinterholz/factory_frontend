@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom"
 import { useOrderForm } from "@/modules/order/hooks/useOrderForm"
 import BackLink from "@/modules/core/components/BackLink"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
@@ -9,7 +10,11 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 export default function OrderCreate() {
-  const { form, onSubmit } = useOrderForm()
+  const location = useLocation()
+  const { form, onSubmit } = useOrderForm({
+    clientId: location.state?.clientId,
+    vehicleId: location.state?.vehicleId,
+  })
   const {
     register,
     watch,
@@ -71,6 +76,8 @@ export default function OrderCreate() {
             <SelectField
               label="Cliente"
               options={clientOptions}
+              disabled={!businessId}
+              disabledHint="Selecione o empreendimento primeiro"
               error={errors.client_id?.message}
               registration={register("client_id", {
                 onChange: () => setValue("vehicle_id", ""),
@@ -79,6 +86,8 @@ export default function OrderCreate() {
             <SelectField
               label="Veículo"
               options={vehicleOptions}
+              disabled={!clientId}
+              disabledHint="Selecione o cliente primeiro"
               error={errors.vehicle_id?.message}
               registration={register("vehicle_id")}
             />

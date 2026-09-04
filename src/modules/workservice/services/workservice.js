@@ -25,4 +25,9 @@ export const WorkServiceService = {
     const response = await api.delete(`/servicos/${id}/`)
     return response.data
   },
+
+  async getWorkServicePdf(id) {
+    const response = await api.get(`/servicos/${id}/pdf/`, { responseType: "blob" })
+    return response.data
+  },
 }
