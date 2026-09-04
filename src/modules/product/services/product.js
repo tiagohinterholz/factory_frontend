@@ -25,4 +25,9 @@ export const ProductService = {
     const response = await api.delete(`/produtos/${id}/`)
     return response.data
   },
+
+  async getProductPdf(id) {
+    const response = await api.get(`/produtos/${id}/pdf/`, { responseType: "blob" })
+    return response.data
+  },
 }

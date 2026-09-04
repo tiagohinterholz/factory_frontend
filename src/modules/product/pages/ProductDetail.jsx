@@ -1,20 +1,27 @@
+import { useNavigate, useParams } from "react-router-dom"
 import { useProductEditForm } from "@/modules/product/hooks/useProductEditForm"
 import BackLink from "@/modules/core/components/BackLink"
+import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { Package, Edit2, Trash2 } from "lucide-react"
+import { ProductService } from "@/modules/product/services/product"
+import { Package, Edit2, Trash2, Eye } from "lucide-react"
 
 export default function ProductDetail() {
+  const navigate = useNavigate()
+  const { id } = useParams()
   const { form, onSubmit, loading, handleDelete } = useProductEditForm()
   const {
     register,
+    watch,
     formState: { errors, isSubmitting },
   } = form
 
+  const supplierId = watch("supplier_id")
   const { canChooseBusiness } = usePermissions()
   const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
@@ -41,13 +48,19 @@ export default function ProductDetail() {
             </h1>
             <p className="text-slate-400 font-medium text-sm">Gestão técnica de estoque</p>
           </div>
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
-          >
-            <Trash2 className="w-4 h-4" />
-            Excluir Produto
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <RecordPdfButton
+              request={() => ProductService.getProductPdf(id)}
+              label="Exportar PDF"
+            />
+            <button
+              onClick={handleDelete}
+              className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              Excluir Produto
+            </button>
+          </div>
         </div>
 
         <div className="card-premium">
@@ -69,12 +82,25 @@ export default function ProductDetail() {
                 />
               )}
 
-              <SelectField
-                label="Fornecedor"
-                options={supplierOptions}
-                error={errors.supplier_id?.message}
-                registration={register("supplier_id")}
-              />
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <SelectField
+                    label="Fornecedor"
+                    options={supplierOptions}
+                    error={errors.supplier_id?.message}
+                    registration={register("supplier_id")}
+                  />
+                </div>
+                <button
+                  type="button"
+                  title="Ver / editar fornecedor vinculado"
+                  disabled={!supplierId}
+                  onClick={() => navigate(`/fornecedores/${supplierId}`)}
+                  className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-muted hover:text-ink hover:bg-ground transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -120,7 +146,7 @@ export default function ProductDetail() {
 
             <div className="pt-4 flex justify-end">
               <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
-                Salvar Alterações
+                Atualizar Produto
               </PrimaryButton>
             </div>
           </form>
