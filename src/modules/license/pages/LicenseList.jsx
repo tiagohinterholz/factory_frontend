@@ -32,6 +32,11 @@ export default function LicenseList() {
       },
     },
     {
+      header: "Data de Ativação",
+      accessor: (item) =>
+        item.activation_date ? new Date(item.activation_date).toLocaleDateString() : "-",
+    },
+    {
       header: "Data de Expiração",
       accessor: (item) =>
         item.expiration_date ? new Date(item.expiration_date).toLocaleDateString() : "-",

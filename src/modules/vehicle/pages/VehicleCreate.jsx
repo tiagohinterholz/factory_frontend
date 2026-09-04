@@ -1,4 +1,5 @@
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
+import { Plus } from "lucide-react"
 import { useVehicleForm } from "@/modules/vehicle/hooks/useVehicleForm"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
@@ -12,6 +13,7 @@ import { Save } from "lucide-react"
 
 export default function VehicleCreate() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { form, onSubmit } = useVehicleForm({ clientId: location.state?.clientId })
   const {
     register,
@@ -58,12 +60,24 @@ export default function VehicleCreate() {
               />
             )}
 
-            <SelectField
-              label="Cliente Proprietário"
-              options={clientOptions}
-              error={errors.client_id?.message}
-              registration={register("client_id")}
-            />
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <SelectField
+                  label="Cliente Proprietário"
+                  options={clientOptions}
+                  error={errors.client_id?.message}
+                  registration={register("client_id")}
+                />
+              </div>
+              <button
+                type="button"
+                title="Cadastrar novo cliente"
+                onClick={() => navigate("/clientes/novo")}
+                className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-brand hover:bg-brand-subtle transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField

@@ -2,7 +2,6 @@ import { lazy } from "react"
 import { Route } from "react-router-dom"
 
 const StateList = lazy(() => import("./state/pages/StateList"))
-const StateCreate = lazy(() => import("./state/pages/StateCreate"))
 const StateEdit = lazy(() => import("./state/pages/StateEdit"))
 const CityList = lazy(() => import("./city/pages/CityList"))
 const CityCreate = lazy(() => import("./city/pages/CityCreate"))
@@ -11,7 +10,6 @@ const CityEdit = lazy(() => import("./city/pages/CityEdit"))
 const LocationRoutes = (
   <>
     <Route path="/estados" element={<StateList />} />
-    <Route path="/estados/novo" element={<StateCreate />} />
     <Route path="/estados/:id" element={<StateEdit />} />
     <Route path="/cidades" element={<CityList />} />
     <Route path="/cidades/novo" element={<CityCreate />} />

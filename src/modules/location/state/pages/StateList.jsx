@@ -1,8 +1,6 @@
 import { useStates } from "@/modules/location/state/hooks/useState"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function StateList() {
   const {
@@ -14,43 +12,22 @@ export default function StateList() {
     setCurrentPage,
     totalItems,
     refetch,
-    remove,
     error,
   } = useStates()
-
-  const toast = useToast()
-  const confirm = useConfirm()
 
   const columns = [
     { header: "Sigla", accessor: (item) => item.abbreviation },
     { header: "Estado", accessor: (item) => item.name },
+    { header: "Ativo", accessor: (item) => (item.is_active ? "Sim" : "Não") },
   ]
-
-  const handleDelete = async (item) => {
-    const confirmed = await confirm({
-      title: "Excluir estado?",
-      message: `O estado "${item.name}" será removido permanentemente.`,
-      confirmText: "Excluir",
-      danger: true,
-    })
-    if (!confirmed) return
-
-    try {
-      await remove(item.id)
-    } catch (error) {
-      console.error(error)
-      toast.error("Erro ao excluir o estado.")
-    }
-  }
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader title="Estados" buttonText="Novo Estado" buttonLink="/estados/novo" />
+      <ListHeader title="Estados" subtitle="Divisões territoriais — somente leitura" />
       <ListTable
         columns={columns}
         data={states}
         editLinkPrefix="/estados"
-        onDelete={handleDelete}
         loading={loading}
         error={error}
         onRetry={refetch}

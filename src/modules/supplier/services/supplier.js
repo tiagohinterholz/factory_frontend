@@ -35,4 +35,15 @@ export const SupplierService = {
     const response = await api.get(`/fornecedores/${id}/servicos/`)
     return response.data
   },
+
+  // PDFs prontos (application/pdf direto), mesmo padrão de ordens/orçamentos.
+  async getSupplierProductsPdf(id) {
+    const response = await api.get(`/fornecedores/${id}/produtos/pdf/`, { responseType: "blob" })
+    return response.data
+  },
+
+  async getSupplierServicesPdf(id) {
+    const response = await api.get(`/fornecedores/${id}/servicos/pdf/`, { responseType: "blob" })
+    return response.data
+  },
 }

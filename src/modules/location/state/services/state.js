@@ -1,5 +1,7 @@
 import { api } from "@/api/http"
 
+// Estado é somente-leitura exceto por is_active. Sem POST/DELETE (405 no backend).
+// PATCH /estados/<id>/ grava só is_active — name/abbreviation são ignorados.
 export const StateService = {
   async getStates(params = {}) {
     const response = await api.get("/estados/", { params })
@@ -11,18 +13,8 @@ export const StateService = {
     return response.data
   },
 
-  async createState(payload) {
-    const response = await api.post("/estados/", payload)
-    return response.data
-  },
-
   async updateState(id, payload) {
-    const response = await api.put(`/estados/${id}/`, payload)
-    return response.data
-  },
-
-  async deleteState(id) {
-    const response = await api.delete(`/estados/${id}/`)
+    const response = await api.patch(`/estados/${id}/`, payload)
     return response.data
   },
 

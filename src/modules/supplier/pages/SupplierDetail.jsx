@@ -11,8 +11,10 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
+import { SupplierService } from "@/modules/supplier/services/supplier"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 
 import { Factory, Package, Hammer, Edit2, Trash2, Milestone } from "lucide-react"
@@ -59,14 +61,24 @@ export default function SupplierDetail() {
           </h1>
           <p className="text-slate-400 font-medium text-sm">Gestão de parcerias e catálogos</p>
         </div>
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
-        >
-          <Trash2 className="w-4 h-4" />
-          Excluir Fornecedor
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <RecordPdfButton
+            request={() => SupplierService.getSupplierProductsPdf(id)}
+            label="Relatório de produtos"
+          />
+          <RecordPdfButton
+            request={() => SupplierService.getSupplierServicesPdf(id)}
+            label="Relatório de serviços"
+          />
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
+          >
+            <Trash2 className="w-4 h-4" />
+            Excluir Fornecedor
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

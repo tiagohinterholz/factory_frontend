@@ -10,11 +10,17 @@ export function useWorkService() {
   const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const [supplierId, setSupplierId] = useState("")
   const search = useDebouncedValue(searchTerm, 300)
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { search, page: currentPage }],
-    queryFn: () => WorkServiceService.getWorkService({ search, page: currentPage }),
+    queryKey: [QUERY_KEY, { search, page: currentPage, supplierId }],
+    queryFn: () =>
+      WorkServiceService.getWorkService({
+        search,
+        page: currentPage,
+        supplier_id: supplierId || undefined,
+      }),
     placeholderData: keepPreviousData,
     select: normalizeList,
   })
@@ -35,5 +41,7 @@ export function useWorkService() {
     setSearchTerm,
     currentPage,
     setCurrentPage,
+    supplierId,
+    setSupplierId,
   }
 }

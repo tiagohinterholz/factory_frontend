@@ -123,12 +123,14 @@ export default function ListTable({
                               <Edit2 size={16} />
                             </Link>
                           )}
-                          <button
-                            onClick={() => onDelete && onDelete(item)}
-                            className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          {onDelete && (
+                            <button
+                              onClick={() => onDelete(item)}
+                              className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
                         </>
                       )}
                     </div>

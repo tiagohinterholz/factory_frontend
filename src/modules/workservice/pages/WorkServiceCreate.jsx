@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom"
 import { useWorkServiceForm } from "@/modules/workservice/hooks/useWorkServiceForm"
 import BackLink from "@/modules/core/components/BackLink"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
@@ -6,9 +7,10 @@ import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { Save, Milestone } from "lucide-react"
+import { Save, Milestone, Plus } from "lucide-react"
 
 export default function WorkServiceCreate() {
+  const navigate = useNavigate()
   const { form, onSubmit } = useWorkServiceForm()
   const {
     register,
@@ -56,12 +58,24 @@ export default function WorkServiceCreate() {
                 />
               )}
 
-              <SelectField
-                label="Fornecedor"
-                options={supplierOptions}
-                error={errors.supplier_id?.message}
-                registration={register("supplier_id")}
-              />
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <SelectField
+                    label="Fornecedor"
+                    options={supplierOptions}
+                    error={errors.supplier_id?.message}
+                    registration={register("supplier_id")}
+                  />
+                </div>
+                <button
+                  type="button"
+                  title="Cadastrar novo fornecedor"
+                  onClick={() => navigate("/fornecedores/novo")}
+                  className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-brand hover:bg-brand-subtle transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -91,7 +105,7 @@ export default function WorkServiceCreate() {
 
             <div className="pt-4 flex justify-end">
               <PrimaryButton type="submit" icon={Save} fullWidth={false} disabled={isSubmitting}>
-                Salvar Serviço
+                Adicionar Serviço
               </PrimaryButton>
             </div>
           </form>
