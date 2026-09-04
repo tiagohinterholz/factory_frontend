@@ -29,6 +29,7 @@ export default function PasswordFields({
           label={passwordLabel}
           type="password"
           placeholder="Mínimo 8 caracteres"
+          autoComplete="new-password"
           error={errors.password?.message}
           registration={register("password")}
         />
@@ -36,6 +37,7 @@ export default function PasswordFields({
           label={confirmLabel}
           type="password"
           placeholder="Repita a senha"
+          autoComplete="new-password"
           error={errors.confirmPassword?.message}
           registration={register("confirmPassword")}
         />

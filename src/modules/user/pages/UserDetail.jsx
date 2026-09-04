@@ -54,11 +54,12 @@ export default function UserDetail() {
             <h3 className="font-bold text-slate-800 tracking-tight">Dados Cadastrais</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={onSubmit}>
+          <form className="space-y-6" onSubmit={onSubmit} autoComplete="off">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 label="Nome Completo"
                 placeholder="Ex: João da Silva"
+                autoComplete="off"
                 error={errors.name?.message}
                 registration={register("name")}
               />
@@ -66,6 +67,7 @@ export default function UserDetail() {
                 label="E-mail"
                 type="email"
                 placeholder="joao@empresa.com"
+                autoComplete="off"
                 error={errors.email?.message}
                 registration={register("email")}
               />

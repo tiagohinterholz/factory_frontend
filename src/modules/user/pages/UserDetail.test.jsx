@@ -48,6 +48,18 @@ describe("<UserDetail>", () => {
     expect(screen.getByDisplayValue("maria@oficina.com")).toBeInTheDocument()
   })
 
+  it("campo de e-mail e senha não convidam o autofill a preencher a credencial salva do admin", async () => {
+    mockUser()
+    renderPage()
+
+    await screen.findByDisplayValue("Maria Souza")
+    expect(screen.getByDisplayValue("maria@oficina.com")).toHaveAttribute("autocomplete", "off")
+    expect(screen.getByPlaceholderText("Mínimo 8 caracteres")).toHaveAttribute(
+      "autocomplete",
+      "new-password",
+    )
+  })
+
   it("salva sem enviar senha quando os campos de senha ficam em branco", async () => {
     let body
     mockUser()

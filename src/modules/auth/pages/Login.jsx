@@ -31,6 +31,7 @@ export default function Login() {
             <label className="block text-gray-700 mb-1 font-medium">Email</label>
             <input
               type="email"
+              autoComplete="username"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               placeholder="Digite seu email"
               value={email}
@@ -42,6 +43,7 @@ export default function Login() {
             <label className="block text-gray-700 mb-1 font-medium">Senha</label>
             <input
               type="password"
+              autoComplete="current-password"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               placeholder="Digite sua senha"
               value={password}
