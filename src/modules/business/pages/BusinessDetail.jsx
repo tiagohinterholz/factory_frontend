@@ -1,4 +1,7 @@
+import { useParams } from "react-router-dom"
 import { useBusinessEditForm } from "@/modules/business/hooks/useBusinessEditForm"
+import { useBusinessHours } from "@/modules/business/hooks/useBusinessHours"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import BackLink from "@/modules/core/components/BackLink"
 import { useStateOptions } from "@/modules/core/hooks/options"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
@@ -6,11 +9,14 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import BusinessHoursPanel from "@/modules/business/components/BusinessHoursPanel"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 import { TAX_REGIME_OPTIONS } from "@/modules/business/business.schema"
 import { Briefcase, Milestone, Edit2, Trash2, Landmark } from "lucide-react"
 
 export default function BusinessEdit() {
+  const { id } = useParams()
+  const { isAdmin } = usePermissions()
   const { form, onSubmit, loading, handleDelete } = useBusinessEditForm()
   const {
     register,
@@ -23,6 +29,7 @@ export default function BusinessEdit() {
   const stateId = watch("state_id")
   const { states, loading: loadingStates } = useStateOptions()
   const { citiesByState, loading: loadingCities } = useCityOptionsByState(stateId)
+  const { hours, loading: loadingHours, savingWeekday, updateHour } = useBusinessHours(id)
 
   if (loading || loadingStates || (stateId && loadingCities)) {
     return (
@@ -34,7 +41,7 @@ export default function BusinessEdit() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <BackLink to="/empreendimentos" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
@@ -53,142 +60,163 @@ export default function BusinessEdit() {
           </button>
         </div>
 
-        <div className="card-premium">
-          <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
-            <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
-              <Briefcase className="w-5 h-5" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Lado Esquerdo: Dados Organizacionais */}
+          <div className="lg:col-span-6">
+            <div className="card-premium">
+              <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-50">
+                <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
+                  <Briefcase className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-800 tracking-tight">Dados Organizacionais</h3>
+              </div>
+
+              <form className="space-y-6" onSubmit={onSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    label="Razão Social"
+                    placeholder="Ex: Empresa de Serviços LTDA"
+                    error={errors.corporate_name?.message}
+                    registration={register("corporate_name")}
+                  />
+                  <FormField
+                    label="Nome Fantasia"
+                    placeholder="Ex: Minha Empresa"
+                    error={errors.trade_name?.message}
+                    registration={register("trade_name")}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <MaskedField
+                    control={control}
+                    name="cnpj"
+                    label="CNPJ"
+                    mask={CNPJ_MASK}
+                    placeholder="00.000.000/0000-00"
+                    error={errors.cnpj?.message}
+                  />
+                  <FormField
+                    label="E-mail"
+                    type="email"
+                    placeholder="contato@empresa.com"
+                    error={errors.email?.message}
+                    registration={register("email")}
+                  />
+                </div>
+
+                <MaskedField
+                  control={control}
+                  name="phone"
+                  label="Telefone"
+                  mask={PHONE_MASK}
+                  placeholder="(00) 00000-0000"
+                  error={errors.phone?.message}
+                />
+
+                <div className="pt-6 pb-2">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm">
+                      <Landmark className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-bold text-slate-800 tracking-tight">Dados Fiscais</h3>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    label="Inscrição Estadual"
+                    placeholder="Opcional"
+                    error={errors.state_registration?.message}
+                    registration={register("state_registration")}
+                  />
+                  <FormField
+                    label="Inscrição Municipal"
+                    placeholder="Opcional"
+                    error={errors.municipal_registration?.message}
+                    registration={register("municipal_registration")}
+                  />
+                </div>
+
+                <SelectField
+                  label="Regime Tributário"
+                  options={TAX_REGIME_OPTIONS}
+                  error={errors.tax_regime?.message}
+                  registration={register("tax_regime")}
+                />
+
+                <div className="pt-6 pb-2">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm">
+                      <Milestone className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-bold text-slate-800 tracking-tight">Localização</h3>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <SelectField
+                    label="Estado"
+                    options={states}
+                    error={errors.state_id?.message}
+                    registration={register("state_id", { onChange: () => setValue("city_id", "") })}
+                  />
+                  <SelectField
+                    label="Cidade"
+                    options={citiesByState}
+                    error={errors.city_id?.message}
+                    registration={register("city_id")}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="md:col-span-2">
+                    <FormField
+                      label="Endereço"
+                      placeholder="Rua, Avenida, etc."
+                      error={errors.address?.message}
+                      registration={register("address")}
+                    />
+                  </div>
+                  <FormField
+                    label="Número"
+                    placeholder="123"
+                    error={errors.number?.message}
+                    registration={register("number")}
+                  />
+                </div>
+
+                <FormField
+                  label="Complemento"
+                  placeholder="Sala, Bloco, etc."
+                  error={errors.complement?.message}
+                  registration={register("complement")}
+                />
+
+                <div className="pt-4 flex justify-end">
+                  <PrimaryButton
+                    type="submit"
+                    icon={Edit2}
+                    fullWidth={false}
+                    disabled={isSubmitting}
+                  >
+                    Salvar Alterações
+                  </PrimaryButton>
+                </div>
+              </form>
             </div>
-            <h3 className="font-bold text-slate-800 tracking-tight">Dados Organizacionais</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={onSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Razão Social"
-                placeholder="Ex: Empresa de Serviços LTDA"
-                error={errors.corporate_name?.message}
-                registration={register("corporate_name")}
-              />
-              <FormField
-                label="Nome Fantasia"
-                placeholder="Ex: Minha Empresa"
-                error={errors.trade_name?.message}
-                registration={register("trade_name")}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <MaskedField
-                control={control}
-                name="cnpj"
-                label="CNPJ"
-                mask={CNPJ_MASK}
-                placeholder="00.000.000/0000-00"
-                error={errors.cnpj?.message}
-              />
-              <FormField
-                label="E-mail"
-                type="email"
-                placeholder="contato@empresa.com"
-                error={errors.email?.message}
-                registration={register("email")}
-              />
-            </div>
-
-            <MaskedField
-              control={control}
-              name="phone"
-              label="Telefone"
-              mask={PHONE_MASK}
-              placeholder="(00) 00000-0000"
-              error={errors.phone?.message}
+          {/* Lado Direito: Horários de Funcionamento */}
+          <div className="lg:col-span-6">
+            <BusinessHoursPanel
+              hours={hours}
+              loading={loadingHours}
+              canEdit={isAdmin}
+              savingWeekday={savingWeekday}
+              onSave={updateHour}
             />
-
-            <div className="pt-6 pb-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm">
-                  <Landmark className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-slate-800 tracking-tight">Dados Fiscais</h3>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Inscrição Estadual"
-                placeholder="Opcional"
-                error={errors.state_registration?.message}
-                registration={register("state_registration")}
-              />
-              <FormField
-                label="Inscrição Municipal"
-                placeholder="Opcional"
-                error={errors.municipal_registration?.message}
-                registration={register("municipal_registration")}
-              />
-            </div>
-
-            <SelectField
-              label="Regime Tributário"
-              options={TAX_REGIME_OPTIONS}
-              error={errors.tax_regime?.message}
-              registration={register("tax_regime")}
-            />
-
-            <div className="pt-6 pb-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm">
-                  <Milestone className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-slate-800 tracking-tight">Localização</h3>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectField
-                label="Estado"
-                options={states}
-                error={errors.state_id?.message}
-                registration={register("state_id", { onChange: () => setValue("city_id", "") })}
-              />
-              <SelectField
-                label="Cidade"
-                options={citiesByState}
-                error={errors.city_id?.message}
-                registration={register("city_id")}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2">
-                <FormField
-                  label="Endereço"
-                  placeholder="Rua, Avenida, etc."
-                  error={errors.address?.message}
-                  registration={register("address")}
-                />
-              </div>
-              <FormField
-                label="Número"
-                placeholder="123"
-                error={errors.number?.message}
-                registration={register("number")}
-              />
-            </div>
-
-            <FormField
-              label="Complemento"
-              placeholder="Sala, Bloco, etc."
-              error={errors.complement?.message}
-              registration={register("complement")}
-            />
-
-            <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
-                Salvar Alterações
-              </PrimaryButton>
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
