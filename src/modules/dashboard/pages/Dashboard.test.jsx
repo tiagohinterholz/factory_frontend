@@ -19,7 +19,8 @@ const PAYLOAD = {
         vehicle: "ABC1234 - Onix",
         date: "2026-09-07",
         time: "14:00:00",
-        order_id: 10,
+        order: 10,
+        budget: null,
       },
     ],
   },
@@ -62,6 +63,10 @@ describe("<Dashboard>", () => {
 
     expect(screen.getByText("Atendimentos")).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /os #10/i })).toHaveAttribute("href", "/ordens/10")
+    expect(screen.getByRole("link", { name: /criar orçamento/i })).toHaveAttribute(
+      "href",
+      "/orcamentos/novo",
+    )
 
     expect(screen.getByText("Resumo")).toBeInTheDocument()
     expect(screen.getByText("15")).toBeInTheDocument()

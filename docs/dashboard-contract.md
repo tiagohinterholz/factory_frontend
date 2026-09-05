@@ -24,7 +24,8 @@ entrar em releases separados.
         "vehicle": "ABC1234 - Onix", // string já montada "placa - modelo"
         "date": "2026-09-07", // ISO date
         "time": "14:00:00", // ISO time, ou null se sem horário
-        "order_id": 10, // sempre presente (agendamento sem OS não é permitido)
+        "order": 10, // id da OS vinculada, ou null — agendamento pode não ter OS
+        "budget": null, // id do orçamento vinculado, ou null
       },
     ],
   },
@@ -55,6 +56,10 @@ entrar em releases separados.
 
 - `financeiro` vem `null` para usuário não-admin. O frontend também esconde o
   quadro via `usePermissions().isAdmin` (defesa em profundidade).
-- `atendimentos.clientes_semana[].order_id` é sempre um int — todo agendamento
-  tem OS. O card ainda tem um fallback ("Sem OS vinculada") caso venha null.
+- `atendimentos.clientes_semana[].order` e `.budget`: id do vínculo ou `null`.
+  Um agendamento pode existir sem OS e sem orçamento. Quando `null`, o card
+  mostra um atalho "Criar OS" / "Criar Orçamento" que abre o formulário de
+  criação já com cliente e veículo pré-preenchidos; quando preenchido, linka
+  para `/ordens/<id>` / `/orcamentos/<id>`. O card também aceita o vínculo
+  como objeto aninhado (`{ "id": 10 }`) e o legado `order_id`.
 - `time` e `contact` podem ser `null`; o card omite o horário / o telefone.

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { Clock, Phone, Car, ClipboardList } from "lucide-react"
+import { Clock, Phone, Car, ClipboardList, FileText, Plus } from "lucide-react"
 
 function formatWhen(date, time) {
   if (!date) return ""
@@ -11,7 +11,18 @@ function formatWhen(date, time) {
   return parsed.toLocaleString("pt-BR", options)
 }
 
+// order / budget podem vir como id cru, objeto { id } ou (legado) *_id.
+function relationId(value, legacy) {
+  return value?.id ?? value ?? legacy ?? null
+}
+
 export default function AppointmentCard({ item }) {
+  const orderId = relationId(item.order, item.order_id)
+  const budgetId = relationId(item.budget, item.budget_id)
+  const clientId = item.client_id ?? item.client?.id ?? null
+  const vehicleId = item.vehicle_id ?? item.vehicle?.id ?? null
+  const prefill = { clientId, vehicleId }
+
   return (
     <div className="w-full sm:w-64 rounded-xl border border-line bg-surface px-3 py-2.5 shadow-card flex flex-col gap-1 leading-tight">
       <p className="font-semibold text-ink text-sm truncate">{item.client_name}</p>
@@ -38,17 +49,45 @@ export default function AppointmentCard({ item }) {
         </a>
       )}
 
-      {item.order_id != null ? (
-        <Link
-          to={`/ordens/${item.order_id}`}
-          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand hover:underline"
-        >
-          <ClipboardList className="w-3.5 h-3.5" />
-          OS #{item.order_id}
-        </Link>
-      ) : (
-        <span className="text-[12px] text-muted">Sem OS vinculada</span>
-      )}
+      <div className="flex flex-col items-start gap-1 pt-1.5 mt-0.5 border-t border-line">
+        {orderId != null ? (
+          <Link
+            to={`/ordens/${orderId}`}
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand hover:underline"
+          >
+            <ClipboardList className="w-3.5 h-3.5" />
+            OS #{orderId}
+          </Link>
+        ) : (
+          <Link
+            to="/ordens/novo"
+            state={prefill}
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand border border-line rounded-md px-1.5 py-0.5 hover:bg-brand-subtle transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Criar OS
+          </Link>
+        )}
+
+        {budgetId != null ? (
+          <Link
+            to={`/orcamentos/${budgetId}`}
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand hover:underline"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            Orçamento #{budgetId}
+          </Link>
+        ) : (
+          <Link
+            to="/orcamentos/novo"
+            state={prefill}
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand border border-line rounded-md px-1.5 py-0.5 hover:bg-brand-subtle transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Criar Orçamento
+          </Link>
+        )}
+      </div>
     </div>
   )
 }

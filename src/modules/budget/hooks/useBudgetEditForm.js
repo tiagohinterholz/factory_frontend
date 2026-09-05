@@ -5,17 +5,18 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
-import { idOf, toDateInput } from "@/api/dto"
+import { idOf, toDateTimeLocalInput } from "@/api/dto"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { budgetSchema, budgetDefaults, toBudgetPayload } from "../budget.schema"
 
-// dto da API -> shape do form (ids como string, data em YYYY-MM-DD)
+// dto da API -> shape do form (ids como string, valid_until como
+// "YYYY-MM-DDTHH:mm" local pro <input type="datetime-local">)
 function toBudgetForm(data) {
   return {
     business_id: idOf(data.business),
     client_id: idOf(data.client),
     vehicle_id: idOf(data.vehicle),
-    valid_until: toDateInput(data.valid_until),
+    valid_until: toDateTimeLocalInput(data.valid_until),
   }
 }
 
