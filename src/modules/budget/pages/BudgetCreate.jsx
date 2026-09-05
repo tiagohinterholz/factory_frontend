@@ -4,7 +4,6 @@ import BackLink from "@/modules/core/components/BackLink"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
-import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
@@ -89,12 +88,10 @@ export default function BudgetCreate() {
               error={errors.vehicle_id?.message}
               registration={register("vehicle_id")}
             />
-            <FormField
-              label="Validade"
-              type="date"
-              error={errors.valid_until?.message}
-              registration={register("valid_until")}
-            />
+            <p className="text-xs text-muted">
+              A validade é definida automaticamente em 30 dias e pode ser ajustada depois, na edição
+              do orçamento.
+            </p>
             <div className="pt-4">
               <PrimaryButton type="submit" disabled={isSubmitting}>
                 Prosseguir para Itens
