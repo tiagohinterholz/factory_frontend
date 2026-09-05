@@ -211,7 +211,7 @@ export default function BudgetEdit() {
               />
               <FormField
                 label="Validade"
-                type="date"
+                type="datetime-local"
                 error={errors.valid_until?.message}
                 registration={register("valid_until")}
               />

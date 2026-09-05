@@ -22,12 +22,15 @@ import AppointmentCard from "@/modules/dashboard/components/AppointmentCard"
 const brl = (value) =>
   `R$ ${Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
 
-function Quadro({ title, subtitle, children }) {
+function Quadro({ title, subtitle, aside, children }) {
   return (
     <section className="rounded-xl border border-line bg-ground p-4 sm:p-5 space-y-4">
-      <div>
-        <h2 className="text-sm font-semibold text-ink">{title}</h2>
-        {subtitle && <p className="text-[12.5px] text-muted mt-0.5">{subtitle}</p>}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-sm font-semibold text-ink">{title}</h2>
+          {subtitle && <p className="text-[12.5px] text-muted mt-0.5">{subtitle}</p>}
+        </div>
+        {aside}
       </div>
       {children}
     </section>
@@ -55,6 +58,7 @@ export default function Dashboard() {
 
   const movimentacao = data.movimentacao ?? {}
   const atendimentos = data.atendimentos?.clientes_semana ?? []
+  const totalAgendadoSemana = data.atendimentos?.total_agendado_semana
   const financeira = data.financeiro ?? null
   const resumo = data.resumo ?? {}
 
@@ -97,7 +101,20 @@ export default function Dashboard() {
         </div>
       </Quadro>
 
-      <Quadro title="Atendimentos" subtitle="Clientes agendados nesta semana">
+      <Quadro
+        title="Atendimentos"
+        subtitle="Clientes agendados nesta semana"
+        aside={
+          totalAgendadoSemana != null && (
+            <div className="text-right shrink-0">
+              <p className="text-lg font-bold text-ink tabular-nums leading-tight">
+                {totalAgendadoSemana}
+              </p>
+              <p className="text-[12.5px] text-muted mt-0.5">Clientes agendados na semana</p>
+            </div>
+          )
+        }
+      >
         {atendimentos.length === 0 ? (
           <p className="text-[13px] text-muted">Nenhum atendimento agendado para a semana.</p>
         ) : (
