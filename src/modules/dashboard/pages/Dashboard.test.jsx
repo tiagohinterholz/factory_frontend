@@ -23,6 +23,7 @@ const PAYLOAD = {
         budget: null,
       },
     ],
+    total_agendado_semana: 7,
   },
   financeiro: {
     a_faturar_total: "1500.00",
@@ -62,6 +63,8 @@ describe("<Dashboard>", () => {
     expect(screen.getByText("45")).toBeInTheDocument()
 
     expect(screen.getByText("Atendimentos")).toBeInTheDocument()
+    expect(screen.getByText("Clientes agendados na semana")).toBeInTheDocument()
+    expect(screen.getByText("7")).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /os #10/i })).toHaveAttribute("href", "/ordens/10")
     expect(screen.getByRole("link", { name: /criar orçamento/i })).toHaveAttribute(
       "href",
@@ -97,6 +100,14 @@ describe("<Dashboard>", () => {
     renderWithProviders(<Dashboard />)
 
     expect(await screen.findByText(/nenhum atendimento agendado/i)).toBeInTheDocument()
+  })
+
+  it("esconde o total da semana quando o back não manda o campo", async () => {
+    mockDashboard({ atendimentos: { clientes_semana: [] } })
+    renderWithProviders(<Dashboard />)
+
+    await screen.findByText("Atendimentos")
+    expect(screen.queryByText("Clientes agendados na semana")).not.toBeInTheDocument()
   })
 
   it("mostra erro quando a API falha", async () => {

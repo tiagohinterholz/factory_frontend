@@ -28,6 +28,8 @@ entrar em releases separados.
         "budget": null, // id do orçamento vinculado, ou null
       },
     ],
+    "total_agendado_semana": 7, // int — total de clientes agendados na semana;
+    //  exibido no canto direito do quadro "Atendimentos". Some se ausente.
   },
 
   "financeiro": {
