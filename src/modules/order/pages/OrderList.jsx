@@ -31,10 +31,16 @@ export default function OrderList() {
         item.vehicle_name || `${item.vehicle?.model || ""} ${item.vehicle?.plate || ""}`,
     },
     {
-      header: "Data Serviço",
+      header: "Data/Hora Serviço",
       accessor: (item) =>
         item.service_date
-          ? new Date(item.service_date + "T12:00:00").toLocaleDateString("pt-BR")
+          ? new Date(item.service_date).toLocaleString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
           : "N/A",
     },
     {

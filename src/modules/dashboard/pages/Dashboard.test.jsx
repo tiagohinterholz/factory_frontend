@@ -7,9 +7,9 @@ import { renderWithProviders } from "@/test/render"
 import Dashboard from "./Dashboard"
 
 const PAYLOAD = {
-  movimentacao: { os_a_faturar_hoje: 3, os_a_faturar: 12, os_faturadas: 45 },
-  atendimentos: {
-    clientes_semana: [
+  activity: { orders_to_bill_today: 3, orders_to_bill: 12, orders_billed: 45 },
+  appointments: {
+    scheduled_this_week: [
       {
         id: 1,
         client_id: 5,
@@ -23,14 +23,14 @@ const PAYLOAD = {
         budget: null,
       },
     ],
-    total_agendado_semana: 7,
+    total_scheduled_this_week: 7,
   },
-  financeiro: {
-    a_faturar_total: "1500.00",
-    faturado_total: "8200.00",
-    orcamentos_em_aberto_total: "900.00",
+  financial: {
+    to_bill_total: "1500.00",
+    billed_total: "8200.00",
+    open_budgets_total: "900.00",
   },
-  resumo: {
+  summary: {
     clients: 15,
     vehicles: 20,
     suppliers: 10,
@@ -96,14 +96,14 @@ describe("<Dashboard>", () => {
   })
 
   it("sem atendimentos mostra o estado vazio", async () => {
-    mockDashboard({ atendimentos: { clientes_semana: [] } })
+    mockDashboard({ appointments: { scheduled_this_week: [] } })
     renderWithProviders(<Dashboard />)
 
     expect(await screen.findByText(/nenhum atendimento agendado/i)).toBeInTheDocument()
   })
 
   it("esconde o total da semana quando o back não manda o campo", async () => {
-    mockDashboard({ atendimentos: { clientes_semana: [] } })
+    mockDashboard({ appointments: { scheduled_this_week: [] } })
     renderWithProviders(<Dashboard />)
 
     await screen.findByText("Atendimentos")

@@ -92,8 +92,8 @@ export default function OrderCreate() {
               registration={register("vehicle_id")}
             />
             <FormField
-              label="Data do Serviço"
-              type="date"
+              label="Data e hora do serviço"
+              type="datetime-local"
               error={errors.service_date?.message}
               registration={register("service_date")}
             />
