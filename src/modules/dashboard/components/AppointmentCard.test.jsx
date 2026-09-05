@@ -88,4 +88,34 @@ describe("<AppointmentCard>", () => {
     fireEvent.click(screen.getByRole("link", { name: /criar os/i }))
     expect(screen.getByTestId("state")).toHaveTextContent('{"clientId":5,"vehicleId":3}')
   })
+
+  it("clicar no card abre a edição do agendamento", () => {
+    renderWithProviders(
+      <Routes>
+        <Route path="/" element={<AppointmentCard item={base} />} />
+        <Route path="/agendamentos/:id" element={<p>edição do agendamento</p>} />
+      </Routes>,
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: /editar agendamento de joão silva/i }))
+    expect(screen.getByText("edição do agendamento")).toBeInTheDocument()
+  })
+
+  it("clicar num link interno não dispara a navegação do card", () => {
+    function Probe() {
+      const location = useLocation()
+      return <pre data-testid="path">{location.pathname}</pre>
+    }
+
+    renderWithProviders(
+      <Routes>
+        <Route path="/" element={<AppointmentCard item={{ ...base, order: 10 }} />} />
+        <Route path="/ordens/:id" element={<Probe />} />
+        <Route path="/agendamentos/:id" element={<p>NÃO deveria abrir</p>} />
+      </Routes>,
+    )
+
+    fireEvent.click(screen.getByRole("link", { name: /os #10/i }))
+    expect(screen.getByTestId("path")).toHaveTextContent("/ordens/10")
+  })
 })
