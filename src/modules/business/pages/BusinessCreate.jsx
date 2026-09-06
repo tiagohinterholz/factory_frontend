@@ -5,6 +5,7 @@ import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
+import LogoUploadField from "@/modules/core/components/LogoUploadField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 import { TAX_REGIME_OPTIONS } from "@/modules/business/business.schema"
@@ -48,6 +49,13 @@ export default function BusinessCreate() {
           </div>
 
           <form className="space-y-6" onSubmit={onSubmit}>
+            <LogoUploadField
+              label="Logo do empreendimento"
+              value={watch("logo")}
+              onChange={(next) => setValue("logo", next, { shouldValidate: true })}
+              error={errors.logo?.message}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 label="Razão Social"

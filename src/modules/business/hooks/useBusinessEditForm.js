@@ -3,8 +3,9 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
+import { base64ImageDataUri } from "@/api/media"
 import { BusinessService } from "@/modules/business/services/business"
-import { businessSchema, businessDefaults } from "../business.schema"
+import { businessSchema, businessDefaults, toBusinessPayload } from "../business.schema"
 
 function toBusinessForm(data) {
   return {
@@ -21,6 +22,8 @@ function toBusinessForm(data) {
     complement: data.complement ?? "",
     phone: data.phone ?? "",
     email: data.email ?? "",
+    // o back manda `logo` como base64 cru; `logo_url` é o fallback (URL pronta)
+    logo: data.logo ? base64ImageDataUri(data.logo) : (data.logo_url ?? ""),
   }
 }
 
@@ -34,7 +37,7 @@ export function useBusinessEditForm() {
     schema: businessSchema,
     defaultValues: businessDefaults,
     load: async () => toBusinessForm(await BusinessService.getBusinessById(id)),
-    submit: (values) => BusinessService.updateBusiness(id, values),
+    submit: (values) => BusinessService.updateBusiness(id, toBusinessPayload(values)),
     redirectTo: "/empreendimentos",
     errorFallback: "Erro ao atualizar empreendimento",
   })
