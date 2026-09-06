@@ -57,4 +57,41 @@ describe("<ClientList>", () => {
     await waitFor(() => expect(pdfRequested).toBe(true))
     await waitFor(() => expect(openPdfBlob).toHaveBeenCalled())
   })
+
+  it("abre o modal com os veículos do cliente e fecha", async () => {
+    mockClients()
+    server.use(
+      http.get(`${API}/clientes/1/veiculos/`, () =>
+        HttpResponse.json({
+          results: [
+            {
+              id: 7,
+              plate: "ABC-1D23",
+              manufacturer: "VW",
+              model: "Gol",
+              year: 2020,
+              year_model: 2021,
+              color: "Prata",
+              fuel: "flex",
+            },
+          ],
+          count: 1,
+        }),
+      ),
+    )
+
+    renderWithProviders(<ClientList />)
+    await screen.findByText("Ana Lima")
+
+    fireEvent.click(screen.getByRole("button", { name: /ver veículos do cliente/i }))
+
+    expect(await screen.findByRole("dialog", { name: /veículos de ana lima/i })).toBeInTheDocument()
+    expect(await screen.findByText("VW Gol")).toBeInTheDocument()
+    expect(screen.getByText(/ABC-1D23 · 2020\/2021 · Flex · Prata/)).toBeInTheDocument()
+
+    // X do header + botão no rodapé compartilham o nome "Fechar"; o rodapé é o último
+    const fechar = screen.getAllByRole("button", { name: "Fechar" })
+    fireEvent.click(fechar[fechar.length - 1])
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+  })
 })

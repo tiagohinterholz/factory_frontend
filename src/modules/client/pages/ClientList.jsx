@@ -1,7 +1,9 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Edit2, Trash2 } from "lucide-react"
+import { Car, Edit2, Trash2 } from "lucide-react"
 import { useClient } from "../hooks/useClient"
 import { ClientService } from "../services/client"
+import ClientVehiclesModal from "../components/ClientVehiclesModal"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
@@ -24,6 +26,7 @@ export default function ClientList() {
 
   const toast = useToast()
   const confirm = useConfirm()
+  const [vehiclesClient, setVehiclesClient] = useState(null)
 
   const columns = [
     { header: "Nome", accessor: (item) => `${item.first_name} ${item.last_name}` },
@@ -68,6 +71,14 @@ export default function ClientList() {
               request={() => ClientService.getClientPdf(item.id)}
               title="Baixar PDF do cliente"
             />
+            <button
+              type="button"
+              onClick={() => setVehiclesClient(item)}
+              title="Ver veículos do cliente"
+              className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
+            >
+              <Car size={16} />
+            </button>
             <Link
               to={`/clientes/${item.id}`}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
@@ -84,6 +95,8 @@ export default function ClientList() {
           </div>
         )}
       />
+
+      <ClientVehiclesModal client={vehiclesClient} onClose={() => setVehiclesClient(null)} />
     </div>
   )
 }
