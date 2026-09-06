@@ -8,6 +8,7 @@ import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
+import LogoUploadField from "@/modules/core/components/LogoUploadField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import BusinessHoursPanel from "@/modules/business/components/BusinessHoursPanel"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
@@ -27,6 +28,7 @@ export default function BusinessEdit() {
   } = form
 
   const stateId = watch("state_id")
+  const currentLogoUrl = form.formState.defaultValues?.logo
   const { states, loading: loadingStates } = useStateOptions()
   const { citiesByState, loading: loadingCities } = useCityOptionsByState(stateId)
   const { hours, loading: loadingHours, savingWeekday, updateHour } = useBusinessHours(id)
@@ -72,6 +74,14 @@ export default function BusinessEdit() {
               </div>
 
               <form className="space-y-6" onSubmit={onSubmit}>
+                <LogoUploadField
+                  label="Logo do empreendimento"
+                  value={watch("logo")}
+                  currentUrl={typeof currentLogoUrl === "string" ? currentLogoUrl : ""}
+                  onChange={(next) => setValue("logo", next, { shouldValidate: true })}
+                  error={errors.logo?.message}
+                />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     label="Razão Social"
