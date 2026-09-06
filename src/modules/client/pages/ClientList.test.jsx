@@ -5,6 +5,7 @@ import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import ClientList from "./ClientList"
+import { ClientService } from "../services/client"
 import { openPdfBlob } from "@/api/open-pdf"
 
 vi.mock("@/api/open-pdf", () => ({ openPdfBlob: vi.fn() }))
@@ -39,23 +40,18 @@ describe("<ClientList>", () => {
 
   it("baixa o PDF do cliente pela linha da tabela", async () => {
     mockClients()
-    let pdfRequested = false
-    server.use(
-      http.get(`${API}/clientes/1/pdf/`, () => {
-        pdfRequested = true
-        return HttpResponse.text("%PDF-1.4", {
-          headers: { "Content-Type": "application/pdf" },
-        })
-      }),
-    )
+    const blob = new Blob(["%PDF-1.4"], { type: "application/pdf" })
+    const getPdf = vi.spyOn(ClientService, "getClientPdf").mockResolvedValue(blob)
 
     renderWithProviders(<ClientList />)
     await screen.findByText("Ana Lima")
 
     fireEvent.click(screen.getByRole("button", { name: /baixar pdf do cliente/i }))
 
-    await waitFor(() => expect(pdfRequested).toBe(true))
-    await waitFor(() => expect(openPdfBlob).toHaveBeenCalled())
+    await waitFor(() => expect(getPdf).toHaveBeenCalledWith(1))
+    await waitFor(() => expect(openPdfBlob).toHaveBeenCalledWith(blob))
+
+    getPdf.mockRestore()
   })
 
   it("abre o modal com os veículos do cliente e fecha", async () => {
