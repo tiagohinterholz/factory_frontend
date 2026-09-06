@@ -37,4 +37,10 @@ export const ClientService = {
     const response = await api.get(`/clientes/${id}/veiculos/`)
     return response.data
   },
+
+  // Relatório PDF do cliente (dados cadastrais + veículos ativos).
+  async getClientPdf(id) {
+    const response = await api.get(`/clientes/${id}/pdf/`, { responseType: "blob" })
+    return response.data
+  },
 }
