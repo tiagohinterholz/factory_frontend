@@ -21,14 +21,18 @@ function mockProducts() {
 }
 
 describe("<ProductList>", () => {
-  it("filtra por fornecedor ao escolher no dropdown", async () => {
+  it("filtra por fornecedor pelo painel de Filtros", async () => {
     mockProducts()
     renderWithProviders(<ProductList />)
 
     expect(await screen.findByText("Pastilha genérica")).toBeInTheDocument()
 
-    const select = screen.getByRole("combobox")
-    fireEvent.change(select, { target: { value: "9" } })
+    fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
+    const supplierSelect = (await screen.findByRole("option", { name: "Bosch Ltda" })).closest(
+      "select",
+    )
+    fireEvent.change(supplierSelect, { target: { value: "9" } })
+    fireEvent.click(screen.getByRole("button", { name: "Filtrar" }))
 
     expect(await screen.findByText("Filtro de óleo Bosch")).toBeInTheDocument()
     expect(screen.queryByText("Pastilha genérica")).not.toBeInTheDocument()

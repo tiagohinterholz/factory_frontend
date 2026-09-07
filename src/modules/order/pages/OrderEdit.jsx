@@ -8,7 +8,7 @@ import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import FiscalNotePanel from "@/modules/order/components/FiscalNotePanel"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
-import { useBudget } from "@/modules/budget/hooks/useBudget"
+import { useBudgetOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
 import { useWorkServiceOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -45,7 +45,7 @@ export default function OrderEdit() {
   const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { client: clients, loading: loadingClients } = useClientOptions()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
-  const { budgets } = useBudget()
+  const { budgets, loading: loadingBudgets } = useBudgetOptions()
   const { product: allProducts } = useProductOptions()
   const { workservice: allServices } = useWorkServiceOptions()
 
@@ -111,9 +111,10 @@ export default function OrderEdit() {
     }
   }
 
-  // espera as listas de opção antes de montar os <select> — senão o
-  // form.reset roda antes das <option> existirem e o campo fica vazio (BUG-1)
-  if (loading || loadingBusinesses || loadingClients || loadingVehicles)
+  // espera TODAS as listas de opção antes de montar os <select> — senão o
+  // form.reset roda antes das <option> existirem e o campo fica vazio (BUG-1).
+  // Inclui os orçamentos: uma OS aprovada carrega o orçamento que a originou.
+  if (loading || loadingBusinesses || loadingClients || loadingVehicles || loadingBudgets)
     return <div className="p-6 text-center">Carregando...</div>
 
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))

@@ -52,6 +52,23 @@ describe("useResourceForm", () => {
     expect(navigateSpy).toHaveBeenCalledWith("/lista")
   })
 
+  it("redirectTo como função -> navega com base no resultado do submit", async () => {
+    const submit = vi.fn().mockResolvedValue({ id: 42 })
+    const { result } = render({
+      schema,
+      defaultValues: { name: "" },
+      submit,
+      redirectTo: (created) => `/orcamentos/${created.id}`,
+    })
+
+    act(() => result.current.form.setValue("name", "Ana"))
+    await act(async () => {
+      await result.current.onSubmit()
+    })
+
+    expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/42")
+  })
+
   it("submit inválido -> não chama submit, seta erro do schema", async () => {
     const submit = vi.fn()
     const { result } = render({ schema, defaultValues: { name: "" }, submit })

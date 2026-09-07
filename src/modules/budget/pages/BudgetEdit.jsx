@@ -15,6 +15,7 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Plus, Trash2, CheckCircle, XCircle } from "lucide-react"
+import { formatDateTime } from "@/modules/core/utils/datetime"
 
 export default function BudgetEdit() {
   const { id } = useParams()
@@ -26,6 +27,9 @@ export default function BudgetEdit() {
     products,
     services,
     status,
+    approvedAt,
+    cancelledAt,
+    validUntil,
     handleDelete,
     handleApprove,
     handleCancel,
@@ -123,6 +127,17 @@ export default function BudgetEdit() {
     .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
 
   const isPending = status === "pendente"
+  // data da situação: aprovado -> approved_at, cancelado -> cancelled_at,
+  // expirado -> valid_until (quando expirou). Pendente não tem data.
+  const actionDateLabel = formatDateTime(
+    status === "aprovado"
+      ? approvedAt
+      : status === "cancelado"
+        ? cancelledAt
+        : status === "expirado"
+          ? validUntil
+          : null,
+  )
 
   return (
     <div className="p-6 space-y-8">
@@ -138,11 +153,18 @@ export default function BudgetEdit() {
                   ? "bg-emerald-100 text-emerald-700"
                   : status === "cancelado"
                     ? "bg-rose-100 text-rose-700"
-                    : "bg-amber-100 text-amber-700"
+                    : status === "expirado"
+                      ? "bg-slate-200 text-slate-600"
+                      : "bg-amber-100 text-amber-700"
               }`}
             >
               {status}
             </span>
+            {actionDateLabel && (
+              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium normal-case tracking-normal">
+                {actionDateLabel}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">

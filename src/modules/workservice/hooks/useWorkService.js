@@ -1,25 +1,30 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
-import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
+import { useListFilters } from "@/modules/core/hooks/useListFilters"
+import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
 
 const QUERY_KEY = "workservices"
+const EMPTY_FILTERS = { name: "", description: "", supplier_id: "" }
 
 export function useWorkService() {
   const queryClient = useQueryClient()
-  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const [supplierId, setSupplierId] = useState("")
-  const search = useDebouncedValue(searchTerm, 300)
+  const {
+    filters,
+    apply: applyFilters,
+    params: filterParams,
+  } = useListFilters(EMPTY_FILTERS, () => setCurrentPage(1))
+  const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { search, page: currentPage, supplierId }],
+    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
     queryFn: () =>
       WorkServiceService.getWorkService({
-        search,
         page: currentPage,
-        supplier_id: supplierId || undefined,
+        ...filterParams,
+        ...(ordering ? { ordering } : {}),
       }),
     placeholderData: keepPreviousData,
     select: normalizeList,
@@ -37,11 +42,11 @@ export function useWorkService() {
     error: query.error ?? null,
     refetch: query.refetch,
     remove: removeMutation.mutateAsync,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
-    supplierId,
-    setSupplierId,
   }
 }

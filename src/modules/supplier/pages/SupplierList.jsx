@@ -1,15 +1,23 @@
 import { useSupplier } from "../hooks/useSupplier"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import ListFilters from "@/modules/core/components/ListFilters"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
+
+const FILTER_FIELDS = [
+  { name: "corporate_name", label: "Razão social", type: "text" },
+  { name: "cnpj", label: "CNPJ", type: "text" },
+]
 
 export default function SupplierList() {
   const {
     supplier,
     loading,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -22,8 +30,8 @@ export default function SupplierList() {
   const confirm = useConfirm()
 
   const columns = [
-    { header: "Razão Social", accessor: (item) => item.corporate_name },
-    { header: "CNPJ", accessor: (item) => item.cnpj },
+    { header: "Razão Social", sortKey: "corporate_name", accessor: (item) => item.corporate_name },
+    { header: "CNPJ", sortKey: "cnpj", accessor: (item) => item.cnpj },
     { header: "Telefone", accessor: (item) => item.phone },
   ]
 
@@ -50,6 +58,7 @@ export default function SupplierList() {
         title="Fornecedores"
         buttonText="Novo Fornecedor"
         buttonLink="/fornecedores/novo"
+        actions={<ListFilters fields={FILTER_FIELDS} value={filters} onApply={applyFilters} />}
       />
       <ListTable
         columns={columns}
@@ -59,11 +68,11 @@ export default function SupplierList() {
         loading={loading}
         error={error}
         onRetry={refetch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
       />
     </div>
   )
