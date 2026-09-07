@@ -27,13 +27,16 @@ export function useBudgetEditForm() {
   const toast = useToast()
   const queryClient = useQueryClient()
 
-  // itens de linha, status, total e datas de ação são somente leitura aqui;
-  // vivem fora do form.
+  // itens de linha, status, totais e datas de ação são somente leitura aqui;
+  // vivem fora do form. products_total/services_total vêm calculados do back
+  // (só itens ativos); total é a soma dos dois.
   const [meta, setMeta] = useState({
     products: [],
     services: [],
     status: "",
     total: "",
+    productsTotal: "",
+    servicesTotal: "",
     approvedAt: null,
     cancelledAt: null,
     validUntil: null,
@@ -41,11 +44,15 @@ export function useBudgetEditForm() {
 
   const fetchMeta = useCallback(async () => {
     const data = await BudgetService.getBudgetById(id)
+    // o back não some com a linha no DELETE, só marca is_active=false; o
+    // detalhe ainda a devolve. Os totais já vêm só com os ativos.
     setMeta({
-      products: data.budget_products ?? [],
-      services: data.budget_services ?? [],
+      products: (data.budget_products ?? []).filter((item) => item.is_active),
+      services: (data.budget_services ?? []).filter((item) => item.is_active),
       status: data.status ?? "",
       total: data.total ?? "0.00",
+      productsTotal: data.products_total ?? "0.00",
+      servicesTotal: data.services_total ?? "0.00",
       approvedAt: data.approved_at ?? null,
       cancelledAt: data.cancelled_at ?? null,
       validUntil: data.valid_until ?? null,
@@ -117,6 +124,8 @@ export function useBudgetEditForm() {
     services: meta.services,
     status: meta.status,
     total: meta.total,
+    productsTotal: meta.productsTotal,
+    servicesTotal: meta.servicesTotal,
     approvedAt: meta.approvedAt,
     cancelledAt: meta.cancelledAt,
     validUntil: meta.validUntil,
