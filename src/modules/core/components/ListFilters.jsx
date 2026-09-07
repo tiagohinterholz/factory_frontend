@@ -1,42 +1,30 @@
-import { useEffect, useRef, useState } from "react"
-import { SlidersHorizontal, ChevronDown } from "lucide-react"
-import SelectField from "@/modules/core/components/SelectField"
+import { useEffect, useState } from "react"
+import { SlidersHorizontal, ChevronDown, X } from "lucide-react"
+import FilterSelect from "@/modules/core/components/FilterSelect"
 import FormField from "@/modules/core/components/FormField"
 
-// Botão "Filtros" + painel. `fields` descreve os campos:
-//   { name, label, type: "select" | "date" | "text", options? }
-// `value` é o objeto de filtros JÁ aplicado; `onApply(next)` dispara a busca.
-// O painel edita um rascunho e só aplica no "Filtrar" (ou "Limpar").
+// Botão "Filtros" + painel. `fields`: [{ name, label, type: "select"|"date"|"text", options? }].
+// `value` são os filtros aplicados; o painel edita um rascunho e só dispara
+// `onApply(next)` no "Filtrar"/"Limpar". Os selects usam FilterSelect (dropdown
+// React, não <select> nativo). Fecha por botão, X ou Esc.
 export default function ListFilters({ fields, value, onApply }) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(value)
-  const containerRef = useRef(null)
 
   useEffect(() => {
     if (!open) return undefined
-    // `click` (não `mousedown`): no Chromium/Linux um listener de mousedown no
-    // document fecha o popup nativo do <select> antes dele abrir.
-    const onClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) setOpen(false)
-    }
     const onKey = (event) => {
       if (event.key === "Escape") setOpen(false)
     }
-    document.addEventListener("click", onClickOutside)
     document.addEventListener("keydown", onKey)
-    return () => {
-      document.removeEventListener("click", onClickOutside)
-      document.removeEventListener("keydown", onKey)
-    }
+    return () => document.removeEventListener("keydown", onKey)
   }, [open])
 
   const activeCount = fields.filter((field) => value[field.name]).length
   const emptyDraft = Object.fromEntries(fields.map((field) => [field.name, ""]))
 
-  const setField = (name) => (event) =>
-    setDraft((current) => ({ ...current, [name]: event.target.value }))
+  const setValue = (name) => (next) => setDraft((current) => ({ ...current, [name]: next }))
 
-  // abrir sincroniza o rascunho com o que está aplicado (sem efeito)
   function toggle() {
     setDraft(value)
     setOpen((current) => !current)
@@ -54,7 +42,7 @@ export default function ListFilters({ fields, value, onApply }) {
   }
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative">
       <button
         type="button"
         onClick={toggle}
@@ -72,16 +60,26 @@ export default function ListFilters({ fields, value, onApply }) {
 
       {open && (
         <div className="fixed inset-x-3 top-24 z-40 max-h-[70vh] overflow-y-auto rounded-xl border border-line bg-surface shadow-pop p-4 space-y-3 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 sm:max-h-none sm:overflow-visible">
-          <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
+          <div className="flex items-center justify-between">
+            <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Fechar filtros"
+              className="-mr-1 rounded p-1 text-muted hover:bg-ground hover:text-ink"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
           {fields.map((field) =>
             field.type === "select" ? (
-              <SelectField
+              <FilterSelect
                 key={field.name}
                 label={field.label}
                 options={field.options}
                 value={draft[field.name] ?? ""}
-                onChange={setField(field.name)}
+                onChange={setValue(field.name)}
               />
             ) : (
               <FormField
@@ -89,7 +87,7 @@ export default function ListFilters({ fields, value, onApply }) {
                 label={field.label}
                 type={field.type === "date" ? "date" : "text"}
                 value={draft[field.name] ?? ""}
-                onChange={setField(field.name)}
+                onChange={(event) => setValue(field.name)(event.target.value)}
               />
             ),
           )}

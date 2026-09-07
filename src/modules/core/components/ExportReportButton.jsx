@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-import { FileDown, Loader2, ChevronDown } from "lucide-react"
+import { useEffect, useState } from "react"
+import { FileDown, Loader2, ChevronDown, X } from "lucide-react"
 import { useReportExport } from "@/modules/core/hooks/useReportExport"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import {
@@ -7,7 +7,7 @@ import {
   useVehicleOptions,
   useSupplierOptions,
 } from "@/modules/core/hooks/options"
-import SelectField from "@/modules/core/components/SelectField"
+import FilterSelect from "@/modules/core/components/FilterSelect"
 import FormField from "@/modules/core/components/FormField"
 import { REPORT_STATUS_OPTIONS, FILTERABLE_REPORTS } from "@/modules/core/constants/report"
 
@@ -20,10 +20,11 @@ const EMPTY = {
   date_to: "",
 }
 
-function FilterPopover({ type, onSubmit }) {
+function FilterPopover({ type, onSubmit, onClose }) {
   const [filters, setFilters] = useState(EMPTY)
-  const set = (key) => (event) =>
+  const setField = (key) => (event) =>
     setFilters((current) => ({ ...current, [key]: event.target.value }))
+  const setValue = (key) => (next) => setFilters((current) => ({ ...current, [key]: next }))
 
   const { client } = useClientOptions()
   const { vehicle } = useVehicleOptions()
@@ -38,36 +39,51 @@ function FilterPopover({ type, onSubmit }) {
 
   return (
     <div className="fixed inset-x-3 top-24 z-40 max-h-[70vh] overflow-y-auto rounded-xl border border-line bg-surface shadow-pop p-4 space-y-3 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 sm:max-h-none sm:overflow-visible">
-      <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
+      <div className="flex items-center justify-between">
+        <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fechar filtros"
+          className="-mr-1 rounded p-1 text-muted hover:bg-ground hover:text-ink"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
 
-      <SelectField
+      <FilterSelect
         label="Status"
         options={REPORT_STATUS_OPTIONS[type]}
         value={filters.status}
-        onChange={set("status")}
+        onChange={setValue("status")}
       />
-      <SelectField
+      <FilterSelect
         label="Cliente"
         options={clientOpts}
         value={filters.client_id}
-        onChange={set("client_id")}
+        onChange={setValue("client_id")}
       />
-      <SelectField
+      <FilterSelect
         label="Veículo"
         options={vehicleOpts}
         value={filters.vehicle_id}
-        onChange={set("vehicle_id")}
+        onChange={setValue("vehicle_id")}
       />
-      <SelectField
+      <FilterSelect
         label="Fornecedor"
         options={supplierOpts}
         value={filters.supplier_id}
-        onChange={set("supplier_id")}
+        onChange={setValue("supplier_id")}
       />
 
       <div className="grid grid-cols-2 gap-2">
-        <FormField label="De" type="date" value={filters.date_from} onChange={set("date_from")} />
-        <FormField label="Até" type="date" value={filters.date_to} onChange={set("date_to")} />
+        <FormField
+          label="De"
+          type="date"
+          value={filters.date_from}
+          onChange={setField("date_from")}
+        />
+        <FormField label="Até" type="date" value={filters.date_to} onChange={setField("date_to")} />
       </div>
 
       <div className="flex items-center justify-between pt-1">
@@ -96,24 +112,15 @@ export default function ExportReportButton({ type, label = "Exportar PDF" }) {
   const { canExportReports } = usePermissions()
   const { exportReport, isExporting } = useReportExport()
   const [open, setOpen] = useState(false)
-  const containerRef = useRef(null)
 
+  // Fecha no próprio botão, no X, no "Gerar relatório" e no Esc.
   useEffect(() => {
-    if (!open) return
-    const onClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) setOpen(false)
-    }
+    if (!open) return undefined
     const onKey = (event) => {
       if (event.key === "Escape") setOpen(false)
     }
-    // `click` e não `mousedown`: no Chromium/Linux um listener de mousedown no
-    // document fecha o popup nativo do <select> do popover antes de abrir.
-    document.addEventListener("click", onClickOutside)
     document.addEventListener("keydown", onKey)
-    return () => {
-      document.removeEventListener("click", onClickOutside)
-      document.removeEventListener("keydown", onKey)
-    }
+    return () => document.removeEventListener("keydown", onKey)
   }, [open])
 
   if (!canExportReports) return null
@@ -137,11 +144,12 @@ export default function ExportReportButton({ type, label = "Exportar PDF" }) {
   if (!filterable) return trigger
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative">
       {trigger}
       {open && (
         <FilterPopover
           type={type}
+          onClose={() => setOpen(false)}
           onSubmit={(filters) => {
             setOpen(false)
             exportReport(type, filters)

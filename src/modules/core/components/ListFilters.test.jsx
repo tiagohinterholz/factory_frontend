@@ -17,16 +17,20 @@ const fields = [
 
 const EMPTY = { status: "", date_from: "" }
 
+const openPanel = () => fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
+
+async function pickStatus(name) {
+  fireEvent.click(await screen.findByRole("button", { name: /selecione o\(a\) status/i }))
+  fireEvent.click(await screen.findByRole("option", { name }))
+}
+
 describe("<ListFilters>", () => {
-  it("abre o painel no botão e aplica só ao clicar 'Filtrar'", () => {
+  it("abre o painel e aplica só ao clicar 'Filtrar'", async () => {
     const onApply = vi.fn()
     render(<ListFilters fields={fields} value={EMPTY} onApply={onApply} />)
 
-    fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
-    const status = screen.getByRole("option", { name: "Aprovado" }).closest("select")
-    fireEvent.change(status, { target: { value: "aprovado" } })
-
-    // ainda não aplicou
+    openPanel()
+    await pickStatus("Aprovado")
     expect(onApply).not.toHaveBeenCalled()
 
     fireEvent.click(screen.getByRole("button", { name: "Filtrar" }))
@@ -43,9 +47,8 @@ describe("<ListFilters>", () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
+    openPanel()
     fireEvent.click(screen.getByRole("button", { name: "Limpar" }))
-
     expect(onApply).toHaveBeenCalledWith({ status: "", date_from: "" })
   })
 
@@ -60,18 +63,25 @@ describe("<ListFilters>", () => {
     expect(screen.getByRole("button", { name: /filtros/i })).toHaveTextContent("2")
   })
 
-  it("fecha ao clicar fora (via click, não mousedown — bug do select no Linux)", () => {
+  it("NÃO fecha o painel ao clicar fora", () => {
     render(<ListFilters fields={fields} value={EMPTY} onApply={vi.fn()} />)
 
-    fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
-    expect(screen.getByRole("button", { name: "Filtrar" })).toBeInTheDocument()
-
-    // mousedown fora NÃO fecha (senão derruba o popup nativo do select)
+    openPanel()
     fireEvent.mouseDown(document.body)
-    expect(screen.getByRole("button", { name: "Filtrar" })).toBeInTheDocument()
-
-    // click fora fecha
     fireEvent.click(document.body)
+
+    expect(screen.getByRole("button", { name: "Filtrar" })).toBeInTheDocument()
+  })
+
+  it("fecha pelo X e pelo Esc", () => {
+    render(<ListFilters fields={fields} value={EMPTY} onApply={vi.fn()} />)
+
+    openPanel()
+    fireEvent.click(screen.getByRole("button", { name: /fechar filtros/i }))
+    expect(screen.queryByRole("button", { name: "Filtrar" })).not.toBeInTheDocument()
+
+    openPanel()
+    fireEvent.keyDown(document, { key: "Escape" })
     expect(screen.queryByRole("button", { name: "Filtrar" })).not.toBeInTheDocument()
   })
 })

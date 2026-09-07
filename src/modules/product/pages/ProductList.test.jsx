@@ -28,10 +28,8 @@ describe("<ProductList>", () => {
     expect(await screen.findByText("Pastilha genérica")).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
-    const supplierSelect = (await screen.findByRole("option", { name: "Bosch Ltda" })).closest(
-      "select",
-    )
-    fireEvent.change(supplierSelect, { target: { value: "9" } })
+    fireEvent.click(await screen.findByRole("button", { name: /selecione o\(a\) fornecedor/i }))
+    fireEvent.click(await screen.findByRole("option", { name: "Bosch Ltda" }))
     fireEvent.click(screen.getByRole("button", { name: "Filtrar" }))
 
     expect(await screen.findByText("Filtro de óleo Bosch")).toBeInTheDocument()
