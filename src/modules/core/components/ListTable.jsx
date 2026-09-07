@@ -24,8 +24,12 @@ export default function ListTable({
   handlePageChange,
   totalItems,
   itemsPerPage = 10,
+  dense = false,
 }) {
   const totalPages = Math.ceil(totalItems / itemsPerPage)
+  // `dense`: aperta o padding horizontal das células (tabelas com muitas colunas)
+  const cx = dense ? "px-3" : "px-5"
+  const bleed = dense ? "-mx-3" : "-mx-5"
 
   return (
     <div className="card-premium flex flex-col gap-4 overflow-hidden">
@@ -45,19 +49,21 @@ export default function ListTable({
         />
       </div>
 
-      <div className="overflow-x-auto -mx-5">
+      <div className={`overflow-x-auto ${bleed}`}>
         <table className="w-full text-left border-collapse min-w-[600px]">
           <thead>
             <tr className="bg-ground border-y border-line">
               {columns.map((col, idx) => (
                 <th
                   key={idx}
-                  className="px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted"
+                  className={`${cx} py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted`}
                 >
                   {col.header}
                 </th>
               ))}
-              <th className="px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted text-right">
+              <th
+                className={`${cx} py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted text-right`}
+              >
                 Ações
               </th>
             </tr>
@@ -67,18 +73,18 @@ export default function ListTable({
               Array.from({ length: 6 }).map((_, i) => (
                 <tr key={i}>
                   {columns.map((_, idx) => (
-                    <td key={idx} className="px-5 py-2.5">
+                    <td key={idx} className={`${cx} py-2.5`}>
                       <div className="h-3.5 bg-line rounded animate-pulse"></div>
                     </td>
                   ))}
-                  <td className="px-5 py-2.5">
+                  <td className={`${cx} py-2.5`}>
                     <div className="h-3.5 bg-line rounded animate-pulse w-1/2 ml-auto"></div>
                   </td>
                 </tr>
               ))
             ) : error ? (
               <tr>
-                <td colSpan={columns.length + 1} className="px-5 py-12 text-center">
+                <td colSpan={columns.length + 1} className={`${cx} py-12 text-center`}>
                   <div className="flex flex-col items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-danger-subtle text-danger">
                       <AlertTriangle className="h-5 w-5" />
@@ -105,11 +111,11 @@ export default function ListTable({
                   className="group hover:bg-ground transition-colors duration-150"
                 >
                   {columns.map((col, colIdx) => (
-                    <td key={colIdx} className="px-5 py-2.5 text-sm text-ink tabular-nums">
+                    <td key={colIdx} className={`${cx} py-2.5 text-sm text-ink tabular-nums`}>
                       {col.accessor(item)}
                     </td>
                   ))}
-                  <td className="px-5 py-2.5 text-right">
+                  <td className={`${cx} py-2.5 text-right`}>
                     <div className="flex justify-end gap-1">
                       {renderActions ? (
                         renderActions(item)
@@ -141,7 +147,7 @@ export default function ListTable({
               <tr>
                 <td
                   colSpan={columns.length + 1}
-                  className="px-5 py-10 text-center text-muted text-sm"
+                  className={`${cx} py-10 text-center text-muted text-sm`}
                 >
                   Nenhum registro encontrado.
                 </td>

@@ -10,11 +10,11 @@ import { openPdfBlob } from "@/api/open-pdf"
 
 vi.mock("@/api/open-pdf", () => ({ openPdfBlob: vi.fn() }))
 
-function mockBudgets() {
+function mockBudgets(results) {
   server.use(
     http.get(`${API}/orcamentos/`, () =>
       HttpResponse.json({
-        results: [
+        results: results ?? [
           {
             id: 12,
             first_name: "Ana",
@@ -24,7 +24,7 @@ function mockBudgets() {
             total: "150.00",
           },
         ],
-        count: 1,
+        count: (results ?? [1]).length,
       }),
     ),
   )
@@ -53,5 +53,76 @@ describe("<BudgetList>", () => {
     await waitFor(() => expect(openPdfBlob).toHaveBeenCalledWith(blob))
 
     getPdf.mockRestore()
+  })
+
+  it("coluna 'Situação em': mostra a data da ação conforme o status", async () => {
+    mockBudgets([
+      { id: 1, status: "pendente", total: "0", valid_until: "2026-10-01T00:00:00Z" },
+      {
+        id: 2,
+        status: "aprovado",
+        approved_at: "2026-09-06T12:00:00Z",
+        cancelled_at: null,
+        total: "0",
+        valid_until: "2026-10-01T00:00:00Z",
+      },
+      {
+        id: 3,
+        status: "cancelado",
+        approved_at: null,
+        cancelled_at: "2026-09-05T12:00:00Z",
+        total: "0",
+        valid_until: "2026-10-01T00:00:00Z",
+      },
+      {
+        id: 4,
+        status: "expirado",
+        approved_at: null,
+        cancelled_at: null,
+        total: "0",
+        valid_until: "2026-09-04T12:00:00Z",
+      },
+    ])
+    renderWithProviders(<BudgetList />)
+
+    await screen.findByText("#1")
+    // pendente -> "—"
+    expect(screen.getByText("—")).toBeInTheDocument()
+    // aprovado -> approved_at; cancelado -> cancelled_at; expirado -> valid_until
+    expect(screen.getByText(/06\/09\/2026/)).toBeInTheDocument()
+    expect(screen.getByText(/05\/09\/2026/)).toBeInTheDocument()
+    expect(screen.getByText(/04\/09\/2026/)).toBeInTheDocument()
+  })
+
+  it("aprovar/cancelar aparecem só na linha de orçamento pendente", async () => {
+    mockBudgets([
+      { id: 1, status: "pendente", total: "0", valid_until: "2026-10-01T00:00:00Z" },
+      {
+        id: 2,
+        status: "aprovado",
+        approved_at: "2026-09-06T12:00:00Z",
+        total: "0",
+        valid_until: "2026-10-01T00:00:00Z",
+      },
+    ])
+    renderWithProviders(<BudgetList />)
+    await screen.findByText("#1")
+
+    expect(screen.getAllByRole("button", { name: "Aprovar orçamento" })).toHaveLength(1)
+    expect(screen.getAllByRole("button", { name: "Cancelar orçamento" })).toHaveLength(1)
+  })
+
+  it("aprova o orçamento pendente pela linha da tabela", async () => {
+    mockBudgets([{ id: 1, status: "pendente", total: "0", valid_until: "2026-10-01T00:00:00Z" }])
+    const approve = vi.spyOn(BudgetService, "approveBudget").mockResolvedValue({})
+
+    renderWithProviders(<BudgetList />)
+    await screen.findByText("#1")
+
+    fireEvent.click(screen.getByRole("button", { name: "Aprovar orçamento" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Aprovar" }))
+
+    await waitFor(() => expect(approve).toHaveBeenCalledWith(1))
+    approve.mockRestore()
   })
 })

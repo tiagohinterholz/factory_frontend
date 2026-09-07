@@ -24,6 +24,17 @@ export function useBudget() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   })
 
+  const approveMutation = useMutation({
+    mutationFn: (id) => BudgetService.approveBudget(id),
+    // aprovar pode gerar uma OS — invalida tudo pra listas relacionadas refazerem
+    onSuccess: () => queryClient.invalidateQueries(),
+  })
+
+  const cancelMutation = useMutation({
+    mutationFn: (id) => BudgetService.cancelBudget(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  })
+
   return {
     budgets: query.data?.results ?? [],
     totalItems: query.data?.count ?? 0,
@@ -31,6 +42,8 @@ export function useBudget() {
     error: query.error ?? null,
     refetch: query.refetch,
     remove: removeMutation.mutateAsync,
+    approve: approveMutation.mutateAsync,
+    cancel: cancelMutation.mutateAsync,
     searchTerm,
     setSearchTerm,
     currentPage,

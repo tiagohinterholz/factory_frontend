@@ -24,9 +24,9 @@ const budget = {
   budget_services: [],
 }
 
-function mockApi({ clientsDelayMs = 0 } = {}) {
+function mockApi({ clientsDelayMs = 0, overrides = {} } = {}) {
   server.use(
-    http.get(`${API}/orcamentos/1/`, () => HttpResponse.json(budget)),
+    http.get(`${API}/orcamentos/1/`, () => HttpResponse.json({ ...budget, ...overrides })),
     http.get(`${API}/empreendimentos/`, () =>
       HttpResponse.json({ results: [{ id: 2, corporate_name: "Oficina Teste" }], count: 1 }),
     ),
@@ -74,5 +74,58 @@ describe("<BudgetEdit> — BUG-1 (opções antes do form)", () => {
     expect(
       screen.getByRole("option", { name: /VW Gol \(ABC1D23\)/, selected: true }),
     ).toBeInTheDocument()
+  })
+})
+
+describe("<BudgetEdit> — tarja de data da ação", () => {
+  it("pendente: só o status, sem tarja de data", async () => {
+    mockApi()
+    renderPage()
+
+    expect(await screen.findByText("pendente")).toBeInTheDocument()
+    expect(screen.queryByText(/\d{2}\/\d{2}\/\d{4}/)).not.toBeInTheDocument()
+  })
+
+  it("aprovado: mostra a data de approved_at ao lado do status", async () => {
+    mockApi({
+      overrides: {
+        status: "aprovado",
+        approved_at: "2026-09-06T12:00:00.000Z",
+        cancelled_at: null,
+      },
+    })
+    renderPage()
+
+    expect(await screen.findByText("aprovado")).toBeInTheDocument()
+    expect(screen.getByText(/06\/09\/2026/)).toBeInTheDocument()
+  })
+
+  it("cancelado: mostra a data de cancelled_at", async () => {
+    mockApi({
+      overrides: {
+        status: "cancelado",
+        approved_at: null,
+        cancelled_at: "2026-09-06T12:00:00.000Z",
+      },
+    })
+    renderPage()
+
+    expect(await screen.findByText("cancelado")).toBeInTheDocument()
+    expect(screen.getByText(/06\/09\/2026/)).toBeInTheDocument()
+  })
+
+  it("expirado: mostra a data do valid_until", async () => {
+    mockApi({
+      overrides: {
+        status: "expirado",
+        approved_at: null,
+        cancelled_at: null,
+        valid_until: "2026-09-06T12:00:00.000Z",
+      },
+    })
+    renderPage()
+
+    expect(await screen.findByText("expirado")).toBeInTheDocument()
+    expect(screen.getByText(/06\/09\/2026/)).toBeInTheDocument()
   })
 })
