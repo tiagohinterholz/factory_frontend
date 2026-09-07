@@ -5,6 +5,7 @@ import { ClientService } from "@/modules/client/services/client"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { SupplierService } from "@/modules/supplier/services/supplier"
 import { OrderService } from "@/modules/order/services/order"
+import { BudgetService } from "@/modules/budget/services/budgets"
 import { ProductService } from "@/modules/product/services/product"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
 import { StateService } from "@/modules/location/state/services/state"
@@ -45,6 +46,11 @@ export function useSupplierOptions() {
 export function useOrderOptions() {
   const query = useOptions(["orders"], (page) => OrderService.getOrder({ page }))
   return { orders: query.data ?? [], loading: query.isPending }
+}
+
+export function useBudgetOptions() {
+  const query = useOptions(["budgets"], (page) => BudgetService.getBudget({ page }))
+  return { budgets: query.data ?? [], loading: query.isPending }
 }
 
 export function useProductOptions() {
