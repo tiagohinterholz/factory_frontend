@@ -17,7 +17,9 @@ export function useBudgetForm({ clientId, vehicleId } = {}) {
       ...(vehicleId ? { vehicle_id: String(vehicleId) } : {}),
     },
     submit: (values) => BudgetService.createBudget(toBudgetPayload(values)),
-    redirectTo: "/orcamentos",
+    // vai direto pro orçamento recém-criado pra adicionar produtos/serviços
+    // (é a etapa "Prosseguir para Itens"); sem id, cai na listagem.
+    redirectTo: (budget) => (budget?.id ? `/orcamentos/${budget.id}` : "/orcamentos"),
     errorFallback: "Erro ao criar orçamento",
   })
 }

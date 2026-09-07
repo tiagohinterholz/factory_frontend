@@ -1,7 +1,11 @@
+import { Link } from "react-router-dom"
+import { Edit2, Trash2 } from "lucide-react"
 import { useBudget } from "../hooks/useBudget"
+import { BudgetService } from "../services/budgets"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
+import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
@@ -78,8 +82,6 @@ export default function BudgetList() {
       <ListTable
         columns={columns}
         data={budgets}
-        editLinkPrefix="/orcamentos"
-        onDelete={handleDelete}
         loading={loading}
         error={error}
         onRetry={refetch}
@@ -88,6 +90,27 @@ export default function BudgetList() {
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        renderActions={(item) => (
+          <div className="flex items-center justify-end gap-1">
+            <PdfIconButton
+              request={() => BudgetService.getBudgetPdf(item.id)}
+              title="Gerar PDF do orçamento"
+            />
+            <Link
+              to={`/orcamentos/${item.id}`}
+              className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
+            >
+              <Edit2 size={16} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => handleDelete(item)}
+              className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        )}
       />
     </div>
   )
