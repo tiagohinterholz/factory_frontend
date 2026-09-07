@@ -14,9 +14,10 @@ describe("toOrderPayload", () => {
     expect(toOrderPayload({ ...base, service_date: "" }).service_date).toBeNull()
   })
 
-  it("billing_date segue como data pura, sem virar datetime", () => {
-    const payload = toOrderPayload({ ...base, billing_date: "2026-09-10" })
-    expect(payload.billing_date).toBe("2026-09-10")
+  it("não manda billing_date nem budget_id (o back cuida dos dois)", () => {
+    const payload = toOrderPayload({ ...base, billing_date: "2026-09-10", budget_id: "77" })
+    expect(payload).not.toHaveProperty("billing_date")
+    expect(payload).not.toHaveProperty("budget_id")
   })
 
   it("ids e campos opcionais vazios viram null", () => {
@@ -24,9 +25,7 @@ describe("toOrderPayload", () => {
       business_id: null,
       client_id: null,
       vehicle_id: null,
-      budget_id: null,
       service_date: null,
-      billing_date: null,
       notes: null,
     })
   })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { screen, waitFor } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import { Routes, Route } from "react-router-dom"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
@@ -7,10 +7,9 @@ import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import OrderEdit from "./OrderEdit"
 
-// OS aprovada a partir de um orçamento: o form tem que carregar o orçamento
-// que originou a OS no <select>. Antes o campo ficava vazio porque as opções
-// vinham do hook de LISTA paginada (só a 1ª página) e o guard de loading nem
-// esperava por elas.
+// O orçamento de origem aparece só leitura (não é editável pela OS — o vínculo
+// nasce ao aprovar o orçamento). billing_date também não tem campo: o back grava
+// ao faturar e o front só exibe a tarja.
 const order = {
   id: 1,
   business: { id: 2 },
@@ -45,16 +44,6 @@ function mockApi() {
         count: 1,
       }),
     ),
-    // o orçamento #77 está aqui — o <select> precisa da <option> pra exibir
-    http.get(`${API}/orcamentos/`, () =>
-      HttpResponse.json({
-        results: [
-          { id: 40, first_name: "Outro" },
-          { id: 77, first_name: "Ana" },
-        ],
-        count: 2,
-      }),
-    ),
     http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
     http.get(`${API}/servicos/`, () => HttpResponse.json({ results: [], count: 0 })),
   )
@@ -69,15 +58,13 @@ const renderPage = () =>
   )
 
 describe("<OrderEdit>", () => {
-  it("carrega o orçamento que originou a OS no select", async () => {
+  it("mostra o orçamento de origem só leitura, sem <select> pra ele", async () => {
     mockApi()
     renderPage()
 
-    await waitFor(() =>
-      expect(
-        screen.getByRole("option", { name: "Orçamento #77", selected: true }),
-      ).toBeInTheDocument(),
-    )
+    expect(await screen.findByText("Orçamento de origem")).toBeInTheDocument()
+    expect(screen.getByText("Orçamento #77")).toBeInTheDocument()
+    expect(screen.queryByRole("combobox", { name: /orçamento/i })).not.toBeInTheDocument()
   })
 
   it("mostra o subtotal de produtos, o de serviços e o total geral do back", async () => {
@@ -90,6 +77,26 @@ describe("<OrderEdit>", () => {
     expect(screen.getByText("R$ 1000.00")).toBeInTheDocument()
     expect(screen.getByText("Total geral")).toBeInTheDocument()
     expect(screen.getByText("R$ 6000.00")).toBeInTheDocument()
+  })
+
+  it("não tem campo de data de faturamento no form", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    expect(screen.queryByLabelText(/faturamento/i)).not.toBeInTheDocument()
+  })
+
+  it("faturado: mostra a tarja 'Faturado em <data>' com o billing_date do back", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, status: "faturado", billing_date: "2026-09-10" }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText(/Faturado em 10\/09\/2026/)).toBeInTheDocument()
   })
 
   it("não lista item com is_active=false (deletado que o back ainda devolve)", async () => {

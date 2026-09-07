@@ -8,7 +8,6 @@ import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import FiscalNotePanel from "@/modules/order/components/FiscalNotePanel"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
-import { useBudgetOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
 import { useWorkServiceOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
@@ -31,6 +30,8 @@ export default function OrderEdit() {
     total,
     productsTotal,
     servicesTotal,
+    billingDate,
+    budgetId,
     handleDelete,
     handleInvoice,
     refresh,
@@ -48,7 +49,6 @@ export default function OrderEdit() {
   const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { client: clients, loading: loadingClients } = useClientOptions()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
-  const { budgets, loading: loadingBudgets } = useBudgetOptions()
   const { product: allProducts } = useProductOptions()
   const { workservice: allServices } = useWorkServiceOptions()
 
@@ -114,10 +114,9 @@ export default function OrderEdit() {
     }
   }
 
-  // espera TODAS as listas de opção antes de montar os <select> — senão o
-  // form.reset roda antes das <option> existirem e o campo fica vazio (BUG-1).
-  // Inclui os orçamentos: uma OS aprovada carrega o orçamento que a originou.
-  if (loading || loadingBusinesses || loadingClients || loadingVehicles || loadingBudgets)
+  // espera as listas de opção antes de montar os <select> — senão o form.reset
+  // roda antes das <option> existirem e o campo fica vazio (BUG-1).
+  if (loading || loadingBusinesses || loadingClients || loadingVehicles)
     return <div className="p-6 text-center">Carregando...</div>
 
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
@@ -127,7 +126,6 @@ export default function OrderEdit() {
   const vehicleOptions = vehicles
     .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
     .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
-  const budgetOptions = budgets.map((b) => ({ id: b.id, name: `Orçamento #${b.id}` }))
 
   return (
     <div className="p-6 space-y-8">
@@ -146,6 +144,11 @@ export default function OrderEdit() {
             >
               {status}
             </span>
+            {billingDate && (
+              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium normal-case tracking-normal">
+                Faturado em {new Date(billingDate + "T00:00:00").toLocaleDateString("pt-BR")}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -203,23 +206,19 @@ export default function OrderEdit() {
                 error={errors.vehicle_id?.message}
                 registration={register("vehicle_id")}
               />
-              <SelectField
-                label="Orçamento"
-                options={budgetOptions}
-                error={errors.budget_id?.message}
-                registration={register("budget_id")}
-              />
+              {budgetId && (
+                <div className="flex flex-col">
+                  <span className="label-premium">Orçamento de origem</span>
+                  <p className="input-premium bg-ground text-muted cursor-not-allowed">
+                    Orçamento #{budgetId}
+                  </p>
+                </div>
+              )}
               <FormField
                 label="Data e hora do serviço"
                 type="datetime-local"
                 error={errors.service_date?.message}
                 registration={register("service_date")}
-              />
-              <FormField
-                label="Data do Faturamento"
-                type="date"
-                error={errors.billing_date?.message}
-                registration={register("billing_date")}
               />
               <FormField
                 label="Observações"
