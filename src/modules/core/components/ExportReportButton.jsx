@@ -106,10 +106,12 @@ export default function ExportReportButton({ type, label = "Exportar PDF" }) {
     const onKey = (event) => {
       if (event.key === "Escape") setOpen(false)
     }
-    document.addEventListener("mousedown", onClickOutside)
+    // `click` e não `mousedown`: no Chromium/Linux um listener de mousedown no
+    // document fecha o popup nativo do <select> do popover antes de abrir.
+    document.addEventListener("click", onClickOutside)
     document.addEventListener("keydown", onKey)
     return () => {
-      document.removeEventListener("mousedown", onClickOutside)
+      document.removeEventListener("click", onClickOutside)
       document.removeEventListener("keydown", onKey)
     }
   }, [open])

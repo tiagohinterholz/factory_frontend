@@ -14,16 +14,18 @@ export default function ListFilters({ fields, value, onApply }) {
 
   useEffect(() => {
     if (!open) return undefined
+    // `click` (não `mousedown`): no Chromium/Linux um listener de mousedown no
+    // document fecha o popup nativo do <select> antes dele abrir.
     const onClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) setOpen(false)
     }
     const onKey = (event) => {
       if (event.key === "Escape") setOpen(false)
     }
-    document.addEventListener("mousedown", onClickOutside)
+    document.addEventListener("click", onClickOutside)
     document.addEventListener("keydown", onKey)
     return () => {
-      document.removeEventListener("mousedown", onClickOutside)
+      document.removeEventListener("click", onClickOutside)
       document.removeEventListener("keydown", onKey)
     }
   }, [open])
