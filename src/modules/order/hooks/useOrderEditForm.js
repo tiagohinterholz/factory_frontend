@@ -31,16 +31,29 @@ export function useOrderEditForm() {
   const toast = useToast()
   const queryClient = useQueryClient()
 
-  // itens de linha, status e total são somente leitura aqui; vivem fora do form.
-  const [meta, setMeta] = useState({ products: [], services: [], status: "", total: "" })
+  // itens de linha, status e totais são somente leitura aqui; vivem fora do
+  // form. products_total/services_total vêm calculados do back (só itens
+  // ativos); total é a soma dos dois.
+  const [meta, setMeta] = useState({
+    products: [],
+    services: [],
+    status: "",
+    total: "",
+    productsTotal: "",
+    servicesTotal: "",
+  })
 
   const fetchMeta = useCallback(async () => {
     const data = await OrderService.getOrderById(id)
+    // o back não some com a linha no DELETE, só marca is_active=false; o
+    // detalhe ainda a devolve. Os totais já vêm só com os ativos.
     setMeta({
-      products: data.order_products ?? [],
-      services: data.order_services ?? [],
+      products: (data.order_products ?? []).filter((item) => item.is_active),
+      services: (data.order_services ?? []).filter((item) => item.is_active),
       status: data.status ?? "",
-      total: data.total ?? "",
+      total: data.total ?? "0.00",
+      productsTotal: data.products_total ?? "0.00",
+      servicesTotal: data.services_total ?? "0.00",
     })
     return data
   }, [id])
@@ -91,6 +104,8 @@ export function useOrderEditForm() {
     services: meta.services,
     status: meta.status,
     total: meta.total,
+    productsTotal: meta.productsTotal,
+    servicesTotal: meta.servicesTotal,
     refresh: fetchMeta,
     handleDelete,
     handleInvoice,
