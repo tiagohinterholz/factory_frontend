@@ -10,12 +10,20 @@ import { openPdfBlob } from "@/api/open-pdf"
 
 vi.mock("@/api/open-pdf", () => ({ openPdfBlob: vi.fn() }))
 
-function mockClients() {
+function mockClients(results) {
   server.use(
     http.get(`${API}/clientes/`, () =>
       HttpResponse.json({
-        results: [{ id: 1, first_name: "Ana", last_name: "Lima", cpf: "111", phone: "999" }],
-        count: 1,
+        results: results ?? [
+          {
+            id: 1,
+            first_name: "Ana",
+            last_name: "Lima",
+            cpf: "111",
+            phone: "(41) 91266-2552",
+          },
+        ],
+        count: (results ?? [1]).length,
       }),
     ),
   )
@@ -89,5 +97,23 @@ describe("<ClientList>", () => {
     const fechar = screen.getAllByRole("button", { name: "Fechar" })
     fireEvent.click(fechar[fechar.length - 1])
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+  })
+
+  it("mostra o link do WhatsApp (wa.me) para cliente com telefone", async () => {
+    mockClients()
+    renderWithProviders(<ClientList />)
+    await screen.findByText("Ana Lima")
+
+    const link = screen.getByRole("link", { name: /abrir conversa no whatsapp/i })
+    expect(link).toHaveAttribute("href", "https://wa.me/5541912662552")
+    expect(link).toHaveAttribute("target", "_blank")
+  })
+
+  it("não mostra o link do WhatsApp quando o cliente não tem telefone", async () => {
+    mockClients([{ id: 2, first_name: "Beto", last_name: "Souza", cpf: "222", phone: "" }])
+    renderWithProviders(<ClientList />)
+    await screen.findByText("Beto Souza")
+
+    expect(screen.queryByRole("link", { name: /whatsapp/i })).not.toBeInTheDocument()
   })
 })

@@ -10,8 +10,10 @@ import { parseApiError } from "@/api/parse-api-error"
 //   schema        — zod
 //   defaultValues — valores iniciais (create)
 //   load          — async () => registro  (edit: carrega e faz form.reset)
-//   submit        — async (values) => void  (create OU update, o módulo decide)
-//   redirectTo    — pra onde navegar no sucesso
+//   submit        — async (values) => resultado  (create OU update, o módulo decide)
+//   redirectTo    — pra onde navegar no sucesso: string, ou função que recebe o
+//                   resultado do submit e devolve o caminho (ex.: ir pro
+//                   /orcamentos/<id> recém-criado). Falsy = não navega.
 //   errorFallback — mensagem se a API não mandar nada estruturado
 //
 // Erros por campo do DRF (parseApiError().fields) viram form.setError(campo).
@@ -53,11 +55,12 @@ export function useResourceForm({
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
-      await submit(values)
+      const result = await submit(values)
       // marca todo o cache como stale — a lista pra onde voltamos refaz
       // sozinha em vez de mostrar o dado antigo (staleTime de 30s).
       queryClient.invalidateQueries()
-      if (redirectTo) navigate(redirectTo)
+      const target = typeof redirectTo === "function" ? redirectTo(result) : redirectTo
+      if (target) navigate(target)
     } catch (error) {
       console.error(error)
       const { message, fields } = parseApiError(error, errorFallback)

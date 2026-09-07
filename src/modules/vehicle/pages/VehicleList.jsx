@@ -3,16 +3,26 @@ import { ClipboardList, FileText, Edit2, Trash2 } from "lucide-react"
 import { useVehicle } from "../hooks/useVehicle"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import ListFilters from "@/modules/core/components/ListFilters"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
+
+const FILTER_FIELDS = [
+  { name: "model", label: "Modelo", type: "text" },
+  { name: "plate", label: "Placa", type: "text" },
+  { name: "color", label: "Cor", type: "text" },
+  { name: "client", label: "Dono", type: "text" },
+]
 
 export default function VehicleList() {
   const navigate = useNavigate()
   const {
     vehicle,
     loading,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -25,10 +35,14 @@ export default function VehicleList() {
   const confirm = useConfirm()
 
   const columns = [
-    { header: "Placa", accessor: (item) => item.plate },
-    { header: "Modelo", accessor: (item) => item.model },
-    { header: "Cor", accessor: (item) => item.color },
-    { header: "Cliente", accessor: (item) => `${item.client.first_name} ${item.client.last_name}` },
+    { header: "Placa", sortKey: "plate", accessor: (item) => item.plate },
+    { header: "Modelo", sortKey: "model", accessor: (item) => item.model },
+    { header: "Cor", sortKey: "color", accessor: (item) => item.color },
+    {
+      header: "Cliente",
+      sortKey: "client__first_name",
+      accessor: (item) => `${item.client.first_name} ${item.client.last_name}`,
+    },
   ]
 
   const handleDelete = async (item) => {
@@ -56,18 +70,23 @@ export default function VehicleList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader title="Veículos" buttonText="Novo Veículo" buttonLink="/veiculos/novo" />
+      <ListHeader
+        title="Veículos"
+        buttonText="Novo Veículo"
+        buttonLink="/veiculos/novo"
+        actions={<ListFilters fields={FILTER_FIELDS} value={filters} onApply={applyFilters} />}
+      />
       <ListTable
         columns={columns}
         data={vehicle}
         loading={loading}
         error={error}
         onRetry={refetch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
         renderActions={(item) => (
           <div className="flex items-center justify-end gap-1">
             <button

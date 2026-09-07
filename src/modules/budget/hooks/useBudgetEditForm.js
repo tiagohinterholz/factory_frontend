@@ -27,8 +27,17 @@ export function useBudgetEditForm() {
   const toast = useToast()
   const queryClient = useQueryClient()
 
-  // itens de linha, status e total são somente leitura aqui; vivem fora do form.
-  const [meta, setMeta] = useState({ products: [], services: [], status: "", total: "" })
+  // itens de linha, status, total e datas de ação são somente leitura aqui;
+  // vivem fora do form.
+  const [meta, setMeta] = useState({
+    products: [],
+    services: [],
+    status: "",
+    total: "",
+    approvedAt: null,
+    cancelledAt: null,
+    validUntil: null,
+  })
 
   const fetchMeta = useCallback(async () => {
     const data = await BudgetService.getBudgetById(id)
@@ -37,6 +46,9 @@ export function useBudgetEditForm() {
       services: data.budget_services ?? [],
       status: data.status ?? "",
       total: data.total ?? "0.00",
+      approvedAt: data.approved_at ?? null,
+      cancelledAt: data.cancelled_at ?? null,
+      validUntil: data.valid_until ?? null,
     })
     return data
   }, [id])
@@ -105,6 +117,9 @@ export function useBudgetEditForm() {
     services: meta.services,
     status: meta.status,
     total: meta.total,
+    approvedAt: meta.approvedAt,
+    cancelledAt: meta.cancelledAt,
+    validUntil: meta.validUntil,
     refresh: fetchMeta,
     handleDelete,
     handleApprove,

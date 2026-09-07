@@ -99,7 +99,7 @@ export default function OrderCreate() {
             />
             <div className="pt-4">
               <PrimaryButton type="submit" disabled={isSubmitting}>
-                Criar Ordem
+                Prosseguir para Itens
               </PrimaryButton>
             </div>
           </form>

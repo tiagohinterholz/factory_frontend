@@ -17,7 +17,9 @@ export function useOrderForm({ clientId, vehicleId } = {}) {
       ...(vehicleId ? { vehicle_id: String(vehicleId) } : {}),
     },
     submit: (values) => OrderService.createOrder(toOrderPayload(values)),
-    redirectTo: "/ordens",
+    // cria a "casca" e vai direto pra edição pra adicionar produtos/serviços;
+    // sem id, cai na listagem.
+    redirectTo: (order) => (order?.id ? `/ordens/${order.id}` : "/ordens"),
     errorFallback: "Erro ao criar ordem",
   })
 }

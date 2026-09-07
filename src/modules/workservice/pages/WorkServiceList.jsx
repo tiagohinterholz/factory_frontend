@@ -5,7 +5,7 @@ import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
-import SelectField from "@/modules/core/components/SelectField"
+import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
@@ -14,27 +14,38 @@ export default function WorkServiceList() {
   const {
     workservice,
     loading,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
     refetch,
     remove,
     error,
-    supplierId,
-    setSupplierId,
   } = useWorkService()
 
   const toast = useToast()
   const confirm = useConfirm()
   const { supplier: suppliers } = useSupplierOptions()
-  const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
+
+  const filterFields = [
+    { name: "name", label: "Nome", type: "text" },
+    { name: "description", label: "Descrição", type: "text" },
+    {
+      name: "supplier_id",
+      label: "Fornecedor",
+      type: "select",
+      options: suppliers.map((s) => ({ id: s.id, name: s.corporate_name })),
+    },
+  ]
 
   const columns = [
-    { header: "Nome", accessor: (item) => item.name },
+    { header: "Nome", sortKey: "name", accessor: (item) => item.name },
     {
       header: "Preço",
+      sortKey: "unit_price",
       accessor: (item) =>
         item.unit_price
           ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace(".", ",")}`
@@ -62,19 +73,12 @@ export default function WorkServiceList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader title="Serviços" buttonText="Novo Serviço" buttonLink="/servicos/novo" />
-
-      <div className="max-w-xs">
-        <SelectField
-          label="Filtrar por fornecedor"
-          options={supplierOptions}
-          value={supplierId}
-          onChange={(event) => {
-            setSupplierId(event.target.value)
-            setCurrentPage(1)
-          }}
-        />
-      </div>
+      <ListHeader
+        title="Serviços"
+        buttonText="Novo Serviço"
+        buttonLink="/servicos/novo"
+        actions={<ListFilters fields={filterFields} value={filters} onApply={applyFilters} />}
+      />
 
       <ListTable
         columns={columns}
@@ -82,11 +86,11 @@ export default function WorkServiceList() {
         loading={loading}
         error={error}
         onRetry={refetch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
         renderActions={(item) => (
           <div className="flex items-center justify-end gap-1">
             <PdfIconButton

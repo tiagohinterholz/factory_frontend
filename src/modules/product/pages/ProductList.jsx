@@ -6,7 +6,7 @@ import { ProductService } from "@/modules/product/services/product"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
-import SelectField from "@/modules/core/components/SelectField"
+import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
@@ -15,28 +15,43 @@ export default function ProductList() {
   const {
     product,
     loading,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
     refetch,
     remove,
     error,
-    supplierId,
-    setSupplierId,
   } = useProduct()
 
   const toast = useToast()
   const confirm = useConfirm()
   const { supplier: suppliers } = useSupplierOptions()
-  const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
+
+  const filterFields = [
+    { name: "name", label: "Nome", type: "text" },
+    { name: "reference", label: "Referência", type: "text" },
+    {
+      name: "supplier_id",
+      label: "Fornecedor",
+      type: "select",
+      options: suppliers.map((s) => ({ id: s.id, name: s.corporate_name })),
+    },
+  ]
 
   const columns = [
-    { header: "Produto", accessor: (item) => item.name },
-    { header: "Referência", accessor: (item) => (item.reference ? item.reference : "-") },
+    { header: "Produto", sortKey: "name", accessor: (item) => item.name },
+    {
+      header: "Referência",
+      sortKey: "reference",
+      accessor: (item) => (item.reference ? item.reference : "-"),
+    },
     {
       header: "Preço Venda",
+      sortKey: "unit_price",
       accessor: (item) =>
         item.unit_price
           ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace(".", ",")}`
@@ -44,6 +59,7 @@ export default function ProductList() {
     },
     {
       header: "Qtde. em estoque",
+      sortKey: "stock_quantity",
       accessor: (item) => (item.stock_quantity ? item.stock_quantity : "0"),
     },
   ]
@@ -71,20 +87,13 @@ export default function ProductList() {
         title="Produtos"
         buttonText="Novo Produto"
         buttonLink="/produtos/novo"
-        actions={<ExportReportButton type="stock" />}
+        actions={
+          <div className="flex items-center gap-2">
+            <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
+            <ExportReportButton type="stock" />
+          </div>
+        }
       />
-
-      <div className="max-w-xs">
-        <SelectField
-          label="Filtrar por fornecedor"
-          options={supplierOptions}
-          value={supplierId}
-          onChange={(event) => {
-            setSupplierId(event.target.value)
-            setCurrentPage(1)
-          }}
-        />
-      </div>
 
       <ListTable
         columns={columns}
@@ -92,11 +101,11 @@ export default function ProductList() {
         loading={loading}
         error={error}
         onRetry={refetch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
         renderActions={(item) => (
           <div className="flex items-center justify-end gap-1">
             <PdfIconButton

@@ -1,20 +1,31 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { OrderService } from "@/modules/order/services/order"
-import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
+import { useListFilters } from "@/modules/core/hooks/useListFilters"
+import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
 
 const QUERY_KEY = "orders"
+const EMPTY_FILTERS = { status: "", client_id: "", date_from: "", date_to: "" }
 
 export function useOrder() {
   const queryClient = useQueryClient()
-  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const search = useDebouncedValue(searchTerm, 300)
+  const {
+    filters,
+    apply: applyFilters,
+    params: filterParams,
+  } = useListFilters(EMPTY_FILTERS, () => setCurrentPage(1))
+  const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { search, page: currentPage }],
-    queryFn: () => OrderService.getOrder({ search, page: currentPage }),
+    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
+    queryFn: () =>
+      OrderService.getOrder({
+        page: currentPage,
+        ...filterParams,
+        ...(ordering ? { ordering } : {}),
+      }),
     placeholderData: keepPreviousData,
     select: normalizeList,
   })
@@ -31,8 +42,10 @@ export function useOrder() {
     error: query.error ?? null,
     refetch: query.refetch,
     remove: removeMutation.mutateAsync,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
   }
