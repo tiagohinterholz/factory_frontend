@@ -29,6 +29,8 @@ export default function BudgetList() {
     loading,
     filters,
     applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -57,15 +59,24 @@ export default function BudgetList() {
 
   const columns = [
     { header: "ID", accessor: (item) => `#${item.id}` },
-    { header: "Cliente", accessor: (item) => item.first_name || item.client?.first_name || "N/A" },
+    {
+      header: "Cliente",
+      sortKey: "client__first_name",
+      accessor: (item) => item.first_name || item.client?.first_name || "N/A",
+    },
     {
       header: "Veículo",
       accessor: (item) =>
         item.vehicle_name || `${item.vehicle?.model || ""} ${item.vehicle?.plate || ""}`,
     },
-    { header: "Validade", accessor: (item) => new Date(item.valid_until).toLocaleDateString() },
+    {
+      header: "Validade",
+      sortKey: "valid_until",
+      accessor: (item) => new Date(item.valid_until).toLocaleDateString(),
+    },
     {
       header: "Status",
+      sortKey: "status",
       accessor: (item) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${
@@ -83,7 +94,11 @@ export default function BudgetList() {
       ),
     },
     { header: "Situação em", accessor: (item) => formatDateTime(statusDate(item)) || "—" },
-    { header: "Total", accessor: (item) => `R$ ${parseFloat(item.total).toFixed(2)}` },
+    {
+      header: "Total",
+      sortKey: "total",
+      accessor: (item) => `R$ ${parseFloat(item.total).toFixed(2)}`,
+    },
   ]
 
   const handleDelete = async (item) => {
@@ -160,6 +175,8 @@ export default function BudgetList() {
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
         renderActions={(item) => (
           <div className="flex items-center justify-end gap-1">
             <PdfIconButton

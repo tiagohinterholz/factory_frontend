@@ -16,6 +16,8 @@ export default function SupplierList() {
     loading,
     filters,
     applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -28,8 +30,8 @@ export default function SupplierList() {
   const confirm = useConfirm()
 
   const columns = [
-    { header: "Razão Social", accessor: (item) => item.corporate_name },
-    { header: "CNPJ", accessor: (item) => item.cnpj },
+    { header: "Razão Social", sortKey: "corporate_name", accessor: (item) => item.corporate_name },
+    { header: "CNPJ", sortKey: "cnpj", accessor: (item) => item.cnpj },
     { header: "Telefone", accessor: (item) => item.phone },
   ]
 
@@ -69,6 +71,8 @@ export default function SupplierList() {
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
       />
     </div>
   )

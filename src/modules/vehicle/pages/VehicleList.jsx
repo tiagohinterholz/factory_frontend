@@ -21,6 +21,8 @@ export default function VehicleList() {
     loading,
     filters,
     applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -33,10 +35,14 @@ export default function VehicleList() {
   const confirm = useConfirm()
 
   const columns = [
-    { header: "Placa", accessor: (item) => item.plate },
-    { header: "Modelo", accessor: (item) => item.model },
-    { header: "Cor", accessor: (item) => item.color },
-    { header: "Cliente", accessor: (item) => `${item.client.first_name} ${item.client.last_name}` },
+    { header: "Placa", sortKey: "plate", accessor: (item) => item.plate },
+    { header: "Modelo", sortKey: "model", accessor: (item) => item.model },
+    { header: "Cor", sortKey: "color", accessor: (item) => item.color },
+    {
+      header: "Cliente",
+      sortKey: "client__first_name",
+      accessor: (item) => `${item.client.first_name} ${item.client.last_name}`,
+    },
   ]
 
   const handleDelete = async (item) => {
@@ -79,6 +85,8 @@ export default function VehicleList() {
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
         renderActions={(item) => (
           <div className="flex items-center justify-end gap-1">
             <button

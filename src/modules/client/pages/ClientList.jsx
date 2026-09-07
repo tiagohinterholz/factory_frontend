@@ -29,6 +29,8 @@ export default function ClientList() {
     loading,
     filters,
     applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -42,8 +44,12 @@ export default function ClientList() {
   const [vehiclesClient, setVehiclesClient] = useState(null)
 
   const columns = [
-    { header: "Nome", accessor: (item) => `${item.first_name} ${item.last_name}` },
-    { header: "CPF", accessor: (item) => item.cpf },
+    {
+      header: "Nome",
+      sortKey: "first_name",
+      accessor: (item) => `${item.first_name} ${item.last_name}`,
+    },
+    { header: "CPF", sortKey: "cpf", accessor: (item) => item.cpf },
     { header: "Telefone", accessor: (item) => item.phone },
   ]
 
@@ -81,6 +87,8 @@ export default function ClientList() {
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
         renderActions={(item) => {
           const wa = whatsappLink(item.phone)
           return (

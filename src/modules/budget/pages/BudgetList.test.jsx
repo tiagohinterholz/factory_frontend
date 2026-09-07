@@ -150,4 +150,17 @@ describe("<BudgetList>", () => {
     // sem search fuzzy
     expect(lastBudgetsUrl.searchParams.has("search")).toBe(false)
   })
+
+  it("ordena pelo cabeçalho: 1º clique asc, 2º desc (?ordering=)", async () => {
+    mockBudgets()
+    renderWithProviders(<BudgetList />)
+    await screen.findByText("#12")
+
+    const totalHeader = screen.getByRole("button", { name: /total/i })
+    fireEvent.click(totalHeader)
+    await waitFor(() => expect(lastBudgetsUrl.searchParams.get("ordering")).toBe("total"))
+
+    fireEvent.click(totalHeader)
+    await waitFor(() => expect(lastBudgetsUrl.searchParams.get("ordering")).toBe("-total"))
+  })
 })

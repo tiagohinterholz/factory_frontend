@@ -16,6 +16,8 @@ export default function WorkServiceList() {
     loading,
     filters,
     applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -40,9 +42,10 @@ export default function WorkServiceList() {
   ]
 
   const columns = [
-    { header: "Nome", accessor: (item) => item.name },
+    { header: "Nome", sortKey: "name", accessor: (item) => item.name },
     {
       header: "Preço",
+      sortKey: "unit_price",
       accessor: (item) =>
         item.unit_price
           ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace(".", ",")}`
@@ -86,6 +89,8 @@ export default function WorkServiceList() {
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
         renderActions={(item) => (
           <div className="flex items-center justify-end gap-1">
             <PdfIconButton

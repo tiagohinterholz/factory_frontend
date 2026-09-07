@@ -14,6 +14,8 @@ export default function OrderList() {
     loading,
     filters,
     applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -40,7 +42,11 @@ export default function OrderList() {
 
   const columns = [
     { header: "ID", accessor: (item) => `#${item.id}` },
-    { header: "Cliente", accessor: (item) => item.first_name || item.client?.first_name || "N/A" },
+    {
+      header: "Cliente",
+      sortKey: "client__first_name",
+      accessor: (item) => item.first_name || item.client?.first_name || "N/A",
+    },
     {
       header: "Veículo",
       accessor: (item) =>
@@ -48,6 +54,7 @@ export default function OrderList() {
     },
     {
       header: "Data/Hora Serviço",
+      sortKey: "service_date",
       accessor: (item) =>
         item.service_date
           ? new Date(item.service_date).toLocaleString("pt-BR", {
@@ -61,6 +68,7 @@ export default function OrderList() {
     },
     {
       header: "Status",
+      sortKey: "status",
       accessor: (item) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${
@@ -75,7 +83,11 @@ export default function OrderList() {
         </span>
       ),
     },
-    { header: "Total", accessor: (item) => `R$ ${parseFloat(item.total).toFixed(2)}` },
+    {
+      header: "Total",
+      sortKey: "total",
+      accessor: (item) => `R$ ${parseFloat(item.total).toFixed(2)}`,
+    },
   ]
 
   const handleDelete = async (item) => {
@@ -119,6 +131,8 @@ export default function OrderList() {
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
       />
     </div>
   )

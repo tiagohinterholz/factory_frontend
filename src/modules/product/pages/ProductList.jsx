@@ -17,6 +17,8 @@ export default function ProductList() {
     loading,
     filters,
     applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -41,10 +43,15 @@ export default function ProductList() {
   ]
 
   const columns = [
-    { header: "Produto", accessor: (item) => item.name },
-    { header: "Referência", accessor: (item) => (item.reference ? item.reference : "-") },
+    { header: "Produto", sortKey: "name", accessor: (item) => item.name },
+    {
+      header: "Referência",
+      sortKey: "reference",
+      accessor: (item) => (item.reference ? item.reference : "-"),
+    },
     {
       header: "Preço Venda",
+      sortKey: "unit_price",
       accessor: (item) =>
         item.unit_price
           ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace(".", ",")}`
@@ -52,6 +59,7 @@ export default function ProductList() {
     },
     {
       header: "Qtde. em estoque",
+      sortKey: "stock_quantity",
       accessor: (item) => (item.stock_quantity ? item.stock_quantity : "0"),
     },
   ]
@@ -96,6 +104,8 @@ export default function ProductList() {
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}
+        ordering={ordering}
+        onSort={toggleSort}
         renderActions={(item) => (
           <div className="flex items-center justify-end gap-1">
             <PdfIconButton

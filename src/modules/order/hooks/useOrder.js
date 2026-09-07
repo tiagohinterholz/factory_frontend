@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { OrderService } from "@/modules/order/services/order"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
+import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
 
 const QUERY_KEY = "orders"
@@ -15,10 +16,16 @@ export function useOrder() {
     apply: applyFilters,
     params: filterParams,
   } = useListFilters(EMPTY_FILTERS, () => setCurrentPage(1))
+  const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage, filters }],
-    queryFn: () => OrderService.getOrder({ page: currentPage, ...filterParams }),
+    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
+    queryFn: () =>
+      OrderService.getOrder({
+        page: currentPage,
+        ...filterParams,
+        ...(ordering ? { ordering } : {}),
+      }),
     placeholderData: keepPreviousData,
     select: normalizeList,
   })
@@ -37,6 +44,8 @@ export function useOrder() {
     remove: removeMutation.mutateAsync,
     filters,
     applyFilters,
+    ordering,
+    toggleSort,
     currentPage,
     setCurrentPage,
   }
