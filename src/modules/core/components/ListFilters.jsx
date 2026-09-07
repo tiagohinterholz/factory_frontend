@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { memo, useEffect, useState } from "react"
 import { SlidersHorizontal, ChevronDown, X } from "lucide-react"
 import SelectField from "@/modules/core/components/SelectField"
 import FormField from "@/modules/core/components/FormField"
@@ -8,10 +8,15 @@ import FormField from "@/modules/core/components/FormField"
 // `value` é o objeto de filtros JÁ aplicado; `onApply(next)` dispara a busca.
 // O painel edita um rascunho e só aplica no "Filtrar" (ou "Limpar").
 //
-// Não fecha ao clicar fora de propósito: qualquer listener de mouse no
-// document derruba o popup nativo do <select> no Chromium/Linux. Fecha pelo
-// próprio botão "Filtros", pelo X, pelo Filtrar/Limpar e por Esc.
-export default function ListFilters({ fields, value, onApply }) {
+// React.memo + props estáveis (fields memoizado no pai, onApply via useCallback)
+// pra NÃO re-renderizar quando o pai re-renderiza (ex.: refetch da lista). Se o
+// <select> reconcilia com o popup nativo aberto, o Chromium fecha ele — foi o
+// que dava "o dropdown abre e não para pra selecionar" em prod.
+//
+// Também não fecha ao clicar fora: qualquer listener de mouse no document
+// derruba o mesmo popup. Fecha pelo botão "Filtros", pelo X, pelo
+// Filtrar/Limpar e por Esc.
+function ListFilters({ fields, value, onApply }) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(value)
 
@@ -115,3 +120,5 @@ export default function ListFilters({ fields, value, onApply }) {
     </div>
   )
 }
+
+export default memo(ListFilters)

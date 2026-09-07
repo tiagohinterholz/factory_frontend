@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Link } from "react-router-dom"
 import { Edit2, Trash2 } from "lucide-react"
 import { useWorkService } from "../hooks/useWorkService"
@@ -30,16 +31,21 @@ export default function WorkServiceList() {
   const confirm = useConfirm()
   const { supplier: suppliers } = useSupplierOptions()
 
-  const filterFields = [
-    { name: "name", label: "Nome", type: "text" },
-    { name: "description", label: "Descrição", type: "text" },
-    {
-      name: "supplier_id",
-      label: "Fornecedor",
-      type: "select",
-      options: suppliers.map((s) => ({ id: s.id, name: s.corporate_name })),
-    },
-  ]
+  // memoizado: o ListFilters é React.memo e não pode re-renderizar quando a
+  // lista refaz (senão o <select> reconcilia e o dropdown nativo aberto fecha)
+  const filterFields = useMemo(
+    () => [
+      { name: "name", label: "Nome", type: "text" },
+      { name: "description", label: "Descrição", type: "text" },
+      {
+        name: "supplier_id",
+        label: "Fornecedor",
+        type: "select",
+        options: suppliers.map((s) => ({ id: s.id, name: s.corporate_name })),
+      },
+    ],
+    [suppliers],
+  )
 
   const columns = [
     { header: "Nome", sortKey: "name", accessor: (item) => item.name },

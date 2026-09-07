@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Link } from "react-router-dom"
 import { CheckCircle, Edit2, Trash2, XCircle } from "lucide-react"
 import { useBudget } from "../hooks/useBudget"
@@ -45,17 +46,22 @@ export default function BudgetList() {
   const confirm = useConfirm()
   const { client: clients } = useClientOptions()
 
-  const filterFields = [
-    { name: "status", label: "Status", type: "select", options: REPORT_STATUS_OPTIONS.budgets },
-    {
-      name: "client_id",
-      label: "Cliente",
-      type: "select",
-      options: clients.map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
-    },
-    { name: "date_from", label: "Criado a partir de", type: "date" },
-    { name: "date_to", label: "Criado até", type: "date" },
-  ]
+  // memoizado: o ListFilters é React.memo e não pode re-renderizar quando a
+  // lista refaz (senão o <select> reconcilia e o dropdown nativo aberto fecha)
+  const filterFields = useMemo(
+    () => [
+      { name: "status", label: "Status", type: "select", options: REPORT_STATUS_OPTIONS.budgets },
+      {
+        name: "client_id",
+        label: "Cliente",
+        type: "select",
+        options: clients.map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
+      },
+      { name: "date_from", label: "Criado a partir de", type: "date" },
+      { name: "date_to", label: "Criado até", type: "date" },
+    ],
+    [clients],
+  )
 
   const columns = [
     { header: "ID", accessor: (item) => `#${item.id}` },

@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { useOrder } from "../hooks/useOrder"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
@@ -28,17 +29,22 @@ export default function OrderList() {
   const confirm = useConfirm()
   const { client: clients } = useClientOptions()
 
-  const filterFields = [
-    { name: "status", label: "Status", type: "select", options: REPORT_STATUS_OPTIONS.orders },
-    {
-      name: "client_id",
-      label: "Cliente",
-      type: "select",
-      options: clients.map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
-    },
-    { name: "date_from", label: "Serviço a partir de", type: "date" },
-    { name: "date_to", label: "Serviço até", type: "date" },
-  ]
+  // memoizado: o ListFilters é React.memo e não pode re-renderizar quando a
+  // lista refaz (senão o <select> reconcilia e o dropdown nativo aberto fecha)
+  const filterFields = useMemo(
+    () => [
+      { name: "status", label: "Status", type: "select", options: REPORT_STATUS_OPTIONS.orders },
+      {
+        name: "client_id",
+        label: "Cliente",
+        type: "select",
+        options: clients.map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
+      },
+      { name: "date_from", label: "Serviço a partir de", type: "date" },
+      { name: "date_to", label: "Serviço até", type: "date" },
+    ],
+    [clients],
+  )
 
   const columns = [
     { header: "ID", accessor: (item) => `#${item.id}` },
