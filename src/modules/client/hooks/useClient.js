@@ -1,20 +1,24 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { ClientService } from "@/modules/client/services/client"
-import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
+import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { normalizeList } from "@/api/normalize-list"
 
 const QUERY_KEY = "clients"
+const EMPTY_FILTERS = { name: "", cpf: "" }
 
 export function useClient() {
   const queryClient = useQueryClient()
-  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const search = useDebouncedValue(searchTerm, 300)
+  const {
+    filters,
+    apply: applyFilters,
+    params: filterParams,
+  } = useListFilters(EMPTY_FILTERS, () => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { search, page: currentPage }],
-    queryFn: () => ClientService.getClient({ search, page: currentPage }),
+    queryKey: [QUERY_KEY, { page: currentPage, filters }],
+    queryFn: () => ClientService.getClient({ page: currentPage, ...filterParams }),
     placeholderData: keepPreviousData,
     select: normalizeList,
   })
@@ -31,8 +35,8 @@ export function useClient() {
     error: query.error ?? null,
     refetch: query.refetch,
     remove: removeMutation.mutateAsync,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
     currentPage,
     setCurrentPage,
   }

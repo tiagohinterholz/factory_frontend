@@ -5,18 +5,8 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function CityList() {
-  const {
-    cities,
-    loading,
-    searchTerm,
-    setSearchTerm,
-    currentPage,
-    setCurrentPage,
-    totalItems,
-    refetch,
-    remove,
-    error,
-  } = useCities()
+  const { cities, loading, currentPage, setCurrentPage, totalItems, refetch, remove, error } =
+    useCities()
 
   const toast = useToast()
   const confirm = useConfirm()
@@ -55,8 +45,6 @@ export default function CityList() {
         loading={loading}
         error={error}
         onRetry={refetch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}

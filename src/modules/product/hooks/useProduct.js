@@ -1,26 +1,24 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { ProductService } from "@/modules/product/services/product"
-import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
+import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { normalizeList } from "@/api/normalize-list"
 
 const QUERY_KEY = "products"
+const EMPTY_FILTERS = { name: "", reference: "", supplier_id: "" }
 
 export function useProduct() {
   const queryClient = useQueryClient()
-  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const [supplierId, setSupplierId] = useState("")
-  const search = useDebouncedValue(searchTerm, 300)
+  const {
+    filters,
+    apply: applyFilters,
+    params: filterParams,
+  } = useListFilters(EMPTY_FILTERS, () => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { search, page: currentPage, supplierId }],
-    queryFn: () =>
-      ProductService.getProduct({
-        search,
-        page: currentPage,
-        supplier_id: supplierId || undefined,
-      }),
+    queryKey: [QUERY_KEY, { page: currentPage, filters }],
+    queryFn: () => ProductService.getProduct({ page: currentPage, ...filterParams }),
     placeholderData: keepPreviousData,
     select: normalizeList,
   })
@@ -37,11 +35,9 @@ export function useProduct() {
     error: query.error ?? null,
     refetch: query.refetch,
     remove: removeMutation.mutateAsync,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
     currentPage,
     setCurrentPage,
-    supplierId,
-    setSupplierId,
   }
 }

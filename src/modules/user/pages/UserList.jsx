@@ -7,8 +7,6 @@ export default function UserList() {
   const {
     user,
     loading,
-    searchTerm,
-    setSearchTerm,
     currentPage,
     setCurrentPage,
     handleDelete: removeUser,
@@ -48,8 +46,6 @@ export default function UserList() {
         loading={loading}
         error={error}
         onRetry={refetch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}

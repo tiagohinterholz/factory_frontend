@@ -5,18 +5,8 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function BusinessList() {
-  const {
-    business,
-    loading,
-    searchTerm,
-    setSearchTerm,
-    currentPage,
-    setCurrentPage,
-    totalItems,
-    refetch,
-    remove,
-    error,
-  } = useBusiness()
+  const { business, loading, currentPage, setCurrentPage, totalItems, refetch, remove, error } =
+    useBusiness()
 
   const toast = useToast()
   const confirm = useConfirm()
@@ -59,8 +49,6 @@ export default function BusinessList() {
         loading={loading}
         error={error}
         onRetry={refetch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}

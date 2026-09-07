@@ -3,17 +3,7 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
 export default function StateList() {
-  const {
-    states,
-    loading,
-    searchTerm,
-    setSearchTerm,
-    currentPage,
-    setCurrentPage,
-    totalItems,
-    refetch,
-    error,
-  } = useStates()
+  const { states, loading, currentPage, setCurrentPage, totalItems, refetch, error } = useStates()
 
   const columns = [
     { header: "Sigla", accessor: (item) => item.abbreviation },
@@ -31,8 +21,6 @@ export default function StateList() {
         loading={loading}
         error={error}
         onRetry={refetch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}

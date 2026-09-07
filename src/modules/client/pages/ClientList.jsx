@@ -6,9 +6,15 @@ import { ClientService } from "../services/client"
 import ClientVehiclesModal from "../components/ClientVehiclesModal"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
+
+const FILTER_FIELDS = [
+  { name: "name", label: "Nome", type: "text" },
+  { name: "cpf", label: "CPF", type: "text" },
+]
 
 // wa.me só aceita dígitos; telefone BR (DDD + 8/9 dígitos) ganha o 55 na frente.
 function whatsappLink(phone) {
@@ -21,8 +27,8 @@ export default function ClientList() {
   const {
     client,
     loading,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -60,15 +66,18 @@ export default function ClientList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader title="Clientes" buttonText="Novo Cliente" buttonLink="/clientes/novo" />
+      <ListHeader
+        title="Clientes"
+        buttonText="Novo Cliente"
+        buttonLink="/clientes/novo"
+        actions={<ListFilters fields={FILTER_FIELDS} value={filters} onApply={applyFilters} />}
+      />
       <ListTable
         columns={columns}
         data={client}
         loading={loading}
         error={error}
         onRetry={refetch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}

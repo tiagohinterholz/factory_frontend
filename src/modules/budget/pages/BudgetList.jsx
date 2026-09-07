@@ -5,7 +5,10 @@ import { BudgetService } from "../services/budgets"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
+import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
+import { useClientOptions } from "@/modules/core/hooks/options"
+import { REPORT_STATUS_OPTIONS } from "@/modules/core/constants/report"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { parseApiError } from "@/api/parse-api-error"
@@ -24,8 +27,8 @@ export default function BudgetList() {
   const {
     budgets,
     loading,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
     currentPage,
     setCurrentPage,
     totalItems,
@@ -38,6 +41,19 @@ export default function BudgetList() {
 
   const toast = useToast()
   const confirm = useConfirm()
+  const { client: clients } = useClientOptions()
+
+  const filterFields = [
+    { name: "status", label: "Status", type: "select", options: REPORT_STATUS_OPTIONS.budgets },
+    {
+      name: "client_id",
+      label: "Cliente",
+      type: "select",
+      options: clients.map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
+    },
+    { name: "date_from", label: "Criado a partir de", type: "date" },
+    { name: "date_to", label: "Criado até", type: "date" },
+  ]
 
   const columns = [
     { header: "ID", accessor: (item) => `#${item.id}` },
@@ -127,7 +143,12 @@ export default function BudgetList() {
         title="Orçamentos"
         buttonText="Novo Orçamento"
         buttonLink="/orcamentos/novo"
-        actions={<ExportReportButton type="budgets" />}
+        actions={
+          <div className="flex items-center gap-2">
+            <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
+            <ExportReportButton type="budgets" />
+          </div>
+        }
       />
       <ListTable
         dense
@@ -136,8 +157,6 @@ export default function BudgetList() {
         loading={loading}
         error={error}
         onRetry={refetch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
         currentPage={currentPage}
         handlePageChange={setCurrentPage}
         totalItems={totalItems}

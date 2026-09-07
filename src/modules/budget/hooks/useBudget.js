@@ -1,20 +1,24 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { BudgetService } from "@/modules/budget/services/budgets"
-import { useDebouncedValue } from "@/modules/core/hooks/useDebouncedValue"
+import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { normalizeList } from "@/api/normalize-list"
 
 const QUERY_KEY = "budgets"
+const EMPTY_FILTERS = { status: "", client_id: "", date_from: "", date_to: "" }
 
 export function useBudget() {
   const queryClient = useQueryClient()
-  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const search = useDebouncedValue(searchTerm, 300)
+  const {
+    filters,
+    apply: applyFilters,
+    params: filterParams,
+  } = useListFilters(EMPTY_FILTERS, () => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { search, page: currentPage }],
-    queryFn: () => BudgetService.getBudget({ search, page: currentPage }),
+    queryKey: [QUERY_KEY, { page: currentPage, filters }],
+    queryFn: () => BudgetService.getBudget({ page: currentPage, ...filterParams }),
     placeholderData: keepPreviousData,
     select: normalizeList,
   })
@@ -44,8 +48,8 @@ export function useBudget() {
     remove: removeMutation.mutateAsync,
     approve: approveMutation.mutateAsync,
     cancel: cancelMutation.mutateAsync,
-    searchTerm,
-    setSearchTerm,
+    filters,
+    applyFilters,
     currentPage,
     setCurrentPage,
   }

@@ -10,10 +10,13 @@ import { openPdfBlob } from "@/api/open-pdf"
 
 vi.mock("@/api/open-pdf", () => ({ openPdfBlob: vi.fn() }))
 
+let lastBudgetsUrl
+
 function mockBudgets(results) {
   server.use(
-    http.get(`${API}/orcamentos/`, () =>
-      HttpResponse.json({
+    http.get(`${API}/orcamentos/`, ({ request }) => {
+      lastBudgetsUrl = new URL(request.url)
+      return HttpResponse.json({
         results: results ?? [
           {
             id: 12,
@@ -25,6 +28,13 @@ function mockBudgets(results) {
           },
         ],
         count: (results ?? [1]).length,
+      })
+    }),
+    // filtro de Cliente puxa a lista completa de clientes
+    http.get(`${API}/clientes/`, () =>
+      HttpResponse.json({
+        results: [{ id: 5, first_name: "Ana", last_name: "Lima" }],
+        count: 1,
       }),
     ),
   )
@@ -124,5 +134,20 @@ describe("<BudgetList>", () => {
 
     await waitFor(() => expect(approve).toHaveBeenCalledWith(1))
     approve.mockRestore()
+  })
+
+  it("aplica os filtros: 'Filtros' > status > 'Filtrar' manda ?status= na requisição", async () => {
+    mockBudgets()
+    renderWithProviders(<BudgetList />)
+    await screen.findByText("#12")
+
+    fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
+    const statusSelect = (await screen.findByRole("option", { name: "Aprovado" })).closest("select")
+    fireEvent.change(statusSelect, { target: { value: "aprovado" } })
+    fireEvent.click(screen.getByRole("button", { name: "Filtrar" }))
+
+    await waitFor(() => expect(lastBudgetsUrl.searchParams.get("status")).toBe("aprovado"))
+    // sem search fuzzy
+    expect(lastBudgetsUrl.searchParams.has("search")).toBe(false)
   })
 })

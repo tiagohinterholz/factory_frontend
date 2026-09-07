@@ -1,12 +1,4 @@
-import {
-  Search,
-  Edit2,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  AlertTriangle,
-  RefreshCw,
-} from "lucide-react"
+import { Edit2, Trash2, ChevronLeft, ChevronRight, AlertTriangle, RefreshCw } from "lucide-react"
 import { Link } from "react-router-dom"
 
 export default function ListTable({
@@ -18,8 +10,6 @@ export default function ListTable({
   error,
   onRetry,
   renderActions,
-  searchTerm,
-  setSearchTerm,
   currentPage,
   handlePageChange,
   totalItems,
@@ -33,22 +23,6 @@ export default function ListTable({
 
   return (
     <div className="card-premium flex flex-col gap-4 overflow-hidden">
-      <div className="relative">
-        <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <Search className="h-4 w-4 text-muted" />
-        </span>
-        <input
-          type="text"
-          className="input-premium pl-9"
-          placeholder="Pesquisar..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value)
-            handlePageChange(1)
-          }}
-        />
-      </div>
-
       <div className={`overflow-x-auto ${bleed}`}>
         <table className="w-full text-left border-collapse min-w-[600px]">
           <thead>
