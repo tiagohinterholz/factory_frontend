@@ -27,6 +27,9 @@ export default function BudgetEdit() {
     products,
     services,
     status,
+    total,
+    productsTotal,
+    servicesTotal,
     approvedAt,
     cancelledAt,
     validUntil,
@@ -309,6 +312,13 @@ export default function BudgetEdit() {
                 <p className="text-slate-400 py-4 text-center">Nenhum produto adicionado.</p>
               )}
             </div>
+
+            <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center text-sm">
+              <span className="font-semibold text-slate-500">Subtotal produtos</span>
+              <span className="font-bold text-slate-800">
+                R$ {parseFloat(productsTotal || 0).toFixed(2)}
+              </span>
+            </div>
           </div>
 
           <div className="card-premium">
@@ -365,6 +375,20 @@ export default function BudgetEdit() {
                 <p className="text-slate-400 py-4 text-center">Nenhum serviço adicionado.</p>
               )}
             </div>
+
+            <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center text-sm">
+              <span className="font-semibold text-slate-500">Subtotal serviços</span>
+              <span className="font-bold text-slate-800">
+                R$ {parseFloat(servicesTotal || 0).toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          <div className="card-premium flex justify-between items-center">
+            <span className="text-lg font-bold text-slate-800">Total geral</span>
+            <span className="text-2xl font-extrabold text-brand">
+              R$ {parseFloat(total || 0).toFixed(2)}
+            </span>
           </div>
         </div>
       </div>

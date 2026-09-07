@@ -5,21 +5,20 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
-import { idOf, toDateInput, toDateTimeLocalInput } from "@/api/dto"
+import { idOf, toDateTimeLocalInput } from "@/api/dto"
 import { OrderService } from "@/modules/order/services/order"
 import { orderSchema, orderDefaults, toOrderPayload } from "../order.schema"
 
 // dto da API -> shape do form (ids como string; service_date como
-// "YYYY-MM-DDTHH:mm" local pro <input type="datetime-local">, billing_date
-// como YYYY-MM-DD)
+// "YYYY-MM-DDTHH:mm" local pro <input type="datetime-local">). billing_date e
+// budget não entram no form — são só leitura no meta (billing_date o back grava
+// ao faturar; o vínculo do orçamento não deve ser mexido pela edição da OS).
 function toOrderForm(data) {
   return {
     business_id: idOf(data.business),
     client_id: idOf(data.client),
     vehicle_id: idOf(data.vehicle),
-    budget_id: idOf(data.budget),
     service_date: toDateTimeLocalInput(data.service_date),
-    billing_date: toDateInput(data.billing_date),
     notes: data.notes ?? "",
   }
 }
@@ -31,16 +30,33 @@ export function useOrderEditForm() {
   const toast = useToast()
   const queryClient = useQueryClient()
 
-  // itens de linha, status e total são somente leitura aqui; vivem fora do form.
-  const [meta, setMeta] = useState({ products: [], services: [], status: "", total: "" })
+  // itens de linha, status e totais são somente leitura aqui; vivem fora do
+  // form. products_total/services_total vêm calculados do back (só itens
+  // ativos); total é a soma dos dois.
+  const [meta, setMeta] = useState({
+    products: [],
+    services: [],
+    status: "",
+    total: "",
+    productsTotal: "",
+    servicesTotal: "",
+    billingDate: null,
+    budgetId: "",
+  })
 
   const fetchMeta = useCallback(async () => {
     const data = await OrderService.getOrderById(id)
+    // o back não some com a linha no DELETE, só marca is_active=false; o
+    // detalhe ainda a devolve. Os totais já vêm só com os ativos.
     setMeta({
-      products: data.order_products ?? [],
-      services: data.order_services ?? [],
+      products: (data.order_products ?? []).filter((item) => item.is_active),
+      services: (data.order_services ?? []).filter((item) => item.is_active),
       status: data.status ?? "",
-      total: data.total ?? "",
+      total: data.total ?? "0.00",
+      productsTotal: data.products_total ?? "0.00",
+      servicesTotal: data.services_total ?? "0.00",
+      billingDate: data.billing_date ?? null,
+      budgetId: idOf(data.budget),
     })
     return data
   }, [id])
@@ -91,6 +107,10 @@ export function useOrderEditForm() {
     services: meta.services,
     status: meta.status,
     total: meta.total,
+    productsTotal: meta.productsTotal,
+    servicesTotal: meta.servicesTotal,
+    billingDate: meta.billingDate,
+    budgetId: meta.budgetId,
     refresh: fetchMeta,
     handleDelete,
     handleInvoice,

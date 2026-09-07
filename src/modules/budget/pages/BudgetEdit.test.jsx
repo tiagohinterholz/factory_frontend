@@ -129,3 +129,46 @@ describe("<BudgetEdit> — tarja de data da ação", () => {
     expect(screen.getByText(/06\/09\/2026/)).toBeInTheDocument()
   })
 })
+
+describe("<BudgetEdit> — subtotais e total", () => {
+  it("mostra o subtotal de produtos, o de serviços e o total geral do back", async () => {
+    mockApi({
+      overrides: { total: "6000.00", products_total: "5000.00", services_total: "1000.00" },
+    })
+    renderPage()
+
+    expect(await screen.findByText("Subtotal produtos")).toBeInTheDocument()
+    expect(screen.getByText("R$ 5000.00")).toBeInTheDocument()
+    expect(screen.getByText("Subtotal serviços")).toBeInTheDocument()
+    expect(screen.getByText("R$ 1000.00")).toBeInTheDocument()
+    expect(screen.getByText("Total geral")).toBeInTheDocument()
+    expect(screen.getByText("R$ 6000.00")).toBeInTheDocument()
+  })
+
+  it("não lista item com is_active=false (deletado que o back ainda devolve)", async () => {
+    mockApi({
+      overrides: {
+        budget_products: [
+          {
+            id: 1,
+            quantity: 1,
+            total: "10.00",
+            is_active: true,
+            product: { name: "Filtro ativo" },
+          },
+          {
+            id: 2,
+            quantity: 1,
+            total: "20.00",
+            is_active: false,
+            product: { name: "Peça deletada" },
+          },
+        ],
+      },
+    })
+    renderPage()
+
+    expect(await screen.findByText(/Filtro ativo/)).toBeInTheDocument()
+    expect(screen.queryByText(/Peça deletada/)).not.toBeInTheDocument()
+  })
+})
