@@ -7,7 +7,7 @@ import {
   useVehicleOptions,
   useSupplierOptions,
 } from "@/modules/core/hooks/options"
-import SelectField from "@/modules/core/components/SelectField"
+import FilterSelect from "@/modules/core/components/FilterSelect"
 import FormField from "@/modules/core/components/FormField"
 import { REPORT_STATUS_OPTIONS, FILTERABLE_REPORTS } from "@/modules/core/constants/report"
 
@@ -22,8 +22,9 @@ const EMPTY = {
 
 function FilterPopover({ type, onSubmit, onClose }) {
   const [filters, setFilters] = useState(EMPTY)
-  const set = (key) => (event) =>
+  const setField = (key) => (event) =>
     setFilters((current) => ({ ...current, [key]: event.target.value }))
+  const setValue = (key) => (next) => setFilters((current) => ({ ...current, [key]: next }))
 
   const { client } = useClientOptions()
   const { vehicle } = useVehicleOptions()
@@ -50,34 +51,39 @@ function FilterPopover({ type, onSubmit, onClose }) {
         </button>
       </div>
 
-      <SelectField
+      <FilterSelect
         label="Status"
         options={REPORT_STATUS_OPTIONS[type]}
         value={filters.status}
-        onChange={set("status")}
+        onChange={setValue("status")}
       />
-      <SelectField
+      <FilterSelect
         label="Cliente"
         options={clientOpts}
         value={filters.client_id}
-        onChange={set("client_id")}
+        onChange={setValue("client_id")}
       />
-      <SelectField
+      <FilterSelect
         label="Veículo"
         options={vehicleOpts}
         value={filters.vehicle_id}
-        onChange={set("vehicle_id")}
+        onChange={setValue("vehicle_id")}
       />
-      <SelectField
+      <FilterSelect
         label="Fornecedor"
         options={supplierOpts}
         value={filters.supplier_id}
-        onChange={set("supplier_id")}
+        onChange={setValue("supplier_id")}
       />
 
       <div className="grid grid-cols-2 gap-2">
-        <FormField label="De" type="date" value={filters.date_from} onChange={set("date_from")} />
-        <FormField label="Até" type="date" value={filters.date_to} onChange={set("date_to")} />
+        <FormField
+          label="De"
+          type="date"
+          value={filters.date_from}
+          onChange={setField("date_from")}
+        />
+        <FormField label="Até" type="date" value={filters.date_to} onChange={setField("date_to")} />
       </div>
 
       <div className="flex items-center justify-between pt-1">
@@ -107,9 +113,7 @@ export default function ExportReportButton({ type, label = "Exportar PDF" }) {
   const { exportReport, isExporting } = useReportExport()
   const [open, setOpen] = useState(false)
 
-  // Sem "fechar ao clicar fora": listener de mouse no document derruba o popup
-  // nativo do <select> no Chromium/Linux. Fecha no próprio botão, no X, no
-  // "Gerar relatório" e no Esc.
+  // Fecha no próprio botão, no X, no "Gerar relatório" e no Esc.
   useEffect(() => {
     if (!open) return undefined
     const onKey = (event) => {

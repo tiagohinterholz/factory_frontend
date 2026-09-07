@@ -142,8 +142,8 @@ describe("<BudgetList>", () => {
     await screen.findByText("#12")
 
     fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
-    const statusSelect = (await screen.findByRole("option", { name: "Aprovado" })).closest("select")
-    fireEvent.change(statusSelect, { target: { value: "aprovado" } })
+    fireEvent.click(await screen.findByRole("button", { name: /selecione o\(a\) status/i }))
+    fireEvent.click(await screen.findByRole("option", { name: "Aprovado" }))
     fireEvent.click(screen.getByRole("button", { name: "Filtrar" }))
 
     await waitFor(() => expect(lastBudgetsUrl.searchParams.get("status")).toBe("aprovado"))

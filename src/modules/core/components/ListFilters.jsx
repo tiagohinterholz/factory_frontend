@@ -1,22 +1,13 @@
-import { memo, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { SlidersHorizontal, ChevronDown, X } from "lucide-react"
-import SelectField from "@/modules/core/components/SelectField"
+import FilterSelect from "@/modules/core/components/FilterSelect"
 import FormField from "@/modules/core/components/FormField"
 
-// Botão "Filtros" + painel. `fields` descreve os campos:
-//   { name, label, type: "select" | "date" | "text", options? }
-// `value` é o objeto de filtros JÁ aplicado; `onApply(next)` dispara a busca.
-// O painel edita um rascunho e só aplica no "Filtrar" (ou "Limpar").
-//
-// React.memo + props estáveis (fields memoizado no pai, onApply via useCallback)
-// pra NÃO re-renderizar quando o pai re-renderiza (ex.: refetch da lista). Se o
-// <select> reconcilia com o popup nativo aberto, o Chromium fecha ele — foi o
-// que dava "o dropdown abre e não para pra selecionar" em prod.
-//
-// Também não fecha ao clicar fora: qualquer listener de mouse no document
-// derruba o mesmo popup. Fecha pelo botão "Filtros", pelo X, pelo
-// Filtrar/Limpar e por Esc.
-function ListFilters({ fields, value, onApply }) {
+// Botão "Filtros" + painel. `fields`: [{ name, label, type: "select"|"date"|"text", options? }].
+// `value` são os filtros aplicados; o painel edita um rascunho e só dispara
+// `onApply(next)` no "Filtrar"/"Limpar". Os selects usam FilterSelect (dropdown
+// React, não <select> nativo). Fecha por botão, X ou Esc.
+export default function ListFilters({ fields, value, onApply }) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(value)
 
@@ -32,10 +23,8 @@ function ListFilters({ fields, value, onApply }) {
   const activeCount = fields.filter((field) => value[field.name]).length
   const emptyDraft = Object.fromEntries(fields.map((field) => [field.name, ""]))
 
-  const setField = (name) => (event) =>
-    setDraft((current) => ({ ...current, [name]: event.target.value }))
+  const setValue = (name) => (next) => setDraft((current) => ({ ...current, [name]: next }))
 
-  // abrir sincroniza o rascunho com o que está aplicado (sem efeito)
   function toggle() {
     setDraft(value)
     setOpen((current) => !current)
@@ -85,12 +74,12 @@ function ListFilters({ fields, value, onApply }) {
 
           {fields.map((field) =>
             field.type === "select" ? (
-              <SelectField
+              <FilterSelect
                 key={field.name}
                 label={field.label}
                 options={field.options}
                 value={draft[field.name] ?? ""}
-                onChange={setField(field.name)}
+                onChange={setValue(field.name)}
               />
             ) : (
               <FormField
@@ -98,7 +87,7 @@ function ListFilters({ fields, value, onApply }) {
                 label={field.label}
                 type={field.type === "date" ? "date" : "text"}
                 value={draft[field.name] ?? ""}
-                onChange={setField(field.name)}
+                onChange={(event) => setValue(field.name)(event.target.value)}
               />
             ),
           )}
@@ -120,5 +109,3 @@ function ListFilters({ fields, value, onApply }) {
     </div>
   )
 }
-
-export default memo(ListFilters)
