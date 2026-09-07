@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-import { SlidersHorizontal, ChevronDown } from "lucide-react"
+import { useEffect, useState } from "react"
+import { SlidersHorizontal, ChevronDown, X } from "lucide-react"
 import SelectField from "@/modules/core/components/SelectField"
 import FormField from "@/modules/core/components/FormField"
 
@@ -7,27 +7,21 @@ import FormField from "@/modules/core/components/FormField"
 //   { name, label, type: "select" | "date" | "text", options? }
 // `value` é o objeto de filtros JÁ aplicado; `onApply(next)` dispara a busca.
 // O painel edita um rascunho e só aplica no "Filtrar" (ou "Limpar").
+//
+// Não fecha ao clicar fora de propósito: qualquer listener de mouse no
+// document derruba o popup nativo do <select> no Chromium/Linux. Fecha pelo
+// próprio botão "Filtros", pelo X, pelo Filtrar/Limpar e por Esc.
 export default function ListFilters({ fields, value, onApply }) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(value)
-  const containerRef = useRef(null)
 
   useEffect(() => {
     if (!open) return undefined
-    // `click` (não `mousedown`): no Chromium/Linux um listener de mousedown no
-    // document fecha o popup nativo do <select> antes dele abrir.
-    const onClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) setOpen(false)
-    }
     const onKey = (event) => {
       if (event.key === "Escape") setOpen(false)
     }
-    document.addEventListener("click", onClickOutside)
     document.addEventListener("keydown", onKey)
-    return () => {
-      document.removeEventListener("click", onClickOutside)
-      document.removeEventListener("keydown", onKey)
-    }
+    return () => document.removeEventListener("keydown", onKey)
   }, [open])
 
   const activeCount = fields.filter((field) => value[field.name]).length
@@ -54,7 +48,7 @@ export default function ListFilters({ fields, value, onApply }) {
   }
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative">
       <button
         type="button"
         onClick={toggle}
@@ -72,7 +66,17 @@ export default function ListFilters({ fields, value, onApply }) {
 
       {open && (
         <div className="fixed inset-x-3 top-24 z-40 max-h-[70vh] overflow-y-auto rounded-xl border border-line bg-surface shadow-pop p-4 space-y-3 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 sm:max-h-none sm:overflow-visible">
-          <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
+          <div className="flex items-center justify-between">
+            <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Fechar filtros"
+              className="-mr-1 rounded p-1 text-muted hover:bg-ground hover:text-ink"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
           {fields.map((field) =>
             field.type === "select" ? (

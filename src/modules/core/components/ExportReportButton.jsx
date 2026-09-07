@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-import { FileDown, Loader2, ChevronDown } from "lucide-react"
+import { useEffect, useState } from "react"
+import { FileDown, Loader2, ChevronDown, X } from "lucide-react"
 import { useReportExport } from "@/modules/core/hooks/useReportExport"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import {
@@ -20,7 +20,7 @@ const EMPTY = {
   date_to: "",
 }
 
-function FilterPopover({ type, onSubmit }) {
+function FilterPopover({ type, onSubmit, onClose }) {
   const [filters, setFilters] = useState(EMPTY)
   const set = (key) => (event) =>
     setFilters((current) => ({ ...current, [key]: event.target.value }))
@@ -38,7 +38,17 @@ function FilterPopover({ type, onSubmit }) {
 
   return (
     <div className="fixed inset-x-3 top-24 z-40 max-h-[70vh] overflow-y-auto rounded-xl border border-line bg-surface shadow-pop p-4 space-y-3 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 sm:max-h-none sm:overflow-visible">
-      <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
+      <div className="flex items-center justify-between">
+        <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fechar filtros"
+          className="-mr-1 rounded p-1 text-muted hover:bg-ground hover:text-ink"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
 
       <SelectField
         label="Status"
@@ -96,24 +106,17 @@ export default function ExportReportButton({ type, label = "Exportar PDF" }) {
   const { canExportReports } = usePermissions()
   const { exportReport, isExporting } = useReportExport()
   const [open, setOpen] = useState(false)
-  const containerRef = useRef(null)
 
+  // Sem "fechar ao clicar fora": listener de mouse no document derruba o popup
+  // nativo do <select> no Chromium/Linux. Fecha no próprio botão, no X, no
+  // "Gerar relatório" e no Esc.
   useEffect(() => {
-    if (!open) return
-    const onClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) setOpen(false)
-    }
+    if (!open) return undefined
     const onKey = (event) => {
       if (event.key === "Escape") setOpen(false)
     }
-    // `click` e não `mousedown`: no Chromium/Linux um listener de mousedown no
-    // document fecha o popup nativo do <select> do popover antes de abrir.
-    document.addEventListener("click", onClickOutside)
     document.addEventListener("keydown", onKey)
-    return () => {
-      document.removeEventListener("click", onClickOutside)
-      document.removeEventListener("keydown", onKey)
-    }
+    return () => document.removeEventListener("keydown", onKey)
   }, [open])
 
   if (!canExportReports) return null
@@ -137,11 +140,12 @@ export default function ExportReportButton({ type, label = "Exportar PDF" }) {
   if (!filterable) return trigger
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative">
       {trigger}
       {open && (
         <FilterPopover
           type={type}
+          onClose={() => setOpen(false)}
           onSubmit={(filters) => {
             setOpen(false)
             exportReport(type, filters)

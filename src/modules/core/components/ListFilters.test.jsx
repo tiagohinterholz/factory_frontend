@@ -60,18 +60,25 @@ describe("<ListFilters>", () => {
     expect(screen.getByRole("button", { name: /filtros/i })).toHaveTextContent("2")
   })
 
-  it("fecha ao clicar fora (via click, não mousedown — bug do select no Linux)", () => {
+  it("NÃO fecha ao clicar fora (evita derrubar o popup nativo do select no Linux)", () => {
     render(<ListFilters fields={fields} value={EMPTY} onApply={vi.fn()} />)
 
     fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
-    expect(screen.getByRole("button", { name: "Filtrar" })).toBeInTheDocument()
-
-    // mousedown fora NÃO fecha (senão derruba o popup nativo do select)
     fireEvent.mouseDown(document.body)
-    expect(screen.getByRole("button", { name: "Filtrar" })).toBeInTheDocument()
-
-    // click fora fecha
     fireEvent.click(document.body)
+
+    expect(screen.getByRole("button", { name: "Filtrar" })).toBeInTheDocument()
+  })
+
+  it("fecha pelo X e pelo Esc", () => {
+    render(<ListFilters fields={fields} value={EMPTY} onApply={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
+    fireEvent.click(screen.getByRole("button", { name: /fechar filtros/i }))
+    expect(screen.queryByRole("button", { name: "Filtrar" })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
+    fireEvent.keyDown(document, { key: "Escape" })
     expect(screen.queryByRole("button", { name: "Filtrar" })).not.toBeInTheDocument()
   })
 })
