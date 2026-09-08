@@ -1,6 +1,12 @@
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { useToast } from "@/modules/core/feedback/toast-context"
+import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { OrderService } from "@/modules/order/services/order"
+import { BudgetService } from "@/modules/budget/services/budgets"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { orderSchema, orderDefaults, toOrderPayload } from "../order.schema"
 
@@ -10,8 +16,12 @@ import { orderSchema, orderDefaults, toOrderPayload } from "../order.schema"
 // de criar, liga a OS nova no agendamento (PATCH order_id).
 export function useOrderForm({ clientId, vehicleId, appointmentId } = {}) {
   const { businessId } = useAuth()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const toast = useToast()
+  const [approvingBudget, setApprovingBudget] = useState(false)
 
-  return useResourceForm({
+  const resourceForm = useResourceForm({
     schema: orderSchema,
     defaultValues: {
       ...orderDefaults,
@@ -31,4 +41,25 @@ export function useOrderForm({ clientId, vehicleId, appointmentId } = {}) {
     redirectTo: (order) => (order?.id ? `/ordens/${order.id}` : "/ordens"),
     errorFallback: "Erro ao criar ordem",
   })
+
+  // caminho alternativo: aprova um orçamento pendente (base) e o back devolve a
+  // OS criada (201). `serviceDate` opcional (ISO 8601) já grava a data no approve.
+  async function createFromBudget(budgetId, serviceDate) {
+    setApprovingBudget(true)
+    try {
+      const order = await BudgetService.approveBudget(
+        budgetId,
+        serviceDate ? { service_date: serviceDate } : undefined,
+      )
+      queryClient.invalidateQueries()
+      navigate(order?.id ? `/ordens/${order.id}` : "/ordens")
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao aprovar o orçamento").message)
+    } finally {
+      setApprovingBudget(false)
+    }
+  }
+
+  return { ...resourceForm, createFromBudget, approvingBudget }
 }

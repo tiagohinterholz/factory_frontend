@@ -6,6 +6,7 @@ import { ToastProvider } from "@/modules/core/feedback/ToastProvider"
 import { AuthProvider } from "@/modules/auth/context/AuthProvider"
 import { useOrderForm } from "./useOrderForm"
 import { OrderService } from "../services/order"
+import { BudgetService } from "@/modules/budget/services/budgets"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
 
 const { navigateSpy } = vi.hoisted(() => ({ navigateSpy: vi.fn() }))
@@ -74,5 +75,30 @@ describe("useOrderForm", () => {
     expect(link).not.toHaveBeenCalled()
     create.mockRestore()
     link.mockRestore()
+  })
+
+  it("createFromBudget aprova o orçamento e abre a OS criada (201)", async () => {
+    const approve = vi.spyOn(BudgetService, "approveBudget").mockResolvedValue({ id: 42 })
+    const { result } = renderHook(() => useOrderForm(), { wrapper })
+
+    await act(async () => {
+      await result.current.createFromBudget(7)
+    })
+
+    expect(approve).toHaveBeenCalledWith(7, undefined)
+    expect(navigateSpy).toHaveBeenCalledWith("/ordens/42")
+    approve.mockRestore()
+  })
+
+  it("createFromBudget com data manda service_date no approve", async () => {
+    const approve = vi.spyOn(BudgetService, "approveBudget").mockResolvedValue({ id: 42 })
+    const { result } = renderHook(() => useOrderForm(), { wrapper })
+
+    await act(async () => {
+      await result.current.createFromBudget(7, "2026-09-10T14:30:00.000Z")
+    })
+
+    expect(approve).toHaveBeenCalledWith(7, { service_date: "2026-09-10T14:30:00.000Z" })
+    approve.mockRestore()
   })
 })

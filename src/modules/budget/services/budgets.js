@@ -26,8 +26,9 @@ export const BudgetService = {
     return response.data
   },
 
-  // payload opcional: { service_date: ISO 8601 } cria a OS já com a data/hora do
-  // serviço. Sem payload, a OS nasce sem service_date (fluxo normal).
+  // aprova o orçamento e cria a OS. Responde 201 com a OS criada (mesmo shape
+  // do GET /ordens/{id}/) — quem chama usa `response.data.id` pra abrir a OS.
+  // payload opcional: { service_date: ISO 8601 } já grava a data/hora do serviço.
   async approveBudget(id, payload) {
     const response = await api.post(`/orcamentos/${id}/approve/`, payload)
     return response.data
