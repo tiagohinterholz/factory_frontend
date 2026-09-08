@@ -35,6 +35,12 @@ export function useOrder() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   })
 
+  const invoiceMutation = useMutation({
+    mutationFn: (id) => OrderService.invoiceOrder(id),
+    // faturar mexe em NF-e e no dashboard — invalida tudo
+    onSuccess: () => queryClient.invalidateQueries(),
+  })
+
   return {
     orders: query.data?.results ?? [],
     totalItems: query.data?.count ?? 0,
@@ -42,6 +48,7 @@ export function useOrder() {
     error: query.error ?? null,
     refetch: query.refetch,
     remove: removeMutation.mutateAsync,
+    invoice: invoiceMutation.mutateAsync,
     filters,
     applyFilters,
     ordering,
