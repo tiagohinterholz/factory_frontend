@@ -211,3 +211,36 @@ describe("<BudgetEdit> — duplicar", () => {
     duplicate.mockRestore()
   })
 })
+
+describe("<BudgetEdit> — aprovar com data opcional", () => {
+  it("Aprovar abre o modal; confirmar sem data manda approve sem service_date", async () => {
+    mockApi()
+    const approve = vi.spyOn(BudgetService, "approveBudget").mockResolvedValue({})
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: /aprovar/i }))
+    await screen.findByLabelText(/data e hora do serviço/i)
+    fireEvent.click(screen.getAllByRole("button", { name: "Aprovar" }).at(-1))
+
+    await waitFor(() => expect(approve).toHaveBeenCalledWith("1", undefined))
+    approve.mockRestore()
+  })
+
+  it("com data preenchida, manda service_date ISO no approve", async () => {
+    mockApi()
+    const approve = vi.spyOn(BudgetService, "approveBudget").mockResolvedValue({})
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: /aprovar/i }))
+    const input = await screen.findByLabelText(/data e hora do serviço/i)
+    fireEvent.change(input, { target: { value: "2026-09-10T14:30" } })
+    fireEvent.click(screen.getAllByRole("button", { name: "Aprovar" }).at(-1))
+
+    await waitFor(() =>
+      expect(approve).toHaveBeenCalledWith("1", {
+        service_date: new Date("2026-09-10T14:30").toISOString(),
+      }),
+    )
+    approve.mockRestore()
+  })
+})

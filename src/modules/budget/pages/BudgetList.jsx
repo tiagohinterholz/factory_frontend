@@ -1,7 +1,9 @@
+import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { CheckCircle, Copy, Edit2, Trash2, XCircle } from "lucide-react"
 import { useBudget } from "../hooks/useBudget"
 import { BudgetService } from "../services/budgets"
+import ApproveBudgetModal from "../components/ApproveBudgetModal"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
@@ -46,6 +48,9 @@ export default function BudgetList() {
   const toast = useToast()
   const confirm = useConfirm()
   const { client: clients } = useClientOptions()
+
+  const [approveTarget, setApproveTarget] = useState(null)
+  const [approving, setApproving] = useState(false)
 
   const filterFields = [
     { name: "status", label: "Status", type: "select", options: REPORT_STATUS_OPTIONS.budgets },
@@ -120,20 +125,21 @@ export default function BudgetList() {
     }
   }
 
-  const handleApprove = async (item) => {
-    const confirmed = await confirm({
-      title: "Aprovar orçamento?",
-      message: `O orçamento #${item.id} será aprovado. Isso pode gerar uma Ordem de Serviço.`,
-      confirmText: "Aprovar",
-    })
-    if (!confirmed) return
-
+  // o botão abre o modal; o approve (com service_date opcional) roda no confirm
+  const handleApproveConfirm = async (serviceDate) => {
+    if (!approveTarget) return
+    setApproving(true)
     try {
-      await approve(item.id)
-      toast.success("Orçamento aprovado.")
+      await approve({ id: approveTarget.id, serviceDate })
+      toast.success(
+        serviceDate ? "Orçamento aprovado com a data do serviço." : "Orçamento aprovado.",
+      )
+      setApproveTarget(null)
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao aprovar o orçamento.").message)
+    } finally {
+      setApproving(false)
     }
   }
 
@@ -210,7 +216,7 @@ export default function BudgetList() {
               <>
                 <button
                   type="button"
-                  onClick={() => handleApprove(item)}
+                  onClick={() => setApproveTarget(item)}
                   title="Aprovar orçamento"
                   className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
                 >
@@ -251,6 +257,13 @@ export default function BudgetList() {
             </button>
           </div>
         )}
+      />
+      <ApproveBudgetModal
+        open={approveTarget != null}
+        onClose={() => setApproveTarget(null)}
+        budgetId={approveTarget?.id}
+        onConfirm={handleApproveConfirm}
+        submitting={approving}
       />
     </div>
   )

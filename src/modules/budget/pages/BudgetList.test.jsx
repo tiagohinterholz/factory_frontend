@@ -128,7 +128,7 @@ describe("<BudgetList>", () => {
     expect(screen.getAllByRole("button", { name: "Cancelar orçamento" })).toHaveLength(1)
   })
 
-  it("aprova o orçamento pendente pela linha da tabela", async () => {
+  it("aprova sem data pela linha: abre o modal e confirma (sem service_date)", async () => {
     mockBudgets([{ id: 1, status: "pendente", total: "0", valid_until: "2026-10-01T00:00:00Z" }])
     const approve = vi.spyOn(BudgetService, "approveBudget").mockResolvedValue({})
 
@@ -138,7 +138,27 @@ describe("<BudgetList>", () => {
     fireEvent.click(screen.getByRole("button", { name: "Aprovar orçamento" }))
     fireEvent.click(await screen.findByRole("button", { name: "Aprovar" }))
 
-    await waitFor(() => expect(approve).toHaveBeenCalledWith(1))
+    await waitFor(() => expect(approve).toHaveBeenCalledWith(1, undefined))
+    approve.mockRestore()
+  })
+
+  it("aprova com data: o datetime do modal vai como service_date ISO no approve", async () => {
+    mockBudgets([{ id: 1, status: "pendente", total: "0", valid_until: "2026-10-01T00:00:00Z" }])
+    const approve = vi.spyOn(BudgetService, "approveBudget").mockResolvedValue({})
+
+    renderWithProviders(<BudgetList />)
+    await screen.findByText("#1")
+
+    fireEvent.click(screen.getByRole("button", { name: "Aprovar orçamento" }))
+    const input = await screen.findByLabelText(/data e hora do serviço/i)
+    fireEvent.change(input, { target: { value: "2026-09-10T14:30" } })
+    fireEvent.click(screen.getByRole("button", { name: "Aprovar" }))
+
+    await waitFor(() =>
+      expect(approve).toHaveBeenCalledWith(1, {
+        service_date: new Date("2026-09-10T14:30").toISOString(),
+      }),
+    )
     approve.mockRestore()
   })
 

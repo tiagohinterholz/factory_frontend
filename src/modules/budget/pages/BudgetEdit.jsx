@@ -5,6 +5,7 @@ import { BudgetService } from "../services/budgets"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
+import ApproveBudgetModal from "../components/ApproveBudgetModal"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
@@ -58,6 +59,20 @@ export default function BudgetEdit() {
   const [selectedProduct, setSelectedProduct] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [selectedService, setSelectedService] = useState("")
+  const [approveOpen, setApproveOpen] = useState(false)
+  const [approving, setApproving] = useState(false)
+
+  async function onApproveConfirm(serviceDate) {
+    setApproving(true)
+    try {
+      await handleApprove(serviceDate)
+      setApproveOpen(false)
+    } catch {
+      // toast já mostrado no hook; mantém o modal aberto
+    } finally {
+      setApproving(false)
+    }
+  }
 
   async function handleAddProduct(event) {
     event.preventDefault()
@@ -187,7 +202,7 @@ export default function BudgetEdit() {
             <>
               <button
                 type="button"
-                onClick={handleApprove}
+                onClick={() => setApproveOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold text-sm shadow-sm transition-all"
               >
                 <CheckCircle size={18} /> Aprovar
@@ -403,6 +418,14 @@ export default function BudgetEdit() {
           </div>
         </div>
       </div>
+
+      <ApproveBudgetModal
+        open={approveOpen}
+        onClose={() => setApproveOpen(false)}
+        budgetId={id}
+        onConfirm={onApproveConfirm}
+        submitting={approving}
+      />
     </div>
   )
 }
