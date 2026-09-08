@@ -59,17 +59,15 @@ describe("<Dashboard>", () => {
     renderWithProviders(<Dashboard />)
 
     expect(await screen.findByText("Movimentação")).toBeInTheDocument()
-    expect(screen.getByText("OS faturadas")).toBeInTheDocument()
+    expect(screen.getByText("Faturadas")).toBeInTheDocument()
     expect(screen.getByText("45")).toBeInTheDocument()
 
     expect(screen.getByText("Atendimentos")).toBeInTheDocument()
     expect(screen.getByText("Clientes agendados na semana")).toBeInTheDocument()
     expect(screen.getByText("7")).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /os #10/i })).toHaveAttribute("href", "/ordens/10")
-    expect(screen.getByRole("link", { name: /criar orçamento/i })).toHaveAttribute(
-      "href",
-      "/orcamentos/novo",
-    )
+    // com OS vinculada, o card não oferece "Criar Orçamento"
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
 
     expect(screen.getByText("Resumo")).toBeInTheDocument()
     expect(screen.getByText("15")).toBeInTheDocument()
@@ -99,7 +97,8 @@ describe("<Dashboard>", () => {
     mockDashboard({ appointments: { scheduled_this_week: [] } })
     renderWithProviders(<Dashboard />)
 
-    expect(await screen.findByText(/nenhum atendimento agendado/i)).toBeInTheDocument()
+    expect(await screen.findByText(/nenhum atendimento em aberto/i)).toBeInTheDocument()
+    expect(screen.getByText(/nenhuma os a faturar ou faturada/i)).toBeInTheDocument()
   })
 
   it("esconde o total da semana quando o back não manda o campo", async () => {

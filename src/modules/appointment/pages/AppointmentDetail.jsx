@@ -8,11 +8,13 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
+import { idOf } from "@/api/dto"
 
-import { Edit, Trash2 } from "lucide-react"
+import { CheckCircle2, Edit, Trash2 } from "lucide-react"
 
 export default function AppointmentDetail() {
-  const { form, onSubmit, loading, handleDelete } = useAppointmentEditForm()
+  const { form, onSubmit, loading, handleDelete, handleFinishOrder, linkedOrder } =
+    useAppointmentEditForm()
   const {
     register,
     watch,
@@ -57,6 +59,23 @@ export default function AppointmentDetail() {
     })
     .map((o) => ({ id: o.id, name: `OS ${o.id} - ${o.plate || ""}` }))
 
+  // a OS já vinculada tem que aparecer no select mesmo que a lista de opções em
+  // cache ainda não a tenha (criada agora, ex.: aprovar orçamento com data) ou
+  // que o filtro por veículo a corte — só enquanto ela for a seleção atual
+  const linkedOrderId = idOf(linkedOrder)
+  const currentOrderId = watch("order_id")
+  if (
+    linkedOrderId &&
+    String(currentOrderId) === linkedOrderId &&
+    !orderOptions.some((option) => String(option.id) === linkedOrderId)
+  ) {
+    const plate = linkedOrder?.plate || linkedOrder?.vehicle?.plate || ""
+    orderOptions.unshift({
+      id: linkedOrderId,
+      name: `OS ${linkedOrderId}${plate ? ` - ${plate}` : ""}`,
+    })
+  }
+
   function resetChildren(...names) {
     names.forEach((name) => setValue(name, ""))
   }
@@ -75,14 +94,26 @@ export default function AppointmentDetail() {
             </h1>
             <p className="text-slate-400 font-medium text-sm">Sincronize os dados do agendamento</p>
           </div>
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
-          >
-            <Trash2 className="w-4 h-4" />
-            Excluir
-          </button>
+          <div className="flex items-center gap-2">
+            {linkedOrder?.status === "em andamento" && (
+              <button
+                type="button"
+                onClick={handleFinishOrder}
+                className="flex items-center gap-2 px-4 py-2 bg-brand text-brand-fg hover:bg-brand-hover rounded-xl transition duration-300 font-bold text-sm"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Finalizar atendimento
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              Excluir
+            </button>
+          </div>
         </div>
 
         <div className="card-premium">

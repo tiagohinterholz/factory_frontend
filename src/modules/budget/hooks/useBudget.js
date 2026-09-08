@@ -36,13 +36,20 @@ export function useBudget() {
   })
 
   const approveMutation = useMutation({
-    mutationFn: (id) => BudgetService.approveBudget(id),
+    // serviceDate opcional (ISO 8601): cria a OS já com a data/hora do serviço
+    mutationFn: ({ id, serviceDate }) =>
+      BudgetService.approveBudget(id, serviceDate ? { service_date: serviceDate } : undefined),
     // aprovar pode gerar uma OS — invalida tudo pra listas relacionadas refazerem
     onSuccess: () => queryClient.invalidateQueries(),
   })
 
   const cancelMutation = useMutation({
     mutationFn: (id) => BudgetService.cancelBudget(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  })
+
+  const duplicateMutation = useMutation({
+    mutationFn: (id) => BudgetService.duplicateBudget(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   })
 
@@ -55,6 +62,7 @@ export function useBudget() {
     remove: removeMutation.mutateAsync,
     approve: approveMutation.mutateAsync,
     cancel: cancelMutation.mutateAsync,
+    duplicate: duplicateMutation.mutateAsync,
     filters,
     applyFilters,
     ordering,

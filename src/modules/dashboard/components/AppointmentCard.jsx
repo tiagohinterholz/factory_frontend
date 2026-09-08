@@ -1,5 +1,10 @@
 import { Link, useNavigate } from "react-router-dom"
-import { Clock, Phone, Car, ClipboardList, FileText, Plus } from "lucide-react"
+import { Clock, Phone, Car, ClipboardList, FileText, Plus, CheckCircle2 } from "lucide-react"
+import {
+  appointmentStatusLabel,
+  APPOINTMENT_STATUS_TONE,
+} from "@/modules/appointment/appointment-status"
+import { useFinishOrder } from "@/modules/order/hooks/useFinishOrder"
 
 function formatWhen(date, time) {
   if (!date) return ""
@@ -22,13 +27,21 @@ export default function AppointmentCard({ item }) {
   const budgetId = relationId(item.budget, item.budget_id)
   const clientId = item.client_id ?? item.client?.id ?? null
   const vehicleId = item.vehicle_id ?? item.vehicle?.id ?? null
-  const prefill = { clientId, vehicleId }
+  // appointmentId vai junto pros atalhos ligarem a OS/orçamento novo neste
+  // agendamento (PATCH order_id / budget_id após criar).
+  const prefill = { clientId, vehicleId, appointmentId: item.id ?? null }
 
   // O card inteiro abre a edição do agendamento; os links internos (contato,
   // OS/orçamento, atalhos de criação) param a propagação pra não disparar isso.
   const editable = item.id != null
   const openAppointment = () => navigate(`/agendamentos/${item.id}`)
   const stop = (event) => event.stopPropagation()
+
+  const statusLabel = appointmentStatusLabel(item)
+  const statusTone = APPOINTMENT_STATUS_TONE[statusLabel] ?? "bg-slate-100 text-slate-600"
+
+  const { finishOrder, finishing } = useFinishOrder()
+  const canFinish = orderId != null && statusLabel === "Em Andamento"
 
   return (
     <div
@@ -50,6 +63,12 @@ export default function AppointmentCard({ item }) {
         "aria-label": `Editar agendamento de ${item.client_name}`,
       })}
     >
+      <span
+        className={`self-start rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${statusTone}`}
+      >
+        {statusLabel}
+      </span>
+
       <p className="font-semibold text-ink text-sm truncate">{item.client_name}</p>
 
       <p className="inline-flex items-center gap-1.5 text-[12px] text-muted">
@@ -76,26 +95,43 @@ export default function AppointmentCard({ item }) {
       )}
 
       <div className="flex flex-col items-start gap-1 pt-1.5 mt-0.5 border-t border-line">
-        {orderId != null ? (
-          <Link
-            to={`/ordens/${orderId}`}
-            onClick={stop}
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand hover:underline"
-          >
-            <ClipboardList className="w-3.5 h-3.5" />
-            OS #{orderId}
-          </Link>
-        ) : (
-          <Link
-            to="/ordens/novo"
-            state={prefill}
-            onClick={stop}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand border border-line rounded-md px-1.5 py-0.5 hover:bg-brand-subtle transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Criar OS
-          </Link>
-        )}
+        <div className="flex w-full items-center justify-between gap-2">
+          {orderId != null ? (
+            <Link
+              to={`/ordens/${orderId}`}
+              onClick={stop}
+              className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-brand hover:underline"
+            >
+              <ClipboardList className="w-3.5 h-3.5" />
+              OS #{orderId}
+            </Link>
+          ) : (
+            <Link
+              to="/ordens/novo"
+              state={prefill}
+              onClick={stop}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand border border-line rounded-md px-1.5 py-0.5 hover:bg-brand-subtle transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Criar OS
+            </Link>
+          )}
+
+          {canFinish && (
+            <button
+              type="button"
+              onClick={(event) => {
+                stop(event)
+                finishOrder(orderId)
+              }}
+              disabled={finishing}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-fg bg-brand rounded-md px-1.5 py-0.5 hover:bg-brand-hover transition-colors disabled:opacity-60"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Finalizar
+            </button>
+          )}
+        </div>
 
         {budgetId != null ? (
           <Link
@@ -107,15 +143,18 @@ export default function AppointmentCard({ item }) {
             Orçamento #{budgetId}
           </Link>
         ) : (
-          <Link
-            to="/orcamentos/novo"
-            state={prefill}
-            onClick={stop}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand border border-line rounded-md px-1.5 py-0.5 hover:bg-brand-subtle transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Criar Orçamento
-          </Link>
+          // com OS vinculada não faz sentido criar orçamento pro agendamento
+          orderId == null && (
+            <Link
+              to="/orcamentos/novo"
+              state={prefill}
+              onClick={stop}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand border border-line rounded-md px-1.5 py-0.5 hover:bg-brand-subtle transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Criar Orçamento
+            </Link>
+          )
         )}
       </div>
     </div>

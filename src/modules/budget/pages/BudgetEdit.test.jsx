@@ -1,11 +1,18 @@
-import { describe, it, expect } from "vitest"
-import { screen, waitFor } from "@testing-library/react"
+import { describe, it, expect, vi } from "vitest"
+import { screen, fireEvent, waitFor } from "@testing-library/react"
 import { http, HttpResponse, delay } from "msw"
 import { Routes, Route } from "react-router-dom"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import BudgetEdit from "./BudgetEdit"
+import { BudgetService } from "../services/budgets"
+
+const { navigateSpy } = vi.hoisted(() => ({ navigateSpy: vi.fn() }))
+vi.mock("react-router-dom", async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, useNavigate: () => navigateSpy }
+})
 
 // BUG-1: na 1ª visita, o form.reset roda antes das listas de opção chegarem
 // (useClientOptions etc buscam todas as páginas). Os <select> do RHF são
@@ -170,5 +177,70 @@ describe("<BudgetEdit> — subtotais e total", () => {
 
     expect(await screen.findByText(/Filtro ativo/)).toBeInTheDocument()
     expect(screen.queryByText(/Peça deletada/)).not.toBeInTheDocument()
+  })
+})
+
+describe("<BudgetEdit> — duplicar", () => {
+  it("pendente: sem botão Duplicar", async () => {
+    mockApi()
+    renderPage()
+
+    expect(await screen.findByText("pendente")).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Duplicar" })).not.toBeInTheDocument()
+  })
+
+  it("cancelado: duplica e navega pro orçamento novo", async () => {
+    mockApi({ overrides: { status: "cancelado", cancelled_at: "2026-09-06T12:00:00.000Z" } })
+    const duplicate = vi
+      .spyOn(BudgetService, "duplicateBudget")
+      .mockResolvedValue({ id: 42, status: "pendente" })
+    renderPage()
+
+    // botão do header
+    fireEvent.click(await screen.findByRole("button", { name: "Duplicar" }))
+    // botão de confirmar no diálogo (mesmo nome — pega o último)
+    await waitFor(() =>
+      expect(screen.getAllByRole("button", { name: "Duplicar" }).length).toBeGreaterThan(1),
+    )
+    const buttons = screen.getAllByRole("button", { name: "Duplicar" })
+    fireEvent.click(buttons[buttons.length - 1])
+
+    await waitFor(() => expect(duplicate).toHaveBeenCalledWith("1"))
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/42"))
+
+    duplicate.mockRestore()
+  })
+})
+
+describe("<BudgetEdit> — aprovar com data opcional", () => {
+  it("Aprovar abre o modal; confirmar sem data manda approve sem service_date", async () => {
+    mockApi()
+    const approve = vi.spyOn(BudgetService, "approveBudget").mockResolvedValue({})
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: /aprovar/i }))
+    await screen.findByLabelText(/data e hora do serviço/i)
+    fireEvent.click(screen.getAllByRole("button", { name: "Aprovar" }).at(-1))
+
+    await waitFor(() => expect(approve).toHaveBeenCalledWith("1", undefined))
+    approve.mockRestore()
+  })
+
+  it("com data preenchida, manda service_date ISO no approve", async () => {
+    mockApi()
+    const approve = vi.spyOn(BudgetService, "approveBudget").mockResolvedValue({})
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: /aprovar/i }))
+    const input = await screen.findByLabelText(/data e hora do serviço/i)
+    fireEvent.change(input, { target: { value: "2026-09-10T14:30" } })
+    fireEvent.click(screen.getAllByRole("button", { name: "Aprovar" }).at(-1))
+
+    await waitFor(() =>
+      expect(approve).toHaveBeenCalledWith("1", {
+        service_date: new Date("2026-09-10T14:30").toISOString(),
+      }),
+    )
+    approve.mockRestore()
   })
 })

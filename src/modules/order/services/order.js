@@ -26,6 +26,12 @@ export const OrderService = {
     return response.data
   },
 
+  // em andamento -> a faturar; grava finished_service_date_at=now no back
+  async finishService(id) {
+    const response = await api.post(`/ordens/${id}/finalizar/`)
+    return response.data
+  },
+
   async invoiceOrder(id) {
     const response = await api.post(`/ordens/${id}/faturar/`)
     return response.data

@@ -61,8 +61,12 @@ entrar em releases separados.
 - `appointments.scheduled_this_week[].order` e `.budget`: id do vínculo ou
   `null`. Um agendamento pode existir sem OS e sem orçamento. Quando `null`, o
   card mostra um atalho "Criar OS" / "Criar Orçamento" que abre o formulário de
-  criação já com cliente e veículo pré-preenchidos; quando preenchido, linka
-  para `/ordens/<id>` / `/orcamentos/<id>`. O card também aceita o vínculo
-  como objeto aninhado (`{ "id": 10 }`) e o legado `order_id`.
+  criação já com cliente e veículo pré-preenchidos e o id do agendamento; ao
+  salvar, o front faz `PATCH /agendamentos/<id>` com `{ order_id }` /
+  `{ budget_id }` pra ligar o registro novo no agendamento. Quando preenchido,
+  linka para `/ordens/<id>` / `/orcamentos/<id>`. O card também aceita o
+  vínculo como objeto aninhado (`{ "id": 10 }`) e o legado `order_id`.
+- "Criar Orçamento" some quando o agendamento já tem `order` — não faz sentido
+  orçar uma OS que já existe (o link pro orçamento de origem, se houver, segue).
 - `time` e `contact` podem ser `null`; o card omite o horário / o telefone.
 - Clicar no card abre a edição do agendamento (`/agendamentos/<id>`).

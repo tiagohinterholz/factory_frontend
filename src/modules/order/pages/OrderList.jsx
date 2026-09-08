@@ -1,12 +1,18 @@
+import { Link } from "react-router-dom"
+import { CheckCircle2, Edit2, Receipt, Trash2 } from "lucide-react"
 import { useOrder } from "../hooks/useOrder"
+import { OrderService } from "../services/order"
+import { orderStatusTone } from "@/modules/order/order-status"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
+import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { REPORT_STATUS_OPTIONS } from "@/modules/core/constants/report"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
+import { parseApiError } from "@/api/parse-api-error"
 
 export default function OrderList() {
   const {
@@ -21,6 +27,8 @@ export default function OrderList() {
     totalItems,
     refetch,
     remove,
+    finish,
+    invoice,
     error,
   } = useOrder()
 
@@ -71,13 +79,7 @@ export default function OrderList() {
       sortKey: "status",
       accessor: (item) => (
         <span
-          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${
-            item.status === "faturado"
-              ? "bg-emerald-100 text-emerald-700"
-              : item.status === "a faturar"
-                ? "bg-brand-subtle text-brand"
-                : "bg-slate-100 text-slate-700"
-          }`}
+          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${orderStatusTone(item.status)}`}
         >
           {item.status}
         </span>
@@ -107,6 +109,40 @@ export default function OrderList() {
     }
   }
 
+  const handleFinish = async (item) => {
+    const confirmed = await confirm({
+      title: "Finalizar serviço?",
+      message: `A OS #${item.id} vai para 'a faturar' e os itens não poderão mais ser editados.`,
+      confirmText: "Finalizar",
+    })
+    if (!confirmed) return
+
+    try {
+      await finish(item.id)
+      toast.success(`Serviço da OS #${item.id} finalizado.`)
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao finalizar o serviço.").message)
+    }
+  }
+
+  const handleInvoice = async (item) => {
+    const confirmed = await confirm({
+      title: "Faturar ordem de serviço?",
+      message: `A OS #${item.id} será marcada como faturada. Esta ação não pode ser desfeita.`,
+      confirmText: "Faturar",
+    })
+    if (!confirmed) return
+
+    try {
+      await invoice(item.id)
+      toast.success(`OS #${item.id} faturada.`)
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao faturar a ordem de serviço.").message)
+    }
+  }
+
   return (
     <div className="p-6 space-y-4">
       <ListHeader
@@ -123,8 +159,6 @@ export default function OrderList() {
       <ListTable
         columns={columns}
         data={orders}
-        editLinkPrefix="/ordens"
-        onDelete={handleDelete}
         loading={loading}
         error={error}
         onRetry={refetch}
@@ -133,6 +167,47 @@ export default function OrderList() {
         totalItems={totalItems}
         ordering={ordering}
         onSort={toggleSort}
+        renderActions={(item) => (
+          <div className="flex items-center justify-end gap-1">
+            <PdfIconButton
+              request={() => OrderService.getOrderPdf(item.id)}
+              title="Gerar PDF da OS"
+            />
+            {item.status === "em andamento" && (
+              <button
+                type="button"
+                onClick={() => handleFinish(item)}
+                title="Finalizar serviço"
+                className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
+              >
+                <CheckCircle2 size={16} />
+              </button>
+            )}
+            {item.status === "a faturar" && (
+              <button
+                type="button"
+                onClick={() => handleInvoice(item)}
+                title="Faturar OS"
+                className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+              >
+                <Receipt size={16} />
+              </button>
+            )}
+            <Link
+              to={`/ordens/${item.id}`}
+              className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
+            >
+              <Edit2 size={16} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => handleDelete(item)}
+              className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        )}
       />
     </div>
   )

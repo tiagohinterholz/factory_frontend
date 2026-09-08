@@ -1,11 +1,12 @@
-import { describe, it, expect } from "vitest"
-import { screen } from "@testing-library/react"
+import { describe, it, expect, vi } from "vitest"
+import { screen, fireEvent, waitFor } from "@testing-library/react"
 import { Routes, Route } from "react-router-dom"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import OrderEdit from "./OrderEdit"
+import { OrderService } from "../services/order"
 
 // O orçamento de origem aparece só leitura (não é editável pela OS — o vínculo
 // nasce ao aprovar o orçamento). billing_date também não tem campo: o back grava
@@ -18,7 +19,7 @@ const order = {
   budget: { id: 77 },
   service_date: null,
   billing_date: null,
-  status: "a faturar",
+  status: "em andamento",
   total: "6000.00",
   products_total: "5000.00",
   services_total: "1000.00",
@@ -128,5 +129,43 @@ describe("<OrderEdit>", () => {
 
     expect(await screen.findByText(/Peça ativa/)).toBeInTheDocument()
     expect(screen.queryByText(/Peça deletada/)).not.toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — finalizar serviço e trava de itens", () => {
+  it("em andamento: mostra 'Finalizar serviço' e libera adicionar item", async () => {
+    mockApi()
+    renderPage()
+
+    expect(await screen.findByRole("button", { name: /finalizar serviço/i })).toBeInTheDocument()
+    expect(screen.getByText("Selecionar Produto")).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Faturar OS" })).not.toBeInTheDocument()
+  })
+
+  it("finaliza o serviço pelo botão do header", async () => {
+    mockApi()
+    const finish = vi
+      .spyOn(OrderService, "finishService")
+      .mockResolvedValue({ status: "a faturar" })
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: /finalizar serviço/i }))
+    fireEvent.click(await screen.findByRole("button", { name: "Finalizar" }))
+
+    await waitFor(() => expect(finish).toHaveBeenCalledWith("1"))
+    finish.mockRestore()
+  })
+
+  it("a faturar: itens travados e aparece 'Faturar OS'", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json({ ...order, status: "a faturar" })),
+    )
+    renderPage()
+
+    expect(await screen.findByText(/Itens travados/i)).toBeInTheDocument()
+    expect(screen.queryByText("Selecionar Produto")).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Faturar OS" })).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /finalizar serviço/i })).not.toBeInTheDocument()
   })
 })
