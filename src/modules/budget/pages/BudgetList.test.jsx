@@ -10,6 +10,12 @@ import { openPdfBlob } from "@/api/open-pdf"
 
 vi.mock("@/api/open-pdf", () => ({ openPdfBlob: vi.fn() }))
 
+const { navigateSpy } = vi.hoisted(() => ({ navigateSpy: vi.fn() }))
+vi.mock("react-router-dom", async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, useNavigate: () => navigateSpy }
+})
+
 let lastBudgetsUrl
 
 function mockBudgets(results) {
@@ -162,5 +168,36 @@ describe("<BudgetList>", () => {
 
     fireEvent.click(totalHeader)
     await waitFor(() => expect(lastBudgetsUrl.searchParams.get("ordering")).toBe("-total"))
+  })
+
+  it("Duplicar só aparece em orçamento cancelado ou expirado", async () => {
+    mockBudgets([
+      { id: 1, status: "pendente", total: "0", valid_until: "2026-10-01T00:00:00Z" },
+      { id: 2, status: "aprovado", total: "0", valid_until: "2026-10-01T00:00:00Z" },
+      { id: 3, status: "cancelado", total: "0", valid_until: "2026-10-01T00:00:00Z" },
+      { id: 4, status: "expirado", total: "0", valid_until: "2026-09-01T00:00:00Z" },
+    ])
+    renderWithProviders(<BudgetList />)
+    await screen.findByText("#1")
+
+    expect(screen.getAllByRole("button", { name: "Duplicar orçamento" })).toHaveLength(2)
+  })
+
+  it("duplica pelo botão da linha e navega pro orçamento novo", async () => {
+    mockBudgets([{ id: 3, status: "cancelado", total: "0", valid_until: "2026-10-01T00:00:00Z" }])
+    const duplicate = vi
+      .spyOn(BudgetService, "duplicateBudget")
+      .mockResolvedValue({ id: 99, status: "pendente" })
+
+    renderWithProviders(<BudgetList />)
+    await screen.findByText("#3")
+
+    fireEvent.click(screen.getByRole("button", { name: "Duplicar orçamento" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Duplicar" }))
+
+    await waitFor(() => expect(duplicate).toHaveBeenCalledWith(3))
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/99"))
+
+    duplicate.mockRestore()
   })
 })

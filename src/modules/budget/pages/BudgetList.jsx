@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom"
-import { CheckCircle, Edit2, Trash2, XCircle } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
+import { CheckCircle, Copy, Edit2, Trash2, XCircle } from "lucide-react"
 import { useBudget } from "../hooks/useBudget"
 import { BudgetService } from "../services/budgets"
 import ListHeader from "@/modules/core/components/ListHeader"
@@ -38,9 +38,11 @@ export default function BudgetList() {
     remove,
     approve,
     cancel,
+    duplicate,
     error,
   } = useBudget()
 
+  const navigate = useNavigate()
   const toast = useToast()
   const confirm = useConfirm()
   const { client: clients } = useClientOptions()
@@ -152,6 +154,27 @@ export default function BudgetList() {
     }
   }
 
+  // duplicar: só orçamento cancelado ou expirado. Abre o novo (pendente) na edição.
+  const handleDuplicate = async (item) => {
+    const confirmed = await confirm({
+      title: "Duplicar orçamento?",
+      message: `Cria um novo orçamento pendente a partir do #${item.id}, com os itens ativos.`,
+      confirmText: "Duplicar",
+    })
+    if (!confirmed) return
+
+    try {
+      const created = await duplicate(item.id)
+      toast.success(`Orçamento #${created.id} criado a partir do #${item.id}.`)
+      navigate(`/orcamentos/${created.id}`)
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao duplicar o orçamento.").message)
+    }
+  }
+
+  const canDuplicate = (item) => item.status === "cancelado" || item.status === "expirado"
+
   return (
     <div className="p-6 space-y-4">
       <ListHeader
@@ -202,6 +225,16 @@ export default function BudgetList() {
                   <XCircle size={16} />
                 </button>
               </>
+            )}
+            {canDuplicate(item) && (
+              <button
+                type="button"
+                onClick={() => handleDuplicate(item)}
+                title="Duplicar orçamento"
+                className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
+              >
+                <Copy size={16} />
+              </button>
             )}
             <Link
               to={`/orcamentos/${item.id}`}

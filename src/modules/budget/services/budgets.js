@@ -36,6 +36,13 @@ export const BudgetService = {
     return response.data
   },
 
+  // só orçamento cancelado ou expirado; devolve o orçamento novo (mesmo shape
+  // do GET), já pendente e com itens ativos copiados.
+  async duplicateBudget(id) {
+    const response = await api.post(`/orcamentos/${id}/duplicate/`)
+    return response.data
+  },
+
   async getBudgetPdf(id) {
     const response = await api.get(`/orcamentos/${id}/pdf/`, { responseType: "blob" })
     return response.data

@@ -46,6 +46,11 @@ export function useBudget() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   })
 
+  const duplicateMutation = useMutation({
+    mutationFn: (id) => BudgetService.duplicateBudget(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  })
+
   return {
     budgets: query.data?.results ?? [],
     totalItems: query.data?.count ?? 0,
@@ -55,6 +60,7 @@ export function useBudget() {
     remove: removeMutation.mutateAsync,
     approve: approveMutation.mutateAsync,
     cancel: cancelMutation.mutateAsync,
+    duplicate: duplicateMutation.mutateAsync,
     filters,
     applyFilters,
     ordering,

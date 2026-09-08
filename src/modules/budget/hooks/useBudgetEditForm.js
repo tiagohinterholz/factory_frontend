@@ -116,6 +116,25 @@ export function useBudgetEditForm() {
     }
   }
 
+  // duplicar: só cancelado/expirado. Abre o novo (pendente) na edição.
+  async function handleDuplicate() {
+    const confirmed = await confirm({
+      title: "Duplicar orçamento?",
+      message: "Cria um novo orçamento pendente com os itens ativos deste.",
+      confirmText: "Duplicar",
+    })
+    if (!confirmed) return
+    try {
+      const created = await BudgetService.duplicateBudget(id)
+      queryClient.invalidateQueries({ queryKey: ["budgets"] })
+      toast.success(`Orçamento #${created.id} criado.`)
+      navigate(`/orcamentos/${created.id}`)
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao duplicar orçamento").message)
+    }
+  }
+
   return {
     form,
     onSubmit,
@@ -133,5 +152,6 @@ export function useBudgetEditForm() {
     handleDelete,
     handleApprove,
     handleCancel,
+    handleDuplicate,
   }
 }

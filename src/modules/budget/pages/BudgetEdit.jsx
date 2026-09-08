@@ -14,7 +14,7 @@ import { parseApiError } from "@/api/parse-api-error"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { Plus, Trash2, CheckCircle, XCircle } from "lucide-react"
+import { Plus, Trash2, CheckCircle, XCircle, Copy } from "lucide-react"
 import { formatDateTime } from "@/modules/core/utils/datetime"
 
 export default function BudgetEdit() {
@@ -36,6 +36,7 @@ export default function BudgetEdit() {
     handleDelete,
     handleApprove,
     handleCancel,
+    handleDuplicate,
     refresh,
   } = useBudgetEditForm()
   const {
@@ -130,6 +131,7 @@ export default function BudgetEdit() {
     .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
 
   const isPending = status === "pendente"
+  const canDuplicate = status === "cancelado" || status === "expirado"
   // data da situação: aprovado -> approved_at, cancelado -> cancelled_at,
   // expirado -> valid_until (quando expirou). Pendente não tem data.
   const actionDateLabel = formatDateTime(
@@ -172,6 +174,15 @@ export default function BudgetEdit() {
         </div>
         <div className="flex flex-wrap gap-2">
           <RecordPdfButton request={() => BudgetService.getBudgetPdf(id)} />
+          {canDuplicate && (
+            <button
+              type="button"
+              onClick={handleDuplicate}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-brand rounded-xl hover:bg-brand-subtle font-bold text-sm shadow-sm transition-all"
+            >
+              <Copy size={18} /> Duplicar
+            </button>
+          )}
           {isPending && (
             <>
               <button
