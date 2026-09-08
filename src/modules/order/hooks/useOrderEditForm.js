@@ -83,6 +83,26 @@ export function useOrderEditForm() {
     navigate("/ordens")
   }
 
+  // em andamento -> a faturar. Marca o serviço como concluído; a partir daí
+  // os itens ficam travados e libera o faturamento.
+  async function handleFinish() {
+    const confirmed = await confirm({
+      title: "Finalizar serviço?",
+      message: "A OS vai para 'a faturar' e os itens não poderão mais ser editados.",
+      confirmText: "Finalizar",
+    })
+    if (!confirmed) return
+    try {
+      await OrderService.finishService(id)
+      await fetchMeta()
+      queryClient.invalidateQueries()
+      toast.success("Serviço finalizado. OS pronta para faturar.")
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao finalizar o serviço").message)
+    }
+  }
+
   async function handleInvoice() {
     const confirmed = await confirm({
       title: "Faturar ordem de serviço?",
@@ -113,6 +133,7 @@ export function useOrderEditForm() {
     budgetId: meta.budgetId,
     refresh: fetchMeta,
     handleDelete,
+    handleFinish,
     handleInvoice,
   }
 }

@@ -10,10 +10,11 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { idOf } from "@/api/dto"
 
-import { Edit, Trash2 } from "lucide-react"
+import { CheckCircle2, Edit, Trash2 } from "lucide-react"
 
 export default function AppointmentDetail() {
-  const { form, onSubmit, loading, handleDelete, linkedOrder } = useAppointmentEditForm()
+  const { form, onSubmit, loading, handleDelete, handleFinishOrder, linkedOrder } =
+    useAppointmentEditForm()
   const {
     register,
     watch,
@@ -93,14 +94,26 @@ export default function AppointmentDetail() {
             </h1>
             <p className="text-slate-400 font-medium text-sm">Sincronize os dados do agendamento</p>
           </div>
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
-          >
-            <Trash2 className="w-4 h-4" />
-            Excluir
-          </button>
+          <div className="flex items-center gap-2">
+            {linkedOrder?.status === "em andamento" && (
+              <button
+                type="button"
+                onClick={handleFinishOrder}
+                className="flex items-center gap-2 px-4 py-2 bg-brand text-brand-fg hover:bg-brand-hover rounded-xl transition duration-300 font-bold text-sm"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Finalizar atendimento
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              Excluir
+            </button>
+          </div>
         </div>
 
         <div className="card-premium">

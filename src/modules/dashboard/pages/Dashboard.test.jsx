@@ -59,7 +59,7 @@ describe("<Dashboard>", () => {
     renderWithProviders(<Dashboard />)
 
     expect(await screen.findByText("Movimentação")).toBeInTheDocument()
-    expect(screen.getByText("OS faturadas")).toBeInTheDocument()
+    expect(screen.getByText("Faturadas")).toBeInTheDocument()
     expect(screen.getByText("45")).toBeInTheDocument()
 
     expect(screen.getByText("Atendimentos")).toBeInTheDocument()
@@ -97,7 +97,8 @@ describe("<Dashboard>", () => {
     mockDashboard({ appointments: { scheduled_this_week: [] } })
     renderWithProviders(<Dashboard />)
 
-    expect(await screen.findByText(/nenhum atendimento agendado/i)).toBeInTheDocument()
+    expect(await screen.findByText(/nenhum atendimento em aberto/i)).toBeInTheDocument()
+    expect(screen.getByText(/nenhuma os a faturar ou faturada/i)).toBeInTheDocument()
   })
 
   it("esconde o total da semana quando o back não manda o campo", async () => {

@@ -14,13 +14,33 @@ import {
 } from "lucide-react"
 import { useDashboard } from "@/modules/dashboard/hooks/useDashboard"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
-import HighlightCard from "@/modules/dashboard/components/HighlightCard"
 import SummaryCard from "@/modules/dashboard/components/SummaryCard"
 import StatCard from "@/modules/dashboard/components/StatCard"
 import AppointmentCard from "@/modules/dashboard/components/AppointmentCard"
+import { appointmentStatusLabel } from "@/modules/appointment/appointment-status"
 
 const brl = (value) =>
   `R$ ${Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+
+const MINI_STAT_TONE = {
+  warn: "text-amber-600",
+  danger: "text-rose-600",
+  ok: "text-emerald-600",
+}
+
+function MiniStat({ icon: Icon, label, value, tone }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1">
+      <Icon className={`w-3.5 h-3.5 ${MINI_STAT_TONE[tone] ?? "text-muted"}`} />
+      <span className="text-[11px] text-muted">{label}</span>
+      <span className="text-sm font-bold text-ink tabular-nums">{value}</span>
+    </span>
+  )
+}
+
+// no board de Movimentação vão os cards já concluídos (serviço finalizado):
+// a faturar e faturado. O resto (aguardando / em andamento) fica em Atendimentos.
+const MOVEMENT_LABELS = ["a faturar", "faturado"]
 
 function Quadro({ title, subtitle, aside, children }) {
   return (
@@ -62,6 +82,15 @@ export default function Dashboard() {
   const financial = data.financial ?? null
   const summary = data.summary ?? {}
 
+  const movementCards = scheduledThisWeek.filter((item) =>
+    MOVEMENT_LABELS.includes(appointmentStatusLabel(item)),
+  )
+  const serviceCards = scheduledThisWeek.filter(
+    (item) => !MOVEMENT_LABELS.includes(appointmentStatusLabel(item)),
+  )
+
+  const cardKey = (item) => item.id ?? `${item.client_name}-${item.date}-${item.time}`
+
   const summaryStats = [
     { title: "Clientes", value: summary.clients ?? 0, icon: Users },
     { title: "Veículos", value: summary.vehicles ?? 0, icon: Car },
@@ -75,35 +104,48 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <Quadro title="Movimentação" subtitle="Ordens de serviço em números">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <HighlightCard
-            flat
-            tone="warn"
-            icon={Hourglass}
-            title="OS a faturar hoje"
-            value={activity.orders_to_bill_today ?? 0}
-          />
-          <HighlightCard
-            flat
-            tone="danger"
-            icon={ClipboardList}
-            title="OS a faturar (histórico)"
-            value={activity.orders_to_bill ?? 0}
-          />
-          <HighlightCard
-            flat
-            tone="ok"
-            icon={ClipboardCheck}
-            title="OS faturadas"
-            value={activity.orders_billed ?? 0}
-          />
-        </div>
+      <Quadro
+        title="Movimentação"
+        subtitle="OS com serviço concluído — a faturar e faturadas"
+        aside={
+          <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
+            <MiniStat
+              tone="warn"
+              icon={Hourglass}
+              label="A faturar hoje"
+              value={activity.orders_to_bill_today ?? 0}
+            />
+            <MiniStat
+              tone="danger"
+              icon={ClipboardList}
+              label="A faturar"
+              value={activity.orders_to_bill ?? 0}
+            />
+            <MiniStat
+              tone="ok"
+              icon={ClipboardCheck}
+              label="Faturadas"
+              value={activity.orders_billed ?? 0}
+            />
+          </div>
+        }
+      >
+        {movementCards.length === 0 ? (
+          <p className="text-[13px] text-muted">Nenhuma OS a faturar ou faturada por aqui.</p>
+        ) : (
+          <div className="max-h-96 overflow-y-auto pr-1">
+            <div className="flex flex-wrap items-start gap-3">
+              {movementCards.map((item) => (
+                <AppointmentCard key={cardKey(item)} item={item} />
+              ))}
+            </div>
+          </div>
+        )}
       </Quadro>
 
       <Quadro
         title="Atendimentos"
-        subtitle="Clientes agendados nesta semana"
+        subtitle="Aguardando execução e em andamento"
         aside={
           totalScheduledThisWeek != null && (
             <div className="text-right shrink-0">
@@ -115,16 +157,13 @@ export default function Dashboard() {
           )
         }
       >
-        {scheduledThisWeek.length === 0 ? (
-          <p className="text-[13px] text-muted">Nenhum atendimento agendado para a semana.</p>
+        {serviceCards.length === 0 ? (
+          <p className="text-[13px] text-muted">Nenhum atendimento em aberto.</p>
         ) : (
           <div className="max-h-96 overflow-y-auto pr-1">
             <div className="flex flex-wrap items-start gap-3">
-              {scheduledThisWeek.map((item) => (
-                <AppointmentCard
-                  key={item.id ?? `${item.client_name}-${item.date}-${item.time}`}
-                  item={item}
-                />
+              {serviceCards.map((item) => (
+                <AppointmentCard key={cardKey(item)} item={item} />
               ))}
             </div>
           </div>

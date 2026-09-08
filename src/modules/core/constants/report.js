@@ -1,6 +1,7 @@
 // Status aceitos por cada tipo de relatório (bate com o backend).
 export const REPORT_STATUS_OPTIONS = {
   orders: [
+    { id: "em andamento", name: "Em andamento" },
     { id: "a faturar", name: "A faturar" },
     { id: "faturado", name: "Faturado" },
     { id: "cancelado", name: "Cancelado" },

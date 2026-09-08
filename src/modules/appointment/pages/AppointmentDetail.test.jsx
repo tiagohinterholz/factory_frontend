@@ -1,11 +1,12 @@
-import { describe, it, expect } from "vitest"
-import { screen, waitFor } from "@testing-library/react"
+import { describe, it, expect, vi } from "vitest"
+import { screen, fireEvent, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { Routes, Route } from "react-router-dom"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import AppointmentDetail from "./AppointmentDetail"
+import { OrderService } from "@/modules/order/services/order"
 
 // Furo: OS criada agora (ex.: aprovar orçamento com data) ainda não está na
 // lista de opções em cache (staleTime 5min). O select de OS tem que mostrar
@@ -15,15 +16,17 @@ const appointment = {
   business: 2,
   client: 5,
   vehicle: 9,
-  order: { id: 77, plate: "ABC1D23" },
+  order: { id: 77, plate: "ABC1D23", status: "em andamento" },
   date: "2026-09-10",
   time: "14:00",
   observation: "",
 }
 
-function mockApi({ orders = [] } = {}) {
+function mockApi({ orders = [], appointmentOverrides = {} } = {}) {
   server.use(
-    http.get(`${API}/agendamentos/1/`, () => HttpResponse.json(appointment)),
+    http.get(`${API}/agendamentos/1/`, () =>
+      HttpResponse.json({ ...appointment, ...appointmentOverrides }),
+    ),
     http.get(`${API}/empreendimentos/`, () =>
       HttpResponse.json({ results: [{ id: 2, corporate_name: "Oficina Teste" }], count: 1 }),
     ),
@@ -68,5 +71,27 @@ describe("<AppointmentDetail>", () => {
     renderPage()
 
     await waitFor(() => expect(screen.getAllByRole("option", { name: /OS 77/ })).toHaveLength(1))
+  })
+
+  it("OS 'em andamento': mostra 'Finalizar atendimento' e chama finishService", async () => {
+    mockApi()
+    const finish = vi
+      .spyOn(OrderService, "finishService")
+      .mockResolvedValue({ status: "a faturar" })
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: /finalizar atendimento/i }))
+    fireEvent.click(await screen.findByRole("button", { name: "Finalizar" }))
+
+    await waitFor(() => expect(finish).toHaveBeenCalledWith("77"))
+    finish.mockRestore()
+  })
+
+  it("OS fora de 'em andamento': sem botão de finalizar", async () => {
+    mockApi({ appointmentOverrides: { order: { id: 77, status: "a faturar" } } })
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+    expect(screen.queryByRole("button", { name: /finalizar atendimento/i })).not.toBeInTheDocument()
   })
 })

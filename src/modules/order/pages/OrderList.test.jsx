@@ -62,4 +62,25 @@ describe("<OrderList> — ações da linha", () => {
     await waitFor(() => expect(invoice).toHaveBeenCalledWith(1))
     invoice.mockRestore()
   })
+
+  it("'Finalizar serviço' só aparece na OS 'em andamento' e dispara", async () => {
+    mockOrders([
+      { id: 3, status: "em andamento", total: "0" },
+      { id: 4, status: "a faturar", total: "0" },
+    ])
+    const finish = vi
+      .spyOn(OrderService, "finishService")
+      .mockResolvedValue({ status: "a faturar" })
+
+    renderWithProviders(<OrderList />)
+    await screen.findByText("#3")
+
+    expect(screen.getAllByRole("button", { name: "Finalizar serviço" })).toHaveLength(1)
+
+    fireEvent.click(screen.getByRole("button", { name: "Finalizar serviço" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Finalizar" }))
+
+    await waitFor(() => expect(finish).toHaveBeenCalledWith(3))
+    finish.mockRestore()
+  })
 })
