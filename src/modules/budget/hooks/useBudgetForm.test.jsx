@@ -6,6 +6,7 @@ import { ToastProvider } from "@/modules/core/feedback/ToastProvider"
 import { AuthProvider } from "@/modules/auth/context/AuthProvider"
 import { useBudgetForm } from "./useBudgetForm"
 import { BudgetService } from "../services/budgets"
+import { AppointmentService } from "@/modules/appointment/services/appointment"
 
 const { navigateSpy } = vi.hoisted(() => ({ navigateSpy: vi.fn() }))
 
@@ -41,5 +42,37 @@ describe("useBudgetForm", () => {
     expect(create).toHaveBeenCalled()
     expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/7")
     create.mockRestore()
+  })
+
+  it("vindo de um agendamento, liga o orçamento novo nele (PATCH budget_id) antes de redirecionar", async () => {
+    const create = vi.spyOn(BudgetService, "createBudget").mockResolvedValue({ id: 7 })
+    const link = vi.spyOn(AppointmentService, "linkAppointment").mockResolvedValue({})
+    const { result } = renderHook(
+      () => useBudgetForm({ clientId: 5, vehicleId: 9, appointmentId: 4 }),
+      { wrapper },
+    )
+
+    await act(async () => {
+      await result.current.onSubmit()
+    })
+
+    expect(link).toHaveBeenCalledWith(4, { budget_id: 7 })
+    expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/7")
+    create.mockRestore()
+    link.mockRestore()
+  })
+
+  it("sem appointmentId não toca no agendamento", async () => {
+    const create = vi.spyOn(BudgetService, "createBudget").mockResolvedValue({ id: 7 })
+    const link = vi.spyOn(AppointmentService, "linkAppointment").mockResolvedValue({})
+    const { result } = renderHook(() => useBudgetForm({ clientId: 5, vehicleId: 9 }), { wrapper })
+
+    await act(async () => {
+      await result.current.onSubmit()
+    })
+
+    expect(link).not.toHaveBeenCalled()
+    create.mockRestore()
+    link.mockRestore()
   })
 })

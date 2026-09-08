@@ -26,13 +26,23 @@ export const BudgetService = {
     return response.data
   },
 
-  async approveBudget(id) {
-    const response = await api.post(`/orcamentos/${id}/approve/`)
+  // aprova o orçamento e cria a OS. Responde 201 com a OS criada (mesmo shape
+  // do GET /ordens/{id}/) — quem chama usa `response.data.id` pra abrir a OS.
+  // payload opcional: { service_date: ISO 8601 } já grava a data/hora do serviço.
+  async approveBudget(id, payload) {
+    const response = await api.post(`/orcamentos/${id}/approve/`, payload)
     return response.data
   },
 
   async cancelBudget(id) {
     const response = await api.post(`/orcamentos/${id}/cancel/`)
+    return response.data
+  },
+
+  // só orçamento cancelado ou expirado; devolve o orçamento novo (mesmo shape
+  // do GET), já pendente e com itens ativos copiados.
+  async duplicateBudget(id) {
+    const response = await api.post(`/orcamentos/${id}/duplicate/`)
     return response.data
   },
 

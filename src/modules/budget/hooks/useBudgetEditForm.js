@@ -82,20 +82,23 @@ export function useBudgetEditForm() {
     navigate("/orcamentos")
   }
 
-  async function handleApprove() {
-    const confirmed = await confirm({
-      title: "Aprovar orçamento?",
-      message: "Isso pode gerar uma Ordem de Serviço.",
-      confirmText: "Aprovar",
-    })
-    if (!confirmed) return
+  // serviceDate opcional (ISO 8601): cria a OS já com a data/hora do serviço.
+  // A confirmação é o ApproveBudgetModal; re-lança o erro pra ele seguir aberto.
+  async function handleApprove(serviceDate) {
     try {
-      await BudgetService.approveBudget(id)
+      await BudgetService.approveBudget(id, serviceDate ? { service_date: serviceDate } : undefined)
       await fetchMeta()
-      toast.success("Orçamento aprovado com sucesso!")
+      // aprovar cria OS (e agendamento, se veio data) — refaz listas/opções
+      queryClient.invalidateQueries()
+      toast.success(
+        serviceDate
+          ? "Orçamento aprovado com a data do serviço."
+          : "Orçamento aprovado com sucesso!",
+      )
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao aprovar orçamento").message)
+      throw error
     }
   }
 
@@ -116,6 +119,25 @@ export function useBudgetEditForm() {
     }
   }
 
+  // duplicar: só cancelado/expirado. Abre o novo (pendente) na edição.
+  async function handleDuplicate() {
+    const confirmed = await confirm({
+      title: "Duplicar orçamento?",
+      message: "Cria um novo orçamento pendente com os itens ativos deste.",
+      confirmText: "Duplicar",
+    })
+    if (!confirmed) return
+    try {
+      const created = await BudgetService.duplicateBudget(id)
+      queryClient.invalidateQueries({ queryKey: ["budgets"] })
+      toast.success(`Orçamento #${created.id} criado.`)
+      navigate(`/orcamentos/${created.id}`)
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao duplicar orçamento").message)
+    }
+  }
+
   return {
     form,
     onSubmit,
@@ -133,5 +155,6 @@ export function useBudgetEditForm() {
     handleDelete,
     handleApprove,
     handleCancel,
+    handleDuplicate,
   }
 }

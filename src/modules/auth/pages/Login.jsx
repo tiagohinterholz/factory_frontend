@@ -7,8 +7,8 @@ export default function Login() {
   const navigate = useNavigate()
   const { login } = useAuth()
   const toast = useToast()
-  const [email, setEmail] = useState(import.meta.env.DEV ? "tiago@gmail.com" : "")
-  const [password, setPassword] = useState(import.meta.env.DEV ? "tiago123" : "")
+  const [email, setEmail] = useState(import.meta.env.DEV ? "admin0@demo.factory.local" : "")
+  const [password, setPassword] = useState(import.meta.env.DEV ? "Demo@1234" : "")
 
   async function handleLogin(ev) {
     ev.preventDefault()

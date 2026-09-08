@@ -15,7 +15,8 @@ import { parseApiError } from "@/api/parse-api-error"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { Plus, Trash2 } from "lucide-react"
+import { orderStatusTone } from "@/modules/order/order-status"
+import { CheckCircle2, Plus, Trash2 } from "lucide-react"
 
 export default function OrderEdit() {
   const { id } = useParams()
@@ -33,9 +34,12 @@ export default function OrderEdit() {
     billingDate,
     budgetId,
     handleDelete,
+    handleFinish,
     handleInvoice,
     refresh,
   } = useOrderEditForm()
+
+  const canEditItems = status === "em andamento"
   const {
     register,
     watch,
@@ -135,15 +139,7 @@ export default function OrderEdit() {
           <h1 className="text-xl font-semibold text-ink tracking-tight">Editar Ordem de Serviço</h1>
           <div className="flex items-center gap-3 mt-1 text-sm uppercase font-bold tracking-wider">
             <p className="text-slate-400">Gestão técnica e faturamento</p>
-            <span
-              className={`px-2 py-0.5 rounded-md ${
-                status === "faturado"
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-brand-subtle text-brand"
-              }`}
-            >
-              {status}
-            </span>
+            <span className={`px-2 py-0.5 rounded-md ${orderStatusTone(status)}`}>{status}</span>
             {billingDate && (
               <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium normal-case tracking-normal">
                 Faturado em {new Date(billingDate + "T00:00:00").toLocaleDateString("pt-BR")}
@@ -153,6 +149,15 @@ export default function OrderEdit() {
         </div>
         <div className="flex flex-wrap gap-2">
           <RecordPdfButton request={() => OrderService.getOrderPdf(id)} />
+          {status === "em andamento" && (
+            <button
+              type="button"
+              onClick={handleFinish}
+              className="flex items-center gap-2 px-4 py-2 bg-brand text-brand-fg rounded-xl hover:bg-brand-hover font-bold text-sm shadow-sm transition-all"
+            >
+              <CheckCircle2 size={18} /> Finalizar serviço
+            </button>
+          )}
           {status === "a faturar" && (
             <button
               type="button"
@@ -235,41 +240,48 @@ export default function OrderEdit() {
         </div>
 
         <div className="lg:col-span-2 space-y-8">
+          {!canEditItems && (
+            <p className="text-[13px] text-slate-500 -mb-4">
+              Itens travados — a OS não está mais em andamento.
+            </p>
+          )}
           <div className="card-premium">
             <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
               <Plus size={20} className="text-brand" /> Peças e Produtos
             </h2>
 
-            <form
-              onSubmit={handleAddProduct}
-              className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
-            >
-              <div className="flex-1 min-w-[200px]">
-                <SelectField
-                  label="Selecionar Produto"
-                  value={selectedProduct}
-                  onChange={(event) => setSelectedProduct(event.target.value)}
-                  options={allProducts.map((p) => ({
-                    id: p.id,
-                    name: `${p.name} (R$ ${p.unit_price})`,
-                  }))}
-                />
-              </div>
-              <div className="w-24">
-                <FormField
-                  label="Qtd"
-                  type="number"
-                  value={quantity}
-                  onChange={(event) => setQuantity(event.target.value)}
-                />
-              </div>
-              <button
-                type="submit"
-                className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover"
+            {canEditItems && (
+              <form
+                onSubmit={handleAddProduct}
+                className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
               >
-                <Plus size={24} />
-              </button>
-            </form>
+                <div className="flex-1 min-w-[200px]">
+                  <SelectField
+                    label="Selecionar Produto"
+                    value={selectedProduct}
+                    onChange={(event) => setSelectedProduct(event.target.value)}
+                    options={allProducts.map((p) => ({
+                      id: p.id,
+                      name: `${p.name} (R$ ${p.unit_price})`,
+                    }))}
+                  />
+                </div>
+                <div className="w-24">
+                  <FormField
+                    label="Qtd"
+                    type="number"
+                    value={quantity}
+                    onChange={(event) => setQuantity(event.target.value)}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover"
+                >
+                  <Plus size={24} />
+                </button>
+              </form>
+            )}
 
             <div className="divide-y divide-slate-100">
               {products.map((item) => (
@@ -281,13 +293,15 @@ export default function OrderEdit() {
                     <span className="font-bold text-slate-700">
                       R$ {parseFloat(item.total || 0).toFixed(2)}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteProduct(item.id)}
-                      className="text-rose-400 hover:text-danger"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {canEditItems && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteProduct(item.id)}
+                        className="text-rose-400 hover:text-danger"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -309,28 +323,30 @@ export default function OrderEdit() {
               <Plus size={20} className="text-brand" /> Mão de Obra e Serviços
             </h2>
 
-            <form
-              onSubmit={handleAddService}
-              className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
-            >
-              <div className="flex-1 min-w-[200px]">
-                <SelectField
-                  label="Selecionar Serviço"
-                  value={selectedService}
-                  onChange={(event) => setSelectedService(event.target.value)}
-                  options={allServices.map((s) => ({
-                    id: s.id,
-                    name: `${s.name} (R$ ${s.unit_price})`,
-                  }))}
-                />
-              </div>
-              <button
-                type="submit"
-                className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover"
+            {canEditItems && (
+              <form
+                onSubmit={handleAddService}
+                className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
               >
-                <Plus size={24} />
-              </button>
-            </form>
+                <div className="flex-1 min-w-[200px]">
+                  <SelectField
+                    label="Selecionar Serviço"
+                    value={selectedService}
+                    onChange={(event) => setSelectedService(event.target.value)}
+                    options={allServices.map((s) => ({
+                      id: s.id,
+                      name: `${s.name} (R$ ${s.unit_price})`,
+                    }))}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover"
+                >
+                  <Plus size={24} />
+                </button>
+              </form>
+            )}
 
             <div className="divide-y divide-slate-100">
               {services.map((item) => (
@@ -340,13 +356,15 @@ export default function OrderEdit() {
                     <span className="font-bold text-slate-700">
                       R$ {parseFloat(item.unit_price || 0).toFixed(2)}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteService(item.id)}
-                      className="text-rose-400 hover:text-danger"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {canEditItems && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteService(item.id)}
+                        className="text-rose-400 hover:text-danger"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
