@@ -14,6 +14,7 @@ export default function OrderCreate() {
   const { form, onSubmit } = useOrderForm({
     clientId: location.state?.clientId,
     vehicleId: location.state?.vehicleId,
+    appointmentId: location.state?.appointmentId,
   })
   const {
     register,

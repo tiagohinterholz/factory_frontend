@@ -66,10 +66,8 @@ describe("<Dashboard>", () => {
     expect(screen.getByText("Clientes agendados na semana")).toBeInTheDocument()
     expect(screen.getByText("7")).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /os #10/i })).toHaveAttribute("href", "/ordens/10")
-    expect(screen.getByRole("link", { name: /criar orçamento/i })).toHaveAttribute(
-      "href",
-      "/orcamentos/novo",
-    )
+    // com OS vinculada, o card não oferece "Criar Orçamento"
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
 
     expect(screen.getByText("Resumo")).toBeInTheDocument()
     expect(screen.getByText("15")).toBeInTheDocument()

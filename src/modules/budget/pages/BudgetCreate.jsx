@@ -13,6 +13,7 @@ export default function BudgetCreate() {
   const { form, onSubmit } = useBudgetForm({
     clientId: location.state?.clientId,
     vehicleId: location.state?.vehicleId,
+    appointmentId: location.state?.appointmentId,
   })
   const {
     register,

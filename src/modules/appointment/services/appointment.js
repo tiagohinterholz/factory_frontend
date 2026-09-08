@@ -21,6 +21,13 @@ export const AppointmentService = {
     return response.data
   },
 
+  // liga uma OS ou um orçamento recém-criado ao agendamento de origem
+  // (payload: { order_id } ou { budget_id }).
+  async linkAppointment(id, payload) {
+    const response = await api.patch(`/agendamentos/${id}/`, payload)
+    return response.data
+  },
+
   async deleteAppointment(id) {
     const response = await api.delete(`/agendamentos/${id}/`)
     return response.data

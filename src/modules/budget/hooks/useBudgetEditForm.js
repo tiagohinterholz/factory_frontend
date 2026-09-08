@@ -88,6 +88,8 @@ export function useBudgetEditForm() {
     try {
       await BudgetService.approveBudget(id, serviceDate ? { service_date: serviceDate } : undefined)
       await fetchMeta()
+      // aprovar cria OS (e agendamento, se veio data) — refaz listas/opções
+      queryClient.invalidateQueries()
       toast.success(
         serviceDate
           ? "Orçamento aprovado com a data do serviço."

@@ -22,7 +22,9 @@ export default function AppointmentCard({ item }) {
   const budgetId = relationId(item.budget, item.budget_id)
   const clientId = item.client_id ?? item.client?.id ?? null
   const vehicleId = item.vehicle_id ?? item.vehicle?.id ?? null
-  const prefill = { clientId, vehicleId }
+  // appointmentId vai junto pros atalhos ligarem a OS/orçamento novo neste
+  // agendamento (PATCH order_id / budget_id após criar).
+  const prefill = { clientId, vehicleId, appointmentId: item.id ?? null }
 
   // O card inteiro abre a edição do agendamento; os links internos (contato,
   // OS/orçamento, atalhos de criação) param a propagação pra não disparar isso.
@@ -107,15 +109,18 @@ export default function AppointmentCard({ item }) {
             Orçamento #{budgetId}
           </Link>
         ) : (
-          <Link
-            to="/orcamentos/novo"
-            state={prefill}
-            onClick={stop}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand border border-line rounded-md px-1.5 py-0.5 hover:bg-brand-subtle transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Criar Orçamento
-          </Link>
+          // com OS vinculada não faz sentido criar orçamento pro agendamento
+          orderId == null && (
+            <Link
+              to="/orcamentos/novo"
+              state={prefill}
+              onClick={stop}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand border border-line rounded-md px-1.5 py-0.5 hover:bg-brand-subtle transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Criar Orçamento
+            </Link>
+          )
         )}
       </div>
     </div>

@@ -8,11 +8,12 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
+import { idOf } from "@/api/dto"
 
 import { Edit, Trash2 } from "lucide-react"
 
 export default function AppointmentDetail() {
-  const { form, onSubmit, loading, handleDelete } = useAppointmentEditForm()
+  const { form, onSubmit, loading, handleDelete, linkedOrder } = useAppointmentEditForm()
   const {
     register,
     watch,
@@ -56,6 +57,23 @@ export default function AppointmentDetail() {
       return !vehicleId || String(orderVehicleId) === String(vehicleId)
     })
     .map((o) => ({ id: o.id, name: `OS ${o.id} - ${o.plate || ""}` }))
+
+  // a OS já vinculada tem que aparecer no select mesmo que a lista de opções em
+  // cache ainda não a tenha (criada agora, ex.: aprovar orçamento com data) ou
+  // que o filtro por veículo a corte — só enquanto ela for a seleção atual
+  const linkedOrderId = idOf(linkedOrder)
+  const currentOrderId = watch("order_id")
+  if (
+    linkedOrderId &&
+    String(currentOrderId) === linkedOrderId &&
+    !orderOptions.some((option) => String(option.id) === linkedOrderId)
+  ) {
+    const plate = linkedOrder?.plate || linkedOrder?.vehicle?.plate || ""
+    orderOptions.unshift({
+      id: linkedOrderId,
+      name: `OS ${linkedOrderId}${plate ? ` - ${plate}` : ""}`,
+    })
+  }
 
   function resetChildren(...names) {
     names.forEach((name) => setValue(name, ""))

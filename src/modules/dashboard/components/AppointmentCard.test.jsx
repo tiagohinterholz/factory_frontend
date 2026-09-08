@@ -66,10 +66,23 @@ describe("<AppointmentCard>", () => {
     )
   })
 
-  it("mistura vínculo existente com atalho de criação", () => {
+  it("com OS vinculada não oferece 'Criar Orçamento'", () => {
     renderWithProviders(<AppointmentCard item={{ ...base, order: 10 }} />)
     expect(screen.getByRole("link", { name: /os #10/i })).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: /criar orçamento/i })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
+  })
+
+  it("com orçamento vinculado ainda oferece 'Criar OS'", () => {
+    renderWithProviders(<AppointmentCard item={{ ...base, budget: 42 }} />)
+    expect(screen.getByRole("link", { name: /orçamento #42/i })).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /criar os/i })).toHaveAttribute("href", "/ordens/novo")
+  })
+
+  it("OS + orçamento vinculados: mostra os dois links, nenhum atalho de criação", () => {
+    renderWithProviders(<AppointmentCard item={{ ...base, order: 10, budget: 42 }} />)
+    expect(screen.getByRole("link", { name: /os #10/i })).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /orçamento #42/i })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar/i })).not.toBeInTheDocument()
   })
 
   it("leva cliente e veículo pré-preenchidos ao criar OS/orçamento", () => {
@@ -86,7 +99,9 @@ describe("<AppointmentCard>", () => {
     )
 
     fireEvent.click(screen.getByRole("link", { name: /criar os/i }))
-    expect(screen.getByTestId("state")).toHaveTextContent('{"clientId":5,"vehicleId":3}')
+    expect(screen.getByTestId("state")).toHaveTextContent(
+      '{"clientId":5,"vehicleId":3,"appointmentId":1}',
+    )
   })
 
   it("clicar no card abre a edição do agendamento", () => {

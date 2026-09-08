@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
@@ -25,10 +26,19 @@ export function useAppointmentEditForm() {
   const confirm = useConfirm()
   const queryClient = useQueryClient()
 
+  // OS vinculada crua do detalhe — a página usa pra garantir a <option> mesmo
+  // que a lista de opções em cache ainda não tenha essa OS (foi criada agora,
+  // ex.: ao aprovar um orçamento com data de serviço).
+  const [linkedOrder, setLinkedOrder] = useState(null)
+
   const { form, onSubmit, loading } = useResourceForm({
     schema: appointmentSchema,
     defaultValues: appointmentDefaults,
-    load: async () => toAppointmentForm(await AppointmentService.getAppointmentById(id)),
+    load: async () => {
+      const data = await AppointmentService.getAppointmentById(id)
+      setLinkedOrder(data.order ?? null)
+      return toAppointmentForm(data)
+    },
     submit: (values) => AppointmentService.updateAppointment(id, toAppointmentPayload(values)),
     redirectTo: "/agendamentos",
     errorFallback: "Erro ao atualizar agendamento",
@@ -47,5 +57,5 @@ export function useAppointmentEditForm() {
     navigate("/agendamentos")
   }
 
-  return { form, onSubmit, loading, handleDelete }
+  return { form, onSubmit, loading, handleDelete, linkedOrder }
 }
