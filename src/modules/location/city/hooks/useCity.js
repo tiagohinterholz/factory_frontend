@@ -1,19 +1,15 @@
-import { useState } from "react"
-import { useQuery, keepPreviousData } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { CityService } from "@/modules/location/city/services/city"
 import { StateService } from "@/modules/location/state/services/state"
 import { normalizeList } from "@/api/normalize-list"
 import { cityKeys } from "@/modules/location/city/domain"
+import { useResourceList } from "@/modules/core/hooks/useResourceList"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
 export function useCities() {
-  const [currentPage, setCurrentPage] = useState(1)
-
-  const query = useQuery({
-    queryKey: cityKeys.list({ page: currentPage }),
-    queryFn: () => CityService.getCities({ page: currentPage }),
-    placeholderData: keepPreviousData,
-    select: normalizeList,
+  const list = useResourceList({
+    keyFactory: cityKeys,
+    fetchPage: (params) => CityService.getCities(params),
   })
 
   const remove = useResourceAction({
@@ -28,16 +24,8 @@ export function useCities() {
     errorFallback: "Erro ao excluir a cidade.",
   })
 
-  return {
-    cities: query.data?.results ?? [],
-    totalItems: query.data?.count ?? 0,
-    loading: query.isPending,
-    error: query.error ?? null,
-    refetch: query.refetch,
-    remove: remove.run,
-    currentPage,
-    setCurrentPage,
-  }
+  const { items, ...rest } = list
+  return { ...rest, cities: items, remove: remove.run }
 }
 
 // Cidades de um estado, ordenadas por nome. Só busca quando há stateId.

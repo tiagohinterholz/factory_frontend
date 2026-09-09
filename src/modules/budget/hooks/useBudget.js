@@ -1,38 +1,20 @@
-import { useState } from "react"
-import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { budgetKeys } from "@/modules/budget/domain"
 import { orderKeys } from "@/modules/order/domain"
 import { appointmentKeys } from "@/modules/appointment/domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
-import { useListFilters } from "@/modules/core/hooks/useListFilters"
-import { useListSort } from "@/modules/core/hooks/useListSort"
+import { useResourceList } from "@/modules/core/hooks/useResourceList"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
-import { normalizeList } from "@/api/normalize-list"
 
 const EMPTY_FILTERS = { status: "", client_id: "", date_from: "", date_to: "" }
 
 export function useBudget() {
   const navigate = useNavigate()
-  const [currentPage, setCurrentPage] = useState(1)
-  const {
-    filters,
-    apply: applyFilters,
-    params: filterParams,
-  } = useListFilters(EMPTY_FILTERS, () => setCurrentPage(1))
-  const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
-
-  const query = useQuery({
-    queryKey: budgetKeys.list({ page: currentPage, filters, ordering }),
-    queryFn: () =>
-      BudgetService.getBudget({
-        page: currentPage,
-        ...filterParams,
-        ...(ordering ? { ordering } : {}),
-      }),
-    placeholderData: keepPreviousData,
-    select: normalizeList,
+  const list = useResourceList({
+    keyFactory: budgetKeys,
+    fetchPage: (params) => BudgetService.getBudget(params),
+    emptyFilters: EMPTY_FILTERS,
   })
 
   const remove = useResourceAction({
@@ -84,22 +66,14 @@ export function useBudget() {
     errorFallback: "Erro ao duplicar o orçamento.",
   })
 
+  const { items, ...rest } = list
   return {
-    budgets: query.data?.results ?? [],
-    totalItems: query.data?.count ?? 0,
-    loading: query.isPending,
-    error: query.error ?? null,
-    refetch: query.refetch,
+    ...rest,
+    budgets: items,
     remove: remove.run,
     approve: approve.run,
     approving: approve.pending,
     cancel: cancel.run,
     duplicate: duplicate.run,
-    filters,
-    applyFilters,
-    ordering,
-    toggleSort,
-    currentPage,
-    setCurrentPage,
   }
 }
