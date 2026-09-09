@@ -10,9 +10,6 @@ import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { REPORT_STATUS_OPTIONS } from "@/modules/core/constants/report"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
-import { parseApiError } from "@/api/parse-api-error"
 
 export default function OrderList() {
   const {
@@ -32,8 +29,6 @@ export default function OrderList() {
     error,
   } = useOrder()
 
-  const toast = useToast()
-  const confirm = useConfirm()
   const { client: clients } = useClientOptions()
 
   const filterFields = [
@@ -92,57 +87,6 @@ export default function OrderList() {
     },
   ]
 
-  const handleDelete = async (item) => {
-    const confirmed = await confirm({
-      title: "Excluir ordem de serviço?",
-      message: `A OS #${item.id} será removida permanentemente.`,
-      confirmText: "Excluir",
-      danger: true,
-    })
-    if (!confirmed) return
-
-    try {
-      await remove(item.id)
-    } catch (error) {
-      console.error(error)
-      toast.error("Erro ao excluir a ordem de serviço.")
-    }
-  }
-
-  const handleFinish = async (item) => {
-    const confirmed = await confirm({
-      title: "Finalizar serviço?",
-      message: `A OS #${item.id} vai para 'a faturar' e os itens não poderão mais ser editados.`,
-      confirmText: "Finalizar",
-    })
-    if (!confirmed) return
-
-    try {
-      await finish(item.id)
-      toast.success(`Serviço da OS #${item.id} finalizado.`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao finalizar o serviço.").message)
-    }
-  }
-
-  const handleInvoice = async (item) => {
-    const confirmed = await confirm({
-      title: "Faturar ordem de serviço?",
-      message: `A OS #${item.id} será marcada como faturada. Esta ação não pode ser desfeita.`,
-      confirmText: "Faturar",
-    })
-    if (!confirmed) return
-
-    try {
-      await invoice(item.id)
-      toast.success(`OS #${item.id} faturada.`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao faturar a ordem de serviço.").message)
-    }
-  }
-
   return (
     <div className="p-6 space-y-4">
       <ListHeader
@@ -176,7 +120,7 @@ export default function OrderList() {
             {orderCanFinish(item.status) && (
               <button
                 type="button"
-                onClick={() => handleFinish(item)}
+                onClick={() => finish(item)}
                 title="Finalizar serviço"
                 className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
               >
@@ -186,7 +130,7 @@ export default function OrderList() {
             {orderCanInvoice(item.status) && (
               <button
                 type="button"
-                onClick={() => handleInvoice(item)}
+                onClick={() => invoice(item)}
                 title="Faturar OS"
                 className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
               >
@@ -201,7 +145,7 @@ export default function OrderList() {
             </Link>
             <button
               type="button"
-              onClick={() => handleDelete(item)}
+              onClick={() => remove(item)}
               className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
             >
               <Trash2 size={16} />
