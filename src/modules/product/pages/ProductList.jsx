@@ -8,6 +8,7 @@ import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
+import { formatMoney } from "@/modules/core/utils/format"
 
 export default function ProductList() {
   const {
@@ -48,10 +49,7 @@ export default function ProductList() {
     {
       header: "Preço Venda",
       sortKey: "unit_price",
-      accessor: (item) =>
-        item.unit_price
-          ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace(".", ",")}`
-          : "R$ 0,00",
+      accessor: (item) => formatMoney(item.unit_price),
     },
     {
       header: "Qtde. em estoque",

@@ -11,7 +11,7 @@ import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { REPORT_STATUS_OPTIONS } from "@/modules/core/constants/report"
-import { formatDateTime } from "@/modules/core/utils/datetime"
+import { formatDate, formatDateTime, formatMoney } from "@/modules/core/utils/format"
 import { budgetStatusTone, budgetIsPending, budgetCanDuplicate, budgetStatusDate } from "../domain"
 
 export default function BudgetList() {
@@ -65,7 +65,7 @@ export default function BudgetList() {
     {
       header: "Validade",
       sortKey: "valid_until",
-      accessor: (item) => new Date(item.valid_until).toLocaleDateString(),
+      accessor: (item) => formatDate(item.valid_until),
     },
     {
       header: "Status",
@@ -92,7 +92,7 @@ export default function BudgetList() {
     {
       header: "Total",
       sortKey: "total",
-      accessor: (item) => `R$ ${parseFloat(item.total).toFixed(2)}`,
+      accessor: (item) => formatMoney(item.total),
     },
   ]
 

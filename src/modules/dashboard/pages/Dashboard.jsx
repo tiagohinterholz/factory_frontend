@@ -19,9 +19,7 @@ import StatCard from "@/modules/dashboard/components/StatCard"
 import AppointmentCard from "@/modules/dashboard/components/AppointmentCard"
 import { appointmentStatusLabel } from "@/modules/appointment/domain"
 import { ORDER_STATUS } from "@/modules/order/domain"
-
-const brl = (value) =>
-  `R$ ${Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+import { formatMoney } from "@/modules/core/utils/format"
 
 const MINI_STAT_TONE = {
   warn: "text-amber-600",
@@ -179,21 +177,21 @@ export default function Dashboard() {
               tone="info"
               icon={Wallet}
               title="A faturar"
-              value={brl(financial.to_bill_total)}
+              value={formatMoney(financial.to_bill_total)}
             />
             <SummaryCard
               flat
               tone="ok"
               icon={CheckCircle2}
               title="Faturado"
-              value={brl(financial.billed_total)}
+              value={formatMoney(financial.billed_total)}
             />
             <SummaryCard
               flat
               tone="warn"
               icon={FileText}
               title="Orçamentos em aberto"
-              value={brl(financial.open_budgets_total)}
+              value={formatMoney(financial.open_budgets_total)}
             />
           </div>
         </Quadro>

@@ -10,6 +10,7 @@ import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { REPORT_STATUS_OPTIONS } from "@/modules/core/constants/report"
+import { formatMoney, formatDateTime } from "@/modules/core/utils/format"
 
 export default function OrderList() {
   const {
@@ -58,16 +59,7 @@ export default function OrderList() {
     {
       header: "Data/Hora Serviço",
       sortKey: "service_date",
-      accessor: (item) =>
-        item.service_date
-          ? new Date(item.service_date).toLocaleString("pt-BR", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "N/A",
+      accessor: (item) => (item.service_date ? formatDateTime(item.service_date) : "N/A"),
     },
     {
       header: "Status",
@@ -83,7 +75,7 @@ export default function OrderList() {
     {
       header: "Total",
       sortKey: "total",
-      accessor: (item) => `R$ ${parseFloat(item.total).toFixed(2)}`,
+      accessor: (item) => formatMoney(item.total),
     },
   ]
 

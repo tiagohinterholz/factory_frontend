@@ -7,6 +7,7 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
+import { formatMoney } from "@/modules/core/utils/format"
 
 export default function WorkServiceList() {
   const {
@@ -42,10 +43,7 @@ export default function WorkServiceList() {
     {
       header: "Preço",
       sortKey: "unit_price",
-      accessor: (item) =>
-        item.unit_price
-          ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace(".", ",")}`
-          : "R$ 0,00",
+      accessor: (item) => formatMoney(item.unit_price),
     },
     { header: "Descrição", accessor: (item) => item.description || "-" },
   ]

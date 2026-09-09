@@ -13,6 +13,7 @@ import { useWorkServiceOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 import { idOf, withSelectedOption } from "@/api/dto"
+import { formatMoney, formatDate } from "@/modules/core/utils/format"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -169,7 +170,7 @@ export default function OrderEdit() {
             <span className={`px-2 py-0.5 rounded-md ${orderStatusTone(status)}`}>{status}</span>
             {billingDate && (
               <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium normal-case tracking-normal">
-                Faturado em {new Date(billingDate + "T00:00:00").toLocaleDateString("pt-BR")}
+                Faturado em {formatDate(billingDate)}
               </span>
             )}
           </div>
@@ -289,7 +290,7 @@ export default function OrderEdit() {
                     onChange={(event) => setSelectedProduct(event.target.value)}
                     options={allProducts.map((p) => ({
                       id: p.id,
-                      name: `${p.name} (R$ ${p.unit_price})`,
+                      name: `${p.name} (${formatMoney(p.unit_price)})`,
                     }))}
                   />
                 </div>
@@ -317,9 +318,7 @@ export default function OrderEdit() {
                     {item.product?.name} (x{item.quantity})
                   </span>
                   <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">
-                      R$ {parseFloat(item.total || 0).toFixed(2)}
-                    </span>
+                    <span className="font-bold text-slate-700">{formatMoney(item.total)}</span>
                     {canEditItems && (
                       <button
                         type="button"
@@ -339,9 +338,7 @@ export default function OrderEdit() {
 
             <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center text-sm">
               <span className="font-semibold text-slate-500">Subtotal produtos</span>
-              <span className="font-bold text-slate-800">
-                R$ {parseFloat(productsTotal || 0).toFixed(2)}
-              </span>
+              <span className="font-bold text-slate-800">{formatMoney(productsTotal)}</span>
             </div>
           </div>
 
@@ -362,7 +359,7 @@ export default function OrderEdit() {
                     onChange={(event) => setSelectedService(event.target.value)}
                     options={allServices.map((s) => ({
                       id: s.id,
-                      name: `${s.name} (R$ ${s.unit_price})`,
+                      name: `${s.name} (${formatMoney(s.unit_price)})`,
                     }))}
                   />
                 </div>
@@ -380,9 +377,7 @@ export default function OrderEdit() {
                 <div key={item.id} className="py-3 flex justify-between items-center text-sm">
                   <span>{item.service?.name}</span>
                   <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">
-                      R$ {parseFloat(item.unit_price || 0).toFixed(2)}
-                    </span>
+                    <span className="font-bold text-slate-700">{formatMoney(item.unit_price)}</span>
                     {canEditItems && (
                       <button
                         type="button"
@@ -402,17 +397,13 @@ export default function OrderEdit() {
 
             <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center text-sm">
               <span className="font-semibold text-slate-500">Subtotal serviços</span>
-              <span className="font-bold text-slate-800">
-                R$ {parseFloat(servicesTotal || 0).toFixed(2)}
-              </span>
+              <span className="font-bold text-slate-800">{formatMoney(servicesTotal)}</span>
             </div>
           </div>
 
           <div className="card-premium flex justify-between items-center">
             <span className="text-lg font-bold text-slate-800">Total geral</span>
-            <span className="text-2xl font-extrabold text-brand">
-              R$ {parseFloat(total || 0).toFixed(2)}
-            </span>
+            <span className="text-2xl font-extrabold text-brand">{formatMoney(total)}</span>
           </div>
         </div>
       </div>

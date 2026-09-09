@@ -73,11 +73,11 @@ describe("<OrderEdit>", () => {
     renderPage()
 
     expect(await screen.findByText("Subtotal produtos")).toBeInTheDocument()
-    expect(screen.getByText("R$ 5000.00")).toBeInTheDocument()
+    expect(screen.getByText("R$ 5.000,00")).toBeInTheDocument()
     expect(screen.getByText("Subtotal serviços")).toBeInTheDocument()
-    expect(screen.getByText("R$ 1000.00")).toBeInTheDocument()
+    expect(screen.getByText("R$ 1.000,00")).toBeInTheDocument()
     expect(screen.getByText("Total geral")).toBeInTheDocument()
-    expect(screen.getByText("R$ 6000.00")).toBeInTheDocument()
+    expect(screen.getByText("R$ 6.000,00")).toBeInTheDocument()
   })
 
   it("não tem campo de data de faturamento no form", async () => {

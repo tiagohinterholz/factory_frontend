@@ -107,7 +107,8 @@ describe("<BudgetList>", () => {
     // aprovado -> approved_at; cancelado -> cancelled_at; expirado -> valid_until
     expect(screen.getByText(/06\/09\/2026/)).toBeInTheDocument()
     expect(screen.getByText(/05\/09\/2026/)).toBeInTheDocument()
-    expect(screen.getByText(/04\/09\/2026/)).toBeInTheDocument()
+    // no expirado a "Situação em" == "Validade" (ambas = valid_until), daí o getAll
+    expect(screen.getAllByText(/04\/09\/2026/).length).toBeGreaterThan(0)
   })
 
   it("aprovar/cancelar aparecem só na linha de orçamento pendente", async () => {
