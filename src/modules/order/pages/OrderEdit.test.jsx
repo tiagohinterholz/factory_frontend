@@ -100,6 +100,28 @@ describe("<OrderEdit>", () => {
     expect(await screen.findByText(/Faturado em 10\/09\/2026/)).toBeInTheDocument()
   })
 
+  it("mantém o cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {
+    // cache de opções defasado: as listas não trazem o cliente 5 nem o veículo 9
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json(order)),
+      http.get(`${API}/empreendimentos/`, () =>
+        HttpResponse.json({ results: [{ id: 2, corporate_name: "Oficina Teste" }], count: 1 }),
+      ),
+      http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/servicos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    )
+    renderPage()
+
+    await waitFor(() =>
+      expect(screen.getByRole("option", { name: "Ana Lima", selected: true })).toBeInTheDocument(),
+    )
+    expect(
+      screen.getByRole("option", { name: "VW Gol (ABC1D23)", selected: true }),
+    ).toBeInTheDocument()
+  })
+
   it("não lista item com is_active=false (deletado que o back ainda devolve)", async () => {
     mockApi()
     server.use(

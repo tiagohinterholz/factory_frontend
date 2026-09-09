@@ -40,6 +40,8 @@ export function useOrderEditForm() {
     servicesTotal: "",
     billingDate: null,
     budgetId: "",
+    client: null,
+    vehicle: null,
   })
 
   const fetchMeta = useCallback(async () => {
@@ -53,6 +55,10 @@ export function useOrderEditForm() {
       servicesTotal: data.services_total ?? "0.00",
       billingDate: data.billing_date ?? null,
       budgetId: idOf(data.budget),
+      // registros crus do detalhe: garantem a <option> do select mesmo com o
+      // cache de opções velho ou cortado por filtro em cascata
+      client: data.client ?? null,
+      vehicle: data.vehicle ?? null,
     })
     return data
   }, [id])
@@ -119,6 +125,8 @@ export function useOrderEditForm() {
     servicesTotal: meta.servicesTotal,
     billingDate: meta.billingDate,
     budgetId: meta.budgetId,
+    relatedClient: meta.client,
+    relatedVehicle: meta.vehicle,
     refresh: fetchMeta,
     handleDelete: remove.run,
     handleFinish: finish.run,

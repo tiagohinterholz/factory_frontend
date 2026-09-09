@@ -37,6 +37,8 @@ export function useBudgetEditForm() {
     approvedAt: null,
     cancelledAt: null,
     validUntil: null,
+    client: null,
+    vehicle: null,
   })
 
   const fetchMeta = useCallback(async () => {
@@ -51,6 +53,10 @@ export function useBudgetEditForm() {
       approvedAt: data.approved_at ?? null,
       cancelledAt: data.cancelled_at ?? null,
       validUntil: data.valid_until ?? null,
+      // registros crus do detalhe: garantem a <option> do select mesmo com o
+      // cache de opções velho ou cortado por filtro em cascata
+      client: data.client ?? null,
+      vehicle: data.vehicle ?? null,
     })
     return data
   }, [id])
@@ -131,6 +137,8 @@ export function useBudgetEditForm() {
     approvedAt: meta.approvedAt,
     cancelledAt: meta.cancelledAt,
     validUntil: meta.validUntil,
+    relatedClient: meta.client,
+    relatedVehicle: meta.vehicle,
     refresh: fetchMeta,
     handleDelete: remove.run,
     handleApprove: approve.run,

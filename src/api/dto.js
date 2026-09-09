@@ -37,3 +37,19 @@ export function fromDateTimeLocalInput(value) {
 export function activeItems(list) {
   return (list ?? []).filter((item) => item.is_active)
 }
+
+// Garante que o valor selecionado exista na lista de opções de um <select>.
+// As opções dos formulários vêm de um cache com staleTime alto (pode estar
+// defasado: registro criado agora) ou de um filtro em cascata que corta o valor
+// atual — nos dois casos o campo apareceria vazio e um "salvar" apagaria a FK
+// sem o usuário perceber. `fallbackOption` ({ id, name }) é montado a partir do
+// payload de detalhe, que sempre traz o registro atual. No-op quando não há
+// seleção, quando a opção já está na lista ou quando o fallback não é o próprio
+// valor selecionado (só o registro do payload de detalhe pode ser garantido).
+export function withSelectedOption(options, selectedId, fallbackOption) {
+  const id = String(selectedId ?? "")
+  if (!id) return options
+  if (options.some((option) => String(option.id) === id)) return options
+  if (fallbackOption?.id == null || String(fallbackOption.id) !== id) return options
+  return [fallbackOption, ...options]
+}

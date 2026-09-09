@@ -8,14 +8,22 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
-import { idOf } from "@/api/dto"
+import { idOf, withSelectedOption } from "@/api/dto"
 import { orderCanFinish } from "@/modules/order/domain"
 
 import { CheckCircle2, Edit, Trash2 } from "lucide-react"
 
 export default function AppointmentDetail() {
-  const { form, onSubmit, loading, handleDelete, handleFinishOrder, linkedOrder } =
-    useAppointmentEditForm()
+  const {
+    form,
+    onSubmit,
+    loading,
+    handleDelete,
+    handleFinishOrder,
+    linkedOrder,
+    relatedClient,
+    relatedVehicle,
+  } = useAppointmentEditForm()
   const {
     register,
     watch,
@@ -36,46 +44,60 @@ export default function AppointmentDetail() {
 
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
-  const clientOptions = clients
-    .filter((c) => {
-      const bizId = c.business?.id || c.business
-      return !businessId || String(bizId) === String(businessId)
-    })
-    .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
-
-  const vehicleOptions = vehicles
-    .filter((v) => {
-      const ownerId = v.client?.id || v.client
-      return !clientId || String(ownerId) === String(clientId)
-    })
-    .map((v) => ({
-      id: v.id,
-      name: `${v.manufacturer || ""} ${v.model || ""} ${v.year || ""}`.trim(),
-    }))
-
-  const orderOptions = orders
-    .filter((o) => {
-      const orderVehicleId = o.vehicle?.id || o.vehicle
-      return !vehicleId || String(orderVehicleId) === String(vehicleId)
-    })
-    .map((o) => ({ id: o.id, name: `OS ${o.id} - ${o.plate || ""}` }))
-
-  // a OS já vinculada tem que aparecer no select mesmo que a lista de opções em
-  // cache ainda não a tenha (criada agora, ex.: aprovar orçamento com data) ou
-  // que o filtro por veículo a corte — só enquanto ela for a seleção atual
-  const linkedOrderId = idOf(linkedOrder)
-  const currentOrderId = watch("order_id")
-  if (
-    linkedOrderId &&
-    String(currentOrderId) === linkedOrderId &&
-    !orderOptions.some((option) => String(option.id) === linkedOrderId)
-  ) {
-    const plate = linkedOrder?.plate || linkedOrder?.vehicle?.plate || ""
-    orderOptions.unshift({
-      id: linkedOrderId,
-      name: `OS ${linkedOrderId}${plate ? ` - ${plate}` : ""}`,
-    })
+  // rótulo da <option> de fallback a partir do registro cru do detalhe (ora
+  // aninhado, ora id cru — degrada pra "#id" quando não tem o nome)
+  const clientLabel = (client) =>
+    client?.first_name
+      ? `${client.first_name} ${client.last_name ?? ""}`.trim()
+      : `Cliente #${idOf(client)}`
+  const vehicleLabel = (vehicle) =>
+    vehicle?.model || vehicle?.manufacturer
+      ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""} ${vehicle.year ?? ""}`.trim()
+      : `Veículo #${idOf(vehicle)}`
+  const orderLabel = (order) => {
+    const plate = order?.plate || order?.vehicle?.plate || ""
+    return `OS ${idOf(order)}${plate ? ` - ${plate}` : ""}`
   }
+
+  // as listas de opção vêm de um cache com staleTime alto ou de um filtro em
+  // cascata; o registro já vinculado ao agendamento tem que aparecer no select
+  // mesmo assim (senão salvar apagaria a FK). withSelectedOption injeta só
+  // quando o valor selecionado é o próprio registro do detalhe.
+  const clientOptions = withSelectedOption(
+    clients
+      .filter((c) => {
+        const bizId = c.business?.id || c.business
+        return !businessId || String(bizId) === String(businessId)
+      })
+      .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
+    clientId,
+    relatedClient && { id: idOf(relatedClient), name: clientLabel(relatedClient) },
+  )
+
+  const vehicleOptions = withSelectedOption(
+    vehicles
+      .filter((v) => {
+        const ownerId = v.client?.id || v.client
+        return !clientId || String(ownerId) === String(clientId)
+      })
+      .map((v) => ({
+        id: v.id,
+        name: `${v.manufacturer || ""} ${v.model || ""} ${v.year || ""}`.trim(),
+      })),
+    vehicleId,
+    relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
+  )
+
+  const orderOptions = withSelectedOption(
+    orders
+      .filter((o) => {
+        const orderVehicleId = o.vehicle?.id || o.vehicle
+        return !vehicleId || String(orderVehicleId) === String(vehicleId)
+      })
+      .map((o) => ({ id: o.id, name: `OS ${o.id} - ${o.plate || ""}` })),
+    watch("order_id"),
+    linkedOrder && { id: idOf(linkedOrder), name: orderLabel(linkedOrder) },
+  )
 
   function resetChildren(...names) {
     names.forEach((name) => setValue(name, ""))

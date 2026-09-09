@@ -12,6 +12,7 @@ import { useProductOptions } from "@/modules/core/hooks/options"
 import { useWorkServiceOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
+import { idOf, withSelectedOption } from "@/api/dto"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -35,6 +36,8 @@ export default function BudgetEdit() {
     approvedAt,
     cancelledAt,
     validUntil,
+    relatedClient,
+    relatedVehicle,
     handleDelete,
     handleApprove,
     approving,
@@ -132,13 +135,31 @@ export default function BudgetEdit() {
   if (loading || loadingBusinesses || loadingClients || loadingVehicles)
     return <div className="p-6 text-center">Carregando...</div>
 
+  // o cliente/veículo já vinculados ao orçamento têm que aparecer no select
+  // mesmo que o cache de opções esteja velho ou o filtro em cascata os corte —
+  // senão salvar apagaria a FK. Fallback montado do payload de detalhe.
+  const clientLabel = (client) =>
+    `${client?.first_name ?? ""} ${client?.last_name ?? ""}`.trim() || `Cliente #${idOf(client)}`
+  const vehicleLabel = (vehicle) =>
+    vehicle?.manufacturer || vehicle?.model
+      ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""} (${vehicle.plate ?? ""})`
+      : `Veículo #${idOf(vehicle)}`
+
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
-  const clientOptions = clients
-    .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
-    .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
-  const vehicleOptions = vehicles
-    .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
-    .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
+  const clientOptions = withSelectedOption(
+    clients
+      .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
+      .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
+    clientId,
+    relatedClient && { id: idOf(relatedClient), name: clientLabel(relatedClient) },
+  )
+  const vehicleOptions = withSelectedOption(
+    vehicles
+      .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
+      .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` })),
+    watch("vehicle_id"),
+    relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
+  )
 
   const isPending = budgetIsPending(status)
   const canDuplicate = budgetCanDuplicate(status)

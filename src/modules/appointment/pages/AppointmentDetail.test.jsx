@@ -73,6 +73,26 @@ describe("<AppointmentDetail>", () => {
     await waitFor(() => expect(screen.getAllByRole("option", { name: /OS 77/ })).toHaveLength(1))
   })
 
+  it("mantém cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {
+    mockApi({
+      orders: [],
+      appointmentOverrides: {
+        client: { id: 5, first_name: "Ana", last_name: "Lima" },
+        vehicle: { id: 9, manufacturer: "VW", model: "Gol" },
+      },
+    })
+    server.use(
+      http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    )
+    renderPage()
+
+    await waitFor(() =>
+      expect(screen.getByRole("option", { name: "Ana Lima", selected: true })).toBeInTheDocument(),
+    )
+    expect(screen.getByRole("option", { name: /VW Gol/, selected: true })).toBeInTheDocument()
+  })
+
   it("OS 'em andamento': mostra 'Finalizar atendimento' e chama finishService", async () => {
     mockApi()
     const finish = vi
