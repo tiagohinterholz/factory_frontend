@@ -18,6 +18,7 @@ import SummaryCard from "@/modules/dashboard/components/SummaryCard"
 import StatCard from "@/modules/dashboard/components/StatCard"
 import AppointmentCard from "@/modules/dashboard/components/AppointmentCard"
 import { appointmentStatusLabel } from "@/modules/appointment/domain"
+import { ORDER_STATUS } from "@/modules/order/domain"
 
 const brl = (value) =>
   `R$ ${Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
@@ -40,7 +41,7 @@ function MiniStat({ icon: Icon, label, value, tone }) {
 
 // no board de Movimentação vão os cards já concluídos (serviço finalizado):
 // a faturar e faturado. O resto (aguardando / em andamento) fica em Atendimentos.
-const MOVEMENT_LABELS = ["a faturar", "faturado"]
+const MOVEMENT_LABELS = [ORDER_STATUS.TO_BILL, ORDER_STATUS.BILLED]
 
 function Quadro({ title, subtitle, aside, children }) {
   return (

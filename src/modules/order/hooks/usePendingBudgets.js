@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { BudgetService } from "@/modules/budget/services/budgets"
-import { budgetKeys } from "@/modules/budget/domain"
+import { budgetKeys, BUDGET_STATUS } from "@/modules/budget/domain"
 
 // Orçamentos pendentes de um par cliente+veículo, pra usar como base ao criar
 // uma OS. Só busca quando os dois ids estão definidos. Traz só a 1ª página —
@@ -14,7 +14,7 @@ export function usePendingBudgets(clientId, vehicleId) {
       BudgetService.getBudget({
         client_id: clientId,
         vehicle_id: vehicleId,
-        status: "pendente",
+        status: BUDGET_STATUS.PENDING,
       }),
     enabled,
     select: (data) => data?.results ?? [],
