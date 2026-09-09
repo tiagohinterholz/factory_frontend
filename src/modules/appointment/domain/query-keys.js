@@ -1,6 +1,6 @@
-// Fonte única das query keys do módulo Agendamentos.
-// (o wiring dos hooks deste módulo entra no commit dele; por ora só a raiz,
-// que já é o que outras ações — finalizar OS, etc. — precisam invalidar.)
+// Fonte única das query keys do módulo Agendamentos. Hierárquico por prefixo:
+// invalidar appointmentKeys.all pega todas as listagens (o board do dashboard
+// lê essa mesma raiz). Padrão "query key factory".
 export const appointmentKeys = {
   all: ["appointments"],
   lists: () => [...appointmentKeys.all, "list"],

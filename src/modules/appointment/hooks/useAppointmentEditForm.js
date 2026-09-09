@@ -8,7 +8,14 @@ import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { OrderService } from "@/modules/order/services/order"
-import { appointmentSchema, appointmentDefaults, toAppointmentPayload } from "../domain"
+import {
+  appointmentSchema,
+  appointmentDefaults,
+  toAppointmentPayload,
+  appointmentKeys,
+} from "../domain"
+import { orderKeys } from "@/modules/order/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 // dto da API -> shape do form (ids como string)
 function toAppointmentForm(data) {
@@ -59,7 +66,8 @@ export function useAppointmentEditForm() {
     })
     if (!confirmed) return
     await AppointmentService.deleteAppointment(id)
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     navigate("/agendamentos")
   }
 
@@ -77,7 +85,10 @@ export function useAppointmentEditForm() {
     try {
       await OrderService.finishService(orderId)
       form.reset(toAppointmentForm(await loadRaw()))
-      queryClient.invalidateQueries()
+      // finalizar muda a OS, o rótulo do card no board e os números da Movimentação
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       toast.success("Atendimento finalizado. OS pronta para faturar.")
     } catch (error) {
       console.error(error)
