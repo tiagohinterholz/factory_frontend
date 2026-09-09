@@ -17,6 +17,7 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Plus, Trash2, CheckCircle, XCircle, Copy } from "lucide-react"
 import { formatDateTime } from "@/modules/core/utils/datetime"
+import { budgetStatusTone, budgetIsPending, budgetCanDuplicate, budgetStatusDate } from "../domain"
 
 export default function BudgetEdit() {
   const { id } = useParams()
@@ -145,18 +146,12 @@ export default function BudgetEdit() {
     .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
     .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
 
-  const isPending = status === "pendente"
-  const canDuplicate = status === "cancelado" || status === "expirado"
+  const isPending = budgetIsPending(status)
+  const canDuplicate = budgetCanDuplicate(status)
   // data da situação: aprovado -> approved_at, cancelado -> cancelled_at,
   // expirado -> valid_until (quando expirou). Pendente não tem data.
   const actionDateLabel = formatDateTime(
-    status === "aprovado"
-      ? approvedAt
-      : status === "cancelado"
-        ? cancelledAt
-        : status === "expirado"
-          ? validUntil
-          : null,
+    budgetStatusDate(status, { approvedAt, cancelledAt, validUntil }),
   )
 
   return (
@@ -167,19 +162,7 @@ export default function BudgetEdit() {
           <h1 className="text-xl font-semibold text-ink tracking-tight">Editar Orçamento</h1>
           <div className="flex items-center gap-3 mt-1 text-sm uppercase font-bold tracking-wider">
             <p className="text-slate-400">Ajuste os detalhes e itens</p>
-            <span
-              className={`px-2 py-0.5 rounded-md ${
-                status === "aprovado"
-                  ? "bg-emerald-100 text-emerald-700"
-                  : status === "cancelado"
-                    ? "bg-rose-100 text-rose-700"
-                    : status === "expirado"
-                      ? "bg-slate-200 text-slate-600"
-                      : "bg-amber-100 text-amber-700"
-              }`}
-            >
-              {status}
-            </span>
+            <span className={`px-2 py-0.5 rounded-md ${budgetStatusTone(status)}`}>{status}</span>
             {actionDateLabel && (
               <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium normal-case tracking-normal">
                 {actionDateLabel}

@@ -15,15 +15,7 @@ import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { parseApiError } from "@/api/parse-api-error"
 import { formatDateTime } from "@/modules/core/utils/datetime"
-
-// data da situação atual: aprovado -> approved_at, cancelado -> cancelled_at,
-// expirado -> valid_until (data em que expirou), pendente -> nenhuma
-function statusDate(item) {
-  if (item.status === "aprovado") return item.approved_at
-  if (item.status === "cancelado") return item.cancelled_at
-  if (item.status === "expirado") return item.valid_until
-  return null
-}
+import { budgetStatusTone, budgetIsPending, budgetCanDuplicate, budgetStatusDate } from "../domain"
 
 export default function BudgetList() {
   const {
@@ -86,21 +78,23 @@ export default function BudgetList() {
       sortKey: "status",
       accessor: (item) => (
         <span
-          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${
-            item.status === "aprovado"
-              ? "bg-emerald-100 text-emerald-700"
-              : item.status === "pendente"
-                ? "bg-amber-100 text-amber-700"
-                : item.status === "cancelado"
-                  ? "bg-rose-100 text-rose-700"
-                  : "bg-slate-100 text-slate-700"
-          }`}
+          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${budgetStatusTone(item.status)}`}
         >
           {item.status}
         </span>
       ),
     },
-    { header: "Situação em", accessor: (item) => formatDateTime(statusDate(item)) || "—" },
+    {
+      header: "Situação em",
+      accessor: (item) =>
+        formatDateTime(
+          budgetStatusDate(item.status, {
+            approvedAt: item.approved_at,
+            cancelledAt: item.cancelled_at,
+            validUntil: item.valid_until,
+          }),
+        ) || "—",
+    },
     {
       header: "Total",
       sortKey: "total",
@@ -179,8 +173,6 @@ export default function BudgetList() {
     }
   }
 
-  const canDuplicate = (item) => item.status === "cancelado" || item.status === "expirado"
-
   return (
     <div className="p-6 space-y-4">
       <ListHeader
@@ -212,7 +204,7 @@ export default function BudgetList() {
               request={() => BudgetService.getBudgetPdf(item.id)}
               title="Gerar PDF do orçamento"
             />
-            {item.status === "pendente" && (
+            {budgetIsPending(item.status) && (
               <>
                 <button
                   type="button"
@@ -232,7 +224,7 @@ export default function BudgetList() {
                 </button>
               </>
             )}
-            {canDuplicate(item) && (
+            {budgetCanDuplicate(item.status) && (
               <button
                 type="button"
                 onClick={() => handleDuplicate(item)}

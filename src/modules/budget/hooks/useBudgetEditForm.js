@@ -5,7 +5,7 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
-import { idOf, toDateTimeLocalInput } from "@/api/dto"
+import { idOf, toDateTimeLocalInput, activeItems } from "@/api/dto"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { budgetSchema, budgetDefaults, toBudgetPayload, budgetKeys } from "../domain"
 import { orderKeys } from "@/modules/order/domain"
@@ -50,8 +50,8 @@ export function useBudgetEditForm() {
     // o back não some com a linha no DELETE, só marca is_active=false; o
     // detalhe ainda a devolve. Os totais já vêm só com os ativos.
     setMeta({
-      products: (data.budget_products ?? []).filter((item) => item.is_active),
-      services: (data.budget_services ?? []).filter((item) => item.is_active),
+      products: activeItems(data.budget_products),
+      services: activeItems(data.budget_services),
       status: data.status ?? "",
       total: data.total ?? "0.00",
       productsTotal: data.products_total ?? "0.00",
