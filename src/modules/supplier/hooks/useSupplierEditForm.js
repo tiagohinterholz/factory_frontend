@@ -4,7 +4,7 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { SupplierService } from "@/modules/supplier/services/supplier"
-import { supplierSchema, supplierDefaults } from "../supplier.schema"
+import { supplierSchema, supplierDefaults } from "../domain"
 
 // dto da API -> shape do form (ids como string)
 function toSupplierForm(data) {

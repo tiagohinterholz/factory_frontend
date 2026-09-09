@@ -1,7 +1,7 @@
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { ClientService } from "@/modules/client/services/client"
-import { clientSchema, clientDefaults, toClientPayload } from "../client.schema"
+import { clientSchema, clientDefaults, toClientPayload } from "../domain"
 
 export function useClientForm() {
   const { businessId } = useAuth()

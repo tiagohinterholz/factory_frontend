@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { LicenseService } from "@/modules/license/services/license"
-import { licenseSchema, licenseDefaults, toLicensePayload } from "../license.schema"
+import { licenseSchema, licenseDefaults, toLicensePayload } from "../domain"
 
 // dto da API -> shape do form
 function toLicenseForm(data) {

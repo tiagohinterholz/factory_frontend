@@ -8,7 +8,7 @@ import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { OrderService } from "@/modules/order/services/order"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
-import { orderSchema, orderDefaults, toOrderPayload } from "../order.schema"
+import { orderSchema, orderDefaults, toOrderPayload } from "../domain"
 
 // `clientId` / `vehicleId`: pré-preenchimento vindo, por exemplo, do botão
 // "Abrir OS" na listagem de veículos.

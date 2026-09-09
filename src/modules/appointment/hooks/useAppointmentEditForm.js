@@ -8,7 +8,7 @@ import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { OrderService } from "@/modules/order/services/order"
-import { appointmentSchema, appointmentDefaults, toAppointmentPayload } from "../appointment.schema"
+import { appointmentSchema, appointmentDefaults, toAppointmentPayload } from "../domain"
 
 // dto da API -> shape do form (ids como string)
 function toAppointmentForm(data) {

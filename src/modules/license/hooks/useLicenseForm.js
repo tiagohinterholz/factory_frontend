@@ -1,7 +1,7 @@
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { LicenseService } from "@/modules/license/services/license"
-import { licenseSchema, licenseDefaults, toLicensePayload } from "../license.schema"
+import { licenseSchema, licenseDefaults, toLicensePayload } from "../domain"
 
 export function useLicenseForm() {
   const { businessId, isSuperUser } = useAuth()

@@ -7,7 +7,7 @@ import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf, toDateTimeLocalInput } from "@/api/dto"
 import { OrderService } from "@/modules/order/services/order"
-import { orderSchema, orderDefaults, toOrderPayload } from "../order.schema"
+import { orderSchema, orderDefaults, toOrderPayload } from "../domain"
 
 // dto da API -> shape do form (ids como string; service_date como
 // "YYYY-MM-DDTHH:mm" local pro <input type="datetime-local">). billing_date e

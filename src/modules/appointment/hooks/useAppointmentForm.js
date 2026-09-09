@@ -1,7 +1,7 @@
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
-import { appointmentSchema, appointmentDefaults, toAppointmentPayload } from "../appointment.schema"
+import { appointmentSchema, appointmentDefaults, toAppointmentPayload } from "../domain"
 
 export function useAppointmentForm() {
   const { businessId } = useAuth()

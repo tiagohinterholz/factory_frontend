@@ -17,7 +17,7 @@ import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import SummaryCard from "@/modules/dashboard/components/SummaryCard"
 import StatCard from "@/modules/dashboard/components/StatCard"
 import AppointmentCard from "@/modules/dashboard/components/AppointmentCard"
-import { appointmentStatusLabel } from "@/modules/appointment/appointment-status"
+import { appointmentStatusLabel } from "@/modules/appointment/domain"
 
 const brl = (value) =>
   `R$ ${Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`

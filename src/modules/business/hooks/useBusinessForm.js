@@ -1,6 +1,6 @@
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { BusinessService } from "@/modules/business/services/business"
-import { businessSchema, businessDefaults, toBusinessPayload } from "../business.schema"
+import { businessSchema, businessDefaults, toBusinessPayload } from "../domain"
 
 export function useBusinessForm() {
   return useResourceForm({

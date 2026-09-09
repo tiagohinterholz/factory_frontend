@@ -4,7 +4,7 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
-import { serviceSchema, serviceDefaults } from "../service.schema"
+import { serviceSchema, serviceDefaults } from "../domain"
 
 function toServiceForm(data) {
   return {

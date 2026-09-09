@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { toBudgetPayload } from "./budget.schema"
+import { toBudgetPayload } from "./schema"
 
 describe("toBudgetPayload", () => {
   const base = { business_id: "1", client_id: "2", vehicle_id: "3" }

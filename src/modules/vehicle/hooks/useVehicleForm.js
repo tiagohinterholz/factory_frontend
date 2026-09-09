@@ -1,7 +1,7 @@
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
-import { vehicleSchema, vehicleDefaults } from "../vehicle.schema"
+import { vehicleSchema, vehicleDefaults } from "../domain"
 
 export function useVehicleForm({ clientId } = {}) {
   const { businessId } = useAuth()

@@ -5,7 +5,7 @@ import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { base64ImageDataUri } from "@/api/media"
 import { BusinessService } from "@/modules/business/services/business"
-import { businessSchema, businessDefaults, toBusinessPayload } from "../business.schema"
+import { businessSchema, businessDefaults, toBusinessPayload } from "../domain"
 
 function toBusinessForm(data) {
   return {

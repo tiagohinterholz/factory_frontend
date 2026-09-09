@@ -4,7 +4,7 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
-import { vehicleSchema, vehicleDefaults } from "../vehicle.schema"
+import { vehicleSchema, vehicleDefaults } from "../domain"
 
 // dto da API -> shape do form (ids como string)
 function toVehicleForm(data) {

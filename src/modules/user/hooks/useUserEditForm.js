@@ -4,7 +4,7 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { UserService } from "@/modules/user/services/user"
-import { userEditSchema, userEditDefaults, toUserEditPayload } from "../user.schema"
+import { userEditSchema, userEditDefaults, toUserEditPayload } from "../domain"
 
 function toUserForm(data) {
   return {

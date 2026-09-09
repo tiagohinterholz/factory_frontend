@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
-import { serviceSchema, serviceDefaults } from "../service.schema"
+import { serviceSchema, serviceDefaults } from "../domain"
 
 export function useWorkServiceForm() {
   const location = useLocation()

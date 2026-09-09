@@ -15,7 +15,7 @@ import { parseApiError } from "@/api/parse-api-error"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { orderStatusTone } from "@/modules/order/order-status"
+import { orderStatusTone } from "@/modules/order/domain"
 import { CheckCircle2, Plus, Trash2 } from "lucide-react"
 
 export default function OrderEdit() {

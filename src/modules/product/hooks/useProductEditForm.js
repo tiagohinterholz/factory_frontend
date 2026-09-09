@@ -4,7 +4,7 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { ProductService } from "@/modules/product/services/product"
-import { productSchema, productDefaults } from "../product.schema"
+import { productSchema, productDefaults } from "../domain"
 
 function toProductForm(data) {
   return {

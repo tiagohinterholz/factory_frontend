@@ -7,7 +7,7 @@ import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf, toDateTimeLocalInput } from "@/api/dto"
 import { BudgetService } from "@/modules/budget/services/budgets"
-import { budgetSchema, budgetDefaults, toBudgetPayload } from "../budget.schema"
+import { budgetSchema, budgetDefaults, toBudgetPayload } from "../domain"
 
 // dto da API -> shape do form (ids como string, valid_until como
 // "YYYY-MM-DDTHH:mm" local pro <input type="datetime-local">)

@@ -3,7 +3,7 @@ import { Clock, Phone, Car, ClipboardList, FileText, Plus, CheckCircle2 } from "
 import {
   appointmentStatusLabel,
   APPOINTMENT_STATUS_TONE,
-} from "@/modules/appointment/appointment-status"
+} from "@/modules/appointment/domain"
 import { useFinishOrder } from "@/modules/order/hooks/useFinishOrder"
 
 function formatWhen(date, time) {

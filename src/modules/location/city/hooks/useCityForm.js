@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { CityService } from "@/modules/location/city/services/city"
-import { citySchema, cityDefaults } from "../city.schema"
+import { citySchema, cityDefaults } from "../domain"
 
 export function useCityForm() {
   const location = useLocation()

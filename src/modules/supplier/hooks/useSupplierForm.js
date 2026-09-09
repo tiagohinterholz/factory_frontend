@@ -1,7 +1,7 @@
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { SupplierService } from "@/modules/supplier/services/supplier"
-import { supplierSchema, supplierDefaults } from "../supplier.schema"
+import { supplierSchema, supplierDefaults } from "../domain"
 
 export function useSupplierForm() {
   const { businessId } = useAuth()

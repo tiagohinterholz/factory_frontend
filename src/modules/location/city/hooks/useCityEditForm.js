@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { CityService } from "@/modules/location/city/services/city"
-import { citySchema, cityDefaults } from "../city.schema"
+import { citySchema, cityDefaults } from "../domain"
 
 export function useCityEditForm() {
   const { id } = useParams()

@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { StateService } from "../services/state"
-import { stateSchema, stateDefaults } from "../state.schema"
+import { stateSchema, stateDefaults } from "../domain"
 
 export function useStateEditForm() {
   const { id } = useParams()

@@ -2,7 +2,7 @@ import { useAuth } from "@/modules/auth/context/auth-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
-import { budgetSchema, budgetDefaults, toBudgetPayload } from "../budget.schema"
+import { budgetSchema, budgetDefaults, toBudgetPayload } from "../domain"
 
 // `clientId` / `vehicleId`: pré-preenchimento vindo, por exemplo, do botão
 // "Fazer orçamento" na listagem de veículos.

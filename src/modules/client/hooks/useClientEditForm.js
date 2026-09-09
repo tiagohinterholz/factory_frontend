@@ -4,7 +4,7 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { ClientService } from "@/modules/client/services/client"
-import { clientSchema, clientDefaults, toClientPayload } from "../client.schema"
+import { clientSchema, clientDefaults, toClientPayload } from "../domain"
 
 // dto da API -> shape do form (ids como string)
 function toClientForm(data) {
