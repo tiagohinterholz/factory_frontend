@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Bell } from "lucide-react"
-import { useLicense } from "@/modules/license/hooks/useLicense"
+import { useLicense } from "@/modules/license"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 const STATUS_LABEL = {

@@ -4,7 +4,7 @@ import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
-import { OrderService } from "@/modules/order/services/order"
+import { OrderService } from "@/modules/order"
 import {
   appointmentSchema,
   appointmentDefaults,

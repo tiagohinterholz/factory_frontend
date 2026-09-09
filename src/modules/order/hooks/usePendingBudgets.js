@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { BudgetService } from "@/modules/budget/services/budgets"
+import { BudgetService } from "@/modules/budget"
 import { budgetKeys, BUDGET_STATUS } from "@/modules/budget/domain"
 
 // Orçamentos pendentes de um par cliente+veículo, pra usar como base ao criar

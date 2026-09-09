@@ -1,7 +1,7 @@
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { BudgetService } from "@/modules/budget/services/budgets"
-import { AppointmentService } from "@/modules/appointment/services/appointment"
+import { AppointmentService } from "@/modules/appointment"
 import { budgetSchema, budgetDefaults, toBudgetPayload, budgetKeys } from "../domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 
