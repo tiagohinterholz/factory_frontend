@@ -17,3 +17,10 @@ export const ORDER_STATUS_TONE = {
 
 export const orderStatusTone = (status) =>
   ORDER_STATUS_TONE[status] ?? "bg-slate-100 text-slate-700"
+
+// Regras de transição/edição da OS (o back é a fonte da verdade; aqui é só o
+// que o front usa pra mostrar/esconder ação).
+export const orderCanEditItems = (status) => status === ORDER_STATUS.IN_PROGRESS
+export const orderCanFinish = (status) => status === ORDER_STATUS.IN_PROGRESS
+export const orderCanInvoice = (status) => status === ORDER_STATUS.TO_BILL
+export const orderIsBilled = (status) => status === ORDER_STATUS.BILLED

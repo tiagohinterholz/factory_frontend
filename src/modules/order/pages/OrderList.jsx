@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { CheckCircle2, Edit2, Receipt, Trash2 } from "lucide-react"
 import { useOrder } from "../hooks/useOrder"
 import { OrderService } from "../services/order"
-import { orderStatusTone } from "@/modules/order/domain"
+import { orderStatusTone, orderCanFinish, orderCanInvoice } from "@/modules/order/domain"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
@@ -173,7 +173,7 @@ export default function OrderList() {
               request={() => OrderService.getOrderPdf(item.id)}
               title="Gerar PDF da OS"
             />
-            {item.status === "em andamento" && (
+            {orderCanFinish(item.status) && (
               <button
                 type="button"
                 onClick={() => handleFinish(item)}
@@ -183,7 +183,7 @@ export default function OrderList() {
                 <CheckCircle2 size={16} />
               </button>
             )}
-            {item.status === "a faturar" && (
+            {orderCanInvoice(item.status) && (
               <button
                 type="button"
                 onClick={() => handleInvoice(item)}

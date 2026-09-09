@@ -5,7 +5,7 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
-import { idOf, toDateTimeLocalInput } from "@/api/dto"
+import { idOf, toDateTimeLocalInput, activeItems } from "@/api/dto"
 import { OrderService } from "@/modules/order/services/order"
 import { orderSchema, orderDefaults, toOrderPayload, orderKeys } from "../domain"
 import { appointmentKeys } from "@/modules/appointment/domain"
@@ -51,8 +51,8 @@ export function useOrderEditForm() {
     // o back não some com a linha no DELETE, só marca is_active=false; o
     // detalhe ainda a devolve. Os totais já vêm só com os ativos.
     setMeta({
-      products: (data.order_products ?? []).filter((item) => item.is_active),
-      services: (data.order_services ?? []).filter((item) => item.is_active),
+      products: activeItems(data.order_products),
+      services: activeItems(data.order_services),
       status: data.status ?? "",
       total: data.total ?? "0.00",
       productsTotal: data.products_total ?? "0.00",

@@ -9,6 +9,7 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { idOf } from "@/api/dto"
+import { orderCanFinish } from "@/modules/order/domain"
 
 import { CheckCircle2, Edit, Trash2 } from "lucide-react"
 
@@ -95,7 +96,7 @@ export default function AppointmentDetail() {
             <p className="text-slate-400 font-medium text-sm">Sincronize os dados do agendamento</p>
           </div>
           <div className="flex items-center gap-2">
-            {linkedOrder?.status === "em andamento" && (
+            {orderCanFinish(linkedOrder?.status) && (
               <button
                 type="button"
                 onClick={handleFinishOrder}

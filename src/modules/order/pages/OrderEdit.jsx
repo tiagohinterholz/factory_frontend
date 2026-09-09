@@ -15,7 +15,13 @@ import { parseApiError } from "@/api/parse-api-error"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { orderStatusTone } from "@/modules/order/domain"
+import {
+  orderStatusTone,
+  orderCanEditItems,
+  orderCanFinish,
+  orderCanInvoice,
+  orderIsBilled,
+} from "@/modules/order/domain"
 import { CheckCircle2, Plus, Trash2 } from "lucide-react"
 
 export default function OrderEdit() {
@@ -39,7 +45,7 @@ export default function OrderEdit() {
     refresh,
   } = useOrderEditForm()
 
-  const canEditItems = status === "em andamento"
+  const canEditItems = orderCanEditItems(status)
   const {
     register,
     watch,
@@ -149,7 +155,7 @@ export default function OrderEdit() {
         </div>
         <div className="flex flex-wrap gap-2">
           <RecordPdfButton request={() => OrderService.getOrderPdf(id)} />
-          {status === "em andamento" && (
+          {orderCanFinish(status) && (
             <button
               type="button"
               onClick={handleFinish}
@@ -158,7 +164,7 @@ export default function OrderEdit() {
               <CheckCircle2 size={18} /> Finalizar serviço
             </button>
           )}
-          {status === "a faturar" && (
+          {orderCanInvoice(status) && (
             <button
               type="button"
               onClick={handleInvoice}
@@ -236,7 +242,7 @@ export default function OrderEdit() {
             </form>
           </div>
 
-          {status === "faturado" && <FiscalNotePanel orderId={id} />}
+          {orderIsBilled(status) && <FiscalNotePanel orderId={id} />}
         </div>
 
         <div className="lg:col-span-2 space-y-8">

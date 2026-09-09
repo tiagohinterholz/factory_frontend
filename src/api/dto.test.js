@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { idOf, toDateInput, toDateTimeLocalInput, fromDateTimeLocalInput } from "./dto"
+import { idOf, toDateInput, toDateTimeLocalInput, fromDateTimeLocalInput, activeItems } from "./dto"
 
 describe("idOf", () => {
   it("aceita objeto aninhado, id cru e vazio", () => {
@@ -29,5 +29,18 @@ describe("toDateTimeLocalInput / fromDateTimeLocalInput", () => {
     expect(toDateTimeLocalInput("nao-e-data")).toBe("")
     expect(fromDateTimeLocalInput("")).toBeNull()
     expect(fromDateTimeLocalInput("nao-e-data")).toBeNull()
+  })
+})
+
+describe("activeItems", () => {
+  it("mantém só os is_active; tolera null/undefined", () => {
+    const list = [
+      { id: 1, is_active: true },
+      { id: 2, is_active: false },
+      { id: 3, is_active: true },
+    ]
+    expect(activeItems(list).map((i) => i.id)).toEqual([1, 3])
+    expect(activeItems(null)).toEqual([])
+    expect(activeItems(undefined)).toEqual([])
   })
 })

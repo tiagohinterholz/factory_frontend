@@ -31,3 +31,9 @@ export function fromDateTimeLocalInput(value) {
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
+
+// Sub-recursos (itens de OS/orçamento) são soft-delete no back: a linha
+// continua no detalhe com is_active=false. Filtra só os ativos.
+export function activeItems(list) {
+  return (list ?? []).filter((item) => item.is_active)
+}
