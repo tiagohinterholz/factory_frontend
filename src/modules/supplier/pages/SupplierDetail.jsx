@@ -16,6 +16,7 @@ import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import { SupplierService } from "@/modules/supplier/services/supplier"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
+import { formatMoney } from "@/modules/core/utils/format"
 
 import { Factory, Package, Hammer, Edit2, Trash2, Milestone } from "lucide-react"
 
@@ -263,7 +264,7 @@ export default function SupplierDetail() {
                   items={products.map((p) => ({
                     id: p.id,
                     name: p.name,
-                    subtitle: `R$ ${p.unit_price || "0,00"}`,
+                    subtitle: formatMoney(p.unit_price),
                   }))}
                   loading={loadingRelated}
                   emptyMessage="Nenhum produto cadastrado para este fornecedor."
@@ -276,7 +277,7 @@ export default function SupplierDetail() {
                   items={services.map((s) => ({
                     id: s.id,
                     name: s.name,
-                    subtitle: `R$ ${s.unit_price || "0,00"}`,
+                    subtitle: formatMoney(s.unit_price),
                   }))}
                   loading={loadingRelated}
                   emptyMessage="Nenhum serviço cadastrado para este fornecedor."

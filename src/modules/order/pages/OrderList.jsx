@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { CheckCircle2, Edit2, Receipt, Trash2 } from "lucide-react"
 import { useOrder } from "../hooks/useOrder"
 import { OrderService } from "../services/order"
-import { orderStatusTone } from "@/modules/order/order-status"
+import { orderStatusTone, orderCanFinish, orderCanInvoice } from "@/modules/order/domain"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
@@ -10,9 +10,7 @@ import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { REPORT_STATUS_OPTIONS } from "@/modules/core/constants/report"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
-import { parseApiError } from "@/api/parse-api-error"
+import { formatMoney, formatDateTime } from "@/modules/core/utils/format"
 
 export default function OrderList() {
   const {
@@ -32,8 +30,6 @@ export default function OrderList() {
     error,
   } = useOrder()
 
-  const toast = useToast()
-  const confirm = useConfirm()
   const { client: clients } = useClientOptions()
 
   const filterFields = [
@@ -63,16 +59,7 @@ export default function OrderList() {
     {
       header: "Data/Hora Serviço",
       sortKey: "service_date",
-      accessor: (item) =>
-        item.service_date
-          ? new Date(item.service_date).toLocaleString("pt-BR", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "N/A",
+      accessor: (item) => (item.service_date ? formatDateTime(item.service_date) : "N/A"),
     },
     {
       header: "Status",
@@ -88,60 +75,9 @@ export default function OrderList() {
     {
       header: "Total",
       sortKey: "total",
-      accessor: (item) => `R$ ${parseFloat(item.total).toFixed(2)}`,
+      accessor: (item) => formatMoney(item.total),
     },
   ]
-
-  const handleDelete = async (item) => {
-    const confirmed = await confirm({
-      title: "Excluir ordem de serviço?",
-      message: `A OS #${item.id} será removida permanentemente.`,
-      confirmText: "Excluir",
-      danger: true,
-    })
-    if (!confirmed) return
-
-    try {
-      await remove(item.id)
-    } catch (error) {
-      console.error(error)
-      toast.error("Erro ao excluir a ordem de serviço.")
-    }
-  }
-
-  const handleFinish = async (item) => {
-    const confirmed = await confirm({
-      title: "Finalizar serviço?",
-      message: `A OS #${item.id} vai para 'a faturar' e os itens não poderão mais ser editados.`,
-      confirmText: "Finalizar",
-    })
-    if (!confirmed) return
-
-    try {
-      await finish(item.id)
-      toast.success(`Serviço da OS #${item.id} finalizado.`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao finalizar o serviço.").message)
-    }
-  }
-
-  const handleInvoice = async (item) => {
-    const confirmed = await confirm({
-      title: "Faturar ordem de serviço?",
-      message: `A OS #${item.id} será marcada como faturada. Esta ação não pode ser desfeita.`,
-      confirmText: "Faturar",
-    })
-    if (!confirmed) return
-
-    try {
-      await invoice(item.id)
-      toast.success(`OS #${item.id} faturada.`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao faturar a ordem de serviço.").message)
-    }
-  }
 
   return (
     <div className="p-6 space-y-4">
@@ -173,20 +109,20 @@ export default function OrderList() {
               request={() => OrderService.getOrderPdf(item.id)}
               title="Gerar PDF da OS"
             />
-            {item.status === "em andamento" && (
+            {orderCanFinish(item.status) && (
               <button
                 type="button"
-                onClick={() => handleFinish(item)}
+                onClick={() => finish(item)}
                 title="Finalizar serviço"
                 className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
               >
                 <CheckCircle2 size={16} />
               </button>
             )}
-            {item.status === "a faturar" && (
+            {orderCanInvoice(item.status) && (
               <button
                 type="button"
-                onClick={() => handleInvoice(item)}
+                onClick={() => invoice(item)}
                 title="Faturar OS"
                 className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
               >
@@ -201,7 +137,7 @@ export default function OrderList() {
             </Link>
             <button
               type="button"
-              onClick={() => handleDelete(item)}
+              onClick={() => remove(item)}
               className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
             >
               <Trash2 size={16} />

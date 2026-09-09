@@ -1,16 +1,15 @@
 import { useParams, useNavigate } from "react-router-dom"
-import { useQueryClient } from "@tanstack/react-query"
 import { useClientEditForm } from "@/modules/client/hooks/useClientEditForm"
 import { ClientService } from "@/modules/client/services/client"
+import { clientKeys } from "@/modules/client/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import BackLink from "@/modules/core/components/BackLink"
 import { useClientVehicles } from "@/modules/client/hooks/useClientVehicles"
 import { useStateOptions } from "@/modules/core/hooks/options"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
-import { parseApiError } from "@/api/parse-api-error"
 
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -34,13 +33,11 @@ export default function ClientDetail() {
   } = form
 
   const { canChooseBusiness, isAdmin } = usePermissions()
-  const toast = useToast()
-  const confirm = useConfirm()
-  const queryClient = useQueryClient()
   const stateId = watch("state_id")
 
-  async function handleAnonymize() {
-    const confirmed = await confirm({
+  const anonymize = useResourceAction({
+    mutationFn: () => ClientService.anonymizeClient(id),
+    confirm: {
       title: "Anonimizar cliente? (LGPD)",
       message:
         "Nome, CPF, telefone, e-mail e endereço serão apagados em definitivo e o " +
@@ -48,18 +45,12 @@ export default function ClientDetail() {
         "mantido. Esta ação NÃO pode ser desfeita.",
       confirmText: "Anonimizar",
       danger: true,
-    })
-    if (!confirmed) return
-    try {
-      await ClientService.anonymizeClient(id)
-      queryClient.invalidateQueries()
-      toast.success("Cliente anonimizado.")
-      navigate("/clientes")
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Não foi possível anonimizar o cliente.").message)
-    }
-  }
+    },
+    invalidate: [clientKeys.all, dashboardKeys.all],
+    success: "Cliente anonimizado.",
+    onSuccess: () => navigate("/clientes"),
+    errorFallback: "Não foi possível anonimizar o cliente.",
+  })
 
   const { states, loading: loadingStates } = useStateOptions()
   const { citiesByState, loading: loadingCities } = useCityOptionsByState(stateId)
@@ -92,7 +83,7 @@ export default function ClientDetail() {
           {isAdmin && (
             <button
               type="button"
-              onClick={handleAnonymize}
+              onClick={anonymize.run}
               className="flex items-center gap-2 px-4 py-2 text-muted hover:bg-ground hover:text-ink rounded-xl transition-colors font-bold text-sm border border-line"
             >
               <ShieldOff className="w-4 h-4" />

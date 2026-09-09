@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { LicenseService } from "@/modules/license/services/license"
+import { licenseKeys } from "@/modules/license/domain"
 
 export function useLicense() {
   const query = useQuery({
-    queryKey: ["licenses"],
+    queryKey: licenseKeys.all,
     queryFn: () => LicenseService.getLicense(),
   })
 

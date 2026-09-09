@@ -1,34 +1,27 @@
-import { useState } from "react"
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { BusinessService } from "@/modules/business/services/business"
-import { normalizeList } from "@/api/normalize-list"
-
-const QUERY_KEY = "businesses"
+import { businessKeys } from "@/modules/business/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
+import { useResourceList } from "@/modules/core/hooks/useResourceList"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
 export function useBusiness() {
-  const queryClient = useQueryClient()
-  const [currentPage, setCurrentPage] = useState(1)
-
-  const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage }],
-    queryFn: () => BusinessService.getBusiness({ page: currentPage }),
-    placeholderData: keepPreviousData,
-    select: normalizeList,
+  const list = useResourceList({
+    keyFactory: businessKeys,
+    fetchPage: (params) => BusinessService.getBusiness(params),
   })
 
-  const removeMutation = useMutation({
-    mutationFn: (id) => BusinessService.deleteBusiness(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  const remove = useResourceAction({
+    mutationFn: (item) => BusinessService.deleteBusiness(item.id),
+    confirm: (item) => ({
+      title: "Excluir empreendimento?",
+      message: `"${item.corporate_name}" será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    }),
+    invalidate: [businessKeys.all, dashboardKeys.all],
+    errorFallback: "Erro ao excluir o empreendimento.",
   })
 
-  return {
-    business: query.data?.results ?? [],
-    totalItems: query.data?.count ?? 0,
-    loading: query.isPending,
-    error: query.error ?? null,
-    refetch: query.refetch,
-    remove: removeMutation.mutateAsync,
-    currentPage,
-    setCurrentPage,
-  }
+  const { items, ...rest } = list
+  return { ...rest, business: items, remove: remove.run }
 }

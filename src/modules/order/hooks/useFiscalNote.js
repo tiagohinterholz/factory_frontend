@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { OrderService } from "@/modules/order/services/order"
+import { orderKeys } from "@/modules/order/domain"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 
@@ -10,7 +11,7 @@ const PENDING_STATES = ["pending", "processing"]
 export function useFiscalNote(orderId, { enabled = true } = {}) {
   const queryClient = useQueryClient()
   const toast = useToast()
-  const queryKey = ["fiscal-note", orderId]
+  const queryKey = orderKeys.fiscalNote(orderId)
 
   const query = useQuery({
     queryKey,

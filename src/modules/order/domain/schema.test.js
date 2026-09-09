@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { toOrderPayload } from "./order.schema"
+import { toOrderPayload } from "./schema"
 
 describe("toOrderPayload", () => {
   const base = { business_id: "1", client_id: "2", vehicle_id: "3" }

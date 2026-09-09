@@ -6,6 +6,49 @@ import reactRefresh from "eslint-plugin-react-refresh"
 import prettier from "eslint-config-prettier"
 import { defineConfig, globalIgnores } from "eslint/config"
 
+// Fronteira entre módulos: um módulo só enxerga outro pelo index público
+// (`@/modules/<mod>`) ou pela camada pura (`@/modules/<mod>/domain`). Alcançar
+// `hooks/`, `services/`, `components/`, `pages/` etc. de outro módulo é erro.
+// `core` e `auth` são infra transversal — ficam de fora (não geram config aqui).
+const BOUNDED_MODULES = [
+  "appointment",
+  "budget",
+  "business",
+  "client",
+  "dashboard",
+  "fiscal",
+  "landing",
+  "legal",
+  "license",
+  "location",
+  "order",
+  "product",
+  "settings",
+  "supplier",
+  "user",
+  "vehicle",
+  "workservice",
+]
+
+const moduleBoundaries = BOUNDED_MODULES.map((mod) => ({
+  files: [`src/modules/${mod}/**/*.{js,jsx}`],
+  ignores: [`src/modules/${mod}/**/*.test.{js,jsx}`],
+  rules: {
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          {
+            regex: `^@/modules/(?!(${mod}|core|auth)/)[^/]+/(?!domain($|/)|index($|/))`,
+            message:
+              "Import cross-módulo só pelo index público (@/modules/<mod>) ou @/modules/<mod>/domain.",
+          },
+        ],
+      },
+    ],
+  },
+}))
+
 export default defineConfig([
   globalIgnores(["dist"]),
   {
@@ -47,4 +90,5 @@ export default defineConfig([
       "react-refresh/only-export-components": "off",
     },
   },
+  ...moduleBoundaries,
 ])

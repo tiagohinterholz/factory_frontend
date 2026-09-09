@@ -1,52 +1,28 @@
-import { useState } from "react"
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
-import { useListFilters } from "@/modules/core/hooks/useListFilters"
-import { useListSort } from "@/modules/core/hooks/useListSort"
-import { normalizeList } from "@/api/normalize-list"
-
-const QUERY_KEY = "workservices"
-const EMPTY_FILTERS = { name: "", description: "", supplier_id: "" }
+import { workServiceKeys } from "@/modules/workservice/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
+import { useResourceList } from "@/modules/core/hooks/useResourceList"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
 export function useWorkService() {
-  const queryClient = useQueryClient()
-  const [currentPage, setCurrentPage] = useState(1)
-  const {
-    filters,
-    apply: applyFilters,
-    params: filterParams,
-  } = useListFilters(EMPTY_FILTERS, () => setCurrentPage(1))
-  const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
-
-  const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
-    queryFn: () =>
-      WorkServiceService.getWorkService({
-        page: currentPage,
-        ...filterParams,
-        ...(ordering ? { ordering } : {}),
-      }),
-    placeholderData: keepPreviousData,
-    select: normalizeList,
+  const list = useResourceList({
+    keyFactory: workServiceKeys,
+    fetchPage: (params) => WorkServiceService.getWorkService(params),
+    emptyFilters: { name: "", description: "", supplier_id: "" },
   })
 
-  const removeMutation = useMutation({
-    mutationFn: (id) => WorkServiceService.deleteWorkService(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  const remove = useResourceAction({
+    mutationFn: (item) => WorkServiceService.deleteWorkService(item.id),
+    confirm: (item) => ({
+      title: "Excluir serviço?",
+      message: `"${item.name}" será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    }),
+    invalidate: [workServiceKeys.all, dashboardKeys.all],
+    errorFallback: "Erro ao excluir o serviço.",
   })
 
-  return {
-    workservice: query.data?.results ?? [],
-    totalItems: query.data?.count ?? 0,
-    loading: query.isPending,
-    error: query.error ?? null,
-    refetch: query.refetch,
-    remove: removeMutation.mutateAsync,
-    filters,
-    applyFilters,
-    ordering,
-    toggleSort,
-    currentPage,
-    setCurrentPage,
-  }
+  const { items, ...rest } = list
+  return { ...rest, workservice: items, remove: remove.run }
 }

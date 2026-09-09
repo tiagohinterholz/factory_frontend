@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { toBusinessPayload } from "./business.schema"
+import { toBusinessPayload } from "./schema"
 
 const base = {
   corporate_name: "ACME LTDA",

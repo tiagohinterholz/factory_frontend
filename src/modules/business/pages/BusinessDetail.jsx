@@ -12,7 +12,7 @@ import LogoUploadField from "@/modules/core/components/LogoUploadField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import BusinessHoursPanel from "@/modules/business/components/BusinessHoursPanel"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
-import { TAX_REGIME_OPTIONS } from "@/modules/business/business.schema"
+import { TAX_REGIME_OPTIONS } from "@/modules/business/domain"
 import { Briefcase, Milestone, Edit2, Trash2, Landmark } from "lucide-react"
 
 export default function BusinessEdit() {

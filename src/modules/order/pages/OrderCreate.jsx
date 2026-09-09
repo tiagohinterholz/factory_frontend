@@ -11,8 +11,7 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { fromDateTimeLocalInput } from "@/api/dto"
-
-const money = (value) => `R$ ${parseFloat(value || 0).toFixed(2)}`
+import { formatMoney } from "@/modules/core/utils/format"
 
 export default function OrderCreate() {
   const location = useLocation()
@@ -142,12 +141,12 @@ export default function OrderCreate() {
                               Orçamento #{budget.id}
                             </span>
                             <span className="font-bold text-ink text-sm tabular-nums">
-                              {money(budget.total)}
+                              {formatMoney(budget.total)}
                             </span>
                           </div>
                           <p className="text-[12px] text-muted mt-0.5 tabular-nums">
-                            Produtos {money(budget.products_total)} · Serviços{" "}
-                            {money(budget.services_total)}
+                            Produtos {formatMoney(budget.products_total)} · Serviços{" "}
+                            {formatMoney(budget.services_total)}
                           </p>
                         </button>
                       )

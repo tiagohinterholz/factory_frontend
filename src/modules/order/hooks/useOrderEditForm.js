@@ -1,13 +1,14 @@
 import { useState, useCallback } from "react"
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
-import { idOf, toDateTimeLocalInput } from "@/api/dto"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
+import { idOf, toDateTimeLocalInput, activeItems } from "@/api/dto"
 import { OrderService } from "@/modules/order/services/order"
-import { orderSchema, orderDefaults, toOrderPayload } from "../order.schema"
+import { orderSchema, orderDefaults, toOrderPayload, orderKeys } from "../domain"
+import { appointmentKeys } from "@/modules/appointment/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
+
+const ORDER_WIDE = [orderKeys.all, appointmentKeys.all, dashboardKeys.all]
 
 // dto da API -> shape do form (ids como string; service_date como
 // "YYYY-MM-DDTHH:mm" local pro <input type="datetime-local">). billing_date e
@@ -26,9 +27,6 @@ function toOrderForm(data) {
 export function useOrderEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const toast = useToast()
-  const queryClient = useQueryClient()
 
   // itens de linha, status e totais são somente leitura aqui; vivem fora do
   // form. products_total/services_total vêm calculados do back (só itens
@@ -42,21 +40,25 @@ export function useOrderEditForm() {
     servicesTotal: "",
     billingDate: null,
     budgetId: "",
+    client: null,
+    vehicle: null,
   })
 
   const fetchMeta = useCallback(async () => {
     const data = await OrderService.getOrderById(id)
-    // o back não some com a linha no DELETE, só marca is_active=false; o
-    // detalhe ainda a devolve. Os totais já vêm só com os ativos.
     setMeta({
-      products: (data.order_products ?? []).filter((item) => item.is_active),
-      services: (data.order_services ?? []).filter((item) => item.is_active),
+      products: activeItems(data.order_products),
+      services: activeItems(data.order_services),
       status: data.status ?? "",
       total: data.total ?? "0.00",
       productsTotal: data.products_total ?? "0.00",
       servicesTotal: data.services_total ?? "0.00",
       billingDate: data.billing_date ?? null,
       budgetId: idOf(data.budget),
+      // registros crus do detalhe: garantem a <option> do select mesmo com o
+      // cache de opções velho ou cortado por filtro em cascata
+      client: data.client ?? null,
+      vehicle: data.vehicle ?? null,
     })
     return data
   }, [id])
@@ -67,57 +69,49 @@ export function useOrderEditForm() {
     load: async () => toOrderForm(await fetchMeta()),
     submit: (values) => OrderService.updateOrder(id, toOrderPayload(values)),
     redirectTo: "/ordens",
+    invalidate: ORDER_WIDE,
     errorFallback: "Erro ao atualizar a ordem de serviço",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => OrderService.deleteOrder(id),
+    confirm: {
       title: "Excluir ordem de serviço?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await OrderService.deleteOrder(id)
-    queryClient.invalidateQueries()
-    navigate("/ordens")
-  }
+    },
+    invalidate: ORDER_WIDE, // Appointment.order é CASCADE
+    onSuccess: () => navigate("/ordens"),
+    errorFallback: "Erro ao excluir a ordem de serviço",
+  })
 
-  // em andamento -> a faturar. Marca o serviço como concluído; a partir daí
-  // os itens ficam travados e libera o faturamento.
-  async function handleFinish() {
-    const confirmed = await confirm({
+  // em andamento -> a faturar. Marca o serviço como concluído; a partir daí os
+  // itens ficam travados e libera o faturamento.
+  const finish = useResourceAction({
+    mutationFn: () => OrderService.finishService(id),
+    confirm: {
       title: "Finalizar serviço?",
       message: "A OS vai para 'a faturar' e os itens não poderão mais ser editados.",
       confirmText: "Finalizar",
-    })
-    if (!confirmed) return
-    try {
-      await OrderService.finishService(id)
-      await fetchMeta()
-      queryClient.invalidateQueries()
-      toast.success("Serviço finalizado. OS pronta para faturar.")
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao finalizar o serviço").message)
-    }
-  }
+    },
+    invalidate: ORDER_WIDE,
+    success: "Serviço finalizado. OS pronta para faturar.",
+    onSuccess: () => fetchMeta(),
+    errorFallback: "Erro ao finalizar o serviço",
+  })
 
-  async function handleInvoice() {
-    const confirmed = await confirm({
+  const invoice = useResourceAction({
+    mutationFn: () => OrderService.invoiceOrder(id),
+    confirm: {
       title: "Faturar ordem de serviço?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Faturar",
-    })
-    if (!confirmed) return
-    try {
-      await OrderService.invoiceOrder(id)
-      await fetchMeta()
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao faturar a ordem de serviço").message)
-    }
-  }
+    },
+    invalidate: [orderKeys.all, dashboardKeys.all],
+    onSuccess: () => fetchMeta(),
+    errorFallback: "Erro ao faturar a ordem de serviço",
+  })
 
   return {
     form,
@@ -131,9 +125,11 @@ export function useOrderEditForm() {
     servicesTotal: meta.servicesTotal,
     billingDate: meta.billingDate,
     budgetId: meta.budgetId,
+    relatedClient: meta.client,
+    relatedVehicle: meta.vehicle,
     refresh: fetchMeta,
-    handleDelete,
-    handleFinish,
-    handleInvoice,
+    handleDelete: remove.run,
+    handleFinish: finish.run,
+    handleInvoice: invoice.run,
   }
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
-import { appointmentStatusLabel } from "./appointment-status"
+import { appointmentStatusLabel } from "./status"
 
 afterEach(() => vi.useRealTimers())
 

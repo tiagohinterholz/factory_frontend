@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useLicense } from "../hooks/useLicense"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { formatDate } from "@/modules/core/utils/format"
 
 export default function LicenseList() {
   const navigate = useNavigate()
@@ -33,13 +34,11 @@ export default function LicenseList() {
     },
     {
       header: "Data de Ativação",
-      accessor: (item) =>
-        item.activation_date ? new Date(item.activation_date).toLocaleDateString() : "-",
+      accessor: (item) => formatDate(item.activation_date) || "-",
     },
     {
       header: "Data de Expiração",
-      accessor: (item) =>
-        item.expiration_date ? new Date(item.expiration_date).toLocaleDateString() : "-",
+      accessor: (item) => formatDate(item.expiration_date) || "-",
     },
     {
       header: "Dias Restantes",

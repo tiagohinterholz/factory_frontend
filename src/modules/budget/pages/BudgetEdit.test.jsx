@@ -82,6 +82,23 @@ describe("<BudgetEdit> — BUG-1 (opções antes do form)", () => {
       screen.getByRole("option", { name: /VW Gol \(ABC1D23\)/, selected: true }),
     ).toBeInTheDocument()
   })
+
+  it("mantém o cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {
+    mockApi()
+    // cache defasado: as listas de opção não trazem o cliente 5 nem o veículo 9
+    server.use(
+      http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    )
+    renderPage()
+
+    await waitFor(() =>
+      expect(screen.getByRole("option", { name: "Ana Lima", selected: true })).toBeInTheDocument(),
+    )
+    expect(
+      screen.getByRole("option", { name: /VW Gol \(ABC1D23\)/, selected: true }),
+    ).toBeInTheDocument()
+  })
 })
 
 describe("<BudgetEdit> — tarja de data da ação", () => {
@@ -145,11 +162,11 @@ describe("<BudgetEdit> — subtotais e total", () => {
     renderPage()
 
     expect(await screen.findByText("Subtotal produtos")).toBeInTheDocument()
-    expect(screen.getByText("R$ 5000.00")).toBeInTheDocument()
+    expect(screen.getByText("R$ 5.000,00")).toBeInTheDocument()
     expect(screen.getByText("Subtotal serviços")).toBeInTheDocument()
-    expect(screen.getByText("R$ 1000.00")).toBeInTheDocument()
+    expect(screen.getByText("R$ 1.000,00")).toBeInTheDocument()
     expect(screen.getByText("Total geral")).toBeInTheDocument()
-    expect(screen.getByText("R$ 6000.00")).toBeInTheDocument()
+    expect(screen.getByText("R$ 6.000,00")).toBeInTheDocument()
   })
 
   it("não lista item com is_active=false (deletado que o back ainda devolve)", async () => {

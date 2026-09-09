@@ -1,10 +1,9 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { UserService } from "@/modules/user/services/user"
-import { userEditSchema, userEditDefaults, toUserEditPayload } from "../user.schema"
+import { userEditSchema, userEditDefaults, toUserEditPayload, userKeys } from "../domain"
 
 function toUserForm(data) {
   return {
@@ -20,8 +19,6 @@ function toUserForm(data) {
 export function useUserEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: userEditSchema,
@@ -29,21 +26,22 @@ export function useUserEditForm() {
     load: async () => toUserForm(await UserService.getUserById(id)),
     submit: (values) => UserService.updateUser(id, toUserEditPayload(values)),
     redirectTo: "/usuarios",
+    invalidate: [userKeys.all],
     errorFallback: "Erro ao atualizar usuário",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => UserService.deleteUser(id),
+    confirm: {
       title: "Excluir usuário?",
       message: "Esta pessoa perderá o acesso ao sistema. Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await UserService.deleteUser(id)
-    queryClient.invalidateQueries()
-    navigate("/usuarios")
-  }
+    },
+    invalidate: [userKeys.all],
+    onSuccess: () => navigate("/usuarios"),
+    errorFallback: "Erro ao excluir usuário",
+  })
 
-  return { form, onSubmit, loading, handleDelete }
+  return { form, onSubmit, loading, handleDelete: remove.run }
 }

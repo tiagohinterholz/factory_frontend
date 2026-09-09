@@ -8,8 +8,6 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 const FILTER_FIELDS = [
   { name: "name", label: "Nome", type: "text" },
@@ -39,8 +37,6 @@ export default function ClientList() {
     error,
   } = useClient()
 
-  const toast = useToast()
-  const confirm = useConfirm()
   const [vehiclesClient, setVehiclesClient] = useState(null)
 
   const columns = [
@@ -52,23 +48,6 @@ export default function ClientList() {
     { header: "CPF", sortKey: "cpf", accessor: (item) => item.cpf },
     { header: "Telefone", accessor: (item) => item.phone },
   ]
-
-  const handleDelete = async (item) => {
-    const confirmed = await confirm({
-      title: "Excluir cliente?",
-      message: `O cliente "${item.first_name} ${item.last_name}" será removido permanentemente.`,
-      confirmText: "Excluir",
-      danger: true,
-    })
-    if (!confirmed) return
-
-    try {
-      await remove(item.id)
-    } catch (error) {
-      console.error(error)
-      toast.error("Erro ao excluir o cliente.")
-    }
-  }
 
   return (
     <div className="p-6 space-y-4">
@@ -124,7 +103,7 @@ export default function ClientList() {
               </Link>
               <button
                 type="button"
-                onClick={() => handleDelete(item)}
+                onClick={() => remove(item)}
                 className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
               >
                 <Trash2 size={16} />

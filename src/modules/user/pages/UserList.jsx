@@ -1,21 +1,10 @@
 import { useUser } from "../hooks/useUser"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 export default function UserList() {
-  const {
-    user,
-    loading,
-    currentPage,
-    setCurrentPage,
-    handleDelete: removeUser,
-    totalItems,
-    refetch,
-    error,
-  } = useUser()
-
-  const confirm = useConfirm()
+  const { user, loading, currentPage, setCurrentPage, remove, totalItems, refetch, error } =
+    useUser()
 
   const columns = [
     { header: "Nome", accessor: (item) => item.name },
@@ -24,17 +13,6 @@ export default function UserList() {
     { header: "Empreendimento", accessor: (item) => item.business?.corporate_name || "-" },
   ]
 
-  const handleDelete = async (item) => {
-    const confirmed = await confirm({
-      title: "Excluir usuário?",
-      message: `"${item.name}" perderá o acesso ao sistema.`,
-      confirmText: "Excluir",
-      danger: true,
-    })
-    if (!confirmed) return
-    await removeUser(item.id)
-  }
-
   return (
     <div className="p-6 space-y-4">
       <ListHeader title="Usuários" buttonText="Novo Usuário" buttonLink="/usuarios/novo" />
@@ -42,7 +20,7 @@ export default function UserList() {
         columns={columns}
         data={user}
         editLinkPrefix="/usuarios"
-        onDelete={handleDelete}
+        onDelete={remove}
         loading={loading}
         error={error}
         onRetry={refetch}

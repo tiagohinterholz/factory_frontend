@@ -1,10 +1,12 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { SupplierService } from "@/modules/supplier/services/supplier"
-import { supplierSchema, supplierDefaults } from "../supplier.schema"
+import { supplierSchema, supplierDefaults, supplierKeys } from "../domain"
+import { productKeys } from "@/modules/product/domain"
+import { workServiceKeys } from "@/modules/workservice/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 // dto da API -> shape do form (ids como string)
 function toSupplierForm(data) {
@@ -26,8 +28,6 @@ function toSupplierForm(data) {
 export function useSupplierEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: supplierSchema,
@@ -35,21 +35,22 @@ export function useSupplierEditForm() {
     load: async () => toSupplierForm(await SupplierService.getSupplierById(id)),
     submit: (values) => SupplierService.updateSupplier(id, values),
     redirectTo: "/fornecedores",
+    invalidate: [supplierKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar fornecedor",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => SupplierService.deleteSupplier(id),
+    confirm: {
       title: "Excluir fornecedor?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await SupplierService.deleteSupplier(id)
-    queryClient.invalidateQueries()
-    navigate("/fornecedores")
-  }
+    },
+    invalidate: [supplierKeys.all, productKeys.all, workServiceKeys.all, dashboardKeys.all],
+    onSuccess: () => navigate("/fornecedores"),
+    errorFallback: "Erro ao excluir fornecedor",
+  })
 
-  return { form, onSubmit, loading, handleDelete }
+  return { form, onSubmit, loading, handleDelete: remove.run }
 }

@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest"
-import { idOf, toDateInput, toDateTimeLocalInput, fromDateTimeLocalInput } from "./dto"
+import {
+  idOf,
+  toDateInput,
+  toDateTimeLocalInput,
+  fromDateTimeLocalInput,
+  activeItems,
+  withSelectedOption,
+} from "./dto"
 
 describe("idOf", () => {
   it("aceita objeto aninhado, id cru e vazio", () => {
@@ -29,5 +36,53 @@ describe("toDateTimeLocalInput / fromDateTimeLocalInput", () => {
     expect(toDateTimeLocalInput("nao-e-data")).toBe("")
     expect(fromDateTimeLocalInput("")).toBeNull()
     expect(fromDateTimeLocalInput("nao-e-data")).toBeNull()
+  })
+})
+
+describe("activeItems", () => {
+  it("mantém só os is_active; tolera null/undefined", () => {
+    const list = [
+      { id: 1, is_active: true },
+      { id: 2, is_active: false },
+      { id: 3, is_active: true },
+    ]
+    expect(activeItems(list).map((i) => i.id)).toEqual([1, 3])
+    expect(activeItems(null)).toEqual([])
+    expect(activeItems(undefined)).toEqual([])
+  })
+})
+
+describe("withSelectedOption", () => {
+  const options = [
+    { id: 1, name: "Ana" },
+    { id: 2, name: "Beto" },
+  ]
+
+  it("prepende o fallback quando o valor selecionado não está na lista", () => {
+    const result = withSelectedOption(options, 9, { id: 9, name: "Registro novo" })
+    expect(result).toEqual([{ id: 9, name: "Registro novo" }, ...options])
+  })
+
+  it("compara id como string (select devolve string)", () => {
+    const result = withSelectedOption(options, "9", { id: 9, name: "Registro novo" })
+    expect(result[0]).toEqual({ id: 9, name: "Registro novo" })
+  })
+
+  it("no-op quando a opção já existe na lista", () => {
+    expect(withSelectedOption(options, 2, { id: 2, name: "Beto (payload)" })).toBe(options)
+  })
+
+  it("no-op quando não há valor selecionado", () => {
+    expect(withSelectedOption(options, "", { id: 9, name: "x" })).toBe(options)
+    expect(withSelectedOption(options, null, { id: 9, name: "x" })).toBe(options)
+  })
+
+  it("no-op quando o fallback não tem id utilizável", () => {
+    expect(withSelectedOption(options, 9, null)).toBe(options)
+    expect(withSelectedOption(options, 9, { name: "sem id" })).toBe(options)
+  })
+
+  it("no-op quando o fallback não é o próprio valor selecionado", () => {
+    expect(withSelectedOption(options, 9, { id: 8, name: "outro registro" })).toBe(options)
   })
 })

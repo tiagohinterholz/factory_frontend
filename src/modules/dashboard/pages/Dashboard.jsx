@@ -17,10 +17,9 @@ import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import SummaryCard from "@/modules/dashboard/components/SummaryCard"
 import StatCard from "@/modules/dashboard/components/StatCard"
 import AppointmentCard from "@/modules/dashboard/components/AppointmentCard"
-import { appointmentStatusLabel } from "@/modules/appointment/appointment-status"
-
-const brl = (value) =>
-  `R$ ${Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+import { appointmentStatusLabel } from "@/modules/appointment/domain"
+import { ORDER_STATUS } from "@/modules/order/domain"
+import { formatMoney } from "@/modules/core/utils/format"
 
 const MINI_STAT_TONE = {
   warn: "text-amber-600",
@@ -40,7 +39,7 @@ function MiniStat({ icon: Icon, label, value, tone }) {
 
 // no board de Movimentação vão os cards já concluídos (serviço finalizado):
 // a faturar e faturado. O resto (aguardando / em andamento) fica em Atendimentos.
-const MOVEMENT_LABELS = ["a faturar", "faturado"]
+const MOVEMENT_LABELS = [ORDER_STATUS.TO_BILL, ORDER_STATUS.BILLED]
 
 function Quadro({ title, subtitle, aside, children }) {
   return (
@@ -178,21 +177,21 @@ export default function Dashboard() {
               tone="info"
               icon={Wallet}
               title="A faturar"
-              value={brl(financial.to_bill_total)}
+              value={formatMoney(financial.to_bill_total)}
             />
             <SummaryCard
               flat
               tone="ok"
               icon={CheckCircle2}
               title="Faturado"
-              value={brl(financial.billed_total)}
+              value={formatMoney(financial.billed_total)}
             />
             <SummaryCard
               flat
               tone="warn"
               icon={FileText}
               title="Orçamentos em aberto"
-              value={brl(financial.open_budgets_total)}
+              value={formatMoney(financial.open_budgets_total)}
             />
           </div>
         </Quadro>
