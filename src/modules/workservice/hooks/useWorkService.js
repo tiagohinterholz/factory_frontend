@@ -4,8 +4,8 @@ import { WorkServiceService } from "@/modules/workservice/services/workservice"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
+import { workServiceKeys } from "@/modules/workservice/domain"
 
-const QUERY_KEY = "workservices"
 const EMPTY_FILTERS = { name: "", description: "", supplier_id: "" }
 
 export function useWorkService() {
@@ -19,7 +19,7 @@ export function useWorkService() {
   const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
+    queryKey: workServiceKeys.list({ page: currentPage, filters, ordering }),
     queryFn: () =>
       WorkServiceService.getWorkService({
         page: currentPage,
@@ -32,7 +32,7 @@ export function useWorkService() {
 
   const removeMutation = useMutation({
     mutationFn: (id) => WorkServiceService.deleteWorkService(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: workServiceKeys.all }),
   })
 
   return {

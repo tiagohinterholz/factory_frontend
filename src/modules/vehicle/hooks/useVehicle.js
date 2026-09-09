@@ -4,8 +4,8 @@ import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
+import { vehicleKeys } from "@/modules/vehicle/domain"
 
-const QUERY_KEY = "vehicles"
 const EMPTY_FILTERS = { model: "", plate: "", color: "", client: "" }
 
 export function useVehicle() {
@@ -19,7 +19,7 @@ export function useVehicle() {
   const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
+    queryKey: vehicleKeys.list({ page: currentPage, filters, ordering }),
     queryFn: () =>
       VehicleService.getVehicle({
         page: currentPage,
@@ -32,7 +32,7 @@ export function useVehicle() {
 
   const removeMutation = useMutation({
     mutationFn: (id) => VehicleService.deleteVehicle(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: vehicleKeys.all }),
   })
 
   return {

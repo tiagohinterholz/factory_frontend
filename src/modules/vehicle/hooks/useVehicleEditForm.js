@@ -4,7 +4,8 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
-import { vehicleSchema, vehicleDefaults } from "../domain"
+import { vehicleSchema, vehicleDefaults, vehicleKeys } from "../domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 // dto da API -> shape do form (ids como string)
 function toVehicleForm(data) {
@@ -46,7 +47,8 @@ export function useVehicleEditForm() {
     })
     if (!confirmed) return
     await VehicleService.deleteVehicle(id)
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries({ queryKey: vehicleKeys.all })
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     navigate("/veiculos")
   }
 

@@ -4,7 +4,9 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { ClientService } from "@/modules/client/services/client"
-import { clientSchema, clientDefaults, toClientPayload } from "../domain"
+import { clientSchema, clientDefaults, toClientPayload, clientKeys } from "../domain"
+import { vehicleKeys } from "@/modules/vehicle/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 // dto da API -> shape do form (ids como string)
 function toClientForm(data) {
@@ -47,7 +49,9 @@ export function useClientEditForm() {
     })
     if (!confirmed) return
     await ClientService.deleteClient(id)
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries({ queryKey: clientKeys.all })
+    queryClient.invalidateQueries({ queryKey: vehicleKeys.all })
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     navigate("/clientes")
   }
 

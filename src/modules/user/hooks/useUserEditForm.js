@@ -4,7 +4,7 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { UserService } from "@/modules/user/services/user"
-import { userEditSchema, userEditDefaults, toUserEditPayload } from "../domain"
+import { userEditSchema, userEditDefaults, toUserEditPayload, userKeys } from "../domain"
 
 function toUserForm(data) {
   return {
@@ -41,7 +41,7 @@ export function useUserEditForm() {
     })
     if (!confirmed) return
     await UserService.deleteUser(id)
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries({ queryKey: userKeys.all })
     navigate("/usuarios")
   }
 

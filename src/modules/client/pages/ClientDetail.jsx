@@ -2,6 +2,8 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useQueryClient } from "@tanstack/react-query"
 import { useClientEditForm } from "@/modules/client/hooks/useClientEditForm"
 import { ClientService } from "@/modules/client/services/client"
+import { clientKeys } from "@/modules/client/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 import BackLink from "@/modules/core/components/BackLink"
 import { useClientVehicles } from "@/modules/client/hooks/useClientVehicles"
 import { useStateOptions } from "@/modules/core/hooks/options"
@@ -52,7 +54,8 @@ export default function ClientDetail() {
     if (!confirmed) return
     try {
       await ClientService.anonymizeClient(id)
-      queryClient.invalidateQueries()
+      queryClient.invalidateQueries({ queryKey: clientKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       toast.success("Cliente anonimizado.")
       navigate("/clientes")
     } catch (error) {

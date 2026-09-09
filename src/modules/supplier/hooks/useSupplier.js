@@ -4,8 +4,8 @@ import { SupplierService } from "@/modules/supplier/services/supplier"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
+import { supplierKeys } from "@/modules/supplier/domain"
 
-const QUERY_KEY = "suppliers"
 const EMPTY_FILTERS = { cnpj: "", corporate_name: "" }
 
 export function useSupplier() {
@@ -19,7 +19,7 @@ export function useSupplier() {
   const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
+    queryKey: supplierKeys.list({ page: currentPage, filters, ordering }),
     queryFn: () =>
       SupplierService.getSupplier({
         page: currentPage,
@@ -32,7 +32,7 @@ export function useSupplier() {
 
   const removeMutation = useMutation({
     mutationFn: (id) => SupplierService.deleteSupplier(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: supplierKeys.all }),
   })
 
   return {

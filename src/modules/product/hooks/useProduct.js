@@ -4,8 +4,8 @@ import { ProductService } from "@/modules/product/services/product"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
+import { productKeys } from "@/modules/product/domain"
 
-const QUERY_KEY = "products"
 const EMPTY_FILTERS = { name: "", reference: "", supplier_id: "" }
 
 export function useProduct() {
@@ -19,7 +19,7 @@ export function useProduct() {
   const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
+    queryKey: productKeys.list({ page: currentPage, filters, ordering }),
     queryFn: () =>
       ProductService.getProduct({
         page: currentPage,
@@ -32,7 +32,7 @@ export function useProduct() {
 
   const removeMutation = useMutation({
     mutationFn: (id) => ProductService.deleteProduct(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
   })
 
   return {

@@ -1,9 +1,6 @@
 import { Link, useNavigate } from "react-router-dom"
 import { Clock, Phone, Car, ClipboardList, FileText, Plus, CheckCircle2 } from "lucide-react"
-import {
-  appointmentStatusLabel,
-  APPOINTMENT_STATUS_TONE,
-} from "@/modules/appointment/domain"
+import { appointmentStatusLabel, APPOINTMENT_STATUS_TONE } from "@/modules/appointment/domain"
 import { useFinishOrder } from "@/modules/order/hooks/useFinishOrder"
 
 function formatWhen(date, time) {

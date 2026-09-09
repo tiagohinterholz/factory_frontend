@@ -4,7 +4,10 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { SupplierService } from "@/modules/supplier/services/supplier"
-import { supplierSchema, supplierDefaults } from "../domain"
+import { supplierSchema, supplierDefaults, supplierKeys } from "../domain"
+import { productKeys } from "@/modules/product/domain"
+import { workServiceKeys } from "@/modules/workservice/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 // dto da API -> shape do form (ids como string)
 function toSupplierForm(data) {
@@ -47,7 +50,10 @@ export function useSupplierEditForm() {
     })
     if (!confirmed) return
     await SupplierService.deleteSupplier(id)
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries({ queryKey: supplierKeys.all })
+    queryClient.invalidateQueries({ queryKey: productKeys.all })
+    queryClient.invalidateQueries({ queryKey: workServiceKeys.all })
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     navigate("/fornecedores")
   }
 

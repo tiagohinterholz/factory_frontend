@@ -4,7 +4,8 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
-import { serviceSchema, serviceDefaults } from "../domain"
+import { serviceSchema, serviceDefaults, workServiceKeys } from "../domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 function toServiceForm(data) {
   return {
@@ -40,7 +41,8 @@ export function useWorkServiceEditForm() {
     })
     if (!confirmed) return
     await WorkServiceService.deleteWorkService(id)
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries({ queryKey: workServiceKeys.all })
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     navigate("/servicos")
   }
 

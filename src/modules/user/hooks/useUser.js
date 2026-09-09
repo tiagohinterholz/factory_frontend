@@ -2,9 +2,8 @@ import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { UserService } from "@/modules/user/services/user"
 import { normalizeList } from "@/api/normalize-list"
+import { userKeys } from "@/modules/user/domain"
 import { useToast } from "@/modules/core/feedback/toast-context"
-
-const QUERY_KEY = "users"
 
 export function useUser() {
   const toast = useToast()
@@ -12,7 +11,7 @@ export function useUser() {
   const [currentPage, setCurrentPage] = useState(1)
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage }],
+    queryKey: userKeys.list({ page: currentPage }),
     queryFn: () => UserService.getUser({ page: currentPage }),
     placeholderData: keepPreviousData,
     select: normalizeList,
@@ -20,7 +19,7 @@ export function useUser() {
 
   const removeMutation = useMutation({
     mutationFn: (id) => UserService.deleteUser(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
     onError: (mutationError) => {
       console.error("Erro ao excluir usuário:", mutationError)
       toast.error("Erro ao excluir usuário.")

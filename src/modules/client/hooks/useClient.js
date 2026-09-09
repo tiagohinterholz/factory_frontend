@@ -4,8 +4,8 @@ import { ClientService } from "@/modules/client/services/client"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
+import { clientKeys } from "@/modules/client/domain"
 
-const QUERY_KEY = "clients"
 const EMPTY_FILTERS = { name: "", cpf: "" }
 
 export function useClient() {
@@ -19,7 +19,7 @@ export function useClient() {
   const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
+    queryKey: clientKeys.list({ page: currentPage, filters, ordering }),
     queryFn: () =>
       ClientService.getClient({
         page: currentPage,
@@ -32,7 +32,7 @@ export function useClient() {
 
   const removeMutation = useMutation({
     mutationFn: (id) => ClientService.deleteClient(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: clientKeys.all }),
   })
 
   return {

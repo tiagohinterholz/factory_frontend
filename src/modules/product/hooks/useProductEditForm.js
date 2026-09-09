@@ -4,7 +4,8 @@ import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { ProductService } from "@/modules/product/services/product"
-import { productSchema, productDefaults } from "../domain"
+import { productSchema, productDefaults, productKeys } from "../domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 function toProductForm(data) {
   return {
@@ -43,7 +44,8 @@ export function useProductEditForm() {
     })
     if (!confirmed) return
     await ProductService.deleteProduct(id)
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries({ queryKey: productKeys.all })
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     navigate("/produtos")
   }
 

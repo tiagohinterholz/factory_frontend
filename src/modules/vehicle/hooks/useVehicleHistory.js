@@ -1,17 +1,18 @@
 import { useQuery } from "@tanstack/react-query"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
+import { vehicleKeys } from "../domain"
 
 // Histórico de OS e orçamentos de um veículo (endpoints /ordens/veiculo/<id>/
 // e /orcamentos/veiculo/<id>/ — arrays diretos).
 export function useVehicleHistory(vehicleId) {
   const orders = useQuery({
-    queryKey: ["vehicle-orders", vehicleId],
+    queryKey: vehicleKeys.orders(vehicleId),
     queryFn: () => VehicleService.getVehicleOrders(vehicleId),
     enabled: Boolean(vehicleId),
   })
 
   const budgets = useQuery({
-    queryKey: ["vehicle-budgets", vehicleId],
+    queryKey: vehicleKeys.budgets(vehicleId),
     queryFn: () => VehicleService.getVehicleBudgets(vehicleId),
     enabled: Boolean(vehicleId),
   })
