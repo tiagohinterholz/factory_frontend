@@ -1,7 +1,6 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { base64ImageDataUri } from "@/api/media"
 import { BusinessService } from "@/modules/business/services/business"
@@ -31,8 +30,6 @@ function toBusinessForm(data) {
 export function useBusinessEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: businessSchema,
@@ -44,19 +41,18 @@ export function useBusinessEditForm() {
     errorFallback: "Erro ao atualizar empreendimento",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => BusinessService.deleteBusiness(id),
+    confirm: {
       title: "Excluir empreendimento?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await BusinessService.deleteBusiness(id)
-    queryClient.invalidateQueries({ queryKey: businessKeys.all })
-    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
-    navigate("/empreendimentos")
-  }
+    },
+    invalidate: [businessKeys.all, dashboardKeys.all],
+    onSuccess: () => navigate("/empreendimentos"),
+    errorFallback: "Erro ao excluir empreendimento",
+  })
 
-  return { form, onSubmit, loading, handleDelete }
+  return { form, onSubmit, loading, handleDelete: remove.run }
 }

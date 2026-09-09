@@ -1,7 +1,6 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { ProductService } from "@/modules/product/services/product"
 import { productSchema, productDefaults, productKeys } from "../domain"
@@ -23,8 +22,6 @@ function toProductForm(data) {
 export function useProductEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: productSchema,
@@ -36,19 +33,18 @@ export function useProductEditForm() {
     errorFallback: "Erro ao atualizar produto",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => ProductService.deleteProduct(id),
+    confirm: {
       title: "Excluir produto?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await ProductService.deleteProduct(id)
-    queryClient.invalidateQueries({ queryKey: productKeys.all })
-    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
-    navigate("/produtos")
-  }
+    },
+    invalidate: [productKeys.all, dashboardKeys.all],
+    onSuccess: () => navigate("/produtos"),
+    errorFallback: "Erro ao excluir produto",
+  })
 
-  return { form, onSubmit, loading, handleDelete }
+  return { form, onSubmit, loading, handleDelete: remove.run }
 }

@@ -37,6 +37,7 @@ export default function BudgetEdit() {
     validUntil,
     handleDelete,
     handleApprove,
+    approving,
     handleCancel,
     handleDuplicate,
     refresh,
@@ -61,18 +62,11 @@ export default function BudgetEdit() {
   const [quantity, setQuantity] = useState(1)
   const [selectedService, setSelectedService] = useState("")
   const [approveOpen, setApproveOpen] = useState(false)
-  const [approving, setApproving] = useState(false)
 
+  // handleApprove faz o toast/erro; retorno truthy = ok -> fecha o modal,
+  // falsy -> mantém aberto pro usuário tentar de novo.
   async function onApproveConfirm(serviceDate) {
-    setApproving(true)
-    try {
-      await handleApprove(serviceDate)
-      setApproveOpen(false)
-    } catch {
-      // toast já mostrado no hook; mantém o modal aberto
-    } finally {
-      setApproving(false)
-    }
+    if (await handleApprove(serviceDate)) setApproveOpen(false)
   }
 
   async function handleAddProduct(event) {

@@ -1,15 +1,16 @@
 import { useState } from "react"
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
+import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
 import { vehicleKeys } from "@/modules/vehicle/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
 const EMPTY_FILTERS = { model: "", plate: "", color: "", client: "" }
 
 export function useVehicle() {
-  const queryClient = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
   const {
     filters,
@@ -30,9 +31,16 @@ export function useVehicle() {
     select: normalizeList,
   })
 
-  const removeMutation = useMutation({
-    mutationFn: (id) => VehicleService.deleteVehicle(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: vehicleKeys.all }),
+  const remove = useResourceAction({
+    mutationFn: (item) => VehicleService.deleteVehicle(item.id),
+    confirm: (item) => ({
+      title: "Excluir veículo?",
+      message: `O veículo de placa "${item.plate}" será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    }),
+    invalidate: [vehicleKeys.all, dashboardKeys.all],
+    errorFallback: "Erro ao excluir o veículo.",
   })
 
   return {
@@ -41,7 +49,7 @@ export function useVehicle() {
     loading: query.isPending,
     error: query.error ?? null,
     refetch: query.refetch,
-    remove: removeMutation.mutateAsync,
+    remove: remove.run,
     filters,
     applyFilters,
     ordering,

@@ -1,10 +1,7 @@
 import { useState, useCallback } from "react"
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf, toDateTimeLocalInput, activeItems } from "@/api/dto"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { budgetSchema, budgetDefaults, toBudgetPayload, budgetKeys } from "../domain"
@@ -26,9 +23,6 @@ function toBudgetForm(data) {
 export function useBudgetEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const toast = useToast()
-  const queryClient = useQueryClient()
 
   // itens de linha, status, totais e datas de ação são somente leitura aqui;
   // vivem fora do form. products_total/services_total vêm calculados do back
@@ -47,8 +41,6 @@ export function useBudgetEditForm() {
 
   const fetchMeta = useCallback(async () => {
     const data = await BudgetService.getBudgetById(id)
-    // o back não some com a linha no DELETE, só marca is_active=false; o
-    // detalhe ainda a devolve. Os totais já vêm só com os ativos.
     setMeta({
       products: activeItems(data.budget_products),
       services: activeItems(data.budget_services),
@@ -73,83 +65,58 @@ export function useBudgetEditForm() {
     errorFallback: "Erro ao atualizar o orçamento",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => BudgetService.deleteBudget(id),
+    confirm: {
       title: "Excluir orçamento?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await BudgetService.deleteBudget(id)
-    // Appointment.budget é CASCADE — excluir o orçamento leva o agendamento junto
-    queryClient.invalidateQueries({ queryKey: budgetKeys.all })
-    queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
-    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
-    navigate("/orcamentos")
-  }
+    },
+    invalidate: [budgetKeys.all, appointmentKeys.all, dashboardKeys.all], // Appointment.budget é CASCADE
+    onSuccess: () => navigate("/orcamentos"),
+    errorFallback: "Erro ao excluir orçamento",
+  })
 
-  // serviceDate opcional (ISO 8601): cria a OS já com a data/hora do serviço.
-  // A confirmação é o ApproveBudgetModal; re-lança o erro pra ele seguir aberto.
-  async function handleApprove(serviceDate) {
-    try {
-      await BudgetService.approveBudget(id, serviceDate ? { service_date: serviceDate } : undefined)
-      await fetchMeta()
-      // aprovar cria a OS e (com data) sincroniza o agendamento
-      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
-      queryClient.invalidateQueries({ queryKey: orderKeys.all })
-      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
-      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
-      toast.success(
-        serviceDate
-          ? "Orçamento aprovado com a data do serviço."
-          : "Orçamento aprovado com sucesso!",
-      )
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao aprovar orçamento").message)
-      throw error
-    }
-  }
+  // sem confirm: o ApproveBudgetModal é a confirmação. `serviceDate` (ISO 8601)
+  // opcional cria a OS já com a data/hora do serviço. Sem rethrow: quem chama
+  // olha o retorno (truthy = ok) pra fechar/manter o modal.
+  const approve = useResourceAction({
+    mutationFn: (serviceDate) =>
+      BudgetService.approveBudget(id, serviceDate ? { service_date: serviceDate } : undefined),
+    invalidate: [budgetKeys.all, orderKeys.all, appointmentKeys.all, dashboardKeys.all],
+    success: (serviceDate) =>
+      serviceDate ? "Orçamento aprovado com a data do serviço." : "Orçamento aprovado com sucesso!",
+    onSuccess: () => fetchMeta(),
+    errorFallback: "Erro ao aprovar orçamento",
+  })
 
-  async function handleCancel() {
-    const confirmed = await confirm({
+  const cancel = useResourceAction({
+    mutationFn: () => BudgetService.cancelBudget(id),
+    confirm: {
       title: "Cancelar orçamento?",
       message: "O orçamento será marcado como cancelado.",
       confirmText: "Sim, cancelar",
       danger: true,
-    })
-    if (!confirmed) return
-    try {
-      await BudgetService.cancelBudget(id)
-      await fetchMeta()
-      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
-      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao cancelar orçamento").message)
-    }
-  }
+    },
+    invalidate: [budgetKeys.all, dashboardKeys.all],
+    onSuccess: () => fetchMeta(),
+    errorFallback: "Erro ao cancelar orçamento",
+  })
 
   // duplicar: só cancelado/expirado. Abre o novo (pendente) na edição.
-  async function handleDuplicate() {
-    const confirmed = await confirm({
+  const duplicate = useResourceAction({
+    mutationFn: () => BudgetService.duplicateBudget(id),
+    confirm: {
       title: "Duplicar orçamento?",
       message: "Cria um novo orçamento pendente com os itens ativos deste.",
       confirmText: "Duplicar",
-    })
-    if (!confirmed) return
-    try {
-      const created = await BudgetService.duplicateBudget(id)
-      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
-      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
-      toast.success(`Orçamento #${created.id} criado.`)
-      navigate(`/orcamentos/${created.id}`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao duplicar orçamento").message)
-    }
-  }
+    },
+    invalidate: [budgetKeys.all, dashboardKeys.all],
+    success: (_arg, created) => `Orçamento #${created.id} criado.`,
+    onSuccess: (created) => navigate(`/orcamentos/${created.id}`),
+    errorFallback: "Erro ao duplicar orçamento",
+  })
 
   return {
     form,
@@ -165,9 +132,10 @@ export function useBudgetEditForm() {
     cancelledAt: meta.cancelledAt,
     validUntil: meta.validUntil,
     refresh: fetchMeta,
-    handleDelete,
-    handleApprove,
-    handleCancel,
-    handleDuplicate,
+    handleDelete: remove.run,
+    handleApprove: approve.run,
+    approving: approve.pending,
+    handleCancel: cancel.run,
+    handleDuplicate: duplicate.run,
   }
 }

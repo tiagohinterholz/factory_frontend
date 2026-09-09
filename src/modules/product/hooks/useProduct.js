@@ -1,15 +1,16 @@
 import { useState } from "react"
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
+import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { ProductService } from "@/modules/product/services/product"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
 import { productKeys } from "@/modules/product/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
 const EMPTY_FILTERS = { name: "", reference: "", supplier_id: "" }
 
 export function useProduct() {
-  const queryClient = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
   const {
     filters,
@@ -30,9 +31,16 @@ export function useProduct() {
     select: normalizeList,
   })
 
-  const removeMutation = useMutation({
-    mutationFn: (id) => ProductService.deleteProduct(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
+  const remove = useResourceAction({
+    mutationFn: (item) => ProductService.deleteProduct(item.id),
+    confirm: (item) => ({
+      title: "Excluir produto?",
+      message: `"${item.name}" será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    }),
+    invalidate: [productKeys.all, dashboardKeys.all],
+    errorFallback: "Erro ao excluir o produto.",
   })
 
   return {
@@ -41,7 +49,7 @@ export function useProduct() {
     loading: query.isPending,
     error: query.error ?? null,
     refetch: query.refetch,
-    remove: removeMutation.mutateAsync,
+    remove: remove.run,
     filters,
     applyFilters,
     ordering,

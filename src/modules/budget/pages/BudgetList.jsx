@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { CheckCircle, Copy, Edit2, Trash2, XCircle } from "lucide-react"
 import { useBudget } from "../hooks/useBudget"
 import { BudgetService } from "../services/budgets"
@@ -11,9 +11,6 @@ import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { REPORT_STATUS_OPTIONS } from "@/modules/core/constants/report"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
-import { parseApiError } from "@/api/parse-api-error"
 import { formatDateTime } from "@/modules/core/utils/datetime"
 import { budgetStatusTone, budgetIsPending, budgetCanDuplicate, budgetStatusDate } from "../domain"
 
@@ -33,16 +30,13 @@ export default function BudgetList() {
     approve,
     cancel,
     duplicate,
+    approving,
     error,
   } = useBudget()
 
-  const navigate = useNavigate()
-  const toast = useToast()
-  const confirm = useConfirm()
   const { client: clients } = useClientOptions()
 
   const [approveTarget, setApproveTarget] = useState(null)
-  const [approving, setApproving] = useState(false)
 
   const filterFields = [
     { name: "status", label: "Status", type: "select", options: REPORT_STATUS_OPTIONS.budgets },
@@ -102,75 +96,11 @@ export default function BudgetList() {
     },
   ]
 
-  const handleDelete = async (item) => {
-    const confirmed = await confirm({
-      title: "Excluir orçamento?",
-      message: `O orçamento #${item.id} será removido permanentemente.`,
-      confirmText: "Excluir",
-      danger: true,
-    })
-    if (!confirmed) return
-
-    try {
-      await remove(item.id)
-    } catch (error) {
-      console.error(error)
-      toast.error("Erro ao excluir o orçamento.")
-    }
-  }
-
-  // o botão abre o modal; o approve (com service_date opcional) roda no confirm
+  // o botão abre o modal; o approve (com service_date opcional) roda no confirm do modal
   const handleApproveConfirm = async (serviceDate) => {
     if (!approveTarget) return
-    setApproving(true)
-    try {
-      await approve({ id: approveTarget.id, serviceDate })
-      toast.success(
-        serviceDate ? "Orçamento aprovado com a data do serviço." : "Orçamento aprovado.",
-      )
-      setApproveTarget(null)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao aprovar o orçamento.").message)
-    } finally {
-      setApproving(false)
-    }
-  }
-
-  const handleCancel = async (item) => {
-    const confirmed = await confirm({
-      title: "Cancelar orçamento?",
-      message: `O orçamento #${item.id} será marcado como cancelado.`,
-      confirmText: "Sim, cancelar",
-      danger: true,
-    })
-    if (!confirmed) return
-
-    try {
-      await cancel(item.id)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao cancelar o orçamento.").message)
-    }
-  }
-
-  // duplicar: só orçamento cancelado ou expirado. Abre o novo (pendente) na edição.
-  const handleDuplicate = async (item) => {
-    const confirmed = await confirm({
-      title: "Duplicar orçamento?",
-      message: `Cria um novo orçamento pendente a partir do #${item.id}, com os itens ativos.`,
-      confirmText: "Duplicar",
-    })
-    if (!confirmed) return
-
-    try {
-      const created = await duplicate(item.id)
-      toast.success(`Orçamento #${created.id} criado a partir do #${item.id}.`)
-      navigate(`/orcamentos/${created.id}`)
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao duplicar o orçamento.").message)
-    }
+    const ok = await approve({ id: approveTarget.id, serviceDate })
+    if (ok) setApproveTarget(null)
   }
 
   return (
@@ -216,7 +146,7 @@ export default function BudgetList() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleCancel(item)}
+                  onClick={() => cancel(item)}
                   title="Cancelar orçamento"
                   className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors"
                 >
@@ -227,7 +157,7 @@ export default function BudgetList() {
             {budgetCanDuplicate(item.status) && (
               <button
                 type="button"
-                onClick={() => handleDuplicate(item)}
+                onClick={() => duplicate(item)}
                 title="Duplicar orçamento"
                 className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
               >
@@ -242,7 +172,7 @@ export default function BudgetList() {
             </Link>
             <button
               type="button"
-              onClick={() => handleDelete(item)}
+              onClick={() => remove(item)}
               className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
             >
               <Trash2 size={16} />

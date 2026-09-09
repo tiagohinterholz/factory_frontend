@@ -1,15 +1,16 @@
 import { useState } from "react"
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
+import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
 import { workServiceKeys } from "@/modules/workservice/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
 const EMPTY_FILTERS = { name: "", description: "", supplier_id: "" }
 
 export function useWorkService() {
-  const queryClient = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
   const {
     filters,
@@ -30,9 +31,16 @@ export function useWorkService() {
     select: normalizeList,
   })
 
-  const removeMutation = useMutation({
-    mutationFn: (id) => WorkServiceService.deleteWorkService(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: workServiceKeys.all }),
+  const remove = useResourceAction({
+    mutationFn: (item) => WorkServiceService.deleteWorkService(item.id),
+    confirm: (item) => ({
+      title: "Excluir serviço?",
+      message: `"${item.name}" será removido permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    }),
+    invalidate: [workServiceKeys.all, dashboardKeys.all],
+    errorFallback: "Erro ao excluir o serviço.",
   })
 
   return {
@@ -41,7 +49,7 @@ export function useWorkService() {
     loading: query.isPending,
     error: query.error ?? null,
     refetch: query.refetch,
-    remove: removeMutation.mutateAsync,
+    remove: remove.run,
     filters,
     applyFilters,
     ordering,

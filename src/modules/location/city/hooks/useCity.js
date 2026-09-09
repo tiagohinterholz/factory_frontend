@@ -1,12 +1,12 @@
 import { useState } from "react"
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
+import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { CityService } from "@/modules/location/city/services/city"
 import { StateService } from "@/modules/location/state/services/state"
 import { normalizeList } from "@/api/normalize-list"
 import { cityKeys } from "@/modules/location/city/domain"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
 export function useCities() {
-  const queryClient = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
 
   const query = useQuery({
@@ -16,9 +16,16 @@ export function useCities() {
     select: normalizeList,
   })
 
-  const removeMutation = useMutation({
-    mutationFn: (id) => CityService.deleteCity(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: cityKeys.all }),
+  const remove = useResourceAction({
+    mutationFn: (item) => CityService.deleteCity(item.id),
+    confirm: (item) => ({
+      title: "Excluir cidade?",
+      message: `A cidade "${item.name}" será removida permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    }),
+    invalidate: [cityKeys.all],
+    errorFallback: "Erro ao excluir a cidade.",
   })
 
   return {
@@ -27,7 +34,7 @@ export function useCities() {
     loading: query.isPending,
     error: query.error ?? null,
     refetch: query.refetch,
-    remove: removeMutation.mutateAsync,
+    remove: remove.run,
     currentPage,
     setCurrentPage,
   }

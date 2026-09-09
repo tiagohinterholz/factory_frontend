@@ -1,7 +1,6 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { ClientService } from "@/modules/client/services/client"
 import { clientSchema, clientDefaults, toClientPayload, clientKeys } from "../domain"
@@ -28,8 +27,6 @@ function toClientForm(data) {
 export function useClientEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: clientSchema,
@@ -41,20 +38,18 @@ export function useClientEditForm() {
     errorFallback: "Erro ao atualizar cliente",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => ClientService.deleteClient(id),
+    confirm: {
       title: "Excluir cliente?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await ClientService.deleteClient(id)
-    queryClient.invalidateQueries({ queryKey: clientKeys.all })
-    queryClient.invalidateQueries({ queryKey: vehicleKeys.all })
-    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
-    navigate("/clientes")
-  }
+    },
+    invalidate: [clientKeys.all, vehicleKeys.all, dashboardKeys.all],
+    onSuccess: () => navigate("/clientes"),
+    errorFallback: "Erro ao excluir cliente",
+  })
 
-  return { form, onSubmit, loading, handleDelete }
+  return { form, onSubmit, loading, handleDelete: remove.run }
 }

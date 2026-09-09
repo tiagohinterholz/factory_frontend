@@ -1,7 +1,6 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { SupplierService } from "@/modules/supplier/services/supplier"
 import { supplierSchema, supplierDefaults, supplierKeys } from "../domain"
@@ -29,8 +28,6 @@ function toSupplierForm(data) {
 export function useSupplierEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: supplierSchema,
@@ -42,21 +39,18 @@ export function useSupplierEditForm() {
     errorFallback: "Erro ao atualizar fornecedor",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => SupplierService.deleteSupplier(id),
+    confirm: {
       title: "Excluir fornecedor?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await SupplierService.deleteSupplier(id)
-    queryClient.invalidateQueries({ queryKey: supplierKeys.all })
-    queryClient.invalidateQueries({ queryKey: productKeys.all })
-    queryClient.invalidateQueries({ queryKey: workServiceKeys.all })
-    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
-    navigate("/fornecedores")
-  }
+    },
+    invalidate: [supplierKeys.all, productKeys.all, workServiceKeys.all, dashboardKeys.all],
+    onSuccess: () => navigate("/fornecedores"),
+    errorFallback: "Erro ao excluir fornecedor",
+  })
 
-  return { form, onSubmit, loading, handleDelete }
+  return { form, onSubmit, loading, handleDelete: remove.run }
 }

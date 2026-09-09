@@ -1,10 +1,7 @@
 import { useCallback, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { AppointmentService } from "@/modules/appointment/services/appointment"
 import { OrderService } from "@/modules/order/services/order"
@@ -33,9 +30,6 @@ function toAppointmentForm(data) {
 export function useAppointmentEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const toast = useToast()
-  const queryClient = useQueryClient()
 
   // OS vinculada crua do detalhe (OrderFlatSerializer: id, status, ...). A página
   // usa pra garantir a <option> do select mesmo com o cache de opções velho, e
@@ -58,44 +52,40 @@ export function useAppointmentEditForm() {
     errorFallback: "Erro ao atualizar agendamento",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => AppointmentService.deleteAppointment(id),
+    confirm: {
       title: "Excluir agendamento?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await AppointmentService.deleteAppointment(id)
-    queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
-    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
-    navigate("/agendamentos")
-  }
+    },
+    invalidate: [appointmentKeys.all, dashboardKeys.all],
+    onSuccess: () => navigate("/agendamentos"),
+    errorFallback: "Erro ao excluir agendamento",
+  })
 
-  // finaliza o serviço da OS vinculada (em andamento -> a faturar). Só faz
-  // sentido enquanto a OS está "em andamento".
-  async function handleFinishOrder() {
-    const orderId = idOf(linkedOrder)
-    if (!orderId) return
-    const confirmed = await confirm({
+  // finaliza o serviço da OS vinculada (em andamento -> a faturar). A página só
+  // mostra o botão quando há OS "em andamento", então não guarda id nulo aqui.
+  const finishOrder = useResourceAction({
+    mutationFn: () => OrderService.finishService(idOf(linkedOrder)),
+    confirm: {
       title: "Finalizar atendimento?",
       message: "A OS vinculada vai para 'a faturar' e os itens não poderão mais ser editados.",
       confirmText: "Finalizar",
-    })
-    if (!confirmed) return
-    try {
-      await OrderService.finishService(orderId)
-      form.reset(toAppointmentForm(await loadRaw()))
-      // finalizar muda a OS, o rótulo do card no board e os números da Movimentação
-      queryClient.invalidateQueries({ queryKey: orderKeys.all })
-      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
-      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
-      toast.success("Atendimento finalizado. OS pronta para faturar.")
-    } catch (error) {
-      console.error(error)
-      toast.error(parseApiError(error, "Erro ao finalizar o atendimento").message)
-    }
-  }
+    },
+    invalidate: [orderKeys.all, appointmentKeys.all, dashboardKeys.all],
+    success: "Atendimento finalizado. OS pronta para faturar.",
+    onSuccess: async () => form.reset(toAppointmentForm(await loadRaw())),
+    errorFallback: "Erro ao finalizar o atendimento",
+  })
 
-  return { form, onSubmit, loading, handleDelete, handleFinishOrder, linkedOrder }
+  return {
+    form,
+    onSubmit,
+    loading,
+    handleDelete: remove.run,
+    handleFinishOrder: finishOrder.run,
+    linkedOrder,
+  }
 }

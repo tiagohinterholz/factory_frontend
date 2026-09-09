@@ -1,13 +1,11 @@
 import { useState } from "react"
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
+import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { UserService } from "@/modules/user/services/user"
 import { normalizeList } from "@/api/normalize-list"
 import { userKeys } from "@/modules/user/domain"
-import { useToast } from "@/modules/core/feedback/toast-context"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
 export function useUser() {
-  const toast = useToast()
-  const queryClient = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
 
   const query = useQuery({
@@ -17,13 +15,16 @@ export function useUser() {
     select: normalizeList,
   })
 
-  const removeMutation = useMutation({
-    mutationFn: (id) => UserService.deleteUser(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
-    onError: (mutationError) => {
-      console.error("Erro ao excluir usuário:", mutationError)
-      toast.error("Erro ao excluir usuário.")
-    },
+  const remove = useResourceAction({
+    mutationFn: (item) => UserService.deleteUser(item.id),
+    confirm: (item) => ({
+      title: "Excluir usuário?",
+      message: `"${item.name}" perderá o acesso ao sistema.`,
+      confirmText: "Excluir",
+      danger: true,
+    }),
+    invalidate: [userKeys.all],
+    errorFallback: "Erro ao excluir usuário.",
   })
 
   return {
@@ -32,7 +33,7 @@ export function useUser() {
     loading: query.isPending,
     error: query.error ?? null,
     refetch: query.refetch,
-    handleDelete: removeMutation.mutate,
+    remove: remove.run,
     currentPage,
     setCurrentPage,
   }
