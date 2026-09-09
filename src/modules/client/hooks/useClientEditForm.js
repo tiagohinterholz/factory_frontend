@@ -37,6 +37,7 @@ export function useClientEditForm() {
     load: async () => toClientForm(await ClientService.getClientById(id)),
     submit: (values) => ClientService.updateClient(id, toClientPayload(values)),
     redirectTo: "/clientes",
+    invalidate: [clientKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar cliente",
   })
 

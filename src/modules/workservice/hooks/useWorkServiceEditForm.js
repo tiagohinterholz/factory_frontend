@@ -29,6 +29,7 @@ export function useWorkServiceEditForm() {
     load: async () => toServiceForm(await WorkServiceService.getWorkServiceById(id)),
     submit: (values) => WorkServiceService.updateWorkService(id, values),
     redirectTo: "/servicos",
+    invalidate: [workServiceKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar serviço",
   })
 

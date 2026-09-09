@@ -38,6 +38,7 @@ export function useSupplierEditForm() {
     load: async () => toSupplierForm(await SupplierService.getSupplierById(id)),
     submit: (values) => SupplierService.updateSupplier(id, values),
     redirectTo: "/fornecedores",
+    invalidate: [supplierKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar fornecedor",
   })
 

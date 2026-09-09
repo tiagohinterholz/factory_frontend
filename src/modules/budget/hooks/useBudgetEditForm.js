@@ -69,6 +69,7 @@ export function useBudgetEditForm() {
     load: async () => toBudgetForm(await fetchMeta()),
     submit: (values) => BudgetService.updateBudget(id, toBudgetPayload(values)),
     redirectTo: "/orcamentos",
+    invalidate: [budgetKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar o orçamento",
   })
 

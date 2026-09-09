@@ -40,6 +40,7 @@ export function useBusinessEditForm() {
     load: async () => toBusinessForm(await BusinessService.getBusinessById(id)),
     submit: (values) => BusinessService.updateBusiness(id, toBusinessPayload(values)),
     redirectTo: "/empreendimentos",
+    invalidate: [businessKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar empreendimento",
   })
 

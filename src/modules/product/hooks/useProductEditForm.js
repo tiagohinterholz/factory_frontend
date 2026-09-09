@@ -32,6 +32,7 @@ export function useProductEditForm() {
     load: async () => toProductForm(await ProductService.getProductById(id)),
     submit: (values) => ProductService.updateProduct(id, values),
     redirectTo: "/produtos",
+    invalidate: [productKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar produto",
   })
 

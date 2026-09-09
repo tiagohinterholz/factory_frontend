@@ -42,6 +42,7 @@ export function useOrderForm({ clientId, vehicleId, appointmentId } = {}) {
     // cria a "casca" e vai direto pra edição pra adicionar produtos/serviços;
     // sem id, cai na listagem.
     redirectTo: (order) => (order?.id ? `/ordens/${order.id}` : "/ordens"),
+    invalidate: [orderKeys.all, appointmentKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao criar ordem",
   })
 

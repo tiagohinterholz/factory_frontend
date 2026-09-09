@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { LicenseService } from "@/modules/license/services/license"
-import { licenseSchema, licenseDefaults, toLicensePayload } from "../domain"
+import { licenseSchema, licenseDefaults, toLicensePayload, licenseKeys } from "../domain"
+import { businessKeys } from "@/modules/business/domain"
 
 // dto da API -> shape do form
 function toLicenseForm(data) {
@@ -33,6 +34,7 @@ export function useLicenseEditForm() {
     submit: (values) =>
       LicenseService.getLicenseRenew(values.business_id, toLicensePayload(values)),
     redirectTo: "/empreendimentos/licencas",
+    invalidate: [licenseKeys.all, businessKeys.all],
     errorFallback: "Erro ao processar renovação",
   })
 

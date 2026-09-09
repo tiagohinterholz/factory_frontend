@@ -29,6 +29,7 @@ export function useUserEditForm() {
     load: async () => toUserForm(await UserService.getUserById(id)),
     submit: (values) => UserService.updateUser(id, toUserEditPayload(values)),
     redirectTo: "/usuarios",
+    invalidate: [userKeys.all],
     errorFallback: "Erro ao atualizar usuário",
   })
 

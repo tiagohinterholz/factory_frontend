@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { CityService } from "@/modules/location/city/services/city"
-import { citySchema, cityDefaults } from "../domain"
+import { citySchema, cityDefaults, cityKeys } from "../domain"
 
 export function useCityForm() {
   const location = useLocation()
@@ -15,6 +15,7 @@ export function useCityForm() {
     },
     submit: (values) => CityService.createCity(values),
     redirectTo: "/cidades",
+    invalidate: [cityKeys.all],
     errorFallback: "Erro ao criar cidade",
   })
 }

@@ -2,7 +2,8 @@ import { useLocation } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
-import { serviceSchema, serviceDefaults } from "../domain"
+import { serviceSchema, serviceDefaults, workServiceKeys } from "../domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 export function useWorkServiceForm() {
   const location = useLocation()
@@ -17,6 +18,7 @@ export function useWorkServiceForm() {
     },
     submit: (values) => WorkServiceService.createWorkService(values),
     redirectTo: "/servicos",
+    invalidate: [workServiceKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao criar serviço",
   })
 }

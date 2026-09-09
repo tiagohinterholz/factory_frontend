@@ -35,6 +35,7 @@ export function useVehicleEditForm() {
     load: async () => toVehicleForm(await VehicleService.getVehicleById(id)),
     submit: (values) => VehicleService.updateVehicle(id, values),
     redirectTo: "/veiculos",
+    invalidate: [vehicleKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar veículo",
   })
 

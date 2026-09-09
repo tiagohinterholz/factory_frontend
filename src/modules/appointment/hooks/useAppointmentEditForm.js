@@ -54,6 +54,7 @@ export function useAppointmentEditForm() {
     load: async () => toAppointmentForm(await loadRaw()),
     submit: (values) => AppointmentService.updateAppointment(id, toAppointmentPayload(values)),
     redirectTo: "/agendamentos",
+    invalidate: [appointmentKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar agendamento",
   })
 
