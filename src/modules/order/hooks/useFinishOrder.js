@@ -1,5 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { OrderService } from "@/modules/order/services/order"
+import { orderKeys } from "@/modules/order/domain"
+import { appointmentKeys } from "@/modules/appointment/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { parseApiError } from "@/api/parse-api-error"
@@ -15,7 +18,11 @@ export function useFinishOrder() {
 
   const mutation = useMutation({
     mutationFn: (orderId) => OrderService.finishService(orderId),
-    onSuccess: () => queryClient.invalidateQueries(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+    },
   })
 
   async function finishOrder(orderId) {

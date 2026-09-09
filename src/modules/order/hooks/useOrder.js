@@ -1,11 +1,13 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { OrderService } from "@/modules/order/services/order"
+import { orderKeys } from "@/modules/order/domain"
+import { appointmentKeys } from "@/modules/appointment/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
 
-const QUERY_KEY = "orders"
 const EMPTY_FILTERS = { status: "", client_id: "", date_from: "", date_to: "" }
 
 export function useOrder() {
@@ -19,7 +21,7 @@ export function useOrder() {
   const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
+    queryKey: orderKeys.list({ page: currentPage, filters, ordering }),
     queryFn: () =>
       OrderService.getOrder({
         page: currentPage,
@@ -32,19 +34,31 @@ export function useOrder() {
 
   const removeMutation = useMutation({
     mutationFn: (id) => OrderService.deleteOrder(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => {
+      // excluir a OS: o back faz CASCADE no agendamento vinculado
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+    },
   })
 
   const finishMutation = useMutation({
     mutationFn: (id) => OrderService.finishService(id),
-    // finalizar mexe no board de agendamento — invalida tudo
-    onSuccess: () => queryClient.invalidateQueries(),
+    onSuccess: () => {
+      // finalizar muda a OS, o rótulo do card no board e os números da Movimentação
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+    },
   })
 
   const invoiceMutation = useMutation({
     mutationFn: (id) => OrderService.invoiceOrder(id),
-    // faturar mexe em NF-e e no dashboard — invalida tudo
-    onSuccess: () => queryClient.invalidateQueries(),
+    onSuccess: () => {
+      // faturar muda a OS (libera NF-e) e os números do dashboard
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+    },
   })
 
   return {

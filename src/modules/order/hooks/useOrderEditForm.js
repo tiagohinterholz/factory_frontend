@@ -7,7 +7,9 @@ import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf, toDateTimeLocalInput } from "@/api/dto"
 import { OrderService } from "@/modules/order/services/order"
-import { orderSchema, orderDefaults, toOrderPayload } from "../domain"
+import { orderSchema, orderDefaults, toOrderPayload, orderKeys } from "../domain"
+import { appointmentKeys } from "@/modules/appointment/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 // dto da API -> shape do form (ids como string; service_date como
 // "YYYY-MM-DDTHH:mm" local pro <input type="datetime-local">). billing_date e
@@ -79,7 +81,9 @@ export function useOrderEditForm() {
     })
     if (!confirmed) return
     await OrderService.deleteOrder(id)
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries({ queryKey: orderKeys.all })
+    queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     navigate("/ordens")
   }
 
@@ -95,7 +99,9 @@ export function useOrderEditForm() {
     try {
       await OrderService.finishService(id)
       await fetchMeta()
-      queryClient.invalidateQueries()
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       toast.success("Serviço finalizado. OS pronta para faturar.")
     } catch (error) {
       console.error(error)
@@ -113,6 +119,8 @@ export function useOrderEditForm() {
     try {
       await OrderService.invoiceOrder(id)
       await fetchMeta()
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao faturar a ordem de serviço").message)
