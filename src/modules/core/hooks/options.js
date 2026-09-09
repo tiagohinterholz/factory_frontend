@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query"
 import { fetchAllPages } from "@/api/fetch-all-pages"
-import { BusinessService } from "@/modules/business/services/business"
-import { ClientService } from "@/modules/client/services/client"
-import { VehicleService } from "@/modules/vehicle/services/vehicle"
-import { SupplierService } from "@/modules/supplier/services/supplier"
-import { OrderService } from "@/modules/order/services/order"
-import { BudgetService } from "@/modules/budget/services/budgets"
-import { ProductService } from "@/modules/product/services/product"
-import { WorkServiceService } from "@/modules/workservice/services/workservice"
-import { StateService } from "@/modules/location/state/services/state"
+import { BusinessService } from "@/modules/business"
+import { ClientService } from "@/modules/client"
+import { VehicleService } from "@/modules/vehicle"
+import { SupplierService } from "@/modules/supplier"
+import { OrderService } from "@/modules/order"
+import { BudgetService } from "@/modules/budget"
+import { ProductService } from "@/modules/product"
+import { WorkServiceService } from "@/modules/workservice"
+import { StateService } from "@/modules/location"
 
 // Listas completas (todas as páginas) pra popular os <select> dos formulários.
 // Os hooks de lista (useClient, useVehicle, ...) só trazem a 1ª página — bom pra

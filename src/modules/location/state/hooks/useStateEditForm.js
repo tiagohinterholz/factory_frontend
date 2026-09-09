@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { StateService } from "../services/state"
-import { stateSchema, stateDefaults } from "../state.schema"
+import { stateSchema, stateDefaults, stateKeys } from "../domain"
 
 export function useStateEditForm() {
   const { id } = useParams()
@@ -20,6 +20,7 @@ export function useStateEditForm() {
     // PATCH grava só is_active; name/abbreviation são somente-leitura no backend.
     submit: (values) => StateService.updateState(id, { is_active: values.is_active }),
     redirectTo: "/estados",
+    invalidate: [stateKeys.all],
     errorFallback: "Erro ao atualizar estado",
   })
 }

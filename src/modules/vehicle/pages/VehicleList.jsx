@@ -4,8 +4,6 @@ import { useVehicle } from "../hooks/useVehicle"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 
 const FILTER_FIELDS = [
   { name: "model", label: "Modelo", type: "text" },
@@ -31,9 +29,6 @@ export default function VehicleList() {
     error,
   } = useVehicle()
 
-  const toast = useToast()
-  const confirm = useConfirm()
-
   const columns = [
     { header: "Placa", sortKey: "plate", accessor: (item) => item.plate },
     { header: "Modelo", sortKey: "model", accessor: (item) => item.model },
@@ -44,23 +39,6 @@ export default function VehicleList() {
       accessor: (item) => `${item.client.first_name} ${item.client.last_name}`,
     },
   ]
-
-  const handleDelete = async (item) => {
-    const confirmed = await confirm({
-      title: "Excluir veículo?",
-      message: `O veículo de placa "${item.plate}" será removido permanentemente.`,
-      confirmText: "Excluir",
-      danger: true,
-    })
-    if (!confirmed) return
-
-    try {
-      await remove(item.id)
-    } catch (error) {
-      console.error(error)
-      toast.error("Erro ao excluir o veículo.")
-    }
-  }
 
   // "Abrir OS" / "Fazer orçamento": vão pro formulário de criação com
   // veículo e cliente já pré-preenchidos.
@@ -115,7 +93,7 @@ export default function VehicleList() {
             <button
               type="button"
               title="Excluir veículo"
-              onClick={() => handleDelete(item)}
+              onClick={() => remove(item)}
               className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
             >
               <Trash2 size={16} />

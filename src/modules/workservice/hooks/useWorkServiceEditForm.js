@@ -1,10 +1,10 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
-import { serviceSchema, serviceDefaults } from "../service.schema"
+import { serviceSchema, serviceDefaults, workServiceKeys } from "../domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 function toServiceForm(data) {
   return {
@@ -19,8 +19,6 @@ function toServiceForm(data) {
 export function useWorkServiceEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: serviceSchema,
@@ -28,21 +26,22 @@ export function useWorkServiceEditForm() {
     load: async () => toServiceForm(await WorkServiceService.getWorkServiceById(id)),
     submit: (values) => WorkServiceService.updateWorkService(id, values),
     redirectTo: "/servicos",
+    invalidate: [workServiceKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar serviço",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => WorkServiceService.deleteWorkService(id),
+    confirm: {
       title: "Excluir serviço?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await WorkServiceService.deleteWorkService(id)
-    queryClient.invalidateQueries()
-    navigate("/servicos")
-  }
+    },
+    invalidate: [workServiceKeys.all, dashboardKeys.all],
+    onSuccess: () => navigate("/servicos"),
+    errorFallback: "Erro ao excluir serviço",
+  })
 
-  return { form, onSubmit, loading, handleDelete }
+  return { form, onSubmit, loading, handleDelete: remove.run }
 }

@@ -7,8 +7,7 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
+import { formatMoney } from "@/modules/core/utils/format"
 
 export default function WorkServiceList() {
   const {
@@ -26,8 +25,6 @@ export default function WorkServiceList() {
     error,
   } = useWorkService()
 
-  const toast = useToast()
-  const confirm = useConfirm()
   const { supplier: suppliers } = useSupplierOptions()
 
   const filterFields = [
@@ -46,30 +43,10 @@ export default function WorkServiceList() {
     {
       header: "Preço",
       sortKey: "unit_price",
-      accessor: (item) =>
-        item.unit_price
-          ? `R$ ${parseFloat(item.unit_price).toFixed(2).replace(".", ",")}`
-          : "R$ 0,00",
+      accessor: (item) => formatMoney(item.unit_price),
     },
     { header: "Descrição", accessor: (item) => item.description || "-" },
   ]
-
-  const handleDelete = async (item) => {
-    const confirmed = await confirm({
-      title: "Excluir serviço?",
-      message: `"${item.name}" será removido permanentemente.`,
-      confirmText: "Excluir",
-      danger: true,
-    })
-    if (!confirmed) return
-
-    try {
-      await remove(item.id)
-    } catch (error) {
-      console.error(error)
-      toast.error("Erro ao excluir o serviço.")
-    }
-  }
 
   return (
     <div className="p-6 space-y-4">
@@ -105,7 +82,7 @@ export default function WorkServiceList() {
             </Link>
             <button
               type="button"
-              onClick={() => handleDelete(item)}
+              onClick={() => remove(item)}
               className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
             >
               <Trash2 size={16} />

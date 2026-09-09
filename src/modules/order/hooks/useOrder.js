@@ -1,66 +1,62 @@
-import { useState } from "react"
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { OrderService } from "@/modules/order/services/order"
-import { useListFilters } from "@/modules/core/hooks/useListFilters"
-import { useListSort } from "@/modules/core/hooks/useListSort"
-import { normalizeList } from "@/api/normalize-list"
+import { orderKeys } from "@/modules/order/domain"
+import { appointmentKeys } from "@/modules/appointment/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
+import { useResourceList } from "@/modules/core/hooks/useResourceList"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
-const QUERY_KEY = "orders"
 const EMPTY_FILTERS = { status: "", client_id: "", date_from: "", date_to: "" }
+// excluir e finalizar mexem na OS, no card do board e nos números da Movimentação
+const ORDER_WIDE = [orderKeys.all, appointmentKeys.all, dashboardKeys.all]
 
 export function useOrder() {
-  const queryClient = useQueryClient()
-  const [currentPage, setCurrentPage] = useState(1)
-  const {
-    filters,
-    apply: applyFilters,
-    params: filterParams,
-  } = useListFilters(EMPTY_FILTERS, () => setCurrentPage(1))
-  const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
-
-  const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
-    queryFn: () =>
-      OrderService.getOrder({
-        page: currentPage,
-        ...filterParams,
-        ...(ordering ? { ordering } : {}),
-      }),
-    placeholderData: keepPreviousData,
-    select: normalizeList,
+  const list = useResourceList({
+    keyFactory: orderKeys,
+    fetchPage: (params) => OrderService.getOrder(params),
+    emptyFilters: EMPTY_FILTERS,
+  })
+  const remove = useResourceAction({
+    mutationFn: (item) => OrderService.deleteOrder(item.id),
+    confirm: (item) => ({
+      title: "Excluir ordem de serviço?",
+      message: `A OS #${item.id} será removida permanentemente.`,
+      confirmText: "Excluir",
+      danger: true,
+    }),
+    invalidate: ORDER_WIDE, // Appointment.order é CASCADE
+    errorFallback: "Erro ao excluir a ordem de serviço.",
   })
 
-  const removeMutation = useMutation({
-    mutationFn: (id) => OrderService.deleteOrder(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  const finish = useResourceAction({
+    mutationFn: (item) => OrderService.finishService(item.id),
+    confirm: (item) => ({
+      title: "Finalizar serviço?",
+      message: `A OS #${item.id} vai para 'a faturar' e os itens não poderão mais ser editados.`,
+      confirmText: "Finalizar",
+    }),
+    invalidate: ORDER_WIDE,
+    success: (item) => `Serviço da OS #${item.id} finalizado.`,
+    errorFallback: "Erro ao finalizar o serviço.",
   })
 
-  const finishMutation = useMutation({
-    mutationFn: (id) => OrderService.finishService(id),
-    // finalizar mexe no board de agendamento — invalida tudo
-    onSuccess: () => queryClient.invalidateQueries(),
+  const invoice = useResourceAction({
+    mutationFn: (item) => OrderService.invoiceOrder(item.id),
+    confirm: (item) => ({
+      title: "Faturar ordem de serviço?",
+      message: `A OS #${item.id} será marcada como faturada. Esta ação não pode ser desfeita.`,
+      confirmText: "Faturar",
+    }),
+    invalidate: [orderKeys.all, dashboardKeys.all],
+    success: (item) => `OS #${item.id} faturada.`,
+    errorFallback: "Erro ao faturar a ordem de serviço.",
   })
 
-  const invoiceMutation = useMutation({
-    mutationFn: (id) => OrderService.invoiceOrder(id),
-    // faturar mexe em NF-e e no dashboard — invalida tudo
-    onSuccess: () => queryClient.invalidateQueries(),
-  })
-
+  const { items, ...rest } = list
   return {
-    orders: query.data?.results ?? [],
-    totalItems: query.data?.count ?? 0,
-    loading: query.isPending,
-    error: query.error ?? null,
-    refetch: query.refetch,
-    remove: removeMutation.mutateAsync,
-    finish: finishMutation.mutateAsync,
-    invoice: invoiceMutation.mutateAsync,
-    filters,
-    applyFilters,
-    ordering,
-    toggleSort,
-    currentPage,
-    setCurrentPage,
+    ...rest,
+    orders: items,
+    remove: remove.run,
+    finish: finish.run,
+    invoice: invoice.run,
   }
 }

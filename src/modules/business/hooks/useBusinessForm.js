@@ -1,6 +1,7 @@
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { BusinessService } from "@/modules/business/services/business"
-import { businessSchema, businessDefaults, toBusinessPayload } from "../business.schema"
+import { businessSchema, businessDefaults, toBusinessPayload, businessKeys } from "../domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 export function useBusinessForm() {
   return useResourceForm({
@@ -8,6 +9,7 @@ export function useBusinessForm() {
     defaultValues: businessDefaults,
     submit: (values) => BusinessService.createBusiness(toBusinessPayload(values)),
     redirectTo: "/empreendimentos",
+    invalidate: [businessKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao criar empreendimento",
   })
 }

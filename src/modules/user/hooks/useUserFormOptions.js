@@ -9,15 +9,14 @@ import { useBusinessOptions } from "@/modules/core/hooks/options"
 //   no mesmo /empreendimentos/ que alimenta o dropdown do superuser).
 // - perfis disponíveis: só quem já é admin/superuser cria outros usuários.
 export function useUserFormOptions() {
-  const { user: loggedUser, businessId } = useAuth()
-  const { isSuperUser } = usePermissions()
+  const { businessId } = useAuth()
+  const { isSuperUser, canManageUsers } = usePermissions()
   const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
 
   const businessOptions = (businesses ?? []).map((b) => ({ id: b.id, name: b.corporate_name }))
   const currentBusinessName =
     businesses.find((b) => String(b.id) === String(businessId))?.corporate_name ?? ""
 
-  const canManageUsers = isSuperUser || loggedUser?.role === "admin"
   const roleOptions = canManageUsers
     ? [
         ...(isSuperUser ? [{ id: "admin", name: "Administrador" }] : []),

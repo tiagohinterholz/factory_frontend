@@ -1,10 +1,10 @@
-import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { VehicleService } from "@/modules/vehicle/services/vehicle"
-import { vehicleSchema, vehicleDefaults } from "../vehicle.schema"
+import { vehicleSchema, vehicleDefaults, vehicleKeys } from "../domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 // dto da API -> shape do form (ids como string)
 function toVehicleForm(data) {
@@ -25,8 +25,6 @@ function toVehicleForm(data) {
 export function useVehicleEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
-  const queryClient = useQueryClient()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: vehicleSchema,
@@ -34,21 +32,22 @@ export function useVehicleEditForm() {
     load: async () => toVehicleForm(await VehicleService.getVehicleById(id)),
     submit: (values) => VehicleService.updateVehicle(id, values),
     redirectTo: "/veiculos",
+    invalidate: [vehicleKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar veículo",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => VehicleService.deleteVehicle(id),
+    confirm: {
       title: "Excluir veículo?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await VehicleService.deleteVehicle(id)
-    queryClient.invalidateQueries()
-    navigate("/veiculos")
-  }
+    },
+    invalidate: [vehicleKeys.all, dashboardKeys.all],
+    onSuccess: () => navigate("/veiculos"),
+    errorFallback: "Erro ao excluir veículo",
+  })
 
-  return { form, onSubmit, loading, handleDelete }
+  return { form, onSubmit, loading, handleDelete: remove.run }
 }

@@ -1,13 +1,12 @@
 import { useNavigate, useParams } from "react-router-dom"
-import { useConfirm } from "@/modules/core/feedback/confirm-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
+import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { CityService } from "@/modules/location/city/services/city"
-import { citySchema, cityDefaults } from "../city.schema"
+import { citySchema, cityDefaults, cityKeys } from "../domain"
 
 export function useCityEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const confirm = useConfirm()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: citySchema,
@@ -18,20 +17,22 @@ export function useCityEditForm() {
     },
     submit: (values) => CityService.updateCity(id, values),
     redirectTo: "/cidades",
+    invalidate: [cityKeys.all],
     errorFallback: "Erro ao atualizar cidade",
   })
 
-  async function handleDelete() {
-    const confirmed = await confirm({
+  const remove = useResourceAction({
+    mutationFn: () => CityService.deleteCity(id),
+    confirm: {
       title: "Excluir cidade?",
       message: "Esta ação não pode ser desfeita.",
       confirmText: "Excluir",
       danger: true,
-    })
-    if (!confirmed) return
-    await CityService.deleteCity(id)
-    navigate("/cidades")
-  }
+    },
+    invalidate: [cityKeys.all],
+    onSuccess: () => navigate("/cidades"),
+    errorFallback: "Erro ao excluir cidade",
+  })
 
-  return { form, onSubmit, loading, handleDelete }
+  return { form, onSubmit, loading, handleDelete: remove.run }
 }

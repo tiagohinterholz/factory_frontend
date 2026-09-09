@@ -65,8 +65,8 @@ describe("<OrderCreate> — orçamento base", () => {
     await pickClientAndVehicle()
 
     expect(await screen.findByText("Orçamento #7")).toBeInTheDocument()
-    expect(screen.getByText("R$ 1500.00")).toBeInTheDocument()
-    expect(screen.getByText(/Produtos R\$ 1000\.00 · Serviços R\$ 500\.00/)).toBeInTheDocument()
+    expect(screen.getByText("R$ 1.500,00")).toBeInTheDocument()
+    expect(screen.getByText(/Produtos R\$ 1\.000,00 · Serviços R\$ 500,00/)).toBeInTheDocument()
     await waitFor(() => {
       expect(lastBudgetsUrl.searchParams.get("client_id")).toBe("5")
       expect(lastBudgetsUrl.searchParams.get("vehicle_id")).toBe("9")

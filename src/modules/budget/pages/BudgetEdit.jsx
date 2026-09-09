@@ -12,11 +12,13 @@ import { useProductOptions } from "@/modules/core/hooks/options"
 import { useWorkServiceOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
+import { idOf, withSelectedOption } from "@/api/dto"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Plus, Trash2, CheckCircle, XCircle, Copy } from "lucide-react"
-import { formatDateTime } from "@/modules/core/utils/datetime"
+import { formatDateTime, formatMoney } from "@/modules/core/utils/format"
+import { budgetStatusTone, budgetIsPending, budgetCanDuplicate, budgetStatusDate } from "../domain"
 
 export default function BudgetEdit() {
   const { id } = useParams()
@@ -34,8 +36,11 @@ export default function BudgetEdit() {
     approvedAt,
     cancelledAt,
     validUntil,
+    relatedClient,
+    relatedVehicle,
     handleDelete,
     handleApprove,
+    approving,
     handleCancel,
     handleDuplicate,
     refresh,
@@ -60,18 +65,11 @@ export default function BudgetEdit() {
   const [quantity, setQuantity] = useState(1)
   const [selectedService, setSelectedService] = useState("")
   const [approveOpen, setApproveOpen] = useState(false)
-  const [approving, setApproving] = useState(false)
 
+  // handleApprove faz o toast/erro; retorno truthy = ok -> fecha o modal,
+  // falsy -> mantém aberto pro usuário tentar de novo.
   async function onApproveConfirm(serviceDate) {
-    setApproving(true)
-    try {
-      await handleApprove(serviceDate)
-      setApproveOpen(false)
-    } catch {
-      // toast já mostrado no hook; mantém o modal aberto
-    } finally {
-      setApproving(false)
-    }
+    if (await handleApprove(serviceDate)) setApproveOpen(false)
   }
 
   async function handleAddProduct(event) {
@@ -137,26 +135,38 @@ export default function BudgetEdit() {
   if (loading || loadingBusinesses || loadingClients || loadingVehicles)
     return <div className="p-6 text-center">Carregando...</div>
 
-  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
-  const clientOptions = clients
-    .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
-    .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
-  const vehicleOptions = vehicles
-    .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
-    .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
+  // o cliente/veículo já vinculados ao orçamento têm que aparecer no select
+  // mesmo que o cache de opções esteja velho ou o filtro em cascata os corte —
+  // senão salvar apagaria a FK. Fallback montado do payload de detalhe.
+  const clientLabel = (client) =>
+    `${client?.first_name ?? ""} ${client?.last_name ?? ""}`.trim() || `Cliente #${idOf(client)}`
+  const vehicleLabel = (vehicle) =>
+    vehicle?.manufacturer || vehicle?.model
+      ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""} (${vehicle.plate ?? ""})`
+      : `Veículo #${idOf(vehicle)}`
 
-  const isPending = status === "pendente"
-  const canDuplicate = status === "cancelado" || status === "expirado"
+  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
+  const clientOptions = withSelectedOption(
+    clients
+      .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
+      .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
+    clientId,
+    relatedClient && { id: idOf(relatedClient), name: clientLabel(relatedClient) },
+  )
+  const vehicleOptions = withSelectedOption(
+    vehicles
+      .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
+      .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` })),
+    watch("vehicle_id"),
+    relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
+  )
+
+  const isPending = budgetIsPending(status)
+  const canDuplicate = budgetCanDuplicate(status)
   // data da situação: aprovado -> approved_at, cancelado -> cancelled_at,
   // expirado -> valid_until (quando expirou). Pendente não tem data.
   const actionDateLabel = formatDateTime(
-    status === "aprovado"
-      ? approvedAt
-      : status === "cancelado"
-        ? cancelledAt
-        : status === "expirado"
-          ? validUntil
-          : null,
+    budgetStatusDate(status, { approvedAt, cancelledAt, validUntil }),
   )
 
   return (
@@ -167,19 +177,7 @@ export default function BudgetEdit() {
           <h1 className="text-xl font-semibold text-ink tracking-tight">Editar Orçamento</h1>
           <div className="flex items-center gap-3 mt-1 text-sm uppercase font-bold tracking-wider">
             <p className="text-slate-400">Ajuste os detalhes e itens</p>
-            <span
-              className={`px-2 py-0.5 rounded-md ${
-                status === "aprovado"
-                  ? "bg-emerald-100 text-emerald-700"
-                  : status === "cancelado"
-                    ? "bg-rose-100 text-rose-700"
-                    : status === "expirado"
-                      ? "bg-slate-200 text-slate-600"
-                      : "bg-amber-100 text-amber-700"
-              }`}
-            >
-              {status}
-            </span>
+            <span className={`px-2 py-0.5 rounded-md ${budgetStatusTone(status)}`}>{status}</span>
             {actionDateLabel && (
               <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium normal-case tracking-normal">
                 {actionDateLabel}
@@ -291,7 +289,7 @@ export default function BudgetEdit() {
                     onChange={(event) => setSelectedProduct(event.target.value)}
                     options={allProducts.map((p) => ({
                       id: p.id,
-                      name: `${p.name} (R$ ${p.unit_price})`,
+                      name: `${p.name} (${formatMoney(p.unit_price)})`,
                     }))}
                   />
                 </div>
@@ -319,9 +317,7 @@ export default function BudgetEdit() {
                     {item.product?.name} (x{item.quantity})
                   </span>
                   <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">
-                      R$ {parseFloat(item.total || 0).toFixed(2)}
-                    </span>
+                    <span className="font-bold text-slate-700">{formatMoney(item.total)}</span>
                     {isPending && (
                       <button
                         type="button"
@@ -341,9 +337,7 @@ export default function BudgetEdit() {
 
             <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center text-sm">
               <span className="font-semibold text-slate-500">Subtotal produtos</span>
-              <span className="font-bold text-slate-800">
-                R$ {parseFloat(productsTotal || 0).toFixed(2)}
-              </span>
+              <span className="font-bold text-slate-800">{formatMoney(productsTotal)}</span>
             </div>
           </div>
 
@@ -364,7 +358,7 @@ export default function BudgetEdit() {
                     onChange={(event) => setSelectedService(event.target.value)}
                     options={allServices.map((s) => ({
                       id: s.id,
-                      name: `${s.name} (R$ ${s.unit_price})`,
+                      name: `${s.name} (${formatMoney(s.unit_price)})`,
                     }))}
                   />
                 </div>
@@ -382,9 +376,7 @@ export default function BudgetEdit() {
                 <div key={item.id} className="py-3 flex justify-between items-center text-sm">
                   <span>{item.service?.name}</span>
                   <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">
-                      R$ {parseFloat(item.unit_price || 0).toFixed(2)}
-                    </span>
+                    <span className="font-bold text-slate-700">{formatMoney(item.unit_price)}</span>
                     {isPending && (
                       <button
                         type="button"
@@ -404,17 +396,13 @@ export default function BudgetEdit() {
 
             <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center text-sm">
               <span className="font-semibold text-slate-500">Subtotal serviços</span>
-              <span className="font-bold text-slate-800">
-                R$ {parseFloat(servicesTotal || 0).toFixed(2)}
-              </span>
+              <span className="font-bold text-slate-800">{formatMoney(servicesTotal)}</span>
             </div>
           </div>
 
           <div className="card-premium flex justify-between items-center">
             <span className="text-lg font-bold text-slate-800">Total geral</span>
-            <span className="text-2xl font-extrabold text-brand">
-              R$ {parseFloat(total || 0).toFixed(2)}
-            </span>
+            <span className="text-2xl font-extrabold text-brand">{formatMoney(total)}</span>
           </div>
         </div>
       </div>

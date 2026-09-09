@@ -2,7 +2,8 @@ import { useLocation } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { ProductService } from "@/modules/product/services/product"
-import { productSchema, productDefaults } from "../product.schema"
+import { productSchema, productDefaults, productKeys } from "../domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 export function useProductForm() {
   const location = useLocation()
@@ -17,6 +18,7 @@ export function useProductForm() {
     },
     submit: (values) => ProductService.createProduct(values),
     redirectTo: "/produtos",
+    invalidate: [productKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao criar produto",
   })
 }

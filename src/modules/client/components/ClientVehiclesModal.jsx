@@ -1,7 +1,7 @@
 import { Car } from "lucide-react"
 import Modal from "@/modules/core/components/Modal"
 import { useClientVehicles } from "@/modules/client/hooks/useClientVehicles"
-import { fuelOptions } from "@/modules/vehicle/constants/vehicle"
+import { fuelOptions } from "@/modules/vehicle"
 
 const fuelLabel = (value) => fuelOptions.find((option) => option.id === value)?.name ?? value ?? "—"
 
