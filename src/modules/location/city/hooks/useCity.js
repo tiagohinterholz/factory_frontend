@@ -3,15 +3,14 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tansta
 import { CityService } from "@/modules/location/city/services/city"
 import { StateService } from "@/modules/location/state/services/state"
 import { normalizeList } from "@/api/normalize-list"
-
-const QUERY_KEY = "cities"
+import { cityKeys } from "@/modules/location/city/domain"
 
 export function useCities() {
   const queryClient = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage }],
+    queryKey: cityKeys.list({ page: currentPage }),
     queryFn: () => CityService.getCities({ page: currentPage }),
     placeholderData: keepPreviousData,
     select: normalizeList,
@@ -19,7 +18,7 @@ export function useCities() {
 
   const removeMutation = useMutation({
     mutationFn: (id) => CityService.deleteCity(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: cityKeys.all }),
   })
 
   return {
@@ -37,7 +36,7 @@ export function useCities() {
 // Cidades de um estado, ordenadas por nome. Só busca quando há stateId.
 export function useCitiesByState(stateId) {
   const query = useQuery({
-    queryKey: [QUERY_KEY, "by-state", stateId],
+    queryKey: cityKeys.byState(stateId),
     queryFn: () => StateService.getCitiesByState(stateId),
     enabled: Boolean(stateId),
     select: (response) => {

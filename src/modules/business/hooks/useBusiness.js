@@ -2,15 +2,14 @@ import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { BusinessService } from "@/modules/business/services/business"
 import { normalizeList } from "@/api/normalize-list"
-
-const QUERY_KEY = "businesses"
+import { businessKeys } from "@/modules/business/domain"
 
 export function useBusiness() {
   const queryClient = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage }],
+    queryKey: businessKeys.list({ page: currentPage }),
     queryFn: () => BusinessService.getBusiness({ page: currentPage }),
     placeholderData: keepPreviousData,
     select: normalizeList,
@@ -18,7 +17,7 @@ export function useBusiness() {
 
   const removeMutation = useMutation({
     mutationFn: (id) => BusinessService.deleteBusiness(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: businessKeys.all }),
   })
 
   return {

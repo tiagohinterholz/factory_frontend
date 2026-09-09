@@ -5,7 +5,8 @@ import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf } from "@/api/dto"
 import { base64ImageDataUri } from "@/api/media"
 import { BusinessService } from "@/modules/business/services/business"
-import { businessSchema, businessDefaults, toBusinessPayload } from "../domain"
+import { businessSchema, businessDefaults, toBusinessPayload, businessKeys } from "../domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 function toBusinessForm(data) {
   return {
@@ -51,7 +52,8 @@ export function useBusinessEditForm() {
     })
     if (!confirmed) return
     await BusinessService.deleteBusiness(id)
-    queryClient.invalidateQueries()
+    queryClient.invalidateQueries({ queryKey: businessKeys.all })
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     navigate("/empreendimentos")
   }
 
