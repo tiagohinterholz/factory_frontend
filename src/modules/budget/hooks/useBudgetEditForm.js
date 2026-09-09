@@ -7,7 +7,10 @@ import { parseApiError } from "@/api/parse-api-error"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { idOf, toDateTimeLocalInput } from "@/api/dto"
 import { BudgetService } from "@/modules/budget/services/budgets"
-import { budgetSchema, budgetDefaults, toBudgetPayload } from "../domain"
+import { budgetSchema, budgetDefaults, toBudgetPayload, budgetKeys } from "../domain"
+import { orderKeys } from "@/modules/order/domain"
+import { appointmentKeys } from "@/modules/appointment/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 
 // dto da API -> shape do form (ids como string, valid_until como
 // "YYYY-MM-DDTHH:mm" local pro <input type="datetime-local">)
@@ -78,7 +81,10 @@ export function useBudgetEditForm() {
     })
     if (!confirmed) return
     await BudgetService.deleteBudget(id)
-    queryClient.invalidateQueries()
+    // Appointment.budget é CASCADE — excluir o orçamento leva o agendamento junto
+    queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+    queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+    queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     navigate("/orcamentos")
   }
 
@@ -88,8 +94,11 @@ export function useBudgetEditForm() {
     try {
       await BudgetService.approveBudget(id, serviceDate ? { service_date: serviceDate } : undefined)
       await fetchMeta()
-      // aprovar cria OS (e agendamento, se veio data) — refaz listas/opções
-      queryClient.invalidateQueries()
+      // aprovar cria a OS e (com data) sincroniza o agendamento
+      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       toast.success(
         serviceDate
           ? "Orçamento aprovado com a data do serviço."
@@ -113,6 +122,8 @@ export function useBudgetEditForm() {
     try {
       await BudgetService.cancelBudget(id)
       await fetchMeta()
+      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao cancelar orçamento").message)
@@ -129,7 +140,8 @@ export function useBudgetEditForm() {
     if (!confirmed) return
     try {
       const created = await BudgetService.duplicateBudget(id)
-      queryClient.invalidateQueries({ queryKey: ["budgets"] })
+      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
       toast.success(`Orçamento #${created.id} criado.`)
       navigate(`/orcamentos/${created.id}`)
     } catch (error) {

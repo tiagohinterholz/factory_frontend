@@ -1,11 +1,14 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { BudgetService } from "@/modules/budget/services/budgets"
+import { budgetKeys } from "@/modules/budget/domain"
+import { orderKeys } from "@/modules/order/domain"
+import { appointmentKeys } from "@/modules/appointment/domain"
+import { dashboardKeys } from "@/modules/dashboard/domain"
 import { useListFilters } from "@/modules/core/hooks/useListFilters"
 import { useListSort } from "@/modules/core/hooks/useListSort"
 import { normalizeList } from "@/api/normalize-list"
 
-const QUERY_KEY = "budgets"
 const EMPTY_FILTERS = { status: "", client_id: "", date_from: "", date_to: "" }
 
 export function useBudget() {
@@ -19,7 +22,7 @@ export function useBudget() {
   const { ordering, toggle: toggleSort } = useListSort(() => setCurrentPage(1))
 
   const query = useQuery({
-    queryKey: [QUERY_KEY, { page: currentPage, filters, ordering }],
+    queryKey: budgetKeys.list({ page: currentPage, filters, ordering }),
     queryFn: () =>
       BudgetService.getBudget({
         page: currentPage,
@@ -32,25 +35,41 @@ export function useBudget() {
 
   const removeMutation = useMutation({
     mutationFn: (id) => BudgetService.deleteBudget(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => {
+      // Appointment.budget é CASCADE — excluir o orçamento leva o agendamento junto
+      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+    },
   })
 
   const approveMutation = useMutation({
     // serviceDate opcional (ISO 8601): cria a OS já com a data/hora do serviço
     mutationFn: ({ id, serviceDate }) =>
       BudgetService.approveBudget(id, serviceDate ? { service_date: serviceDate } : undefined),
-    // aprovar pode gerar uma OS — invalida tudo pra listas relacionadas refazerem
-    onSuccess: () => queryClient.invalidateQueries(),
+    onSuccess: () => {
+      // aprovar cria a OS e (com data) sincroniza o agendamento
+      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+    },
   })
 
   const cancelMutation = useMutation({
     mutationFn: (id) => BudgetService.cancelBudget(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+    },
   })
 
   const duplicateMutation = useMutation({
     mutationFn: (id) => BudgetService.duplicateBudget(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+    },
   })
 
   return {

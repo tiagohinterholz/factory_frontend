@@ -1,6 +1,6 @@
-// Fonte única das query keys do módulo Orçamentos.
-// (o wiring dos hooks deste módulo entra no commit dele; por ora só o
-// suficiente pras ações de outros módulos invalidarem o que precisam.)
+// Fonte única das query keys do módulo Orçamentos. Hierárquico por prefixo:
+// invalidar budgetKeys.all pega a listagem, os detalhes e a lista de pendentes
+// por cliente+veículo (usePendingBudgets). Padrão "query key factory".
 export const budgetKeys = {
   all: ["budgets"],
   lists: () => [...budgetKeys.all, "list"],
