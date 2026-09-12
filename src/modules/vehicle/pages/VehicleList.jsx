@@ -9,7 +9,12 @@ const FILTER_FIELDS = [
   { name: "model", label: "Modelo", type: "text" },
   { name: "plate", label: "Placa", type: "text" },
   { name: "color", label: "Cor", type: "text" },
-  { name: "client", label: "Dono", type: "text" },
+  {
+    name: "client",
+    label: "Proprietário",
+    type: "text",
+    placeholder: "Digite o nome do proprietário",
+  },
 ]
 
 export default function VehicleList() {

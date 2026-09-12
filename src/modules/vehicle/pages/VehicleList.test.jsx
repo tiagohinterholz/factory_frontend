@@ -53,4 +53,13 @@ describe("<VehicleList>", () => {
       state: { vehicleId: 7, clientId: 3 },
     })
   })
+
+  it("filtro do dono do veículo chama-se 'Proprietário', não 'Dono'", async () => {
+    renderWithProviders(<VehicleList />)
+
+    fireEvent.click(await screen.findByRole("button", { name: /filtros/i }))
+    expect(await screen.findByText("Proprietário")).toBeInTheDocument()
+    expect(screen.queryByText("Dono")).not.toBeInTheDocument()
+    expect(screen.getByPlaceholderText("Digite o nome do proprietário")).toBeInTheDocument()
+  })
 })
