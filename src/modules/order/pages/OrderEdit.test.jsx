@@ -100,6 +100,35 @@ describe("<OrderEdit>", () => {
     expect(await screen.findByText(/Faturado em 10\/09\/2026/)).toBeInTheDocument()
   })
 
+  it("faturado: campos gerais e botão de salvar ficam desabilitados", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, status: "faturado", billing_date: "2026-09-10" }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText(/edição bloqueada/i)).toBeInTheDocument()
+    const [businessSelect, clientSelect, vehicleSelect] = screen.getAllByRole("combobox")
+    expect(businessSelect).toBeDisabled()
+    expect(clientSelect).toBeDisabled()
+    expect(vehicleSelect).toBeDisabled()
+    expect(screen.getByPlaceholderText("Digite o(a) data e hora do serviço")).toBeDisabled()
+    expect(screen.getByPlaceholderText("Digite o(a) observações")).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeDisabled()
+  })
+
+  it("em andamento: campos gerais e botão de salvar continuam editáveis", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [businessSelect] = screen.getAllByRole("combobox")
+    expect(businessSelect).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeEnabled()
+  })
+
   it("mantém o cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {
     // cache de opções defasado: as listas não trazem o cliente 5 nem o veículo 9
     server.use(

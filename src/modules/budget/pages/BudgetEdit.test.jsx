@@ -154,6 +154,31 @@ describe("<BudgetEdit> — tarja de data da ação", () => {
   })
 })
 
+describe("<BudgetEdit> — campos travados fora de pendente", () => {
+  it("aprovado: campos gerais e botão de salvar ficam desabilitados", async () => {
+    mockApi({ overrides: { status: "aprovado", approved_at: "2026-09-06T12:00:00.000Z" } })
+    renderPage()
+
+    expect(await screen.findByText(/edição bloqueada/i)).toBeInTheDocument()
+    const [businessSelect, clientSelect, vehicleSelect] = screen.getAllByRole("combobox")
+    expect(businessSelect).toBeDisabled()
+    expect(clientSelect).toBeDisabled()
+    expect(vehicleSelect).toBeDisabled()
+    expect(screen.getByPlaceholderText("Digite o(a) validade")).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Salvar Alterações" })).toBeDisabled()
+  })
+
+  it("pendente: campos gerais e botão de salvar continuam editáveis", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("pendente")
+    const [businessSelect] = screen.getAllByRole("combobox")
+    expect(businessSelect).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Salvar Alterações" })).toBeEnabled()
+  })
+})
+
 describe("<BudgetEdit> — subtotais e total", () => {
   it("mostra o subtotal de produtos, o de serviços e o total geral do back", async () => {
     mockApi({

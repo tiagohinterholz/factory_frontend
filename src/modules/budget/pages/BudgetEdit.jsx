@@ -163,6 +163,9 @@ export default function BudgetEdit() {
 
   const isPending = budgetIsPending(status)
   const canDuplicate = budgetCanDuplicate(status)
+  // aprovado/cancelado/expirado: back já barra a edição, aqui só reflete isso
+  // na tela — campos gerais e submit ficam travados, só exibindo o valor.
+  const locked = !isPending
   // data da situação: aprovado -> approved_at, cancelado -> cancelled_at,
   // expirado -> valid_until (quando expirou). Pendente não tem data.
   const actionDateLabel = formatDateTime(
@@ -228,10 +231,16 @@ export default function BudgetEdit() {
         <div className="lg:col-span-1 space-y-6">
           <div className="card-premium">
             <h2 className="text-lg font-bold text-slate-800 mb-6">Informações Gerais</h2>
+            {locked && (
+              <p className="text-[13px] text-slate-500 -mt-4 mb-4">
+                Orçamento {status} — edição bloqueada, só exibindo os dados.
+              </p>
+            )}
             <form onSubmit={onSubmit} className="space-y-4">
               <SelectField
                 label="Empreendimento"
                 options={businessOptions}
+                disabled={locked}
                 error={errors.business_id?.message}
                 registration={register("business_id", {
                   onChange: () => {
@@ -243,8 +252,8 @@ export default function BudgetEdit() {
               <SelectField
                 label="Cliente"
                 options={clientOptions}
-                disabled={!businessId}
-                disabledHint="Selecione o empreendimento primeiro"
+                disabled={locked || !businessId}
+                disabledHint={locked ? undefined : "Selecione o empreendimento primeiro"}
                 error={errors.client_id?.message}
                 registration={register("client_id", {
                   onChange: () => setValue("vehicle_id", ""),
@@ -253,18 +262,19 @@ export default function BudgetEdit() {
               <SelectField
                 label="Veículo"
                 options={vehicleOptions}
-                disabled={!clientId}
-                disabledHint="Selecione o cliente primeiro"
+                disabled={locked || !clientId}
+                disabledHint={locked ? undefined : "Selecione o cliente primeiro"}
                 error={errors.vehicle_id?.message}
                 registration={register("vehicle_id")}
               />
               <FormField
                 label="Validade"
                 type="datetime-local"
+                disabled={locked}
                 error={errors.valid_until?.message}
                 registration={register("valid_until")}
               />
-              <PrimaryButton type="submit" disabled={isSubmitting}>
+              <PrimaryButton type="submit" disabled={isSubmitting || locked}>
                 Salvar Alterações
               </PrimaryButton>
             </form>
