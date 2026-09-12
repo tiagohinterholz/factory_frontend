@@ -41,6 +41,10 @@ export default function WorkServiceList() {
   const columns = [
     { header: "Nome", sortKey: "name", accessor: (item) => item.name },
     {
+      header: "Fornecedor",
+      accessor: (item) => item.supplier?.corporate_name || "-",
+    },
+    {
       header: "Preço",
       sortKey: "unit_price",
       accessor: (item) => formatMoney(item.unit_price),

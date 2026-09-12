@@ -47,6 +47,10 @@ export default function ProductList() {
       accessor: (item) => (item.reference ? item.reference : "-"),
     },
     {
+      header: "Fornecedor",
+      accessor: (item) => item.supplier?.corporate_name || "-",
+    },
+    {
       header: "Preço Venda",
       sortKey: "unit_price",
       accessor: (item) => formatMoney(item.unit_price),
