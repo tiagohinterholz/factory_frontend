@@ -37,10 +37,6 @@ function MiniStat({ icon: Icon, label, value, tone }) {
   )
 }
 
-// no board de Movimentação vão os cards já concluídos (serviço finalizado):
-// a faturar e faturado. O resto (aguardando / em andamento) fica em Atendimentos.
-const MOVEMENT_LABELS = [ORDER_STATUS.TO_BILL, ORDER_STATUS.BILLED]
-
 function Quadro({ title, subtitle, aside, children }) {
   return (
     <section className="rounded-xl border border-line bg-ground p-4 sm:p-5 space-y-4">
@@ -53,6 +49,30 @@ function Quadro({ title, subtitle, aside, children }) {
       </div>
       {children}
     </section>
+  )
+}
+
+// Bloco menor dentro de um Quadro — cada um com sua própria rolagem, pra
+// dividir "Movimentação" em "A faturar" e "Faturadas" sem um crescer o dobro.
+function Subquadro({ title, items, emptyText, cardKey }) {
+  return (
+    <div className="rounded-lg border border-line bg-surface p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-[12.5px] font-semibold text-ink">{title}</h3>
+        <span className="text-[11px] font-bold text-muted tabular-nums">{items.length}</span>
+      </div>
+      {items.length === 0 ? (
+        <p className="text-[12.5px] text-muted">{emptyText}</p>
+      ) : (
+        <div className="max-h-64 overflow-y-auto pr-1">
+          <div className="flex flex-wrap items-start gap-3">
+            {items.map((item) => (
+              <AppointmentCard key={cardKey(item)} item={item} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -76,19 +96,22 @@ export default function Dashboard() {
   }
 
   const activity = data.activity ?? {}
-  const scheduledThisWeek = data.appointments?.scheduled_this_week ?? []
+  // "Atendimentos" (aguardando/em andamento) e "Movimentação" (a faturar/
+  // faturado) já vêm separados em chaves distintas — o back que filtra, o
+  // front só exibe cada lista no quadro certo.
+  const serviceCards = data.appointments?.scheduled_this_week ?? []
   const totalScheduledThisWeek = data.appointments?.total_scheduled_this_week
+  const movementCards = data.movements?.bills_this_week ?? []
   const financial = data.financial ?? null
   const summary = data.summary ?? {}
 
-  const movementCards = scheduledThisWeek.filter((item) =>
-    MOVEMENT_LABELS.includes(appointmentStatusLabel(item)),
-  )
-  const serviceCards = scheduledThisWeek.filter(
-    (item) => !MOVEMENT_LABELS.includes(appointmentStatusLabel(item)),
-  )
-
   const cardKey = (item) => item.id ?? `${item.client_name}-${item.date}-${item.time}`
+  const toBillCards = movementCards.filter(
+    (item) => appointmentStatusLabel(item) === ORDER_STATUS.TO_BILL,
+  )
+  const billedCards = movementCards.filter(
+    (item) => appointmentStatusLabel(item) === ORDER_STATUS.BILLED,
+  )
 
   const summaryStats = [
     { title: "Clientes", value: summary.clients ?? 0, icon: Users },
@@ -132,12 +155,19 @@ export default function Dashboard() {
         {movementCards.length === 0 ? (
           <p className="text-[13px] text-muted">Nenhuma OS a faturar ou faturada por aqui.</p>
         ) : (
-          <div className="max-h-96 overflow-y-auto pr-1">
-            <div className="flex flex-wrap items-start gap-3">
-              {movementCards.map((item) => (
-                <AppointmentCard key={cardKey(item)} item={item} />
-              ))}
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <Subquadro
+              title="A faturar"
+              items={toBillCards}
+              emptyText="Nenhuma OS a faturar."
+              cardKey={cardKey}
+            />
+            <Subquadro
+              title="Faturadas"
+              items={billedCards}
+              emptyText="Nenhuma OS faturada ainda."
+              cardKey={cardKey}
+            />
           </div>
         )}
       </Quadro>

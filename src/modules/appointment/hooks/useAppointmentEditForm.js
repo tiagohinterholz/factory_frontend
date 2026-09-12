@@ -31,16 +31,23 @@ export function useAppointmentEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  // Registros crus do detalhe (OS/cliente/veículo já vinculados). A página usa
-  // pra garantir a <option> do select mesmo com o cache de opções velho ou
-  // cortado por filtro; a OS também decide se mostra "Finalizar atendimento".
-  const [related, setRelated] = useState({ order: null, client: null, vehicle: null })
+  // Registros crus do detalhe (OS/orçamento/cliente/veículo já vinculados). A
+  // página usa pra garantir a <option> do select mesmo com o cache de opções
+  // velho ou cortado por filtro, pra decidir se mostra "Finalizar atendimento"
+  // e pros cards de vínculo (Cliente/Veículo/OS/Orçamento) do lado do form.
+  const [related, setRelated] = useState({
+    order: null,
+    budget: null,
+    client: null,
+    vehicle: null,
+  })
   const linkedOrder = related.order
 
   const loadRaw = useCallback(async () => {
     const data = await AppointmentService.getAppointmentById(id)
     setRelated({
       order: data.order ?? null,
+      budget: data.budget ?? null,
       client: data.client ?? null,
       vehicle: data.vehicle ?? null,
     })
@@ -92,6 +99,7 @@ export function useAppointmentEditForm() {
     handleDelete: remove.run,
     handleFinishOrder: finishOrder.run,
     linkedOrder,
+    linkedBudget: related.budget,
     relatedClient: related.client,
     relatedVehicle: related.vehicle,
   }
