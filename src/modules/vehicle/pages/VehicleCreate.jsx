@@ -3,6 +3,8 @@ import { Plus } from "lucide-react"
 import { useVehicleForm } from "@/modules/vehicle/hooks/useVehicleForm"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
+import { useManufacturerOptions } from "@/modules/core/hooks/options"
+import { useModelOptionsByManufacturer } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -17,14 +19,19 @@ export default function VehicleCreate() {
   const { form, onSubmit } = useVehicleForm({ clientId: location.state?.clientId })
   const {
     register,
+    watch,
     setValue,
     formState: { errors, isSubmitting },
   } = form
 
   const { canChooseBusiness } = usePermissions()
+  const manufacturerId = watch("manufacturer_id")
 
   const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { client: clients, loading: loadingClients } = useClientOptions()
+  const { manufacturers, loading: loadingManufacturers } = useManufacturerOptions()
+  const { modelsByManufacturer, loading: loadingModels } =
+    useModelOptionsByManufacturer(manufacturerId)
 
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients.map((c) => ({
@@ -32,7 +39,12 @@ export default function VehicleCreate() {
     name: `${c.first_name} ${c.last_name}`,
   }))
 
-  if (loadingBusinesses || loadingClients) {
+  if (
+    loadingBusinesses ||
+    loadingClients ||
+    loadingManufacturers ||
+    (manufacturerId && loadingModels)
+  ) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -80,17 +92,21 @@ export default function VehicleCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Fabricante"
-                placeholder="Ex: Toyota"
-                error={errors.manufacturer?.message}
-                registration={register("manufacturer")}
+              <SelectField
+                label="Marca"
+                options={manufacturers}
+                error={errors.manufacturer_id?.message}
+                registration={register("manufacturer_id", {
+                  onChange: () => setValue("model_id", ""),
+                })}
               />
-              <FormField
+              <SelectField
                 label="Modelo"
-                placeholder="Ex: Corolla"
-                error={errors.model?.message}
-                registration={register("model")}
+                options={modelsByManufacturer}
+                disabled={!manufacturerId}
+                disabledHint="Selecione a marca primeiro"
+                error={errors.model_id?.message}
+                registration={register("model_id")}
               />
             </div>
 

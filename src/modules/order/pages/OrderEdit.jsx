@@ -158,7 +158,7 @@ export default function OrderEdit() {
   const vehicleOptions = withSelectedOption(
     vehicles
       .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
-      .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` })),
+      .map((v) => ({ id: v.id, name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})` })),
     watch("vehicle_id"),
     relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
   )

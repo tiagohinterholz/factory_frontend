@@ -23,10 +23,12 @@ import {
 
 const primaryItems = [{ path: "/dashboard", name: "Dashboard", icon: LayoutDashboard }]
 
-const operationItems = [
+const preVehicleItems = [
   { path: "/clientes", name: "Clientes", icon: Users },
   { path: "/agendamentos", name: "Agendamentos", icon: Calendar },
-  { path: "/veiculos", name: "Veículos", icon: Car },
+]
+
+const postVehicleItems = [
   { path: "/orcamentos", name: "Orçamentos", icon: TrendingUp },
   { path: "/ordens", name: "Ordens de Serviço", icon: ClipboardList },
   { path: "/notas-fiscais", name: "Notas Fiscais", icon: FileText },
@@ -43,6 +45,9 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
   )
   const [suppliesOpen, setSuppliesOpen] = useState(
     ["/fornecedores", "/produtos", "/servicos"].some((path) => location.pathname.startsWith(path)),
+  )
+  const [vehicleOpen, setVehicleOpen] = useState(
+    ["/veiculos", "/marcas", "/modelos"].some((path) => location.pathname.startsWith(path)),
   )
 
   const isActive = (path) => location.pathname.startsWith(path)
@@ -163,6 +168,45 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
         <nav className="flex-1 space-y-1.5 overflow-y-auto no-scrollbar pr-1 scrollbar-thin">
           {primaryItems.map(renderNavItem)}
 
+          <div className="space-y-1.5">{preVehicleItems.map(renderNavItem)}</div>
+
+          {/* Veículos */}
+          <div className="pt-2">
+            {renderGroupButton(
+              "Veículos",
+              Car,
+              vehicleOpen,
+              ["/veiculos", "/marcas", "/modelos"],
+              handleGroup(setVehicleOpen),
+            )}
+
+            {vehicleOpen && !collapsed && (
+              <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
+                <Link
+                  to="/veiculos"
+                  onClick={onCloseMobile}
+                  className={subLinkClass(isActive("/veiculos"))}
+                >
+                  Veículos
+                </Link>
+                <Link
+                  to="/marcas"
+                  onClick={onCloseMobile}
+                  className={subLinkClass(isActive("/marcas"))}
+                >
+                  Marcas
+                </Link>
+                <Link
+                  to="/modelos"
+                  onClick={onCloseMobile}
+                  className={subLinkClass(isActive("/modelos"))}
+                >
+                  Modelos
+                </Link>
+              </div>
+            )}
+          </div>
+
           {/* Localização */}
           <div className="pt-2">
             {renderGroupButton(
@@ -273,7 +317,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             )}
           </div>
 
-          <div className="pt-2 space-y-1.5">{operationItems.map(renderNavItem)}</div>
+          <div className="pt-2 space-y-1.5">{postVehicleItems.map(renderNavItem)}</div>
         </nav>
 
         <div className="mt-8 pt-6 border-t border-white/5 space-y-1">

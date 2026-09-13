@@ -4,6 +4,8 @@ import { useVehicleEditForm } from "@/modules/vehicle/hooks/useVehicleEditForm"
 import { useVehicleHistory } from "@/modules/vehicle/hooks/useVehicleHistory"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
+import { useManufacturerOptions } from "@/modules/core/hooks/options"
+import { useModelOptionsByManufacturer } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -43,9 +45,13 @@ export default function VehicleEdit() {
 
   const { canChooseBusiness } = usePermissions()
   const clientId = watch("client_id")
+  const manufacturerId = watch("manufacturer_id")
 
   const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { client: clients, loading: loadingClients } = useClientOptions()
+  const { manufacturers, loading: loadingManufacturers } = useManufacturerOptions()
+  const { modelsByManufacturer, loading: loadingModels } =
+    useModelOptionsByManufacturer(manufacturerId)
   const { orders, budgets, loading: loadingHistory } = useVehicleHistory(id)
 
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
@@ -54,7 +60,14 @@ export default function VehicleEdit() {
     name: `${c.first_name} ${c.last_name}`,
   }))
 
-  if (loading || loadingBusinesses || loadingClients) return <p className="p-6">Carregando...</p>
+  if (
+    loading ||
+    loadingBusinesses ||
+    loadingClients ||
+    loadingManufacturers ||
+    (manufacturerId && loadingModels)
+  )
+    return <p className="p-6">Carregando...</p>
 
   return (
     <div className="p-6 space-y-6">
@@ -108,15 +121,21 @@ export default function VehicleEdit() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  label="Fabricante"
-                  error={errors.manufacturer?.message}
-                  registration={register("manufacturer")}
+                <SelectField
+                  label="Marca"
+                  options={manufacturers}
+                  error={errors.manufacturer_id?.message}
+                  registration={register("manufacturer_id", {
+                    onChange: () => setValue("model_id", ""),
+                  })}
                 />
-                <FormField
+                <SelectField
                   label="Modelo"
-                  error={errors.model?.message}
-                  registration={register("model")}
+                  options={modelsByManufacturer}
+                  disabled={!manufacturerId}
+                  disabledHint="Selecione a marca primeiro"
+                  error={errors.model_id?.message}
+                  registration={register("model_id")}
                 />
               </div>
 

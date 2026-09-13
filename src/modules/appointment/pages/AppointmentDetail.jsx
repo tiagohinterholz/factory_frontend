@@ -130,7 +130,7 @@ export default function AppointmentDetail() {
       })
       .map((v) => ({
         id: v.id,
-        name: `${v.manufacturer || ""} ${v.model || ""} ${v.year || ""}`.trim(),
+        name: `${v.manufacturer?.name || ""} ${v.model?.name || ""} ${v.year || ""}`.trim(),
       })),
     vehicleId,
     relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },

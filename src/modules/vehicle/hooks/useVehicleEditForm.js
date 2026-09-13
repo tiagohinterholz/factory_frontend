@@ -11,8 +11,8 @@ function toVehicleForm(data) {
   return {
     business_id: idOf(data.business),
     client_id: idOf(data.client),
-    manufacturer: data.manufacturer ?? "",
-    model: data.model ?? "",
+    manufacturer_id: idOf(data.manufacturer),
+    model_id: idOf(data.model),
     // vira <select> (ver constants/vehicle.js) — precisa bater com a string
     // do value da <option>, não o número cru que a API manda
     year: data.year != null ? String(data.year) : "",

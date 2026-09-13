@@ -22,7 +22,8 @@ beforeEach(() => {
           {
             id: 7,
             plate: "ABC1D23",
-            model: "Gol",
+            manufacturer: { id: 12, name: "Volkswagen" },
+            model: { id: 90, name: "Gol" },
             color: "Prata",
             client: { id: 3, first_name: "Ana", last_name: "Lima" },
           },
@@ -70,5 +71,12 @@ describe("<VehicleList>", () => {
     expect(await screen.findByText("Proprietário")).toBeInTheDocument()
     expect(screen.queryByText("Dono")).not.toBeInTheDocument()
     expect(screen.getByPlaceholderText("Digite o nome do proprietário")).toBeInTheDocument()
+  })
+
+  it("marca e modelo (agora objetos aninhados) aparecem na tabela", async () => {
+    renderWithProviders(<VehicleList />)
+
+    expect(await screen.findByText("Volkswagen")).toBeInTheDocument()
+    expect(screen.getByText("Gol")).toBeInTheDocument()
   })
 })

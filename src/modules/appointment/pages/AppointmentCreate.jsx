@@ -46,7 +46,7 @@ export default function AppointmentCreate() {
     })
     .map((v) => ({
       id: v.id,
-      name: `${v.manufacturer || ""} ${v.model || ""} ${v.year || ""}`.trim(),
+      name: `${v.manufacturer?.name || ""} ${v.model?.name || ""} ${v.year || ""}`.trim(),
     }))
 
   const orderOptions = orders
