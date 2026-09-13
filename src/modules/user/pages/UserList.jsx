@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { useUser } from "../hooks/useUser"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
@@ -10,7 +11,17 @@ export default function UserList() {
     { header: "Nome", accessor: (item) => item.name },
     { header: "Email", accessor: (item) => item.email },
     { header: "Perfil", accessor: (item) => item.role },
-    { header: "Empreendimento", accessor: (item) => item.business?.corporate_name || "-" },
+    {
+      header: "Empreendimento",
+      accessor: (item) =>
+        item.business ? (
+          <Link to={`/empreendimentos/${item.business.id}`} className="text-brand hover:underline">
+            {item.business.corporate_name}
+          </Link>
+        ) : (
+          "-"
+        ),
+    },
   ]
 
   return (

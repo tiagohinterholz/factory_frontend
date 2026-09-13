@@ -55,6 +55,27 @@ describe("<BudgetList>", () => {
     expect(screen.getByText("pendente")).toBeInTheDocument()
   })
 
+  it("cliente e veículo aninhados na linha viram link pro cadastro deles", async () => {
+    mockBudgets([
+      {
+        id: 30,
+        client: { id: 6, first_name: "Beto", last_name: "Souza" },
+        vehicle: { id: 12, model: "Onix", plate: "XYZ9K88" },
+        valid_until: "2026-10-05T23:59:59-03:00",
+        status: "pendente",
+        total: "0",
+      },
+    ])
+    renderWithProviders(<BudgetList />)
+
+    await screen.findByText("#30")
+    expect(screen.getByRole("link", { name: /beto souza/i })).toHaveAttribute("href", "/clientes/6")
+    expect(screen.getByRole("link", { name: /onix xyz9k88/i })).toHaveAttribute(
+      "href",
+      "/veiculos/12",
+    )
+  })
+
   it("gera o PDF do orçamento pela linha da tabela", async () => {
     mockBudgets()
     const blob = new Blob(["%PDF-1.4"], { type: "application/pdf" })

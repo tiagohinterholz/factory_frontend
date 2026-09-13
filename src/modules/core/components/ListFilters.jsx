@@ -3,7 +3,10 @@ import { SlidersHorizontal, ChevronDown, X } from "lucide-react"
 import FilterSelect from "@/modules/core/components/FilterSelect"
 import FormField from "@/modules/core/components/FormField"
 
-// Botão "Filtros" + painel. `fields`: [{ name, label, type: "select"|"date"|"text", options? }].
+// Botão "Filtros" + painel. `fields`: [{ name, label, type: "select"|"date"|"text",
+// options?, placeholder? }]. `placeholder` sobrescreve o "Digite o(a) <label>"
+// automático do FormField — usa quando o rótulo curto não dá pra entender sozinho
+// o que o campo filtra (ex.: "Proprietário" -> "Digite o nome do proprietário").
 // `value` são os filtros aplicados; o painel edita um rascunho e só dispara
 // `onApply(next)` no "Filtrar"/"Limpar". Os selects usam FilterSelect (dropdown
 // React, não <select> nativo). Fecha por botão, X ou Esc.
@@ -86,6 +89,7 @@ export default function ListFilters({ fields, value, onApply }) {
                 key={field.name}
                 label={field.label}
                 type={field.type === "date" ? "date" : "text"}
+                placeholder={field.placeholder}
                 value={draft[field.name] ?? ""}
                 onChange={(event) => setValue(field.name)(event.target.value)}
               />

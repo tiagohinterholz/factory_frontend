@@ -33,7 +33,7 @@ function FilterPopover({ type, onSubmit, onClose }) {
   const clientOpts = client.map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
   const vehicleOpts = vehicle.map((v) => ({
     id: v.id,
-    name: `${v.manufacturer} ${v.model} (${v.plate})`,
+    name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})`,
   }))
   const supplierOpts = supplier.map((s) => ({ id: s.id, name: s.trade_name || s.corporate_name }))
 

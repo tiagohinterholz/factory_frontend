@@ -55,12 +55,25 @@ export default function BudgetList() {
     {
       header: "Cliente",
       sortKey: "client__first_name",
-      accessor: (item) => item.first_name || item.client?.first_name || "N/A",
+      accessor: (item) =>
+        item.client?.id != null ? (
+          <Link to={`/clientes/${item.client.id}`} className="text-brand hover:underline">
+            {item.client.first_name} {item.client.last_name}
+          </Link>
+        ) : (
+          item.first_name || "N/A"
+        ),
     },
     {
       header: "Veículo",
       accessor: (item) =>
-        item.vehicle_name || `${item.vehicle?.model || ""} ${item.vehicle?.plate || ""}`,
+        item.vehicle?.id != null ? (
+          <Link to={`/veiculos/${item.vehicle.id}`} className="text-brand hover:underline">
+            {item.vehicle.model} {item.vehicle.plate}
+          </Link>
+        ) : (
+          item.vehicle_name || ""
+        ),
     },
     {
       header: "Validade",

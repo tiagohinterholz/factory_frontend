@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { useCities } from "@/modules/location/city/hooks/useCity"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
@@ -9,7 +10,14 @@ export default function CityList() {
   const columns = [
     { header: "Sigla", accessor: (item) => item.state.abbreviation },
     { header: "Cidade", accessor: (item) => item.name },
-    { header: "Estado", accessor: (item) => item.state.name },
+    {
+      header: "Estado",
+      accessor: (item) => (
+        <Link to={`/estados/${item.state.id}`} className="text-brand hover:underline">
+          {item.state.name}
+        </Link>
+      ),
+    },
   ]
 
   return (

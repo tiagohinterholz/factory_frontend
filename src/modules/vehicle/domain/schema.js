@@ -1,10 +1,11 @@
 import { z } from "zod"
-import { PLATE_RE, requiredText, requiredId, optionalText } from "@/modules/core/schemas/br-fields"
+import { PLATE_RE, requiredId, optionalText } from "@/modules/core/schemas/br-fields"
 
 const CURRENT_YEAR = new Date().getFullYear()
 
 // Backend (VehicleSerializer + Vehicle model):
-// business_id/client_id obrigatórios; model/manufacturer obrigatórios;
+// business_id/client_id obrigatórios; manufacturer_id/model_id obrigatórios
+// (marca/modelo agora são entidades próprias — ver módulos manufacturer/vehiclemodel);
 // year 1940..ano atual; year_model 1940..ano atual + 1;
 // plate obrigatória no formato AAA-1234 (antigo) ou AAA-1A23 (Mercosul), sempre maiúscula;
 // fuel entre as choices do model; color/mileage opcionais.
@@ -23,8 +24,8 @@ const optionalNumber = z.preprocess(
 export const vehicleSchema = z.object({
   business_id: requiredId("Selecione o empreendimento"),
   client_id: requiredId("Selecione o cliente proprietário"),
-  manufacturer: requiredText("Informe o fabricante"),
-  model: requiredText("Informe o modelo"),
+  manufacturer_id: requiredId("Selecione a marca"),
+  model_id: requiredId("Selecione o modelo"),
   year: yearField(CURRENT_YEAR, `Ano de fabricação não pode ser maior que ${CURRENT_YEAR}`),
   year_model: yearField(
     CURRENT_YEAR + 1,
@@ -43,8 +44,8 @@ export const vehicleSchema = z.object({
 export const vehicleDefaults = {
   business_id: "",
   client_id: "",
-  manufacturer: "",
-  model: "",
+  manufacturer_id: "",
+  model_id: "",
   year: "",
   year_model: "",
   plate: "",

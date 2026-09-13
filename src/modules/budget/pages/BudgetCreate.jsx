@@ -37,7 +37,7 @@ export default function BudgetCreate() {
     .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
   const vehicleOptions = vehicles
     .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
-    .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` }))
+    .map((v) => ({ id: v.id, name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})` }))
 
   if (loadingBusinesses || loadingClients || loadingVehicles) {
     return (

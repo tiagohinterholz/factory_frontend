@@ -71,8 +71,8 @@ describe("<ClientList>", () => {
             {
               id: 7,
               plate: "ABC-1D23",
-              manufacturer: "VW",
-              model: "Gol",
+              manufacturer: { id: 12, name: "VW" },
+              model: { id: 55, name: "Gol" },
               year: 2020,
               year_model: 2021,
               color: "Prata",

@@ -14,7 +14,7 @@ import { OrderService } from "../services/order"
 const order = {
   id: 1,
   business: { id: 2 },
-  client: { id: 5, first_name: "Ana", last_name: "Lima" },
+  client: { id: 5, first_name: "Ana", last_name: "Lima", phone: "(41) 91234-5678" },
   vehicle: { id: 9, manufacturer: "VW", model: "Gol", plate: "ABC1D23" },
   budget: { id: 77 },
   service_date: null,
@@ -41,7 +41,15 @@ function mockApi() {
     ),
     http.get(`${API}/veiculos/`, () =>
       HttpResponse.json({
-        results: [{ id: 9, client: 5, manufacturer: "VW", model: "Gol", plate: "ABC1D23" }],
+        results: [
+          {
+            id: 9,
+            client: 5,
+            manufacturer: { id: 12, name: "VW" },
+            model: { id: 55, name: "Gol" },
+            plate: "ABC1D23",
+          },
+        ],
         count: 1,
       }),
     ),
@@ -66,6 +74,30 @@ describe("<OrderEdit>", () => {
     expect(await screen.findByText("Orçamento de origem")).toBeInTheDocument()
     expect(screen.getByText("Orçamento #77")).toBeInTheDocument()
     expect(screen.queryByRole("combobox", { name: /orçamento/i })).not.toBeInTheDocument()
+  })
+
+  it("botão de WhatsApp no header abre conversa com o telefone do cliente", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    expect(screen.getByRole("link", { name: /whatsapp/i })).toHaveAttribute(
+      "href",
+      "https://wa.me/5541912345678",
+    )
+  })
+
+  it("cliente sem telefone: sem botão de WhatsApp", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, client: { ...order.client, phone: null } }),
+      ),
+    )
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    expect(screen.queryByRole("link", { name: /whatsapp/i })).not.toBeInTheDocument()
   })
 
   it("mostra o subtotal de produtos, o de serviços e o total geral do back", async () => {
@@ -98,6 +130,35 @@ describe("<OrderEdit>", () => {
     renderPage()
 
     expect(await screen.findByText(/Faturado em 10\/09\/2026/)).toBeInTheDocument()
+  })
+
+  it("faturado: campos gerais e botão de salvar ficam desabilitados", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, status: "faturado", billing_date: "2026-09-10" }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText(/edição bloqueada/i)).toBeInTheDocument()
+    const [businessSelect, clientSelect, vehicleSelect] = screen.getAllByRole("combobox")
+    expect(businessSelect).toBeDisabled()
+    expect(clientSelect).toBeDisabled()
+    expect(vehicleSelect).toBeDisabled()
+    expect(screen.getByPlaceholderText("Digite o(a) data e hora do serviço")).toBeDisabled()
+    expect(screen.getByPlaceholderText("Digite o(a) observações")).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeDisabled()
+  })
+
+  it("em andamento: campos gerais e botão de salvar continuam editáveis", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [businessSelect] = screen.getAllByRole("combobox")
+    expect(businessSelect).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeEnabled()
   })
 
   it("mantém o cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {

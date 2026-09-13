@@ -46,7 +46,15 @@ function mockApi({ clientsDelayMs = 0, overrides = {} } = {}) {
     }),
     http.get(`${API}/veiculos/`, () =>
       HttpResponse.json({
-        results: [{ id: 9, client: 5, manufacturer: "VW", model: "Gol", plate: "ABC1D23" }],
+        results: [
+          {
+            id: 9,
+            client: 5,
+            manufacturer: { id: 12, name: "VW" },
+            model: { id: 55, name: "Gol" },
+            plate: "ABC1D23",
+          },
+        ],
         count: 1,
       }),
     ),
@@ -151,6 +159,31 @@ describe("<BudgetEdit> — tarja de data da ação", () => {
 
     expect(await screen.findByText("expirado")).toBeInTheDocument()
     expect(screen.getByText(/06\/09\/2026/)).toBeInTheDocument()
+  })
+})
+
+describe("<BudgetEdit> — campos travados fora de pendente", () => {
+  it("aprovado: campos gerais e botão de salvar ficam desabilitados", async () => {
+    mockApi({ overrides: { status: "aprovado", approved_at: "2026-09-06T12:00:00.000Z" } })
+    renderPage()
+
+    expect(await screen.findByText(/edição bloqueada/i)).toBeInTheDocument()
+    const [businessSelect, clientSelect, vehicleSelect] = screen.getAllByRole("combobox")
+    expect(businessSelect).toBeDisabled()
+    expect(clientSelect).toBeDisabled()
+    expect(vehicleSelect).toBeDisabled()
+    expect(screen.getByPlaceholderText("Digite o(a) validade")).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Salvar Alterações" })).toBeDisabled()
+  })
+
+  it("pendente: campos gerais e botão de salvar continuam editáveis", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("pendente")
+    const [businessSelect] = screen.getAllByRole("combobox")
+    expect(businessSelect).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Salvar Alterações" })).toBeEnabled()
   })
 })
 

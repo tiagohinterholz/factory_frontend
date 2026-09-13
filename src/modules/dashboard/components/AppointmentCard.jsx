@@ -1,17 +1,12 @@
 import { Link, useNavigate } from "react-router-dom"
 import { Clock, Phone, Car, ClipboardList, FileText, Plus, CheckCircle2 } from "lucide-react"
-import { appointmentStatusLabel, APPOINTMENT_STATUS_TONE } from "@/modules/appointment/domain"
+import {
+  appointmentStatusLabel,
+  APPOINTMENT_STATUS_TONE,
+  appointmentWhen,
+} from "@/modules/appointment/domain"
 import { useFinishOrder } from "@/modules/order"
-
-function formatWhen(date, time) {
-  if (!date) return ""
-  const parsed = new Date(`${date}T${time || "00:00:00"}`)
-  if (Number.isNaN(parsed.getTime())) return ""
-  const options = time
-    ? { weekday: "short", hour: "2-digit", minute: "2-digit" }
-    : { weekday: "short", day: "2-digit", month: "2-digit" }
-  return parsed.toLocaleString("pt-BR", options)
-}
+import { formatDate } from "@/modules/core/utils/format"
 
 // order / budget podem vir como id cru, objeto { id } ou (legado) *_id.
 function relationId(value, legacy) {
@@ -39,6 +34,10 @@ export default function AppointmentCard({ item }) {
 
   const { finishOrder, finishing } = useFinishOrder()
   const canFinish = orderId != null && statusLabel === "Em Andamento"
+
+  // data do último status da OS (quando o serviço foi concluído — é o que o
+  // back expõe hoje; "faturado" não tem uma data própria nesse payload).
+  const statusDate = item.order?.finished_service_date_at
 
   return (
     <div
@@ -70,7 +69,8 @@ export default function AppointmentCard({ item }) {
 
       <p className="inline-flex items-center gap-1.5 text-[12px] text-muted">
         <Clock className="w-3.5 h-3.5 shrink-0" />
-        {formatWhen(item.date, item.time)}
+        <span>{appointmentWhen(item.date, item.time)}</span>
+        {statusDate && <span>· Finalizado em {formatDate(statusDate)}</span>}
       </p>
 
       {item.vehicle && (

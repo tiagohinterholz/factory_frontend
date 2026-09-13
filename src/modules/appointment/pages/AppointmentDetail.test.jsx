@@ -38,7 +38,15 @@ function mockApi({ orders = [], appointmentOverrides = {} } = {}) {
     ),
     http.get(`${API}/veiculos/`, () =>
       HttpResponse.json({
-        results: [{ id: 9, client: 5, manufacturer: "VW", model: "Gol", plate: "ABC1D23" }],
+        results: [
+          {
+            id: 9,
+            client: 5,
+            manufacturer: { id: 12, name: "VW" },
+            model: { id: 55, name: "Gol" },
+            plate: "ABC1D23",
+          },
+        ],
         count: 1,
       }),
     ),
@@ -113,5 +121,60 @@ describe("<AppointmentDetail>", () => {
 
     await screen.findByText("Editar Agendamento")
     expect(screen.queryByRole("button", { name: /finalizar atendimento/i })).not.toBeInTheDocument()
+  })
+
+  it("cards de vínculo linkam pra cliente, veículo, OS e orçamento", async () => {
+    mockApi({
+      appointmentOverrides: {
+        client: { id: 5, first_name: "Ana", last_name: "Lima", phone: "(41) 91234-5678" },
+        vehicle: { id: 9, manufacturer: "VW", model: "Gol", plate: "ABC1D23" },
+        order: { id: 77, status: "em andamento" },
+        budget: { id: 33, status: "aprovado" },
+      },
+    })
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+
+    expect(screen.getByRole("link", { name: /ana lima/i })).toHaveAttribute("href", "/clientes/5")
+    expect(screen.getByText("(41) 91234-5678")).toBeInTheDocument()
+
+    expect(screen.getByRole("link", { name: /vw gol/i })).toHaveAttribute("href", "/veiculos/9")
+    expect(screen.getByText("ABC1D23")).toBeInTheDocument()
+
+    expect(screen.getByRole("link", { name: /os #77/i })).toHaveAttribute("href", "/ordens/77")
+    expect(screen.getByRole("link", { name: /orçamento #33/i })).toHaveAttribute(
+      "href",
+      "/orcamentos/33",
+    )
+
+    expect(screen.getByRole("link", { name: /whatsapp/i })).toHaveAttribute(
+      "href",
+      "https://wa.me/5541912345678",
+    )
+  })
+
+  it("cliente sem telefone: sem botão de WhatsApp", async () => {
+    mockApi({
+      appointmentOverrides: {
+        client: { id: 5, first_name: "Ana", last_name: "Lima", phone: null },
+      },
+    })
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+    expect(screen.queryByRole("link", { name: /whatsapp/i })).not.toBeInTheDocument()
+  })
+
+  it("sem OS nem orçamento vinculados, os cards mostram o estado vazio (sem link)", async () => {
+    mockApi({ appointmentOverrides: { order: null, budget: null } })
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+
+    expect(screen.getByText("Sem OS vinculada")).toBeInTheDocument()
+    expect(screen.getByText("Sem orçamento vinculado")).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /os #/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /orçamento #/i })).not.toBeInTheDocument()
   })
 })

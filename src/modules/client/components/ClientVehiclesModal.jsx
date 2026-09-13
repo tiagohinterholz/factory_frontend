@@ -44,7 +44,7 @@ export default function ClientVehiclesModal({ client, onClose }) {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-ink">
-                  {vehicle.manufacturer} {vehicle.model}
+                  {vehicle.manufacturer?.name} {vehicle.model?.name}
                 </p>
                 <p className="text-[12.5px] text-muted">
                   {vehicle.plate} · {vehicle.year}
