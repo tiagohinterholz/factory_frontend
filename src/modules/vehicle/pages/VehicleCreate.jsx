@@ -8,7 +8,7 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import BackLink from "@/modules/core/components/BackLink"
-import { fuelOptions } from "../constants/vehicle"
+import { fuelOptions, manufactureYearOptions, modelYearOptions } from "../constants/vehicle"
 import { Save } from "lucide-react"
 
 export default function VehicleCreate() {
@@ -95,17 +95,15 @@ export default function VehicleCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
+              <SelectField
                 label="Ano de Fabricação"
-                type="number"
-                placeholder="2023"
+                options={manufactureYearOptions}
                 error={errors.year?.message}
                 registration={register("year")}
               />
-              <FormField
+              <SelectField
                 label="Ano do Modelo"
-                type="number"
-                placeholder="2024"
+                options={modelYearOptions}
                 error={errors.year_model?.message}
                 registration={register("year_model")}
               />

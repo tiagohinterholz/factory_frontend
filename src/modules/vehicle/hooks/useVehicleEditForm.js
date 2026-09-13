@@ -13,8 +13,10 @@ function toVehicleForm(data) {
     client_id: idOf(data.client),
     manufacturer: data.manufacturer ?? "",
     model: data.model ?? "",
-    year: data.year ?? "",
-    year_model: data.year_model ?? "",
+    // vira <select> (ver constants/vehicle.js) — precisa bater com a string
+    // do value da <option>, não o número cru que a API manda
+    year: data.year != null ? String(data.year) : "",
+    year_model: data.year_model != null ? String(data.year_model) : "",
     plate: data.plate ?? "",
     color: data.color ?? "",
     fuel: data.fuel ?? "",

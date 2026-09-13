@@ -10,7 +10,7 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import BackLink from "@/modules/core/components/BackLink"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
-import { fuelOptions } from "../constants/vehicle"
+import { fuelOptions, manufactureYearOptions, modelYearOptions } from "../constants/vehicle"
 
 function HistoryLink({ item, prefix, singular }) {
   return (
@@ -121,15 +121,15 @@ export default function VehicleEdit() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
+                <SelectField
                   label="Ano de Fabricação"
-                  type="number"
+                  options={manufactureYearOptions}
                   error={errors.year?.message}
                   registration={register("year")}
                 />
-                <FormField
+                <SelectField
                   label="Ano do Modelo"
-                  type="number"
+                  options={modelYearOptions}
                   error={errors.year_model?.message}
                   registration={register("year_model")}
                 />
