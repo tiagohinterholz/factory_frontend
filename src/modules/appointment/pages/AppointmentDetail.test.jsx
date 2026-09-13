@@ -139,6 +139,23 @@ describe("<AppointmentDetail>", () => {
       "href",
       "/orcamentos/33",
     )
+
+    expect(screen.getByRole("link", { name: /whatsapp/i })).toHaveAttribute(
+      "href",
+      "https://wa.me/5541912345678",
+    )
+  })
+
+  it("cliente sem telefone: sem botão de WhatsApp", async () => {
+    mockApi({
+      appointmentOverrides: {
+        client: { id: 5, first_name: "Ana", last_name: "Lima", phone: null },
+      },
+    })
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+    expect(screen.queryByRole("link", { name: /whatsapp/i })).not.toBeInTheDocument()
   })
 
   it("sem OS nem orçamento vinculados, os cards mostram o estado vazio (sem link)", async () => {

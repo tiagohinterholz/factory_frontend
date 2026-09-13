@@ -8,6 +8,7 @@ import { useOrderOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { idOf, withSelectedOption } from "@/api/dto"
 import { orderCanFinish } from "@/modules/order/domain"
@@ -165,6 +166,7 @@ export default function AppointmentDetail() {
             <p className="text-slate-400 font-medium text-sm">Sincronize os dados do agendamento</p>
           </div>
           <div className="flex items-center gap-2">
+            <WhatsAppButton phone={relatedClient?.phone} label="WhatsApp" />
             {orderCanFinish(linkedOrder?.status) && (
               <button
                 type="button"

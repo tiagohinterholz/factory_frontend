@@ -5,6 +5,7 @@ import { OrderService } from "../services/order"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
+import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import FiscalNotePanel from "@/modules/order/components/FiscalNotePanel"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
@@ -180,6 +181,7 @@ export default function OrderEdit() {
         </div>
         <div className="flex flex-wrap gap-2">
           <RecordPdfButton request={() => OrderService.getOrderPdf(id)} />
+          <WhatsAppButton phone={relatedClient?.phone} label="WhatsApp" />
           {orderCanFinish(status) && (
             <button
               type="button"
