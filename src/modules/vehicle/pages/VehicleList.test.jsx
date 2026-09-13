@@ -54,6 +54,15 @@ describe("<VehicleList>", () => {
     })
   })
 
+  it("nome do cliente na tabela linka pro cadastro do cliente", async () => {
+    renderWithProviders(<VehicleList />)
+
+    expect(await screen.findByRole("link", { name: "Ana Lima" })).toHaveAttribute(
+      "href",
+      "/clientes/3",
+    )
+  })
+
   it("filtro do dono do veículo chama-se 'Proprietário', não 'Dono'", async () => {
     renderWithProviders(<VehicleList />)
 

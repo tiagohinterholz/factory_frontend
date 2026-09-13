@@ -60,5 +60,9 @@ describe("<WorkServiceList>", () => {
     // colunas: Nome, Fornecedor, Preço, Descrição
     expect(within(comBosch).getAllByRole("cell")[1]).toHaveTextContent("Bosch Ltda")
     expect(within(semFornecedor).getAllByRole("cell")[1]).toHaveTextContent("-")
+    expect(within(comBosch).getByRole("link", { name: "Bosch Ltda" })).toHaveAttribute(
+      "href",
+      "/fornecedores/9",
+    )
   })
 })

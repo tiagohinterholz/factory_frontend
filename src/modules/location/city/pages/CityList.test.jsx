@@ -31,7 +31,7 @@ describe("<CityList>", () => {
 
     expect(screen.getByRole("heading", { name: /cidades/i })).toBeInTheDocument()
     expect(await screen.findByText("Curitiba")).toBeInTheDocument()
-    expect(screen.getByText("Paraná")).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Paraná" })).toHaveAttribute("href", "/estados/1")
     expect(screen.getByText("Joinville")).toBeInTheDocument()
     expect(screen.getByText("SC")).toBeInTheDocument()
   })

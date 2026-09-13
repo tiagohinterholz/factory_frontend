@@ -41,7 +41,11 @@ export default function VehicleList() {
     {
       header: "Cliente",
       sortKey: "client__first_name",
-      accessor: (item) => `${item.client.first_name} ${item.client.last_name}`,
+      accessor: (item) => (
+        <Link to={`/clientes/${item.client.id}`} className="text-brand hover:underline">
+          {item.client.first_name} {item.client.last_name}
+        </Link>
+      ),
     },
   ]
 

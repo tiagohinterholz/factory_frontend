@@ -40,7 +40,10 @@ describe("<UserList>", () => {
     expect(screen.getByRole("heading", { name: /usuários/i })).toBeInTheDocument()
     expect(await screen.findByText("Ana Lima")).toBeInTheDocument()
     expect(screen.getByText("ana@oficina.com")).toBeInTheDocument()
-    expect(screen.getByText("Oficina Central")).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Oficina Central" })).toHaveAttribute(
+      "href",
+      "/empreendimentos/3",
+    )
   })
 
   it("mostra '-' quando o usuário não tem empreendimento", async () => {

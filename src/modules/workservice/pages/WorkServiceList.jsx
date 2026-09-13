@@ -42,7 +42,14 @@ export default function WorkServiceList() {
     { header: "Nome", sortKey: "name", accessor: (item) => item.name },
     {
       header: "Fornecedor",
-      accessor: (item) => item.supplier?.corporate_name || "-",
+      accessor: (item) =>
+        item.supplier ? (
+          <Link to={`/fornecedores/${item.supplier.id}`} className="text-brand hover:underline">
+            {item.supplier.corporate_name}
+          </Link>
+        ) : (
+          "-"
+        ),
     },
     {
       header: "Preço",

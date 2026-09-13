@@ -40,16 +40,18 @@ export default function ProductList() {
   ]
 
   const columns = [
-    { header: "Produto", sortKey: "name", accessor: (item) => item.name },
-    {
-      header: "Referência",
-      sortKey: "reference",
-      accessor: (item) => (item.reference ? item.reference : "-"),
-    },
     {
       header: "Fornecedor",
-      accessor: (item) => item.supplier?.corporate_name || "-",
+      accessor: (item) =>
+        item.supplier ? (
+          <Link to={`/fornecedores/${item.supplier.id}`} className="text-brand hover:underline">
+            {item.supplier.corporate_name}
+          </Link>
+        ) : (
+          "-"
+        ),
     },
+    { header: "Produto", sortKey: "name", accessor: (item) => item.name },
     {
       header: "Preço Venda",
       sortKey: "unit_price",
@@ -59,6 +61,11 @@ export default function ProductList() {
       header: "Qtde. em estoque",
       sortKey: "stock_quantity",
       accessor: (item) => (item.stock_quantity ? item.stock_quantity : "0"),
+    },
+    {
+      header: "Referência",
+      sortKey: "reference",
+      accessor: (item) => (item.reference ? item.reference : "-"),
     },
   ]
 

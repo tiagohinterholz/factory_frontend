@@ -58,8 +58,12 @@ describe("<ProductList>", () => {
 
     await screen.findByText("Filtro de óleo Bosch")
     const [comBosch, semFornecedor] = screen.getAllByRole("row").slice(1)
-    // colunas: Produto, Referência, Fornecedor, Preço Venda, Qtde. em estoque
-    expect(within(comBosch).getAllByRole("cell")[2]).toHaveTextContent("Bosch Ltda")
-    expect(within(semFornecedor).getAllByRole("cell")[2]).toHaveTextContent("-")
+    // colunas: Fornecedor, Produto, Preço Venda, Qtde. em estoque, Referência
+    expect(within(comBosch).getAllByRole("cell")[0]).toHaveTextContent("Bosch Ltda")
+    expect(within(semFornecedor).getAllByRole("cell")[0]).toHaveTextContent("-")
+    expect(within(comBosch).getByRole("link", { name: "Bosch Ltda" })).toHaveAttribute(
+      "href",
+      "/fornecedores/9",
+    )
   })
 })
