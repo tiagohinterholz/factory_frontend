@@ -226,7 +226,7 @@ export default function ClientDetail() {
             icon={Car}
             items={vehicles.map((v) => ({
               id: v.id,
-              name: `${v.model} ${v.year}`,
+              name: `${v.model?.name} ${v.year}`,
               subtitle: v.plate,
             }))}
             loading={loadingVehicles}

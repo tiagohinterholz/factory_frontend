@@ -28,7 +28,15 @@ function mockApi({ pending = [] } = {}) {
     ),
     http.get(`${API}/veiculos/`, () =>
       HttpResponse.json({
-        results: [{ id: 9, client: 5, manufacturer: "VW", model: "Gol", plate: "ABC1D23" }],
+        results: [
+          {
+            id: 9,
+            client: 5,
+            manufacturer: { id: 12, name: "VW" },
+            model: { id: 55, name: "Gol" },
+            plate: "ABC1D23",
+          },
+        ],
         count: 1,
       }),
     ),

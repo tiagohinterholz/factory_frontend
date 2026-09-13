@@ -73,6 +73,25 @@ describe("<AppointmentCard>", () => {
     expect(screen.queryByRole("button", { name: "Finalizar" })).not.toBeInTheDocument()
   })
 
+  it("mostra a data do último status da OS, do lado do horário, quando tiver", () => {
+    renderWithProviders(
+      <AppointmentCard
+        item={{
+          ...base,
+          order: { id: 10, status: "faturado", finished_service_date_at: "2026-09-10T12:00:00Z" },
+        }}
+      />,
+    )
+    expect(screen.getByText(/Finalizado em 10\/09\/2026/)).toBeInTheDocument()
+  })
+
+  it("sem data de finalização na OS, não mostra nada extra", () => {
+    renderWithProviders(
+      <AppointmentCard item={{ ...base, order: { id: 10, status: "faturado" } }} />,
+    )
+    expect(screen.queryByText(/Finalizado em/)).not.toBeInTheDocument()
+  })
+
   it("mostra cliente, veículo e contato clicável", () => {
     renderWithProviders(<AppointmentCard item={base} />)
     expect(screen.getByText("João Silva")).toBeInTheDocument()

@@ -6,10 +6,16 @@ import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
 
 const FILTER_FIELDS = [
+  { name: "manufacturer", label: "Marca", type: "text" },
   { name: "model", label: "Modelo", type: "text" },
   { name: "plate", label: "Placa", type: "text" },
   { name: "color", label: "Cor", type: "text" },
-  { name: "client", label: "Dono", type: "text" },
+  {
+    name: "client",
+    label: "Proprietário",
+    type: "text",
+    placeholder: "Digite o nome do proprietário",
+  },
 ]
 
 export default function VehicleList() {
@@ -31,12 +37,17 @@ export default function VehicleList() {
 
   const columns = [
     { header: "Placa", sortKey: "plate", accessor: (item) => item.plate },
-    { header: "Modelo", sortKey: "model", accessor: (item) => item.model },
+    { header: "Marca", accessor: (item) => item.manufacturer?.name },
+    { header: "Modelo", accessor: (item) => item.model?.name },
     { header: "Cor", sortKey: "color", accessor: (item) => item.color },
     {
       header: "Cliente",
       sortKey: "client__first_name",
-      accessor: (item) => `${item.client.first_name} ${item.client.last_name}`,
+      accessor: (item) => (
+        <Link to={`/clientes/${item.client.id}`} className="text-brand hover:underline">
+          {item.client.first_name} {item.client.last_name}
+        </Link>
+      ),
     },
   ]
 

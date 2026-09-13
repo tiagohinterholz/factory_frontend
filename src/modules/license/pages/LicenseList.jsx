@@ -1,5 +1,5 @@
 import { RefreshCw, Search } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { useLicense } from "../hooks/useLicense"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
@@ -10,7 +10,14 @@ export default function LicenseList() {
   const { license, loading, error, refetch } = useLicense()
 
   const columns = [
-    { header: "Razão Social", accessor: (item) => item.business.corporate_name },
+    {
+      header: "Razão Social",
+      accessor: (item) => (
+        <Link to={`/empreendimentos/${item.business.id}`} className="text-brand hover:underline">
+          {item.business.corporate_name}
+        </Link>
+      ),
+    },
     {
       header: "Status",
       accessor: (item) => {

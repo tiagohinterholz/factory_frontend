@@ -22,7 +22,8 @@ beforeEach(() => {
           {
             id: 7,
             plate: "ABC1D23",
-            model: "Gol",
+            manufacturer: { id: 12, name: "Volkswagen" },
+            model: { id: 90, name: "Gol" },
             color: "Prata",
             client: { id: 3, first_name: "Ana", last_name: "Lima" },
           },
@@ -52,5 +53,30 @@ describe("<VehicleList>", () => {
     expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/novo", {
       state: { vehicleId: 7, clientId: 3 },
     })
+  })
+
+  it("nome do cliente na tabela linka pro cadastro do cliente", async () => {
+    renderWithProviders(<VehicleList />)
+
+    expect(await screen.findByRole("link", { name: "Ana Lima" })).toHaveAttribute(
+      "href",
+      "/clientes/3",
+    )
+  })
+
+  it("filtro do dono do veículo chama-se 'Proprietário', não 'Dono'", async () => {
+    renderWithProviders(<VehicleList />)
+
+    fireEvent.click(await screen.findByRole("button", { name: /filtros/i }))
+    expect(await screen.findByText("Proprietário")).toBeInTheDocument()
+    expect(screen.queryByText("Dono")).not.toBeInTheDocument()
+    expect(screen.getByPlaceholderText("Digite o nome do proprietário")).toBeInTheDocument()
+  })
+
+  it("marca e modelo (agora objetos aninhados) aparecem na tabela", async () => {
+    renderWithProviders(<VehicleList />)
+
+    expect(await screen.findByText("Volkswagen")).toBeInTheDocument()
+    expect(screen.getByText("Gol")).toBeInTheDocument()
   })
 })

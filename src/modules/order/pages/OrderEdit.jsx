@@ -5,6 +5,7 @@ import { OrderService } from "../services/order"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
+import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import FiscalNotePanel from "@/modules/order/components/FiscalNotePanel"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
@@ -50,6 +51,9 @@ export default function OrderEdit() {
   } = useOrderEditForm()
 
   const canEditItems = orderCanEditItems(status)
+  // OS faturada: back já barra a edição, aqui só reflete isso na tela —
+  // campos gerais e submit ficam travados, só exibindo o valor.
+  const locked = orderIsBilled(status)
   const {
     register,
     watch,
@@ -154,7 +158,7 @@ export default function OrderEdit() {
   const vehicleOptions = withSelectedOption(
     vehicles
       .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
-      .map((v) => ({ id: v.id, name: `${v.manufacturer} ${v.model} (${v.plate})` })),
+      .map((v) => ({ id: v.id, name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})` })),
     watch("vehicle_id"),
     relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
   )
@@ -177,6 +181,7 @@ export default function OrderEdit() {
         </div>
         <div className="flex flex-wrap gap-2">
           <RecordPdfButton request={() => OrderService.getOrderPdf(id)} />
+          <WhatsAppButton phone={relatedClient?.phone} label="WhatsApp" />
           {orderCanFinish(status) && (
             <button
               type="button"
@@ -209,10 +214,16 @@ export default function OrderEdit() {
         <div className="lg:col-span-1 space-y-6">
           <div className="card-premium">
             <h2 className="text-lg font-bold text-slate-800 mb-6">Informações Gerais</h2>
+            {locked && (
+              <p className="text-[13px] text-slate-500 -mt-4 mb-4">
+                OS faturada — edição bloqueada, só exibindo os dados.
+              </p>
+            )}
             <form onSubmit={onSubmit} className="space-y-4">
               <SelectField
                 label="Empreendimento"
                 options={businessOptions}
+                disabled={locked}
                 error={errors.business_id?.message}
                 registration={register("business_id", {
                   onChange: () => {
@@ -224,8 +235,8 @@ export default function OrderEdit() {
               <SelectField
                 label="Cliente"
                 options={clientOptions}
-                disabled={!businessId}
-                disabledHint="Selecione o empreendimento primeiro"
+                disabled={locked || !businessId}
+                disabledHint={locked ? undefined : "Selecione o empreendimento primeiro"}
                 error={errors.client_id?.message}
                 registration={register("client_id", {
                   onChange: () => setValue("vehicle_id", ""),
@@ -234,8 +245,8 @@ export default function OrderEdit() {
               <SelectField
                 label="Veículo"
                 options={vehicleOptions}
-                disabled={!clientId}
-                disabledHint="Selecione o cliente primeiro"
+                disabled={locked || !clientId}
+                disabledHint={locked ? undefined : "Selecione o cliente primeiro"}
                 error={errors.vehicle_id?.message}
                 registration={register("vehicle_id")}
               />
@@ -250,15 +261,17 @@ export default function OrderEdit() {
               <FormField
                 label="Data e hora do serviço"
                 type="datetime-local"
+                disabled={locked}
                 error={errors.service_date?.message}
                 registration={register("service_date")}
               />
               <FormField
                 label="Observações"
+                disabled={locked}
                 error={errors.notes?.message}
                 registration={register("notes")}
               />
-              <PrimaryButton type="submit" disabled={isSubmitting}>
+              <PrimaryButton type="submit" disabled={isSubmitting || locked}>
                 Atualizar OS
               </PrimaryButton>
             </form>

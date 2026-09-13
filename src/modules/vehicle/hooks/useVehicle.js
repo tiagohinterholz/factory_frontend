@@ -8,7 +8,7 @@ export function useVehicle() {
   const list = useResourceList({
     keyFactory: vehicleKeys,
     fetchPage: (params) => VehicleService.getVehicle(params),
-    emptyFilters: { model: "", plate: "", color: "", client: "" },
+    emptyFilters: { manufacturer: "", model: "", plate: "", color: "", client: "" },
   })
 
   const remove = useResourceAction({

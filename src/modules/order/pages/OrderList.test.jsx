@@ -35,6 +35,28 @@ beforeEach(() => {
   localStorage.setItem("user", JSON.stringify({ email: "a@a.com", business_id: 3, role: "admin" }))
 })
 
+describe("<OrderList> — links de cliente e veículo", () => {
+  it("cliente e veículo aninhados na linha viram link pro cadastro deles", async () => {
+    mockOrders([
+      {
+        id: 20,
+        client: { id: 6, first_name: "Beto", last_name: "Souza" },
+        vehicle: { id: 12, model: "Onix", plate: "XYZ9K88" },
+        status: "em andamento",
+        total: "0",
+      },
+    ])
+    renderWithProviders(<OrderList />)
+
+    await screen.findByText("#20")
+    expect(screen.getByRole("link", { name: /beto souza/i })).toHaveAttribute("href", "/clientes/6")
+    expect(screen.getByRole("link", { name: /onix xyz9k88/i })).toHaveAttribute(
+      "href",
+      "/veiculos/12",
+    )
+  })
+})
+
 describe("<OrderList> — ações da linha", () => {
   it("mostra o botão de PDF em toda linha", async () => {
     mockOrders()

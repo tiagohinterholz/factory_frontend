@@ -9,6 +9,7 @@ import { BudgetService } from "@/modules/budget"
 import { ProductService } from "@/modules/product"
 import { WorkServiceService } from "@/modules/workservice"
 import { StateService } from "@/modules/location"
+import { ManufacturerService } from "@/modules/manufacturer"
 
 // Listas completas (todas as páginas) pra popular os <select> dos formulários.
 // Os hooks de lista (useClient, useVehicle, ...) só trazem a 1ª página — bom pra
@@ -77,4 +78,25 @@ export function useCityOptionsByState(stateId) {
     select: (list) => [...list].sort((a, b) => (a.name || "").localeCompare(b.name || "")),
   })
   return { citiesByState: query.data ?? [], loading: query.isFetching }
+}
+
+export function useManufacturerOptions() {
+  const query = useOptions(["manufacturers"], (page) =>
+    ManufacturerService.getManufacturers({ page }),
+  )
+  return { manufacturers: query.data ?? [], loading: query.isPending }
+}
+
+export function useModelOptionsByManufacturer(manufacturerId) {
+  const query = useQuery({
+    queryKey: ["vehicle-models", "options", "by-manufacturer", manufacturerId],
+    queryFn: () =>
+      fetchAllPages((page) =>
+        ManufacturerService.getModelsByManufacturer(manufacturerId, { page }),
+      ),
+    enabled: Boolean(manufacturerId),
+    staleTime: OPTIONS_STALE,
+    select: (list) => [...list].sort((a, b) => (a.name || "").localeCompare(b.name || "")),
+  })
+  return { modelsByManufacturer: query.data ?? [], loading: query.isFetching }
 }

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { useAppointmentEditForm } from "@/modules/appointment/hooks/useAppointmentEditForm"
 import BackLink from "@/modules/core/components/BackLink"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
@@ -7,11 +8,57 @@ import { useOrderOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { idOf, withSelectedOption } from "@/api/dto"
 import { orderCanFinish } from "@/modules/order/domain"
 
-import { CheckCircle2, Edit, Trash2 } from "lucide-react"
+import {
+  CheckCircle2,
+  ChevronRight,
+  Edit,
+  Trash2,
+  User,
+  Car,
+  ClipboardList,
+  FileText,
+} from "lucide-react"
+
+// Card de vínculo — linka pra tela da entidade relacionada (mesmo tipo de
+// atalho que a OS e o orçamento já têm entre si). `to` ausente = sem vínculo
+// ainda (ex.: agendamento sem OS/orçamento) e o card vira só informativo.
+function ReferenceCard({ icon: Icon, label, title, subtitle, to }) {
+  const content = (
+    <>
+      <div className="w-10 h-10 rounded-lg bg-ground flex items-center justify-center text-brand border border-line shrink-0">
+        <Icon className="w-5 h-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-muted">{label}</p>
+        <p className="font-semibold text-ink text-sm truncate">{title}</p>
+        {subtitle && <p className="text-[12px] text-muted truncate">{subtitle}</p>}
+      </div>
+    </>
+  )
+
+  if (!to) {
+    return (
+      <div className="flex items-center gap-3 p-4 rounded-xl border border-dashed border-line bg-ground/50">
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      to={to}
+      className="flex items-center gap-3 p-4 rounded-xl border border-line bg-surface transition-colors hover:border-brand hover:bg-brand-subtle/20 group"
+    >
+      {content}
+      <ChevronRight className="w-4 h-4 text-muted group-hover:text-brand transition-colors shrink-0" />
+    </Link>
+  )
+}
 
 export default function AppointmentDetail() {
   const {
@@ -21,6 +68,7 @@ export default function AppointmentDetail() {
     handleDelete,
     handleFinishOrder,
     linkedOrder,
+    linkedBudget,
     relatedClient,
     relatedVehicle,
   } = useAppointmentEditForm()
@@ -82,7 +130,7 @@ export default function AppointmentDetail() {
       })
       .map((v) => ({
         id: v.id,
-        name: `${v.manufacturer || ""} ${v.model || ""} ${v.year || ""}`.trim(),
+        name: `${v.manufacturer?.name || ""} ${v.model?.name || ""} ${v.year || ""}`.trim(),
       })),
     vehicleId,
     relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
@@ -108,7 +156,7 @@ export default function AppointmentDetail() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <BackLink to="/agendamentos" />
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -118,6 +166,7 @@ export default function AppointmentDetail() {
             <p className="text-slate-400 font-medium text-sm">Sincronize os dados do agendamento</p>
           </div>
           <div className="flex items-center gap-2">
+            <WhatsAppButton phone={relatedClient?.phone} label="WhatsApp" />
             {orderCanFinish(linkedOrder?.status) && (
               <button
                 type="button"
@@ -139,79 +188,113 @@ export default function AppointmentDetail() {
           </div>
         </div>
 
-        <div className="card-premium">
-          <form className="space-y-6" onSubmit={onSubmit}>
-            {canChooseBusiness && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-7 card-premium">
+            <form className="space-y-6" onSubmit={onSubmit}>
+              {canChooseBusiness && (
+                <SelectField
+                  label="Empreendimento"
+                  options={businessOptions}
+                  error={errors.business_id?.message}
+                  registration={register("business_id", {
+                    onChange: () => resetChildren("client_id", "vehicle_id", "order_id"),
+                  })}
+                />
+              )}
+
               <SelectField
-                label="Empreendimento"
-                options={businessOptions}
-                error={errors.business_id?.message}
-                registration={register("business_id", {
-                  onChange: () => resetChildren("client_id", "vehicle_id", "order_id"),
+                label="Cliente Proprietário"
+                options={clientOptions}
+                disabled={!businessId}
+                disabledHint="Selecione o empreendimento primeiro"
+                error={errors.client_id?.message}
+                registration={register("client_id", {
+                  onChange: () => resetChildren("vehicle_id", "order_id"),
                 })}
               />
-            )}
 
-            <SelectField
-              label="Cliente Proprietário"
-              options={clientOptions}
-              disabled={!businessId}
-              disabledHint="Selecione o empreendimento primeiro"
-              error={errors.client_id?.message}
-              registration={register("client_id", {
-                onChange: () => resetChildren("vehicle_id", "order_id"),
-              })}
+              <SelectField
+                label="Veículo"
+                options={vehicleOptions}
+                disabled={!clientId}
+                disabledHint="Selecione o cliente primeiro"
+                error={errors.vehicle_id?.message}
+                registration={register("vehicle_id", {
+                  onChange: () => resetChildren("order_id"),
+                })}
+              />
+
+              <SelectField
+                label="Ordem de Serviço"
+                options={orderOptions}
+                disabled={!vehicleId}
+                disabledHint="Selecione o veículo primeiro"
+                error={errors.order_id?.message}
+                registration={register("order_id")}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  label="Data"
+                  type="date"
+                  error={errors.date?.message}
+                  registration={register("date")}
+                />
+                <FormField
+                  label="Hora"
+                  type="time"
+                  placeholder="00:00"
+                  error={errors.time?.message}
+                  registration={register("time")}
+                />
+              </div>
+
+              <FormField
+                label="Observações"
+                placeholder="Detalhes sobre o agendamento..."
+                error={errors.observation?.message}
+                registration={register("observation")}
+              />
+
+              <div className="pt-4 flex justify-end">
+                <PrimaryButton type="submit" icon={Edit} fullWidth={false} disabled={isSubmitting}>
+                  Salvar Alterações
+                </PrimaryButton>
+              </div>
+            </form>
+          </div>
+
+          <div className="lg:col-span-5 space-y-3">
+            <h2 className="text-sm font-semibold text-ink px-1">Vínculos</h2>
+            <ReferenceCard
+              icon={User}
+              label="Cliente"
+              title={clientLabel(relatedClient)}
+              subtitle={relatedClient?.phone}
+              to={relatedClient && `/clientes/${idOf(relatedClient)}`}
             />
-
-            <SelectField
+            <ReferenceCard
+              icon={Car}
               label="Veículo"
-              options={vehicleOptions}
-              disabled={!clientId}
-              disabledHint="Selecione o cliente primeiro"
-              error={errors.vehicle_id?.message}
-              registration={register("vehicle_id", {
-                onChange: () => resetChildren("order_id"),
-              })}
+              title={vehicleLabel(relatedVehicle)}
+              subtitle={relatedVehicle?.plate}
+              to={relatedVehicle && `/veiculos/${idOf(relatedVehicle)}`}
             />
-
-            <SelectField
+            <ReferenceCard
+              icon={ClipboardList}
               label="Ordem de Serviço"
-              options={orderOptions}
-              disabled={!vehicleId}
-              disabledHint="Selecione o veículo primeiro"
-              error={errors.order_id?.message}
-              registration={register("order_id")}
+              title={linkedOrder ? `OS #${idOf(linkedOrder)}` : "Sem OS vinculada"}
+              subtitle={linkedOrder?.status}
+              to={linkedOrder && `/ordens/${idOf(linkedOrder)}`}
             />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Data"
-                type="date"
-                error={errors.date?.message}
-                registration={register("date")}
-              />
-              <FormField
-                label="Hora"
-                type="time"
-                placeholder="00:00"
-                error={errors.time?.message}
-                registration={register("time")}
-              />
-            </div>
-
-            <FormField
-              label="Observações"
-              placeholder="Detalhes sobre o agendamento..."
-              error={errors.observation?.message}
-              registration={register("observation")}
+            <ReferenceCard
+              icon={FileText}
+              label="Orçamento"
+              title={linkedBudget ? `Orçamento #${idOf(linkedBudget)}` : "Sem orçamento vinculado"}
+              subtitle={linkedBudget?.status}
+              to={linkedBudget && `/orcamentos/${idOf(linkedBudget)}`}
             />
-
-            <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Edit} fullWidth={false} disabled={isSubmitting}>
-                Salvar Alterações
-              </PrimaryButton>
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>

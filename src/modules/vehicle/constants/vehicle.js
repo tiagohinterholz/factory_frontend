@@ -7,3 +7,20 @@ export const fuelOptions = [
   { id: "elétrico", name: "Elétrico" },
   { id: "híbrido", name: "Híbrido" },
 ]
+
+// Mesmo intervalo validado em vehicle/domain/schema.js: ano de fabricação vai
+// até o ano atual, ano do modelo aceita mais um (carro "modelo do ano que vem"
+// vendido ainda este ano). Mais recente primeiro — é o que mais se cadastra.
+const MIN_YEAR = 1940
+const CURRENT_YEAR = new Date().getFullYear()
+
+function yearOptions(maxYear) {
+  const options = []
+  for (let year = maxYear; year >= MIN_YEAR; year--) {
+    options.push({ id: String(year), name: String(year) })
+  }
+  return options
+}
+
+export const manufactureYearOptions = yearOptions(CURRENT_YEAR)
+export const modelYearOptions = yearOptions(CURRENT_YEAR + 1)
