@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
+import { BusinessService } from "@/modules/business"
 import Settings from "./Settings"
 
 const business = {
@@ -34,10 +35,15 @@ const hours = Array.from({ length: 7 }, (_, weekday) => ({
 }))
 
 function mockApi() {
+  // getSelfLogo faz um GET com responseType "blob" — mockar isso via MSW/XHR
+  // dispara um bug de interop do mswjs/interceptors com undici (unhandled
+  // rejection "object.stream is not a function"). Mocka o service direto,
+  // igual já se faz pros outros downloads em blob (ex.: ClientList.test.jsx).
+  vi.spyOn(BusinessService, "getSelfLogo").mockRejectedValue(new Error("sem logo"))
+
   server.use(
     http.get(`${API}/configuracoes/`, () => HttpResponse.json(business)),
     http.get(`${API}/configuracoes/horarios/`, () => HttpResponse.json(hours)),
-    http.get(`${API}/configuracoes/logo/`, () => new HttpResponse(null, { status: 404 })),
     http.get(`${API}/estados/`, () =>
       HttpResponse.json({ results: [{ id: 5, name: "Paraná", abbreviation: "PR" }], count: 1 }),
     ),
@@ -55,6 +61,10 @@ describe("<Settings>", () => {
   beforeEach(() => {
     localStorage.setItem("user", JSON.stringify({ business_id: 1, role: "admin" }))
     mockApi()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it("abre em modo visualização: campos travados e sem excluir empresa", async () => {
