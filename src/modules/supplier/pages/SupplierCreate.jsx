@@ -5,6 +5,7 @@ import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
+import { ADDRESS_COMPLEMENT_OPTIONS } from "@/modules/core/constants/address"
 import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -147,6 +148,7 @@ export default function SupplierCreate() {
 
             <FormField
               label="Complemento"
+              datalist={ADDRESS_COMPLEMENT_OPTIONS}
               placeholder="Sala, Bloco, etc."
               error={errors.complement?.message}
               registration={register("complement")}

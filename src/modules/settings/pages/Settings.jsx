@@ -9,6 +9,7 @@ import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { useStateOptions } from "@/modules/core/hooks/options"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
+import { ADDRESS_COMPLEMENT_OPTIONS } from "@/modules/core/constants/address"
 import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
 import LogoUploadField from "@/modules/core/components/LogoUploadField"
@@ -245,6 +246,7 @@ export default function Settings() {
               />
               <FormField
                 label="Complemento"
+                datalist={ADDRESS_COMPLEMENT_OPTIONS}
                 placeholder="Sala, Bloco, etc."
                 disabled={!editing}
                 error={errors.complement?.message}

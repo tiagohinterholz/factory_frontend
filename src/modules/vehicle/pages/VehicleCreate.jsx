@@ -10,7 +10,12 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import BackLink from "@/modules/core/components/BackLink"
-import { fuelOptions, manufactureYearOptions, modelYearOptions } from "../constants/vehicle"
+import {
+  fuelOptions,
+  manufactureYearOptions,
+  modelYearOptions,
+  VEHICLE_COLOR_OPTIONS,
+} from "../constants/vehicle"
 import { Save } from "lucide-react"
 
 export default function VehicleCreate() {
@@ -137,6 +142,7 @@ export default function VehicleCreate() {
               <FormField
                 label="Cor"
                 placeholder="Prata"
+                datalist={VEHICLE_COLOR_OPTIONS}
                 error={errors.color?.message}
                 registration={register("color")}
               />

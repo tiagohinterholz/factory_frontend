@@ -12,7 +12,12 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import BackLink from "@/modules/core/components/BackLink"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
-import { fuelOptions, manufactureYearOptions, modelYearOptions } from "../constants/vehicle"
+import {
+  fuelOptions,
+  manufactureYearOptions,
+  modelYearOptions,
+  VEHICLE_COLOR_OPTIONS,
+} from "../constants/vehicle"
 
 function HistoryLink({ item, prefix, singular }) {
   return (
@@ -164,6 +169,7 @@ export default function VehicleEdit() {
                 />
                 <FormField
                   label="Cor"
+                  datalist={VEHICLE_COLOR_OPTIONS}
                   error={errors.color?.message}
                   registration={register("color")}
                 />

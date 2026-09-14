@@ -4,9 +4,11 @@ import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
+import { useProductOptions } from "@/modules/core/hooks/options"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { ProductService } from "@/modules/product/services/product"
 import { Package, Edit2, Trash2, Eye } from "lucide-react"
@@ -17,6 +19,7 @@ export default function ProductDetail() {
   const { form, onSubmit, loading, handleDelete } = useProductEditForm()
   const {
     register,
+    control,
     watch,
     formState: { errors, isSubmitting },
   } = form
@@ -25,9 +28,11 @@ export default function ProductDetail() {
   const { canChooseBusiness } = usePermissions()
   const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
+  const { product: products } = useProductOptions()
 
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
+  const brandOptions = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort()
 
   if (loading || loadingBusinesses || loadingSuppliers) {
     return (
@@ -111,6 +116,7 @@ export default function ProductDetail() {
               />
               <FormField
                 label="Marca"
+                datalist={brandOptions}
                 error={errors.brand?.message}
                 registration={register("brand")}
               />
@@ -135,12 +141,11 @@ export default function ProductDetail() {
                 error={errors.stock_quantity?.message}
                 registration={register("stock_quantity")}
               />
-              <FormField
+              <MoneyField
+                control={control}
+                name="unit_price"
                 label="Preço Unitário"
-                type="number"
-                step="0.01"
                 error={errors.unit_price?.message}
-                registration={register("unit_price")}
               />
             </div>
 

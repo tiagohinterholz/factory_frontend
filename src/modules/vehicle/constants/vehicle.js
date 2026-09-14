@@ -24,3 +24,22 @@ function yearOptions(maxYear) {
 
 export const manufactureYearOptions = yearOptions(CURRENT_YEAR)
 export const modelYearOptions = yearOptions(CURRENT_YEAR + 1)
+
+// Sugestões pra o datalist de "Cor" — continua texto livre (o cliente pode
+// digitar "grafite", "vinho" etc.), isso aqui só popula o autocomplete com
+// as cores mais comuns no mercado.
+export const VEHICLE_COLOR_OPTIONS = [
+  "Branco",
+  "Preto",
+  "Prata",
+  "Cinza",
+  "Vermelho",
+  "Azul",
+  "Verde",
+  "Amarelo",
+  "Marrom",
+  "Bege",
+  "Dourado",
+  "Laranja",
+  "Roxo",
+]
