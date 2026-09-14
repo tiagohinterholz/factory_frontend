@@ -3,9 +3,11 @@ import { useProductForm } from "@/modules/product/hooks/useProductForm"
 import BackLink from "@/modules/core/components/BackLink"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
+import { useProductOptions } from "@/modules/core/hooks/options"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Package, Save, Plus } from "lucide-react"
 
@@ -14,15 +16,20 @@ export default function ProductCreate() {
   const { form, onSubmit } = useProductForm()
   const {
     register,
+    control,
     formState: { errors, isSubmitting },
   } = form
 
   const { canChooseBusiness } = usePermissions()
   const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
+  const { product: products } = useProductOptions()
 
   const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
+  // datalist de "Marca" pré-populado com as marcas já cadastradas em outros
+  // produtos — continua texto livre, só facilita reaproveitar o mesmo nome.
+  const brandOptions = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort()
 
   if (loadingBusinesses || loadingSuppliers) {
     return (
@@ -88,6 +95,7 @@ export default function ProductCreate() {
               <FormField
                 label="Marca"
                 placeholder="Ex: Castrol"
+                datalist={brandOptions}
                 error={errors.brand?.message}
                 registration={register("brand")}
               />
@@ -115,12 +123,11 @@ export default function ProductCreate() {
                 error={errors.stock_quantity?.message}
                 registration={register("stock_quantity")}
               />
-              <FormField
+              <MoneyField
+                control={control}
+                name="unit_price"
                 label="Preço Unitário"
-                type="number"
-                step="0.01"
                 error={errors.unit_price?.message}
-                registration={register("unit_price")}
               />
             </div>
 

@@ -26,6 +26,8 @@ function mockProduct() {
     http.get(`${API}/fornecedores/`, () =>
       HttpResponse.json({ results: [{ id: 9, corporate_name: "Bosch Ltda" }], count: 1 }),
     ),
+    // datalist de "Marca" pré-populado com marcas já cadastradas em produtos
+    http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
   )
 }
 

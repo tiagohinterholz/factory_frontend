@@ -6,6 +6,7 @@ import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Save, Milestone, Plus } from "lucide-react"
 
@@ -14,6 +15,7 @@ export default function WorkServiceCreate() {
   const { form, onSubmit } = useWorkServiceForm()
   const {
     register,
+    control,
     formState: { errors, isSubmitting },
   } = form
 
@@ -94,12 +96,11 @@ export default function WorkServiceCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
+              <MoneyField
+                control={control}
+                name="unit_price"
                 label="Preço Unitário"
-                type="number"
-                step="0.01"
                 error={errors.unit_price?.message}
-                registration={register("unit_price")}
               />
             </div>
 
