@@ -96,6 +96,33 @@ describe("useResourceForm", () => {
     expect(navigateSpy).not.toHaveBeenCalled()
   })
 
+  it("sem redirectTo: onSuccess roda e o form fica na mesma página", async () => {
+    const submit = vi.fn().mockResolvedValue({ id: 1 })
+    const onSuccess = vi.fn()
+    const { result } = render({ schema, defaultValues: { name: "" }, submit, onSuccess })
+
+    act(() => result.current.form.setValue("name", "Ana"))
+    await act(async () => {
+      await result.current.onSubmit()
+    })
+
+    expect(onSuccess).toHaveBeenCalledWith({ id: 1 })
+    expect(navigateSpy).not.toHaveBeenCalled()
+  })
+
+  it("depois de salvar, um reset() em branco não volta pro valor de antes do save", async () => {
+    const submit = vi.fn().mockResolvedValue(undefined)
+    const { result } = render({ schema, defaultValues: { name: "Original" }, submit })
+
+    act(() => result.current.form.setValue("name", "Editado"))
+    await act(async () => {
+      await result.current.onSubmit()
+    })
+    act(() => result.current.form.reset())
+
+    expect(result.current.form.getValues("name")).toBe("Editado")
+  })
+
   it("modo edit: load reseta o form", async () => {
     const { result } = render({
       schema,

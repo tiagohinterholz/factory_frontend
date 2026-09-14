@@ -12,6 +12,7 @@ export default function MaskedField({
   error,
   mask,
   replacement = { _: /\d/ },
+  disabled = false,
 }) {
   return (
     <Controller
@@ -26,6 +27,7 @@ export default function MaskedField({
             mask={mask}
             replacement={replacement}
             placeholder={placeholder}
+            disabled={disabled}
             className={`input-premium ${
               error ? "border-danger focus:border-danger focus:ring-danger/15" : ""
             }`}

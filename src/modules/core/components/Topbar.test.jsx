@@ -9,7 +9,7 @@ import Topbar from "./Topbar"
 describe("<Topbar>", () => {
   beforeEach(() => {
     localStorage.setItem("user", JSON.stringify({ email: "a@a.com", business_id: 3 }))
-    server.use(http.get(`${API}/empreendimentos/licencas/`, () => HttpResponse.json([])))
+    server.use(http.get(`${API}/configuracoes/licenca/`, () => HttpResponse.json({})))
   })
 
   it("tem Configurações no menu do usuário", () => {

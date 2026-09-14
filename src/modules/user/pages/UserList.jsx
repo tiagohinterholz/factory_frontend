@@ -1,8 +1,10 @@
-import { Link } from "react-router-dom"
 import { useUser } from "../hooks/useUser"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
+// Lista os usuários do próprio negócio (/configuracoes/usuarios/, self —
+// sem business_id na URL). Sem coluna de Empreendimento: toda a lista já é
+// de um negócio só, mostrar isso em cada linha seria redundante.
 export default function UserList() {
   const { user, loading, currentPage, setCurrentPage, remove, totalItems, refetch, error } =
     useUser()
@@ -11,17 +13,6 @@ export default function UserList() {
     { header: "Nome", accessor: (item) => item.name },
     { header: "Email", accessor: (item) => item.email },
     { header: "Perfil", accessor: (item) => item.role },
-    {
-      header: "Empreendimento",
-      accessor: (item) =>
-        item.business ? (
-          <Link to={`/empreendimentos/${item.business.id}`} className="text-brand hover:underline">
-            {item.business.corporate_name}
-          </Link>
-        ) : (
-          "-"
-        ),
-    },
   ]
 
   return (

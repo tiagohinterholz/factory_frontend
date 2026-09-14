@@ -41,12 +41,32 @@ describe("<Sidebar>", () => {
     )
   })
 
-  it("Configurações virou link para /configuracoes", () => {
+  it("Configurações virou grupo com Gestão, Licenças e Usuários — sem label Empreendimentos", () => {
     renderSidebar()
-    expect(screen.getByRole("link", { name: /configurações/i })).toHaveAttribute(
+
+    expect(screen.queryByRole("button", { name: /empreendimentos/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: "Gestão" })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: /^configurações$/i }))
+
+    // usuário comum (business_id no localStorage) tem "o meu negócio" —
+    // /configuracoes/ sem ID nenhum
+    expect(screen.getByRole("link", { name: "Gestão" })).toHaveAttribute("href", "/configuracoes")
+    expect(screen.getByRole("link", { name: "Licenças" })).toHaveAttribute(
       "href",
-      "/configuracoes",
+      "/configuracoes/licenca",
     )
+    expect(screen.getByRole("link", { name: "Usuários" })).toHaveAttribute("href", "/usuarios")
+  })
+
+  it("superusuário (sem business_id) não tem Gestão própria e usa /licencas em Licenças", () => {
+    localStorage.setItem("user", JSON.stringify({ email: "root@a.com", role: "admin" }))
+    renderSidebar()
+
+    fireEvent.click(screen.getByRole("button", { name: /^configurações$/i }))
+
+    expect(screen.queryByRole("link", { name: "Gestão" })).not.toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Licenças" })).toHaveAttribute("href", "/licencas")
   })
 
   it("não tem mais os cabeçalhos de seção antigos", () => {
