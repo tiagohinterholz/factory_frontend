@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest"
-import { screen, within } from "@testing-library/react"
+import { screen, fireEvent, within } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
@@ -9,7 +9,8 @@ import Dashboard from "./Dashboard"
 const PAYLOAD = {
   activity: { orders_to_bill_today: 3, orders_to_bill: 12, orders_billed: 45 },
   // "Atendimentos" (aguardando/em andamento) e "Movimentação" (a faturar/
-  // faturado) vêm em chaves separadas — o back já filtra, o front só exibe.
+  // faturado) vêm em chaves separadas — o back já filtra, o front junta tudo
+  // num quadro só e alterna por status via toggle.
   appointments: {
     scheduled_this_week: [
       {
@@ -20,6 +21,18 @@ const PAYLOAD = {
         vehicle_id: 4,
         vehicle: "XYZ9876 - Gol",
         date: "2026-09-08",
+        time: "09:00:00",
+        order: null,
+        budget: null,
+      },
+      {
+        id: 4,
+        client_id: 9,
+        client_name: "Fernanda Lopes",
+        contact: "(51) 96666-6666",
+        vehicle_id: 10,
+        vehicle: "RST1122 - HB20",
+        date: "2099-01-01",
         time: "09:00:00",
         order: null,
         budget: null,
@@ -85,47 +98,56 @@ describe("<Dashboard>", () => {
     )
   })
 
-  it("renderiza os quadros de movimentação, atendimentos e resumo", async () => {
+  it("um quadro só com toggle — abre em 'Em Andamento' e mostra os mini-stats", async () => {
     mockDashboard()
     renderWithProviders(<Dashboard />)
 
-    expect(await screen.findByText("Movimentação")).toBeInTheDocument()
-    expect(screen.getByText("45")).toBeInTheDocument()
+    expect(await screen.findByText("Atendimentos e Movimentação")).toBeInTheDocument()
+    expect(screen.getByText("Agendados na semana")).toBeInTheDocument()
+    expect(screen.getByText("A faturar hoje")).toBeInTheDocument()
 
-    expect(screen.getByText("Atendimentos")).toBeInTheDocument()
-    expect(screen.getByText("Clientes agendados na semana")).toBeInTheDocument()
-    expect(screen.getByText("7")).toBeInTheDocument()
+    // abre em "Em Andamento": só Maria Souza aparece
+    expect(screen.getByText("Maria Souza")).toBeInTheDocument()
+    expect(screen.queryByText("Fernanda Lopes")).not.toBeInTheDocument()
+    expect(screen.queryByText("João Silva")).not.toBeInTheDocument()
+    expect(screen.queryByText("Pedro Alves")).not.toBeInTheDocument()
+  })
 
-    // "Movimentação" separado em dois sub-quadros: "A faturar" e "Faturadas"
-    // (h3, pra não colidir com o MiniStat de mesmo nome no cabeçalho)
-    const toBillPanel = screen
-      .getByRole("heading", { name: "A faturar", level: 3 })
-      .closest(".rounded-lg")
-    expect(within(toBillPanel).getByText("João Silva")).toBeInTheDocument()
-    expect(within(toBillPanel).queryByText("Pedro Alves")).not.toBeInTheDocument()
+  it("alterna pro 'Aguardando Execução' e mostra só quem tá nesse status", async () => {
+    mockDashboard()
+    renderWithProviders(<Dashboard />)
 
-    const billedPanel = screen
-      .getByRole("heading", { name: "Faturadas", level: 3 })
-      .closest(".rounded-lg")
-    expect(within(billedPanel).getByText("Pedro Alves")).toBeInTheDocument()
-    expect(within(billedPanel).queryByText("João Silva")).not.toBeInTheDocument()
+    await screen.findByText("Maria Souza")
+    fireEvent.click(screen.getByRole("button", { name: /^aguardando execução/i }))
 
-    const movementCard = screen.getByRole("button", { name: /editar agendamento de joão silva/i })
-    expect(within(movementCard).getByRole("link", { name: /os #10/i })).toHaveAttribute(
+    expect(await screen.findByText("Fernanda Lopes")).toBeInTheDocument()
+    expect(screen.queryByText("Maria Souza")).not.toBeInTheDocument()
+  })
+
+  it("alterna pro 'A Faturar' e mostra só a OS a faturar", async () => {
+    mockDashboard()
+    renderWithProviders(<Dashboard />)
+
+    await screen.findByText("Maria Souza")
+    fireEvent.click(screen.getByRole("button", { name: /^a faturar/i }))
+
+    const card = await screen.findByRole("button", { name: /editar agendamento de joão silva/i })
+    expect(within(card).getByRole("link", { name: /os #10/i })).toHaveAttribute(
       "href",
       "/ordens/10",
     )
-    // com OS vinculada, o card não oferece "Criar Orçamento"
-    expect(
-      within(movementCard).queryByRole("link", { name: /criar orçamento/i }),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByText("Pedro Alves")).not.toBeInTheDocument()
+  })
 
-    // o card de Atendimentos (sem OS) oferece o atalho normalmente
-    const serviceCard = screen.getByRole("button", { name: /editar agendamento de maria souza/i })
-    expect(within(serviceCard).getByRole("link", { name: /criar orçamento/i })).toBeInTheDocument()
+  it("alterna pro 'Faturadas' e mostra só a OS faturada", async () => {
+    mockDashboard()
+    renderWithProviders(<Dashboard />)
 
-    expect(screen.getByText("Resumo")).toBeInTheDocument()
-    expect(screen.getByText("15")).toBeInTheDocument()
+    await screen.findByText("Maria Souza")
+    fireEvent.click(screen.getByRole("button", { name: /^faturadas/i }))
+
+    expect(await screen.findByText("Pedro Alves")).toBeInTheDocument()
+    expect(screen.queryByText("João Silva")).not.toBeInTheDocument()
   })
 
   it("admin vê o quadro financeiro do mês", async () => {
@@ -143,55 +165,36 @@ describe("<Dashboard>", () => {
     mockDashboard()
     renderWithProviders(<Dashboard />)
 
-    await screen.findByText("Movimentação")
+    await screen.findByText("Atendimentos e Movimentação")
     expect(screen.queryByText("Financeiro do mês")).not.toBeInTheDocument()
     expect(screen.queryByText("R$ 900,00")).not.toBeInTheDocument()
   })
 
-  it("sem atendimentos mostra o estado vazio", async () => {
+  it("sem nada em 'Em Andamento' mostra o estado vazio dessa posição", async () => {
     mockDashboard({
       appointments: { scheduled_this_week: [] },
       movements: { bills_this_week: [] },
     })
     renderWithProviders(<Dashboard />)
 
-    expect(await screen.findByText(/nenhum atendimento em aberto/i)).toBeInTheDocument()
-    expect(screen.getByText(/nenhuma os a faturar ou faturada/i)).toBeInTheDocument()
+    expect(await screen.findByText("Nenhum atendimento em andamento.")).toBeInTheDocument()
   })
 
-  it("'A faturar' vazio mas 'Faturadas' com item: cada sub-quadro mostra o próprio estado", async () => {
-    mockDashboard({
-      movements: {
-        bills_this_week: [
-          {
-            id: 3,
-            client_id: 7,
-            client_name: "Pedro Alves",
-            contact: "(51) 97777-7777",
-            vehicle_id: 8,
-            vehicle: "QWE4321 - HB20",
-            date: "2026-09-06",
-            time: "10:00:00",
-            order: { id: 11, status: "faturado" },
-            budget: null,
-          },
-        ],
-        total_bills_this_week: 1,
-      },
-    })
+  it("Resumo continua mostrando os totais do empreendimento", async () => {
+    mockDashboard()
     renderWithProviders(<Dashboard />)
 
-    await screen.findByText("Movimentação")
-    expect(screen.getByText("Nenhuma OS a faturar.")).toBeInTheDocument()
-    expect(screen.getByText("Pedro Alves")).toBeInTheDocument()
+    await screen.findByText("Atendimentos e Movimentação")
+    expect(screen.getByText("Resumo")).toBeInTheDocument()
+    expect(screen.getByText("15")).toBeInTheDocument()
   })
 
-  it("esconde o total da semana quando o back não manda o campo", async () => {
-    mockDashboard({ appointments: { scheduled_this_week: [] } })
+  it("esconde 'Agendados na semana' quando o back não manda o campo", async () => {
+    mockDashboard({ appointments: { scheduled_this_week: [], total_scheduled_this_week: null } })
     renderWithProviders(<Dashboard />)
 
-    await screen.findByText("Atendimentos")
-    expect(screen.queryByText("Clientes agendados na semana")).not.toBeInTheDocument()
+    await screen.findByText("Atendimentos e Movimentação")
+    expect(screen.queryByText("Agendados na semana")).not.toBeInTheDocument()
   })
 
   it("mostra erro quando a API falha", async () => {
