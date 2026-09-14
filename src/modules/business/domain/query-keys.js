@@ -1,9 +1,6 @@
-// Fonte única das query keys do módulo Empreendimentos. Hierárquico por prefixo:
-// invalidar businessKeys.all pega a listagem e os detalhes. Padrão "query key
-// factory".
+// Sem mais listagem/detalhe por ID — o empreendimento é sempre "o meu"
+// (resolvido pelo token). Uma chave só, cobre o GET e as invalidações após
+// PATCH.
 export const businessKeys = {
   all: ["businesses"],
-  lists: () => [...businessKeys.all, "list"],
-  list: (params) => [...businessKeys.lists(), params],
-  detail: (id) => [...businessKeys.all, "detail", id],
 }

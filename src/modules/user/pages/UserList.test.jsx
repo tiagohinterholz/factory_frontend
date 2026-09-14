@@ -8,7 +8,7 @@ import UserList from "./UserList"
 
 function mockUsers() {
   server.use(
-    http.get(`${API}/usuarios/`, () =>
+    http.get(`${API}/configuracoes/usuarios/`, () =>
       HttpResponse.json({
         results: [
           {
@@ -40,22 +40,13 @@ describe("<UserList>", () => {
     expect(screen.getByRole("heading", { name: /usuários/i })).toBeInTheDocument()
     expect(await screen.findByText("Ana Lima")).toBeInTheDocument()
     expect(screen.getByText("ana@oficina.com")).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: "Oficina Central" })).toHaveAttribute(
-      "href",
-      "/empreendimentos/3",
-    )
-  })
-
-  it("mostra '-' quando o usuário não tem empreendimento", async () => {
-    mockUsers()
-    renderWithProviders(<UserList />)
-
-    await screen.findByText("Beto Souza")
-    expect(screen.getByText("-")).toBeInTheDocument()
+    expect(screen.getByText("Beto Souza")).toBeInTheDocument()
   })
 
   it("mostra o estado de erro quando a API falha", async () => {
-    server.use(http.get(`${API}/usuarios/`, () => new HttpResponse(null, { status: 500 })))
+    server.use(
+      http.get(`${API}/configuracoes/usuarios/`, () => new HttpResponse(null, { status: 500 })),
+    )
 
     renderWithProviders(<UserList />)
 

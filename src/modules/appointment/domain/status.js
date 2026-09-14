@@ -8,22 +8,28 @@
 // back. Sem cron: relê na hora de renderizar. `item.order` pode vir como id
 // cru, objeto { id, status, ... } ou ausente — só o objeto carrega `status`.
 
-const AWAITING = "Aguardando Execução"
-const IN_PROGRESS = "Em Andamento"
+// rótulos exportados — o dashboard filtra o quadro "Atendimentos" por eles
+// (toggle Em Andamento / Aguardando Execução), então não podem ficar só
+// internos ao módulo.
+export const APPOINTMENT_STATUS = {
+  AWAITING: "Aguardando Execução",
+  IN_PROGRESS: "Em Andamento",
+}
 
 export function appointmentStatusLabel(item) {
   const orderStatus = item?.order?.status
   if (orderStatus && orderStatus !== "em andamento") return orderStatus
 
   const when = new Date(`${item?.date ?? ""}T${item?.time || "00:00:00"}`)
-  if (!Number.isNaN(when.getTime()) && when.getTime() > Date.now()) return AWAITING
-  return IN_PROGRESS
+  if (!Number.isNaN(when.getTime()) && when.getTime() > Date.now())
+    return APPOINTMENT_STATUS.AWAITING
+  return APPOINTMENT_STATUS.IN_PROGRESS
 }
 
 // tom do badge por rótulo. Os status da OS reaproveitam as cores da OS.
 export const APPOINTMENT_STATUS_TONE = {
-  [AWAITING]: "bg-slate-100 text-slate-600",
-  [IN_PROGRESS]: "bg-amber-100 text-amber-700",
+  [APPOINTMENT_STATUS.AWAITING]: "bg-slate-100 text-slate-600",
+  [APPOINTMENT_STATUS.IN_PROGRESS]: "bg-amber-100 text-amber-700",
   "a faturar": "bg-brand-subtle text-brand",
   faturado: "bg-emerald-100 text-emerald-700",
   cancelado: "bg-rose-100 text-rose-700",

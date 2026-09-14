@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   Hourglass,
   ClipboardList,
@@ -17,7 +18,7 @@ import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import SummaryCard from "@/modules/dashboard/components/SummaryCard"
 import StatCard from "@/modules/dashboard/components/StatCard"
 import AppointmentCard from "@/modules/dashboard/components/AppointmentCard"
-import { appointmentStatusLabel } from "@/modules/appointment/domain"
+import { appointmentStatusLabel, APPOINTMENT_STATUS } from "@/modules/appointment/domain"
 import { ORDER_STATUS } from "@/modules/order/domain"
 import { formatMoney } from "@/modules/core/utils/format"
 
@@ -52,33 +53,64 @@ function Quadro({ title, subtitle, aside, children }) {
   )
 }
 
-// Bloco menor dentro de um Quadro — cada um com sua própria rolagem, pra
-// dividir "Movimentação" em "A faturar" e "Faturadas" sem um crescer o dobro.
-function Subquadro({ title, items, emptyText, cardKey }) {
+// Alterna entre os status do fluxo dentro do mesmo Quadro (Aguardando/Em
+// Andamento/A Faturar/Faturadas) — substitui os 3 quadros antigos (lista
+// misturada de atendimentos + par de Subquadros de movimentação) por um só:
+// um Quadro, uma lista, um toggle.
+function StatusToggle({ options, value, onChange }) {
   return (
-    <div className="rounded-lg border border-line bg-surface p-3 space-y-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-[12.5px] font-semibold text-ink">{title}</h3>
-        <span className="text-[11px] font-bold text-muted tabular-nums">{items.length}</span>
-      </div>
-      {items.length === 0 ? (
-        <p className="text-[12.5px] text-muted">{emptyText}</p>
-      ) : (
-        <div className="max-h-64 overflow-y-auto pr-1">
-          <div className="flex flex-wrap items-start gap-3">
-            {items.map((item) => (
-              <AppointmentCard key={cardKey(item)} item={item} />
-            ))}
-          </div>
-        </div>
-      )}
+    <div className="inline-flex items-center gap-1 rounded-lg border border-line bg-surface p-1 shrink-0">
+      {options.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          onClick={() => onChange(option.id)}
+          className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-bold transition-colors ${
+            value === option.id
+              ? "bg-brand text-brand-fg"
+              : "text-muted hover:bg-ground hover:text-ink"
+          }`}
+        >
+          {option.label}
+          <span
+            className={`tabular-nums rounded-full px-1.5 text-[10.5px] ${
+              value === option.id ? "bg-white/25" : "bg-ground"
+            }`}
+          >
+            {option.count}
+          </span>
+        </button>
+      ))}
     </div>
   )
 }
 
+function CardList({ items, emptyText, cardKey }) {
+  if (items.length === 0) {
+    return <p className="text-[13px] text-muted">{emptyText}</p>
+  }
+  return (
+    <div className="max-h-96 overflow-y-auto pr-1">
+      <div className="flex flex-wrap items-start gap-3">
+        {items.map((item) => (
+          <AppointmentCard key={cardKey(item)} item={item} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Um quadro só cobrindo os 4 status do fluxo — Aguardando, Em Andamento, A
+// Faturar e Faturadas — cada um como uma posição própria do toggle.
+const FLOW_AWAITING = "awaiting"
+const FLOW_IN_PROGRESS = "in_progress"
+const FLOW_TO_BILL = "to_bill"
+const FLOW_BILLED = "billed"
+
 export default function Dashboard() {
   const { loading, error, data, refetch } = useDashboard()
   const { isAdmin } = usePermissions()
+  const [flowFilter, setFlowFilter] = useState(FLOW_IN_PROGRESS)
 
   if (loading) {
     return <div className="p-10 text-center text-muted">Carregando dashboard...</div>
@@ -106,12 +138,42 @@ export default function Dashboard() {
   const summary = data.summary ?? {}
 
   const cardKey = (item) => item.id ?? `${item.client_name}-${item.date}-${item.time}`
+
+  const inProgressCards = serviceCards.filter(
+    (item) => appointmentStatusLabel(item) === APPOINTMENT_STATUS.IN_PROGRESS,
+  )
+  const awaitingCards = serviceCards.filter(
+    (item) => appointmentStatusLabel(item) === APPOINTMENT_STATUS.AWAITING,
+  )
   const toBillCards = movementCards.filter(
     (item) => appointmentStatusLabel(item) === ORDER_STATUS.TO_BILL,
   )
   const billedCards = movementCards.filter(
     (item) => appointmentStatusLabel(item) === ORDER_STATUS.BILLED,
   )
+
+  const flowOptions = [
+    { id: FLOW_AWAITING, label: "Aguardando Execução", count: awaitingCards.length },
+    { id: FLOW_IN_PROGRESS, label: "Em Andamento", count: inProgressCards.length },
+    { id: FLOW_TO_BILL, label: "A Faturar", count: toBillCards.length },
+    { id: FLOW_BILLED, label: "Faturadas", count: billedCards.length },
+  ]
+  const FLOW_CARDS = {
+    [FLOW_AWAITING]: awaitingCards,
+    [FLOW_IN_PROGRESS]: inProgressCards,
+    [FLOW_TO_BILL]: toBillCards,
+    [FLOW_BILLED]: billedCards,
+  }
+  const FLOW_EMPTY_TEXT = {
+    [FLOW_AWAITING]: "Nenhum atendimento aguardando execução.",
+    [FLOW_IN_PROGRESS]: "Nenhum atendimento em andamento.",
+    [FLOW_TO_BILL]: "Nenhuma OS a faturar.",
+    [FLOW_BILLED]: "Nenhuma OS faturada ainda.",
+  }
+  const flowCards = FLOW_CARDS[flowFilter]
+  const flowEmptyText = FLOW_EMPTY_TEXT[flowFilter]
+  const totalFlowCards =
+    awaitingCards.length + inProgressCards.length + toBillCards.length + billedCards.length
 
   const summaryStats = [
     { title: "Clientes", value: summary.clients ?? 0, icon: Users },
@@ -127,10 +189,18 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <Quadro
-        title="Movimentação"
-        subtitle="OS com serviço concluído — a faturar e faturadas"
+        title="Atendimentos e Movimentação"
+        subtitle={`${totalFlowCards} agendamentos no total — filtra por status`}
         aside={
           <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
+            {totalScheduledThisWeek != null && (
+              <MiniStat
+                tone="ok"
+                icon={CalendarDays}
+                label="Agendados na semana"
+                value={totalScheduledThisWeek}
+              />
+            )}
             <MiniStat
               tone="warn"
               icon={Hourglass}
@@ -152,51 +222,10 @@ export default function Dashboard() {
           </div>
         }
       >
-        {movementCards.length === 0 ? (
-          <p className="text-[13px] text-muted">Nenhuma OS a faturar ou faturada por aqui.</p>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <Subquadro
-              title="A faturar"
-              items={toBillCards}
-              emptyText="Nenhuma OS a faturar."
-              cardKey={cardKey}
-            />
-            <Subquadro
-              title="Faturadas"
-              items={billedCards}
-              emptyText="Nenhuma OS faturada ainda."
-              cardKey={cardKey}
-            />
-          </div>
-        )}
-      </Quadro>
-
-      <Quadro
-        title="Atendimentos"
-        subtitle="Aguardando execução e em andamento"
-        aside={
-          totalScheduledThisWeek != null && (
-            <div className="text-right shrink-0">
-              <p className="text-lg font-bold text-ink tabular-nums leading-tight">
-                {totalScheduledThisWeek}
-              </p>
-              <p className="text-[12.5px] text-muted mt-0.5">Clientes agendados na semana</p>
-            </div>
-          )
-        }
-      >
-        {serviceCards.length === 0 ? (
-          <p className="text-[13px] text-muted">Nenhum atendimento em aberto.</p>
-        ) : (
-          <div className="max-h-96 overflow-y-auto pr-1">
-            <div className="flex flex-wrap items-start gap-3">
-              {serviceCards.map((item) => (
-                <AppointmentCard key={cardKey(item)} item={item} />
-              ))}
-            </div>
-          </div>
-        )}
+        <StatusToggle options={flowOptions} value={flowFilter} onChange={setFlowFilter} />
+        <div className="mt-3">
+          <CardList items={flowCards} emptyText={flowEmptyText} cardKey={cardKey} />
+        </div>
       </Quadro>
 
       {isAdmin && financial && (

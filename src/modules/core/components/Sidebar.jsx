@@ -3,7 +3,6 @@ import { useEffect, useState } from "react"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import {
   LayoutDashboard,
-  Briefcase,
   Users,
   Car,
   MapPin,
@@ -36,12 +35,17 @@ const postVehicleItems = [
 
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
   const location = useLocation()
-  const { canManageLicenses, canManageUsers } = usePermissions()
+  const { canManageLicenses, canManageUsers, businessId, userId } = usePermissions()
+  // /configuracoes/* é sempre "o meu negócio" — superusuário não tem um
+  // (400 no back), então nem mostra Gestão. Licenças aponta pra própria
+  // licença quando há negócio, ou pra navegação geral (/licencas) quando é
+  // o superusuário olhando negócios de terceiros.
+  const licencaPath = businessId ? "/configuracoes/licenca" : "/licencas"
   const [locationOpen, setLocationOpen] = useState(
     location.pathname.startsWith("/estados") || location.pathname.startsWith("/cidades"),
   )
-  const [businessOpen, setBusinessOpen] = useState(
-    location.pathname.startsWith("/empreendimentos") || location.pathname.startsWith("/usuarios"),
+  const [settingsOpen, setSettingsOpen] = useState(
+    ["/configuracoes", "/licencas", "/usuarios"].some((path) => location.pathname.startsWith(path)),
   )
   const [suppliesOpen, setSuppliesOpen] = useState(
     ["/fornecedores", "/produtos", "/servicos"].some((path) => location.pathname.startsWith(path)),
@@ -237,49 +241,6 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             )}
           </div>
 
-          {/* Empreendimentos */}
-          <div className="pt-2">
-            {renderGroupButton(
-              "Empreendimentos",
-              Briefcase,
-              businessOpen,
-              ["/empreendimentos", "/usuarios"],
-              handleGroup(setBusinessOpen),
-            )}
-
-            {businessOpen && !collapsed && (
-              <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
-                <Link
-                  to="/empreendimentos"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(
-                    isActive("/empreendimentos") && !location.pathname.includes("/licencas"),
-                  )}
-                >
-                  Gestão
-                </Link>
-                {canManageLicenses && (
-                  <Link
-                    to="/empreendimentos/licencas"
-                    onClick={onCloseMobile}
-                    className={subLinkClass(isActive("/empreendimentos/licencas"))}
-                  >
-                    Licenças
-                  </Link>
-                )}
-                {canManageUsers && (
-                  <Link
-                    to="/usuarios"
-                    onClick={onCloseMobile}
-                    className={subLinkClass(isActive("/usuarios"))}
-                  >
-                    Usuários
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
-
           {/* Suprimentos */}
           <div className="pt-2">
             {renderGroupButton(
@@ -321,6 +282,60 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
         </nav>
 
         <div className="mt-8 pt-6 border-t border-white/5 space-y-1">
+          <div>
+            {renderGroupButton(
+              "Configurações",
+              Settings,
+              settingsOpen,
+              ["/configuracoes", "/licencas", "/usuarios"],
+              handleGroup(setSettingsOpen),
+            )}
+
+            {settingsOpen && !collapsed && (
+              <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
+                {businessId && (
+                  <Link
+                    to="/configuracoes"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(
+                      isActive("/configuracoes") &&
+                        !location.pathname.startsWith("/configuracoes/"),
+                    )}
+                  >
+                    Gestão
+                  </Link>
+                )}
+                {canManageLicenses && (
+                  <Link
+                    to={licencaPath}
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive(licencaPath))}
+                  >
+                    Licenças
+                  </Link>
+                )}
+                {canManageUsers && businessId && (
+                  <Link
+                    to="/usuarios"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/usuarios"))}
+                  >
+                    Usuários
+                  </Link>
+                )}
+                {!canManageUsers && businessId && userId && (
+                  <Link
+                    to={`/usuarios/${userId}`}
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive(`/usuarios/${userId}`))}
+                  >
+                    Usuário
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={onToggleCollapse}
             aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
@@ -337,22 +352,6 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             )}
             <span className={collapsed ? "lg:hidden" : ""}>Recolher menu</span>
           </button>
-
-          <Link
-            to="/configuracoes"
-            onClick={onCloseMobile}
-            title={collapsed ? "Configurações" : undefined}
-            className={`w-full flex items-center gap-3 px-4 py-3 transition duration-300 rounded-xl group ${
-              collapsed ? "lg:justify-center lg:px-0" : ""
-            } ${
-              isActive("/configuracoes")
-                ? "bg-brand text-white"
-                : "text-slate-500 hover:text-white hover:bg-slate-800"
-            }`}
-          >
-            <Settings className="w-5 h-5 shrink-0" />
-            <span className={`font-medium ${collapsed ? "lg:hidden" : ""}`}>Configurações</span>
-          </Link>
         </div>
       </aside>
     </>

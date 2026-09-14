@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Bell } from "lucide-react"
-import { useLicense } from "@/modules/license"
+import { useMyLicense } from "@/modules/license"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 const STATUS_LABEL = {
@@ -21,7 +21,7 @@ function daysBetween(startIso, endIso) {
 export default function LicenseNotification() {
   const [open, setOpen] = useState(false)
   const containerRef = useRef(null)
-  const { license, loading } = useLicense()
+  const { license, loading } = useMyLicense()
   const { isSuperUser, isAdmin } = usePermissions()
 
   useEffect(() => {
@@ -124,7 +124,7 @@ export default function LicenseNotification() {
 
               {isAdmin && (
                 <Link
-                  to="/empreendimentos/licencas"
+                  to="/configuracoes/licenca"
                   onClick={() => setOpen(false)}
                   className="mt-3 inline-block text-[13px] font-semibold text-brand hover:underline"
                 >

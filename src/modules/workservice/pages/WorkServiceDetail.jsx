@@ -7,6 +7,7 @@ import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
 import { Settings, Edit2, Trash2, Eye } from "lucide-react"
@@ -17,6 +18,7 @@ export default function WorkServiceDetail() {
   const { form, onSubmit, loading, handleDelete } = useWorkServiceEditForm()
   const {
     register,
+    control,
     watch,
     formState: { errors, isSubmitting },
   } = form
@@ -116,12 +118,11 @@ export default function WorkServiceDetail() {
             />
 
             <div className="max-w-xs">
-              <FormField
+              <MoneyField
+                control={control}
+                name="unit_price"
                 label="Preço do Serviço (Mão de Obra)"
-                type="number"
-                step="0.01"
                 error={errors.unit_price?.message}
-                registration={register("unit_price")}
               />
             </div>
 

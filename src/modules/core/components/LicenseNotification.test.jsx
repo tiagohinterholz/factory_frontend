@@ -12,20 +12,18 @@ const EXPIRATION = "2026-08-30T00:00:00Z"
 
 function mockLicense(overrides = {}) {
   server.use(
-    http.get(`${API}/empreendimentos/licencas/`, () =>
-      HttpResponse.json([
-        {
-          id: 1,
-          status: "ACTIVE",
-          period: "TRIMESTRAL",
-          activation_date: ACTIVATION,
-          expiration_date: EXPIRATION,
-          remaining_days: 34,
-          max_users: 5,
-          current_users: 3,
-          ...overrides,
-        },
-      ]),
+    http.get(`${API}/configuracoes/licenca/`, () =>
+      HttpResponse.json({
+        id: 1,
+        status: "ACTIVE",
+        period: "TRIMESTRAL",
+        activation_date: ACTIVATION,
+        expiration_date: EXPIRATION,
+        remaining_days: 34,
+        max_users: 5,
+        current_users: 3,
+        ...overrides,
+      }),
     ),
   )
 }
@@ -67,7 +65,7 @@ describe("<LicenseNotification>", () => {
 
     expect(await screen.findByRole("link", { name: /renovar licença/i })).toHaveAttribute(
       "href",
-      "/empreendimentos/licencas",
+      "/configuracoes/licenca",
     )
   })
 
