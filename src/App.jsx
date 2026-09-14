@@ -14,7 +14,6 @@ import LandingRoutes from "@/modules/landing/routes"
 import AuthRoutes from "@/modules/auth/routes"
 import LegalRoutes from "@/modules/legal/routes"
 import DashboardRoutes from "@/modules/dashboard/routes"
-import BusinessRoutes from "@/modules/business/routes"
 import LocationRoutes from "@/modules/location/routes"
 import SupplierRoutes from "@/modules/supplier/routes"
 import ClientRoutes from "@/modules/client/routes"
@@ -56,7 +55,6 @@ export default function App() {
                     >
                       {LicenseRoutes}
                       {DashboardRoutes}
-                      {BusinessRoutes}
                       {LocationRoutes}
                       {SupplierRoutes}
                       {ClientRoutes}

@@ -1,15 +1,17 @@
 import { lazy } from "react"
 import { Route } from "react-router-dom"
 
+const MyLicense = lazy(() => import("./pages/MyLicense"))
 const LicenseList = lazy(() => import("./pages/LicenseList"))
-const LicenseCreate = lazy(() => import("./pages/LicenseCreate"))
 const LicenseDetail = lazy(() => import("./pages/LicenseDetail"))
 
 const LicenseRoutes = (
   <>
-    <Route path="/empreendimentos/licencas" element={<LicenseList />} />
-    <Route path="/empreendimentos/licencas/novo" element={<LicenseCreate />} />
-    <Route path="/empreendimentos/licencas/:id" element={<LicenseDetail />} />
+    {/* self-service: admin/colaborador vê e renova a própria licença */}
+    <Route path="/configuracoes/licenca" element={<MyLicense />} />
+    {/* superusuário navegando licenças de outros negócios — só leitura */}
+    <Route path="/licencas" element={<LicenseList />} />
+    <Route path="/licencas/:id" element={<LicenseDetail />} />
   </>
 )
 

@@ -1,17 +1,8 @@
-import { useLicenseEditForm } from "@/modules/license/hooks/useLicenseEditForm"
+import { useParams } from "react-router-dom"
 import BackLink from "@/modules/core/components/BackLink"
-import { useBusinessOptions } from "@/modules/core/hooks/options"
-import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
-import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { usePermissions } from "@/modules/auth/hooks/usePermissions"
-import { Briefcase, Edit2 } from "lucide-react"
-import { LicenseOptions } from "@/modules/license/constants/license"
-
-const userLimitOptions = Array.from({ length: 10 }, (_, index) => ({
-  id: String(index + 1),
-  name: `${index + 1} Usuários`,
-}))
+import { useLicenseById } from "@/modules/license/hooks/useLicenseById"
+import { formatDate } from "@/modules/core/utils/format"
+import { Briefcase } from "lucide-react"
 
 const statusMap = {
   TRIAL: { label: "Em Teste", color: "text-amber-600 bg-amber-50" },
@@ -19,17 +10,14 @@ const statusMap = {
   EXPIRED: { label: "Expirada", color: "text-danger bg-danger-subtle" },
 }
 
+// Só leitura — renovar por ID saiu do contrato (não tem endpoint
+// substituto pro superusuário ainda). Cada negócio renova a própria
+// licença em Configurações → Licença.
 export default function LicenseDetail() {
-  const { form, onSubmit, loading, status, businessName } = useLicenseEditForm()
-  const {
-    register,
-    formState: { errors, isSubmitting },
-  } = form
+  const { id } = useParams()
+  const { license, loading } = useLicenseById(id)
 
-  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
-  const { canChooseBusiness } = usePermissions()
-
-  if (loading || loadingBusinesses) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -37,23 +25,22 @@ export default function LicenseDetail() {
     )
   }
 
-  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
-  const currentStatus = statusMap[status] || {
-    label: status,
+  const currentStatus = statusMap[license?.status] || {
+    label: license?.status,
     color: "text-slate-400 bg-slate-50",
   }
 
   return (
     <div className="p-6 space-y-6">
       <div className="max-w-2xl mx-auto">
-        <BackLink to="/empreendimentos/licencas" />
+        <BackLink to="/licencas" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">
-              Gestão de Licença
+              Licença — {license?.business?.corporate_name}
             </h1>
             <div className="flex items-center gap-2">
-              <p className="text-slate-400 font-medium text-sm">Configurar renovação</p>
+              <p className="text-slate-400 font-medium text-sm">Somente leitura</p>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${currentStatus.color}`}
               >
@@ -68,51 +55,37 @@ export default function LicenseDetail() {
             <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
               <Briefcase className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-800 tracking-tight">Dados Organizacionais</h3>
+            <h3 className="font-bold text-slate-800 tracking-tight">Dados da Licença</h3>
           </div>
 
-          <form className="space-y-6" onSubmit={onSubmit}>
-            {canChooseBusiness ? (
-              <SelectField
-                label="Empreendimento"
-                options={businessOptions}
-                error={errors.business_id?.message}
-                registration={register("business_id")}
-              />
-            ) : (
-              <FormField label="Empreendimento" value={businessName} onChange={() => {}} readOnly />
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectField
-                label="Período de Renovação"
-                options={LicenseOptions}
-                error={errors.period?.message}
-                registration={register("period")}
-              />
-              <SelectField
-                label="Limite de Usuários"
-                options={userLimitOptions}
-                error={errors.max_users?.message}
-                registration={register("max_users")}
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="label-premium">Período</p>
+              <p className="text-sm font-medium text-ink">{license?.period}</p>
             </div>
-
-            <div className="border-t border-slate-50 pt-6">
-              <FormField
-                label="Início da Vigência (Nova ou Atual)"
-                type="date"
-                error={errors.activation_date?.message}
-                registration={register("activation_date")}
-              />
+            <div>
+              <p className="label-premium">Limite de Usuários</p>
+              <p className="text-sm font-medium text-ink">
+                {license?.current_users}/{license?.max_users}
+              </p>
             </div>
-
-            <div className="pt-4 flex justify-end">
-              <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
-                Atualizar e Renovar
-              </PrimaryButton>
+            <div>
+              <p className="label-premium">Data de Ativação</p>
+              <p className="text-sm font-medium text-ink">
+                {formatDate(license?.activation_date) || "-"}
+              </p>
             </div>
-          </form>
+            <div>
+              <p className="label-premium">Data de Expiração</p>
+              <p className="text-sm font-medium text-ink">
+                {formatDate(license?.expiration_date) || "-"}
+              </p>
+            </div>
+            <div>
+              <p className="label-premium">Dias Restantes</p>
+              <p className="text-sm font-medium text-ink">{license?.remaining_days} dias</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

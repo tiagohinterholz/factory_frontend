@@ -8,9 +8,9 @@ import LicenseList from "./LicenseList"
 
 function mockLicenses(results) {
   server.use(
-    http.get(`${API}/empreendimentos/licencas/`, () =>
-      HttpResponse.json(
-        results ?? [
+    http.get(`${API}/licencas/`, () =>
+      HttpResponse.json({
+        results: results ?? [
           {
             id: 1,
             business: { id: 8, corporate_name: "Oficina Central" },
@@ -22,7 +22,8 @@ function mockLicenses(results) {
             max_users: 10,
           },
         ],
-      ),
+        count: 1,
+      }),
     ),
   )
 }
@@ -33,16 +34,16 @@ describe("<LicenseList>", () => {
     renderWithProviders(<LicenseList />)
 
     expect(await screen.findByText("Ativo")).toBeInTheDocument()
+    expect(screen.getByText("Oficina Central")).toBeInTheDocument()
     expect(screen.getByText("120 dias")).toBeInTheDocument()
   })
 
-  it("razão social da linha linka pro cadastro do empreendimento", async () => {
+  it("não tem mais ação de renovar por ID (saiu do contrato)", async () => {
     mockLicenses()
     renderWithProviders(<LicenseList />)
 
-    expect(await screen.findByRole("link", { name: "Oficina Central" })).toHaveAttribute(
-      "href",
-      "/empreendimentos/8",
-    )
+    await screen.findByText("Oficina Central")
+    expect(screen.queryByText(/configurar\s*\/\s*renovar/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /nova configuração/i })).not.toBeInTheDocument()
   })
 })

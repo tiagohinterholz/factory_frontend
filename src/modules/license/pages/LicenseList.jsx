@@ -1,23 +1,19 @@
-import { RefreshCw, Search } from "lucide-react"
-import { useNavigate, Link } from "react-router-dom"
-import { useLicense } from "../hooks/useLicense"
+import { useNavigate } from "react-router-dom"
+import { Eye } from "lucide-react"
+import { useLicenses } from "../hooks/useLicenses"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import { formatDate } from "@/modules/core/utils/format"
 
+// Só leitura, só pro superusuário navegar licenças de outros negócios —
+// renovar por ID saiu do contrato (não tem endpoint substituto ainda).
 export default function LicenseList() {
   const navigate = useNavigate()
-  const { license, loading, error, refetch } = useLicense()
+  const { licenses, loading, error, refetch, currentPage, setCurrentPage, totalItems } =
+    useLicenses()
 
   const columns = [
-    {
-      header: "Razão Social",
-      accessor: (item) => (
-        <Link to={`/empreendimentos/${item.business.id}`} className="text-brand hover:underline">
-          {item.business.corporate_name}
-        </Link>
-      ),
-    },
+    { header: "Razão Social", accessor: (item) => item.business?.corporate_name },
     {
       header: "Status",
       accessor: (item) => {
@@ -66,24 +62,23 @@ export default function LicenseList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader
-        title="Gestão de Licenças"
-        buttonText="Nova Configuração"
-        buttonLink="/empreendimentos/licencas/novo"
-      />
+      <ListHeader title="Licenças" subtitle="Licenças dos empreendimentos — somente leitura" />
       <ListTable
         columns={columns}
-        data={license}
+        data={licenses}
         loading={loading}
         error={error}
         onRetry={refetch}
+        currentPage={currentPage}
+        handlePageChange={setCurrentPage}
+        totalItems={totalItems}
         renderActions={(item) => (
           <button
-            onClick={() => navigate(`/empreendimentos/licencas/${item.id}`)}
+            onClick={() => navigate(`/licencas/${item.id}`)}
             className="flex items-center gap-2 px-3 py-1.5 bg-brand-subtle text-brand hover:bg-brand hover:text-white rounded-lg transition-all duration-300 font-bold text-[10px] uppercase tracking-wider"
           >
-            <RefreshCw size={14} className="animate-hover-spin" />
-            Configurar / Renovar
+            <Eye size={14} />
+            Ver
           </button>
         )}
       />

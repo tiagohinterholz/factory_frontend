@@ -16,6 +16,8 @@ import { parseApiError } from "@/api/parse-api-error"
 //                   /orcamentos/<id> recém-criado). Falsy = não navega.
 //   invalidate    — array de query keys a invalidar no sucesso (ex.: [orderKeys.all,
 //                   dashboardKeys.all]). Sem isso, marca TODO o cache como stale.
+//   onSuccess     — callback extra no sucesso (result) — ex.: sair do modo edição
+//                   sem navegar pra outra tela (formulário que fica na mesma página).
 //   errorFallback — mensagem se a API não mandar nada estruturado
 //
 // Erros por campo do DRF (parseApiError().fields) viram form.setError(campo).
@@ -27,6 +29,7 @@ export function useResourceForm({
   submit,
   redirectTo,
   invalidate,
+  onSuccess,
   errorFallback = "Não foi possível salvar. Verifique os dados.",
 }) {
   const navigate = useNavigate()
@@ -65,6 +68,11 @@ export function useResourceForm({
       } else {
         queryClient.invalidateQueries()
       }
+      // move a baseline do form pro que acabou de ser salvo — um form que fica
+      // na mesma página (sem redirectTo) não pode ter um "cancelar" depois
+      // revertendo pro valor de antes desta gravação
+      form.reset(values)
+      onSuccess?.(result)
       const target = typeof redirectTo === "function" ? redirectTo(result) : redirectTo
       if (target) navigate(target)
     } catch (error) {
