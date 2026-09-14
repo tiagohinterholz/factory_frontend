@@ -35,7 +35,7 @@ const postVehicleItems = [
 
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
   const location = useLocation()
-  const { canManageLicenses, canManageUsers, businessId } = usePermissions()
+  const { canManageLicenses, canManageUsers, businessId, userId } = usePermissions()
   // /configuracoes/* é sempre "o meu negócio" — superusuário não tem um
   // (400 no back), então nem mostra Gestão. Licenças aponta pra própria
   // licença quando há negócio, ou pra navegação geral (/licencas) quando é
@@ -321,6 +321,15 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                     className={subLinkClass(isActive("/usuarios"))}
                   >
                     Usuários
+                  </Link>
+                )}
+                {!canManageUsers && businessId && userId && (
+                  <Link
+                    to={`/usuarios/${userId}`}
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive(`/usuarios/${userId}`))}
+                  >
+                    Usuário
                   </Link>
                 )}
               </div>

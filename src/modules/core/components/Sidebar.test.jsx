@@ -69,6 +69,20 @@ describe("<Sidebar>", () => {
     expect(screen.getByRole("link", { name: "Licenças" })).toHaveAttribute("href", "/licencas")
   })
 
+  it("colaborador não gerencia usuários, mas edita o próprio (Usuário, singular)", () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({ user_id: 7, email: "colab@a.com", business_id: 3, role: "colaborador" }),
+    )
+    renderSidebar()
+
+    fireEvent.click(screen.getByRole("button", { name: /^configurações$/i }))
+
+    expect(screen.queryByRole("link", { name: "Usuários" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: "Licenças" })).not.toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Usuário" })).toHaveAttribute("href", "/usuarios/7")
+  })
+
   it("não tem mais os cabeçalhos de seção antigos", () => {
     renderSidebar()
     expect(screen.queryByText("Principal")).not.toBeInTheDocument()

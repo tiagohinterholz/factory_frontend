@@ -10,9 +10,12 @@ function toUserForm(data) {
     name: data.name ?? "",
     email: data.email ?? "",
     business_id: idOf(data.business),
+    // nome pra exibir quando quem edita não é superuser (não escolhe o
+    // empreendimento num <select>, só mostra o nome) — vem prontinho no
+    // GET do próprio usuário, sem precisar cruzar com a lista de
+    // /empreendimentos/ (que pra um admin comum pode nem trazer nada).
+    business_name: data.business?.corporate_name || data.business?.trade_name || "",
     role: data.role ?? "",
-    password: "",
-    confirmPassword: "",
   }
 }
 

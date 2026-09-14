@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { toUserPayload, toUserEditPayload } from "./schema"
+import { toUserPayload, toUserEditPayload, toChangePasswordPayload } from "./schema"
 
 const base = {
   name: "Ana",
@@ -32,18 +32,29 @@ describe("toUserPayload (criação)", () => {
 })
 
 describe("toUserEditPayload (edição)", () => {
-  it("senha em branco é omitida (mantém a atual)", () => {
-    const payload = toUserEditPayload({ ...base, password: "", confirmPassword: "" })
+  // PATCH /usuarios/<id>/ rejeita "password" no payload (400) — não existe
+  // mais campo de senha nesse form, então não tem o que remover/manter aqui.
+  const editBase = { name: "Ana", email: "ana@a.com", business_id: "3", role: "colaborador" }
+
+  it("business_id vazio é omitido; preenchido é mantido", () => {
+    expect(toUserEditPayload({ ...editBase, business_id: "" })).not.toHaveProperty("business_id")
+    expect(toUserEditPayload(editBase).business_id).toBe("3")
+  })
+
+  it("não inclui password nem confirmPassword", () => {
+    const payload = toUserEditPayload(editBase)
     expect(payload).not.toHaveProperty("password")
-  })
-
-  it("senha preenchida vai no payload", () => {
-    expect(toUserEditPayload(base).password).toBe("Senha@123")
-  })
-
-  it("remove confirmPassword e business_id vazio", () => {
-    const payload = toUserEditPayload({ ...base, business_id: "" })
     expect(payload).not.toHaveProperty("confirmPassword")
-    expect(payload).not.toHaveProperty("business_id")
+  })
+})
+
+describe("toChangePasswordPayload", () => {
+  it("manda current_password e renomeia password -> new_password", () => {
+    const payload = toChangePasswordPayload({
+      current_password: "Atual@123",
+      password: "Nova@123",
+      confirmPassword: "Nova@123",
+    })
+    expect(payload).toEqual({ current_password: "Atual@123", new_password: "Nova@123" })
   })
 })
