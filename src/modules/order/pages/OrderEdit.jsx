@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useParams } from "react-router-dom"
+import { useQueryClient } from "@tanstack/react-query"
 import { useOrderEditForm } from "../hooks/useOrderEditForm"
 import { OrderService } from "../services/order"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
@@ -19,6 +20,7 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import {
+  orderKeys,
   orderStatusTone,
   orderCanEditItems,
   orderCanFinish,
@@ -30,6 +32,7 @@ import { CheckCircle2, Plus, Trash2 } from "lucide-react"
 export default function OrderEdit() {
   const { id } = useParams()
   const toast = useToast()
+  const queryClient = useQueryClient()
   const {
     form,
     onSubmit,
@@ -73,11 +76,20 @@ export default function OrderEdit() {
   const [selectedProduct, setSelectedProduct] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [selectedService, setSelectedService] = useState("")
+  const [savingItem, setSavingItem] = useState(false)
+
+  // Invalida orderKeys.all (lista/detalhe/histórico) sempre que um item muda
+  // — sem isso, a listagem de OS fica com o total desatualizado por até o
+  // staleTime (o `refresh()` só recarrega o state local desta tela).
+  function invalidateOrderCaches() {
+    queryClient.invalidateQueries({ queryKey: orderKeys.all })
+  }
 
   async function handleAddProduct(event) {
     event.preventDefault()
-    if (!selectedProduct) return
+    if (!selectedProduct || savingItem) return
     const product = allProducts.find((item) => String(item.id) === String(selectedProduct))
+    setSavingItem(true)
     try {
       await OrderService.orderProductCreate(id, {
         product_id: selectedProduct,
@@ -88,16 +100,20 @@ export default function OrderEdit() {
       setSelectedProduct("")
       setQuantity(1)
       refresh()
+      invalidateOrderCaches()
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao adicionar produto").message)
+    } finally {
+      setSavingItem(false)
     }
   }
 
   async function handleAddService(event) {
     event.preventDefault()
-    if (!selectedService) return
+    if (!selectedService || savingItem) return
     const service = allServices.find((item) => String(item.id) === String(selectedService))
+    setSavingItem(true)
     try {
       await OrderService.orderServiceCreate(id, {
         service_id: selectedService,
@@ -106,9 +122,12 @@ export default function OrderEdit() {
       })
       setSelectedService("")
       refresh()
+      invalidateOrderCaches()
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao adicionar serviço").message)
+    } finally {
+      setSavingItem(false)
     }
   }
 
@@ -116,6 +135,7 @@ export default function OrderEdit() {
     try {
       await OrderService.orderProductDelete(id, itemId)
       refresh()
+      invalidateOrderCaches()
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao remover produto").message)
@@ -126,6 +146,7 @@ export default function OrderEdit() {
     try {
       await OrderService.orderServiceDelete(id, itemId)
       refresh()
+      invalidateOrderCaches()
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao remover serviço").message)
@@ -317,7 +338,8 @@ export default function OrderEdit() {
                 </div>
                 <button
                   type="submit"
-                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover"
+                  disabled={savingItem}
+                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover disabled:opacity-50"
                 >
                   <Plus size={24} />
                 </button>
@@ -378,7 +400,8 @@ export default function OrderEdit() {
                 </div>
                 <button
                   type="submit"
-                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover"
+                  disabled={savingItem}
+                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover disabled:opacity-50"
                 >
                   <Plus size={24} />
                 </button>
