@@ -34,9 +34,6 @@ const budget = {
 function mockApi({ clientsDelayMs = 0, overrides = {} } = {}) {
   server.use(
     http.get(`${API}/orcamentos/1/`, () => HttpResponse.json({ ...budget, ...overrides })),
-    http.get(`${API}/empreendimentos/`, () =>
-      HttpResponse.json({ results: [{ id: 2, corporate_name: "Oficina Teste" }], count: 1 }),
-    ),
     http.get(`${API}/clientes/`, async () => {
       if (clientsDelayMs) await delay(clientsDelayMs)
       return HttpResponse.json({
@@ -168,8 +165,7 @@ describe("<BudgetEdit> — campos travados fora de pendente", () => {
     renderPage()
 
     expect(await screen.findByText(/edição bloqueada/i)).toBeInTheDocument()
-    const [businessSelect, clientSelect, vehicleSelect] = screen.getAllByRole("combobox")
-    expect(businessSelect).toBeDisabled()
+    const [clientSelect, vehicleSelect] = screen.getAllByRole("combobox")
     expect(clientSelect).toBeDisabled()
     expect(vehicleSelect).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) validade")).toBeDisabled()
@@ -181,8 +177,8 @@ describe("<BudgetEdit> — campos travados fora de pendente", () => {
     renderPage()
 
     await screen.findByText("pendente")
-    const [businessSelect] = screen.getAllByRole("combobox")
-    expect(businessSelect).toBeEnabled()
+    const [clientSelect] = screen.getAllByRole("combobox")
+    expect(clientSelect).toBeEnabled()
     expect(screen.getByRole("button", { name: "Salvar Alterações" })).toBeEnabled()
   })
 })

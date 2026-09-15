@@ -1,10 +1,15 @@
+import { useState } from "react"
 import { useFinancialEntryEditForm } from "../hooks/useFinancialEntryEditForm"
 import {
   FINANCIAL_ENTRY_CATEGORY_OPTIONS,
+  PAYMENT_METHOD_OPTIONS,
   financialEntryStatusTone,
   financialEntryCanAct,
   financialEntryTypeLabel,
   financialEntryCategoryLabel,
+  paymentMethodLabel,
+  paymentStatusTone,
+  paymentIsActive,
 } from "../domain"
 import BackLink from "@/modules/core/components/BackLink"
 import FormField from "@/modules/core/components/FormField"
@@ -12,7 +17,7 @@ import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { formatDate, formatDateTime } from "@/modules/core/utils/format"
-import { CheckCircle, Wallet, XCircle } from "lucide-react"
+import { CheckCircle, CreditCard, Wallet, XCircle } from "lucide-react"
 
 export default function FinancialEntryEdit() {
   const {
@@ -24,10 +29,14 @@ export default function FinancialEntryEdit() {
     paymentDate,
     cancelledAt,
     relatedOrder,
+    payments,
     isAutomatic,
     handleMarkPaid,
     handleCancel,
+    handleGenerateCharge,
+    generatingCharge,
   } = useFinancialEntryEditForm()
+  const [chargeMethod, setChargeMethod] = useState("PIX")
   const {
     register,
     control,
@@ -155,6 +164,81 @@ export default function FinancialEntryEdit() {
             )}
           </form>
         </div>
+
+        {/* cobrança via gateway: só faz sentido pra receita vinculada a uma
+            OS — mesma regra que o back aplica em payment_service. */}
+        {entryType === "a_receber" && relatedOrder && (
+          <div className="card-premium mt-6">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
+              <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-slate-800 tracking-tight">Cobrança</h3>
+            </div>
+
+            {!locked && !payments.some((payment) => paymentIsActive(payment.status)) && (
+              <div className="flex flex-wrap items-end gap-4 mb-6 bg-slate-50 p-4 rounded-xl">
+                <div className="flex-1 min-w-[180px]">
+                  <SelectField
+                    label="Forma de pagamento"
+                    options={PAYMENT_METHOD_OPTIONS}
+                    value={chargeMethod}
+                    onChange={(event) => setChargeMethod(event.target.value)}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleGenerateCharge(chargeMethod)}
+                  disabled={generatingCharge}
+                  className="px-4 py-3 bg-brand text-white rounded-xl hover:bg-brand-hover font-bold text-sm shadow-sm transition-all disabled:opacity-50"
+                >
+                  Gerar cobrança
+                </button>
+              </div>
+            )}
+
+            <div className="divide-y divide-slate-100">
+              {payments.map((payment) => (
+                <div
+                  key={payment.id}
+                  className="py-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-sm"
+                >
+                  <div>
+                    <span className="font-medium text-slate-700">
+                      {paymentMethodLabel(payment.method)}
+                    </span>
+                    <span className="text-slate-400 ml-2">
+                      {formatDateTime(payment.created_at)}
+                    </span>
+                    {payment.status === "falhou" && payment.error_message && (
+                      <p className="text-xs text-danger mt-1">{payment.error_message}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {payment.checkout_url && (
+                      <a
+                        href={payment.checkout_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-brand hover:underline text-xs font-bold"
+                      >
+                        Link de pagamento
+                      </a>
+                    )}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${paymentStatusTone(payment.status)}`}
+                    >
+                      {payment.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {payments.length === 0 && (
+                <p className="text-slate-400 py-4 text-center">Nenhuma cobrança gerada ainda.</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -1,10 +1,8 @@
 import { useNavigate } from "react-router-dom"
 import { useProductForm } from "@/modules/product/hooks/useProductForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
-import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
@@ -20,18 +18,15 @@ export default function ProductCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { canChooseBusiness } = usePermissions()
-  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
   const { product: products } = useProductOptions()
 
-  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
   // datalist de "Marca" pré-populado com as marcas já cadastradas em outros
   // produtos — continua texto livre, só facilita reaproveitar o mesmo nome.
   const brandOptions = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort()
 
-  if (loadingBusinesses || loadingSuppliers) {
+  if (loadingSuppliers) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -56,15 +51,6 @@ export default function ProductCreate() {
 
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {canChooseBusiness && (
-                <SelectField
-                  label="Empreendimento"
-                  options={businessOptions}
-                  error={errors.business_id?.message}
-                  registration={register("business_id")}
-                />
-              )}
-
               <div className="flex items-end gap-2">
                 <div className="flex-1">
                   <SelectField

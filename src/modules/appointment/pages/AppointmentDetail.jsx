@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom"
 import { useAppointmentEditForm } from "@/modules/appointment/hooks/useAppointmentEditForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useOrderOptions } from "@/modules/core/hooks/options"
@@ -9,7 +8,6 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
-import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { idOf, withSelectedOption } from "@/api/dto"
 import { orderCanFinish } from "@/modules/order/domain"
 
@@ -79,18 +77,13 @@ export default function AppointmentDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { canChooseBusiness } = usePermissions()
-
   const businessId = watch("business_id")
   const clientId = watch("client_id")
   const vehicleId = watch("vehicle_id")
 
-  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { client: clients, loading: loadingClients } = useClientOptions()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { orders, loading: loadingOrders } = useOrderOptions()
-
-  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
   // rótulo da <option> de fallback a partir do registro cru do detalhe (ora
   // aninhado, ora id cru — degrada pra "#id" quando não tem o nome)
@@ -151,7 +144,7 @@ export default function AppointmentDetail() {
     names.forEach((name) => setValue(name, ""))
   }
 
-  if (loading || loadingBusinesses || loadingClients || loadingVehicles || loadingOrders)
+  if (loading || loadingClients || loadingVehicles || loadingOrders)
     return <p className="p-6 text-slate-500 font-medium">Carregando...</p>
 
   return (
@@ -191,22 +184,9 @@ export default function AppointmentDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7 card-premium">
             <form className="space-y-6" onSubmit={onSubmit}>
-              {canChooseBusiness && (
-                <SelectField
-                  label="Empreendimento"
-                  options={businessOptions}
-                  error={errors.business_id?.message}
-                  registration={register("business_id", {
-                    onChange: () => resetChildren("client_id", "vehicle_id", "order_id"),
-                  })}
-                />
-              )}
-
               <SelectField
                 label="Cliente Proprietário"
                 options={clientOptions}
-                disabled={!businessId}
-                disabledHint="Selecione o empreendimento primeiro"
                 error={errors.client_id?.message}
                 registration={register("client_id", {
                   onChange: () => resetChildren("vehicle_id", "order_id"),

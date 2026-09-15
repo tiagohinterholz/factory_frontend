@@ -30,9 +30,6 @@ const order = {
 function mockApi() {
   server.use(
     http.get(`${API}/ordens/1/`, () => HttpResponse.json(order)),
-    http.get(`${API}/empreendimentos/`, () =>
-      HttpResponse.json({ results: [{ id: 2, corporate_name: "Oficina Teste" }], count: 1 }),
-    ),
     http.get(`${API}/clientes/`, () =>
       HttpResponse.json({
         results: [{ id: 5, first_name: "Ana", last_name: "Lima", business: 2 }],
@@ -55,6 +52,7 @@ function mockApi() {
     ),
     http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
     http.get(`${API}/servicos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    http.get(`${API}/financeiro/`, () => HttpResponse.json({ results: [], count: 0 })),
   )
 }
 
@@ -132,6 +130,35 @@ describe("<OrderEdit>", () => {
     expect(await screen.findByText(/Faturado em 10\/09\/2026/)).toBeInTheDocument()
   })
 
+  it("faturado: mostra link pro lançamento financeiro quando ele existe", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, status: "faturado", billing_date: "2026-09-10" }),
+      ),
+      http.get(`${API}/financeiro/`, () => HttpResponse.json({ results: [{ id: 42 }], count: 1 })),
+    )
+    renderPage()
+
+    const link = await screen.findByRole("link", { name: /Ver lançamento financeiro/i })
+    expect(link).toHaveAttribute("href", "/financeiro/42")
+  })
+
+  it("faturado sem lançamento financeiro (dado antigo): não mostra o link", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, status: "faturado", billing_date: "2026-09-10" }),
+      ),
+    )
+    renderPage()
+
+    await screen.findByText(/Faturado em 10\/09\/2026/)
+    expect(
+      screen.queryByRole("link", { name: /Ver lançamento financeiro/i }),
+    ).not.toBeInTheDocument()
+  })
+
   it("faturado: campos gerais e botão de salvar ficam desabilitados", async () => {
     mockApi()
     server.use(
@@ -142,8 +169,7 @@ describe("<OrderEdit>", () => {
     renderPage()
 
     expect(await screen.findByText(/edição bloqueada/i)).toBeInTheDocument()
-    const [businessSelect, clientSelect, vehicleSelect] = screen.getAllByRole("combobox")
-    expect(businessSelect).toBeDisabled()
+    const [clientSelect, vehicleSelect] = screen.getAllByRole("combobox")
     expect(clientSelect).toBeDisabled()
     expect(vehicleSelect).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) data e hora do serviço")).toBeDisabled()
@@ -156,8 +182,8 @@ describe("<OrderEdit>", () => {
     renderPage()
 
     await screen.findByText("Orçamento de origem")
-    const [businessSelect] = screen.getAllByRole("combobox")
-    expect(businessSelect).toBeEnabled()
+    const [clientSelect] = screen.getAllByRole("combobox")
+    expect(clientSelect).toBeEnabled()
     expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeEnabled()
   })
 
@@ -165,9 +191,6 @@ describe("<OrderEdit>", () => {
     // cache de opções defasado: as listas não trazem o cliente 5 nem o veículo 9
     server.use(
       http.get(`${API}/ordens/1/`, () => HttpResponse.json(order)),
-      http.get(`${API}/empreendimentos/`, () =>
-        HttpResponse.json({ results: [{ id: 2, corporate_name: "Oficina Teste" }], count: 1 }),
-      ),
       http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),

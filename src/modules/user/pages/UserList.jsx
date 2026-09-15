@@ -1,4 +1,5 @@
 import { useUser } from "../hooks/useUser"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 
@@ -8,6 +9,7 @@ import ListTable from "@/modules/core/components/ListTable"
 export default function UserList() {
   const { user, loading, currentPage, setCurrentPage, remove, totalItems, refetch, error } =
     useUser()
+  const { isSuperUser } = usePermissions()
 
   const columns = [
     { header: "Nome", accessor: (item) => item.name },
@@ -17,7 +19,11 @@ export default function UserList() {
 
   return (
     <div className="p-6 space-y-4">
-      <ListHeader title="Usuários" buttonText="Novo Usuário" buttonLink="/usuarios/novo" />
+      <ListHeader
+        title="Usuários"
+        buttonText={isSuperUser ? undefined : "Novo Usuário"}
+        buttonLink={isSuperUser ? undefined : "/usuarios/novo"}
+      />
       <ListTable
         columns={columns}
         data={user}
