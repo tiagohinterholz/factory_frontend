@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { useQueryClient } from "@tanstack/react-query"
 import { useOrderEditForm } from "../hooks/useOrderEditForm"
 import { OrderService } from "../services/order"
@@ -27,7 +27,7 @@ import {
   orderCanInvoice,
   orderIsBilled,
 } from "@/modules/order/domain"
-import { CheckCircle2, Plus, Trash2 } from "lucide-react"
+import { CheckCircle2, Plus, Trash2, Wallet } from "lucide-react"
 
 export default function OrderEdit() {
   const { id } = useParams()
@@ -47,6 +47,7 @@ export default function OrderEdit() {
     budgetId,
     relatedClient,
     relatedVehicle,
+    financialEntryId,
     handleDelete,
     handleFinish,
     handleInvoice,
@@ -299,6 +300,15 @@ export default function OrderEdit() {
           </div>
 
           {orderIsBilled(status) && <FiscalNotePanel orderId={id} />}
+
+          {financialEntryId && (
+            <Link
+              to={`/financeiro/${financialEntryId}`}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 text-brand rounded-xl hover:bg-brand-subtle font-bold text-sm shadow-sm transition-all"
+            >
+              <Wallet size={18} /> Ver lançamento financeiro
+            </Link>
+          )}
         </div>
 
         <div className="lg:col-span-2 space-y-8">

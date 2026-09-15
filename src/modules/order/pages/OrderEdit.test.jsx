@@ -55,6 +55,7 @@ function mockApi() {
     ),
     http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
     http.get(`${API}/servicos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    http.get(`${API}/financeiro/`, () => HttpResponse.json({ results: [], count: 0 })),
   )
 }
 
@@ -130,6 +131,35 @@ describe("<OrderEdit>", () => {
     renderPage()
 
     expect(await screen.findByText(/Faturado em 10\/09\/2026/)).toBeInTheDocument()
+  })
+
+  it("faturado: mostra link pro lançamento financeiro quando ele existe", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, status: "faturado", billing_date: "2026-09-10" }),
+      ),
+      http.get(`${API}/financeiro/`, () => HttpResponse.json({ results: [{ id: 42 }], count: 1 })),
+    )
+    renderPage()
+
+    const link = await screen.findByRole("link", { name: /Ver lançamento financeiro/i })
+    expect(link).toHaveAttribute("href", "/financeiro/42")
+  })
+
+  it("faturado sem lançamento financeiro (dado antigo): não mostra o link", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, status: "faturado", billing_date: "2026-09-10" }),
+      ),
+    )
+    renderPage()
+
+    await screen.findByText(/Faturado em 10\/09\/2026/)
+    expect(
+      screen.queryByRole("link", { name: /Ver lançamento financeiro/i }),
+    ).not.toBeInTheDocument()
   })
 
   it("faturado: campos gerais e botão de salvar ficam desabilitados", async () => {
