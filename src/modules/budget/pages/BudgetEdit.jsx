@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useParams } from "react-router-dom"
+import { useQueryClient } from "@tanstack/react-query"
 import { useBudgetEditForm } from "../hooks/useBudgetEditForm"
 import { BudgetService } from "../services/budgets"
 import { useBusinessOptions } from "@/modules/core/hooks/options"
@@ -18,11 +19,18 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Plus, Trash2, CheckCircle, XCircle, Copy } from "lucide-react"
 import { formatDateTime, formatMoney } from "@/modules/core/utils/format"
-import { budgetStatusTone, budgetIsPending, budgetCanDuplicate, budgetStatusDate } from "../domain"
+import {
+  budgetKeys,
+  budgetStatusTone,
+  budgetIsPending,
+  budgetCanDuplicate,
+  budgetStatusDate,
+} from "../domain"
 
 export default function BudgetEdit() {
   const { id } = useParams()
   const toast = useToast()
+  const queryClient = useQueryClient()
   const {
     form,
     onSubmit,
@@ -65,6 +73,7 @@ export default function BudgetEdit() {
   const [quantity, setQuantity] = useState(1)
   const [selectedService, setSelectedService] = useState("")
   const [approveOpen, setApproveOpen] = useState(false)
+  const [savingItem, setSavingItem] = useState(false)
 
   // handleApprove faz o toast/erro; retorno truthy = ok -> fecha o modal,
   // falsy -> mantém aberto pro usuário tentar de novo.
@@ -72,10 +81,18 @@ export default function BudgetEdit() {
     if (await handleApprove(serviceDate)) setApproveOpen(false)
   }
 
+  // Invalida budgetKeys.all (lista/detalhe/histórico) sempre que um item
+  // muda — sem isso, a listagem de orçamentos fica com o total desatualizado
+  // por até o staleTime (o `refresh()` só recarrega o state local desta tela).
+  function invalidateBudgetCaches() {
+    queryClient.invalidateQueries({ queryKey: budgetKeys.all })
+  }
+
   async function handleAddProduct(event) {
     event.preventDefault()
-    if (!selectedProduct) return
+    if (!selectedProduct || savingItem) return
     const product = allProducts.find((item) => String(item.id) === String(selectedProduct))
+    setSavingItem(true)
     try {
       await BudgetService.budgetProductCreate(id, {
         product_id: selectedProduct,
@@ -86,16 +103,20 @@ export default function BudgetEdit() {
       setSelectedProduct("")
       setQuantity(1)
       refresh()
+      invalidateBudgetCaches()
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao adicionar produto").message)
+    } finally {
+      setSavingItem(false)
     }
   }
 
   async function handleAddService(event) {
     event.preventDefault()
-    if (!selectedService) return
+    if (!selectedService || savingItem) return
     const service = allServices.find((item) => String(item.id) === String(selectedService))
+    setSavingItem(true)
     try {
       await BudgetService.budgetServiceCreate(id, {
         service_id: selectedService,
@@ -104,9 +125,12 @@ export default function BudgetEdit() {
       })
       setSelectedService("")
       refresh()
+      invalidateBudgetCaches()
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao adicionar serviço").message)
+    } finally {
+      setSavingItem(false)
     }
   }
 
@@ -114,6 +138,7 @@ export default function BudgetEdit() {
     try {
       await BudgetService.budgetProductDelete(id, itemId)
       refresh()
+      invalidateBudgetCaches()
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao remover produto").message)
@@ -124,6 +149,7 @@ export default function BudgetEdit() {
     try {
       await BudgetService.budgetServiceDelete(id, itemId)
       refresh()
+      invalidateBudgetCaches()
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao remover serviço").message)
@@ -313,7 +339,8 @@ export default function BudgetEdit() {
                 </div>
                 <button
                   type="submit"
-                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors"
+                  disabled={savingItem}
+                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors disabled:opacity-50"
                 >
                   <Plus size={24} />
                 </button>
@@ -374,7 +401,8 @@ export default function BudgetEdit() {
                 </div>
                 <button
                   type="submit"
-                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors"
+                  disabled={savingItem}
+                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors disabled:opacity-50"
                 >
                   <Plus size={24} />
                 </button>
