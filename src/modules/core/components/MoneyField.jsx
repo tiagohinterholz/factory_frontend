@@ -5,7 +5,14 @@ import { formatMoney } from "@/modules/core/utils/format"
 // centavos e empurra o resto pra esquerda (digitar "15000" mostra
 // "R$ 150,00"). O valor do form fica sempre em reais (150, não 15000),
 // pronto pro payload — a formatação é só de exibição.
-export default function MoneyField({ control, name, label, error, placeholder = "R$ 0,00" }) {
+export default function MoneyField({
+  control,
+  name,
+  label,
+  error,
+  placeholder = "R$ 0,00",
+  disabled = false,
+}) {
   return (
     <Controller
       control={control}
@@ -29,9 +36,10 @@ export default function MoneyField({ control, name, label, error, placeholder = 
               type="text"
               inputMode="decimal"
               placeholder={placeholder}
+              disabled={disabled}
               className={`input-premium ${
-                error ? "border-danger focus:border-danger focus:ring-danger/15" : ""
-              }`}
+                disabled ? "cursor-not-allowed opacity-60" : ""
+              } ${error ? "border-danger focus:border-danger focus:ring-danger/15" : ""}`}
               value={display}
               onChange={handleChange}
               onBlur={field.onBlur}

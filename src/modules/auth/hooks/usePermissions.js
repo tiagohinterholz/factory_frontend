@@ -24,5 +24,7 @@ export function usePermissions() {
     canManageLicenses: isAdmin,
     // exportar relatórios (backend: IsSuperUser | IsAdminUser)
     canExportReports: isAdmin,
+    // financeiro é dado sensível — colaborador nem vê (backend: IsSuperUser | IsAdminUser)
+    canManageFinancial: isAdmin,
   }
 }
