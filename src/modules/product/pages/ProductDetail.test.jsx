@@ -22,7 +22,6 @@ function mockProduct() {
         supplier: 9,
       }),
     ),
-    http.get(`${API}/empreendimentos/`, () => HttpResponse.json({ results: [], count: 0 })),
     http.get(`${API}/fornecedores/`, () =>
       HttpResponse.json({ results: [{ id: 9, corporate_name: "Bosch Ltda" }], count: 1 }),
     ),

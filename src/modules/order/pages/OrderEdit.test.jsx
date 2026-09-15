@@ -30,9 +30,6 @@ const order = {
 function mockApi() {
   server.use(
     http.get(`${API}/ordens/1/`, () => HttpResponse.json(order)),
-    http.get(`${API}/empreendimentos/`, () =>
-      HttpResponse.json({ results: [{ id: 2, corporate_name: "Oficina Teste" }], count: 1 }),
-    ),
     http.get(`${API}/clientes/`, () =>
       HttpResponse.json({
         results: [{ id: 5, first_name: "Ana", last_name: "Lima", business: 2 }],
@@ -172,8 +169,7 @@ describe("<OrderEdit>", () => {
     renderPage()
 
     expect(await screen.findByText(/edição bloqueada/i)).toBeInTheDocument()
-    const [businessSelect, clientSelect, vehicleSelect] = screen.getAllByRole("combobox")
-    expect(businessSelect).toBeDisabled()
+    const [clientSelect, vehicleSelect] = screen.getAllByRole("combobox")
     expect(clientSelect).toBeDisabled()
     expect(vehicleSelect).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) data e hora do serviço")).toBeDisabled()
@@ -186,8 +182,8 @@ describe("<OrderEdit>", () => {
     renderPage()
 
     await screen.findByText("Orçamento de origem")
-    const [businessSelect] = screen.getAllByRole("combobox")
-    expect(businessSelect).toBeEnabled()
+    const [clientSelect] = screen.getAllByRole("combobox")
+    expect(clientSelect).toBeEnabled()
     expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeEnabled()
   })
 
@@ -195,9 +191,6 @@ describe("<OrderEdit>", () => {
     // cache de opções defasado: as listas não trazem o cliente 5 nem o veículo 9
     server.use(
       http.get(`${API}/ordens/1/`, () => HttpResponse.json(order)),
-      http.get(`${API}/empreendimentos/`, () =>
-        HttpResponse.json({ results: [{ id: 2, corporate_name: "Oficina Teste" }], count: 1 }),
-      ),
       http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),

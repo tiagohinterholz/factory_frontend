@@ -1,14 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom"
 import { Plus } from "lucide-react"
 import { useVehicleForm } from "@/modules/vehicle/hooks/useVehicleForm"
-import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useManufacturerOptions } from "@/modules/core/hooks/options"
 import { useModelOptionsByManufacturer } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import BackLink from "@/modules/core/components/BackLink"
 import {
   fuelOptions,
@@ -29,27 +27,19 @@ export default function VehicleCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { canChooseBusiness } = usePermissions()
   const manufacturerId = watch("manufacturer_id")
 
-  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { client: clients, loading: loadingClients } = useClientOptions()
   const { manufacturers, loading: loadingManufacturers } = useManufacturerOptions()
   const { modelsByManufacturer, loading: loadingModels } =
     useModelOptionsByManufacturer(manufacturerId)
 
-  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients.map((c) => ({
     id: c.id,
     name: `${c.first_name} ${c.last_name}`,
   }))
 
-  if (
-    loadingBusinesses ||
-    loadingClients ||
-    loadingManufacturers ||
-    (manufacturerId && loadingModels)
-  ) {
+  if (loadingClients || loadingManufacturers || (manufacturerId && loadingModels)) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -68,15 +58,6 @@ export default function VehicleCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            {canChooseBusiness && (
-              <SelectField
-                label="Empreendimento"
-                options={businessOptions}
-                error={errors.business_id?.message}
-                registration={register("business_id")}
-              />
-            )}
-
             <div className="flex items-end gap-2">
               <div className="flex-1">
                 <SelectField

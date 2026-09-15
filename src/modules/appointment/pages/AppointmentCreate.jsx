@@ -1,13 +1,11 @@
 import { useAppointmentForm } from "@/modules/appointment/hooks/useAppointmentForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useOrderOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { Save } from "lucide-react"
 
 export default function AppointmentCreate() {
@@ -19,18 +17,13 @@ export default function AppointmentCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { canChooseBusiness } = usePermissions()
-
   const businessId = watch("business_id")
   const clientId = watch("client_id")
   const vehicleId = watch("vehicle_id")
 
-  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { client: clients, loading: loadingClients } = useClientOptions()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { orders, loading: loadingOrders } = useOrderOptions()
-
-  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
   const clientOptions = clients
     .filter((c) => {
@@ -60,7 +53,7 @@ export default function AppointmentCreate() {
     names.forEach((name) => setValue(name, ""))
   }
 
-  if (loadingBusinesses || loadingClients || loadingVehicles || loadingOrders) {
+  if (loadingClients || loadingVehicles || loadingOrders) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -79,22 +72,9 @@ export default function AppointmentCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            {canChooseBusiness && (
-              <SelectField
-                label="Empreendimento"
-                options={businessOptions}
-                error={errors.business_id?.message}
-                registration={register("business_id", {
-                  onChange: () => resetChildren("client_id", "vehicle_id", "order_id"),
-                })}
-              />
-            )}
-
             <SelectField
               label="Cliente Proprietário"
               options={clientOptions}
-              disabled={!businessId}
-              disabledHint="Selecione o empreendimento primeiro"
               error={errors.client_id?.message}
               registration={register("client_id", {
                 onChange: () => resetChildren("vehicle_id", "order_id"),

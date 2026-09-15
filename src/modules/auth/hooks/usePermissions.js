@@ -16,9 +16,6 @@ export function usePermissions() {
     // pra achar o próprio registro em /usuarios/<id>/ — colaborador não
     // gerencia outros usuários, mas edita o próprio (nome, senha)
     userId: user?.user_id ?? null,
-    // só o superusuário escolhe entre empreendimentos no formulário;
-    // o usuário de um empreendimento fica preso ao próprio
-    canChooseBusiness: isSuperUser,
     // admin gerencia usuários e a licença do próprio empreendimento
     canManageUsers: isAdmin,
     canManageLicenses: isAdmin,

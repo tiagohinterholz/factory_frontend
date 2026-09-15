@@ -2,7 +2,6 @@ import { Link, useParams, useNavigate } from "react-router-dom"
 import { Edit, Trash2, Eye, ChevronRight, ClipboardList, FileText } from "lucide-react"
 import { useVehicleEditForm } from "@/modules/vehicle/hooks/useVehicleEditForm"
 import { useVehicleHistory } from "@/modules/vehicle/hooks/useVehicleHistory"
-import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useManufacturerOptions } from "@/modules/core/hooks/options"
 import { useModelOptionsByManufacturer } from "@/modules/core/hooks/options"
@@ -11,7 +10,6 @@ import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import BackLink from "@/modules/core/components/BackLink"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
-import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import {
   fuelOptions,
   manufactureYearOptions,
@@ -48,30 +46,21 @@ export default function VehicleEdit() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { canChooseBusiness } = usePermissions()
   const clientId = watch("client_id")
   const manufacturerId = watch("manufacturer_id")
 
-  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { client: clients, loading: loadingClients } = useClientOptions()
   const { manufacturers, loading: loadingManufacturers } = useManufacturerOptions()
   const { modelsByManufacturer, loading: loadingModels } =
     useModelOptionsByManufacturer(manufacturerId)
   const { orders, budgets, loading: loadingHistory } = useVehicleHistory(id)
 
-  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients.map((c) => ({
     id: c.id,
     name: `${c.first_name} ${c.last_name}`,
   }))
 
-  if (
-    loading ||
-    loadingBusinesses ||
-    loadingClients ||
-    loadingManufacturers ||
-    (manufacturerId && loadingModels)
-  )
+  if (loading || loadingClients || loadingManufacturers || (manufacturerId && loadingModels))
     return <p className="p-6">Carregando...</p>
 
   return (
@@ -96,15 +85,6 @@ export default function VehicleEdit() {
         <div className="lg:col-span-7">
           <div className="card-premium">
             <form className="space-y-6" onSubmit={onSubmit}>
-              {canChooseBusiness && (
-                <SelectField
-                  label="Empreendimento"
-                  options={businessOptions}
-                  error={errors.business_id?.message}
-                  registration={register("business_id")}
-                />
-              )}
-
               <div className="flex items-end gap-2">
                 <div className="flex-1">
                   <SelectField

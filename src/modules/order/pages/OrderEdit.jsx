@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom"
 import { useQueryClient } from "@tanstack/react-query"
 import { useOrderEditForm } from "../hooks/useOrderEditForm"
 import { OrderService } from "../services/order"
-import { useBusinessOptions } from "@/modules/core/hooks/options"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
@@ -68,7 +67,6 @@ export default function OrderEdit() {
   const businessId = watch("business_id")
   const clientId = watch("client_id")
 
-  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { client: clients, loading: loadingClients } = useClientOptions()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { product: allProducts } = useProductOptions()
@@ -156,7 +154,7 @@ export default function OrderEdit() {
 
   // espera as listas de opção antes de montar os <select> — senão o form.reset
   // roda antes das <option> existirem e o campo fica vazio (BUG-1).
-  if (loading || loadingBusinesses || loadingClients || loadingVehicles)
+  if (loading || loadingClients || loadingVehicles)
     return <div className="p-6 text-center">Carregando...</div>
 
   // o cliente/veículo já vinculados à OS têm que aparecer no select mesmo que o
@@ -169,7 +167,6 @@ export default function OrderEdit() {
       ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""} (${vehicle.plate ?? ""})`
       : `Veículo #${idOf(vehicle)}`
 
-  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = withSelectedOption(
     clients
       .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
@@ -243,22 +240,9 @@ export default function OrderEdit() {
             )}
             <form onSubmit={onSubmit} className="space-y-4">
               <SelectField
-                label="Empreendimento"
-                options={businessOptions}
-                disabled={locked}
-                error={errors.business_id?.message}
-                registration={register("business_id", {
-                  onChange: () => {
-                    setValue("client_id", "")
-                    setValue("vehicle_id", "")
-                  },
-                })}
-              />
-              <SelectField
                 label="Cliente"
                 options={clientOptions}
-                disabled={locked || !businessId}
-                disabledHint={locked ? undefined : "Selecione o empreendimento primeiro"}
+                disabled={locked}
                 error={errors.client_id?.message}
                 registration={register("client_id", {
                   onChange: () => setValue("vehicle_id", ""),
