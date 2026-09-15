@@ -36,6 +36,7 @@ export function useFinancialEntryEditForm() {
     cancelledAt: null,
     order: null,
     supplier: null,
+    payments: [],
   })
 
   const fetchMeta = useCallback(async () => {
@@ -47,6 +48,7 @@ export function useFinancialEntryEditForm() {
       cancelledAt: data.cancelled_at ?? null,
       order: data.order ?? null,
       supplier: data.supplier ?? null,
+      payments: data.payments ?? [],
     })
     return data
   }, [id])
@@ -98,6 +100,17 @@ export function useFinancialEntryEditForm() {
     errorFallback: "Erro ao cancelar o lançamento.",
   })
 
+  // gerar cobrança é uma ação de gateway de verdade — não some se der
+  // errado, então não tem "confirm" bloqueante, mas também não é reversível
+  // com um clique (o back bloqueia gerar outra enquanto essa não resolver).
+  const generateCharge = useResourceAction({
+    mutationFn: (method) => FinancialEntryService.generateCharge(id, method),
+    invalidate: [financialEntryKeys.all],
+    success: "Cobrança solicitada — acompanhe o status abaixo.",
+    onSuccess: () => fetchMeta(),
+    errorFallback: "Erro ao gerar a cobrança.",
+  })
+
   return {
     form,
     onSubmit,
@@ -108,8 +121,11 @@ export function useFinancialEntryEditForm() {
     cancelledAt: meta.cancelledAt,
     relatedOrder: meta.order,
     relatedSupplier: meta.supplier,
+    payments: meta.payments,
     isAutomatic,
     handleMarkPaid: markPaid.run,
     handleCancel: cancel.run,
+    handleGenerateCharge: generateCharge.run,
+    generatingCharge: generateCharge.pending,
   }
 }
