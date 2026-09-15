@@ -3,6 +3,7 @@ import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { BudgetService } from "@/modules/budget/services/budgets"
 import { AppointmentService } from "@/modules/appointment"
 import { budgetSchema, budgetDefaults, toBudgetPayload, budgetKeys } from "../domain"
+import { appointmentKeys } from "@/modules/appointment/domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 
 // `clientId` / `vehicleId`: pré-preenchimento vindo, por exemplo, do botão
@@ -30,7 +31,7 @@ export function useBudgetForm({ clientId, vehicleId, appointmentId } = {}) {
     // vai direto pro orçamento recém-criado pra adicionar produtos/serviços
     // (é a etapa "Prosseguir para Itens"); sem id, cai na listagem.
     redirectTo: (budget) => (budget?.id ? `/orcamentos/${budget.id}` : "/orcamentos"),
-    invalidate: [budgetKeys.all, dashboardKeys.all],
+    invalidate: [budgetKeys.all, appointmentKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao criar orçamento",
   })
 }

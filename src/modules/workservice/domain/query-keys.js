@@ -5,5 +5,5 @@ export const workServiceKeys = {
   lists: () => [...workServiceKeys.all, "list"],
   list: (params) => [...workServiceKeys.lists(), params],
   detail: (id) => [...workServiceKeys.all, "detail", id],
-  bySupplier: (supplierId) => ["services", "by-supplier", supplierId],
+  bySupplier: (supplierId) => [...workServiceKeys.all, "by-supplier", supplierId],
 }
