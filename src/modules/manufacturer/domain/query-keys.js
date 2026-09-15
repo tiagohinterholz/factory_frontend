@@ -4,9 +4,5 @@ export const manufacturerKeys = {
   all: ["manufacturers"],
   lists: () => [...manufacturerKeys.all, "list"],
   list: (params) => [...manufacturerKeys.lists(), params],
-  modelsByManufacturer: (manufacturerId) => [
-    ...manufacturerKeys.all,
-    "models",
-    manufacturerId,
-  ],
+  modelsByManufacturer: (manufacturerId) => [...manufacturerKeys.all, "models", manufacturerId],
 }
