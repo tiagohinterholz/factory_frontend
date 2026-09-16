@@ -13,6 +13,7 @@ import DashboardLayout from "@/modules/core/layout/DashboardLayout"
 import LandingRoutes from "@/modules/landing/routes"
 import AuthRoutes from "@/modules/auth/routes"
 import LegalRoutes from "@/modules/legal/routes"
+import SignupRoutes from "@/modules/signup/routes"
 import DashboardRoutes from "@/modules/dashboard/routes"
 import LocationRoutes from "@/modules/location/routes"
 import SupplierRoutes from "@/modules/supplier/routes"
@@ -45,6 +46,7 @@ export default function App() {
                     {LandingRoutes}
                     {AuthRoutes}
                     {LegalRoutes}
+                    {SignupRoutes}
 
                     {/* Dashboard routes (Private & Layout wrapped) */}
                     <Route
