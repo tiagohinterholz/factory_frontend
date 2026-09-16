@@ -15,4 +15,18 @@ export const AuthService = {
       console.error("Erro no logout:", error)
     }
   },
+
+  // Resposta é sempre a mesma ("se o email existir..."), de propósito —
+  // não vaza se a conta existe ou não.
+  async forgotPassword(email) {
+    const response = await api.post("/usuarios/forgot-password/", { email })
+    return response.data
+  },
+
+  async resetPassword(uidb64, token, newPassword) {
+    const response = await api.post(`/usuarios/reset-password/${uidb64}/${token}/`, {
+      new_password: newPassword,
+    })
+    return response.data
+  },
 }

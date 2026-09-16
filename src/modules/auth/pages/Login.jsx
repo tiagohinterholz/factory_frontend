@@ -59,12 +59,9 @@ export default function Login() {
         </form>
 
         <div className="mt-6 text-center space-y-2">
-          <a href="#forgot" className="block text-blue-600 hover:underline text-sm">
+          <Link to="/esqueci-senha" className="block text-blue-600 hover:underline text-sm">
             Esqueceu a senha?
-          </a>
-          <a href="#register" className="block text-gray-700 hover:underline text-sm">
-            Criar uma conta
-          </a>
+          </Link>
           <Link to="/privacidade" className="block text-gray-500 hover:underline text-xs pt-2">
             Aviso de Privacidade
           </Link>
