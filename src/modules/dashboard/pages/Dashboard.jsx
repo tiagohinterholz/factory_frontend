@@ -46,7 +46,7 @@ const FLOW_BILLED = "billed"
 
 export default function Dashboard() {
   const { loading, error, data, refetch } = useDashboard()
-  const { isAdmin } = usePermissions()
+  const { canManageFinancial } = usePermissions()
   const [flowFilter, setFlowFilter] = useState(FLOW_IN_PROGRESS)
 
   if (loading) {
@@ -165,7 +165,9 @@ export default function Dashboard() {
         </div>
       </Quadro>
 
-      {isAdmin && financial && <FinancialMonthCard breakdown={financial.entries_by_status} />}
+      {canManageFinancial && financial && (
+        <FinancialMonthCard breakdown={financial.entries_by_status} />
+      )}
 
       <Quadro title="Resumo" subtitle="Totais do empreendimento">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

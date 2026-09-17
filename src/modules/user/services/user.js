@@ -34,4 +34,18 @@ export const UserService = {
     const response = await api.post("/usuarios/change-password/", payload)
     return response.data
   },
+
+  // Catálogo de permissão concedível + o que já foi dado a este usuário
+  // além do papel padrão dele (backend: users.can_manage_permissions).
+  async getUserPermissions(id) {
+    const response = await api.get(`/usuarios/${id}/permissoes/`)
+    return response.data
+  },
+
+  // payload: { permissions: ["budgets.can_approve_budget", ...] } —
+  // substitui o conjunto inteiro, não soma/subtrai.
+  async updateUserPermissions(id, payload) {
+    const response = await api.patch(`/usuarios/${id}/permissoes/`, payload)
+    return response.data
+  },
 }

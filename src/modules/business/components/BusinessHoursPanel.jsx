@@ -104,7 +104,7 @@ function DayTile({ hour, canEdit, saving, onSave }) {
 }
 
 // Faixa horizontal com os 7 dias da semana lado a lado (quebra em grade
-// menor conforme o espaço encolhe). Colaborador só visualiza; admin edita
+// menor conforme o espaço encolhe). Atendente só visualiza; admin edita
 // (`canEdit`) — cada dia grava seu PATCH próprio, independente dos demais e
 // do form de dados organizacionais acima.
 export default function BusinessHoursPanel({ hours, loading, canEdit, savingWeekday, onSave }) {

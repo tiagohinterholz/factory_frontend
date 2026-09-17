@@ -8,7 +8,7 @@ const LicenseDetail = lazy(() => import("./pages/LicenseDetail"))
 
 const LicenseRoutes = (
   <>
-    {/* self-service: admin/colaborador vê e renova a própria licença */}
+    {/* self-service: admin/atendente vê e renova a própria licença */}
     <Route path="/configuracoes/licenca" element={<MyLicense />} />
     {/* espera da cobrança de renovação (4.4.2), até o pagamento confirmar */}
     <Route path="/configuracoes/licenca/pagamento/:id" element={<LicenseRenewPayment />} />
