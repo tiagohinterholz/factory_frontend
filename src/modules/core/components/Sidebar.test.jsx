@@ -69,10 +69,10 @@ describe("<Sidebar>", () => {
     expect(screen.getByRole("link", { name: "Licenças" })).toHaveAttribute("href", "/licencas")
   })
 
-  it("colaborador não gerencia usuários, mas edita o próprio (Usuário, singular)", () => {
+  it("atendente não gerencia usuários, mas edita o próprio (Usuário, singular)", () => {
     localStorage.setItem(
       "user",
-      JSON.stringify({ user_id: 7, email: "colab@a.com", business_id: 3, role: "colaborador" }),
+      JSON.stringify({ user_id: 7, email: "colab@a.com", business_id: 3, role: "atendente" }),
     )
     renderSidebar()
 

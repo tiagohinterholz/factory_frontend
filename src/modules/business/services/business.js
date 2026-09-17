@@ -30,7 +30,7 @@ export const BusinessService = {
   },
 
   // Horário de funcionamento do próprio negócio (0=segunda ... 6=domingo).
-  // GET libera pra superuser/admin/colaborador; PATCH só superuser/admin.
+  // GET libera pra superuser/admin/atendente; PATCH só superuser/admin.
   async getSelfHours() {
     const response = await api.get("/configuracoes/horarios/")
     return response.data

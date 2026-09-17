@@ -13,7 +13,7 @@ export function usePermissions() {
     isSuperUser,
     isAdmin,
     businessId,
-    // pra achar o próprio registro em /usuarios/<id>/ — colaborador não
+    // pra achar o próprio registro em /usuarios/<id>/ — atendente não
     // gerencia outros usuários, mas edita o próprio (nome, senha)
     userId: user?.user_id ?? null,
     // admin gerencia usuários e a licença do próprio empreendimento
@@ -21,7 +21,7 @@ export function usePermissions() {
     canManageLicenses: isAdmin,
     // exportar relatórios (backend: IsSuperUser | IsAdminUser)
     canExportReports: isAdmin,
-    // financeiro é dado sensível — colaborador nem vê (backend: IsSuperUser | IsAdminUser)
+    // financeiro é dado sensível — atendente nem vê (backend: IsSuperUser | IsAdminUser)
     canManageFinancial: isAdmin,
   }
 }

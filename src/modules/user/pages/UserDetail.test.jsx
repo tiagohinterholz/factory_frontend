@@ -14,7 +14,7 @@ function mockUser() {
         id: 1,
         name: "Maria Souza",
         email: "maria@oficina.com",
-        role: "colaborador",
+        role: "atendente",
         business: { id: 3, corporate_name: "Oficina do João" },
       }),
     ),
@@ -130,7 +130,7 @@ describe("<UserDetail> — Alterar Senha (só a própria conta)", () => {
         user_id: 1,
         email: "maria@oficina.com",
         business_id: 3,
-        role: "colaborador",
+        role: "atendente",
       }),
     )
   })
