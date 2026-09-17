@@ -1,21 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
-import { http, HttpResponse } from "msw"
-import { server } from "@/test/msw/server"
-import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import UserCreate from "./UserCreate"
-
-function mockBusinesses() {
-  server.use(
-    http.get(`${API}/empreendimentos/`, () =>
-      HttpResponse.json({
-        results: [{ id: 3, corporate_name: "Oficina do João" }],
-        count: 1,
-      }),
-    ),
-  )
-}
 
 describe("<UserCreate>", () => {
   beforeEach(() => {
@@ -25,16 +11,17 @@ describe("<UserCreate>", () => {
     )
   })
 
-  it("admin de empreendimento vê o nome real do empreendimento, não o placeholder", async () => {
-    mockBusinesses()
+  it("superusuário não vê o formulário — não gerencia usuários por aqui", async () => {
+    localStorage.setItem("user", JSON.stringify({ email: "super@a.com" }))
     renderWithProviders(<UserCreate />)
 
-    expect(await screen.findByDisplayValue("Oficina do João")).toBeInTheDocument()
-    expect(screen.queryByDisplayValue(/meu empreendimento/i)).not.toBeInTheDocument()
+    expect(
+      await screen.findByText(/superusuário não cadastra usuários por aqui/i),
+    ).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText("Ex: João da Silva")).not.toBeInTheDocument()
   })
 
   it("botão de gerar senha preenche os dois campos com uma senha forte igual", async () => {
-    mockBusinesses()
     renderWithProviders(<UserCreate />)
 
     fireEvent.click(
@@ -55,7 +42,6 @@ describe("<UserCreate>", () => {
   // cara de um form de login (email + senha) pro autofill do Chrome, então
   // sem esses atributos ele "ajuda" preenchendo a credencial salva do site.
   it("campos de e-mail e senha não convidam o autofill do navegador a preencher a credencial salva", async () => {
-    mockBusinesses()
     renderWithProviders(<UserCreate />)
 
     const email = await screen.findByPlaceholderText("joao@empresa.com")

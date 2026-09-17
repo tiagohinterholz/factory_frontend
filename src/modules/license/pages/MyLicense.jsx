@@ -3,13 +3,8 @@ import { useMyLicenseRenewForm } from "@/modules/license/hooks/useMyLicenseRenew
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { formatDate } from "@/modules/core/utils/format"
-import { LicenseOptions } from "@/modules/license/constants/license"
+import { LicenseOptions, PaymentMethodOptions } from "@/modules/license/constants/license"
 import { Briefcase, RefreshCw } from "lucide-react"
-
-const userLimitOptions = Array.from({ length: 10 }, (_, index) => ({
-  id: String(index + 1),
-  name: `${index + 1} Usuários`,
-}))
 
 const statusMap = {
   TRIAL: { label: "Em Teste", color: "text-amber-600 bg-amber-50" },
@@ -93,6 +88,11 @@ export default function MyLicense() {
             <h3 className="font-bold text-slate-800 tracking-tight">Renovar Licença</h3>
           </div>
 
+          <p className="text-sm text-muted -mt-4 mb-6">
+            Escolha o período e a forma de pagamento — a licença é renovada automaticamente assim
+            que o pagamento for confirmado.
+          </p>
+
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SelectField
@@ -102,10 +102,10 @@ export default function MyLicense() {
                 registration={register("period")}
               />
               <SelectField
-                label="Limite de Usuários"
-                options={userLimitOptions}
-                error={errors.max_users?.message}
-                registration={register("max_users")}
+                label="Forma de Pagamento"
+                options={PaymentMethodOptions}
+                error={errors.method?.message}
+                registration={register("method")}
               />
             </div>
 
@@ -116,7 +116,7 @@ export default function MyLicense() {
                 fullWidth={false}
                 disabled={isSubmitting}
               >
-                Renovar
+                Gerar Cobrança
               </PrimaryButton>
             </div>
           </form>

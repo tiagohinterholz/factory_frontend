@@ -22,7 +22,7 @@ export default function UserDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser, businessOptions, roleOptions, roleLocked } = useUserFormOptions({
+  const { isSuperUser, roleOptions, roleLocked } = useUserFormOptions({
     currentRole: watch("role"),
   })
 
@@ -30,6 +30,20 @@ export default function UserDetail() {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
+  if (isSuperUser) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="max-w-2xl mx-auto">
+          <BackLink to="/usuarios" />
+          <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Editar Usuário</h1>
+          <p className="text-slate-400 font-medium text-sm">
+            Superusuário não gerencia usuários por aqui.
+          </p>
+        </div>
       </div>
     )
   }
@@ -85,32 +99,14 @@ export default function UserDetail() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectField
-                label="Perfil (Role)"
-                options={roleOptions}
-                disabled={roleLocked}
-                disabledHint="Só o superusuário altera este perfil"
-                error={errors.role?.message}
-                registration={register("role")}
-              />
-
-              {isSuperUser ? (
-                <SelectField
-                  label="Empreendimento"
-                  options={businessOptions}
-                  error={errors.business_id?.message}
-                  registration={register("business_id")}
-                />
-              ) : (
-                <FormField
-                  label="Empreendimento"
-                  value={watch("business_name") || "—"}
-                  onChange={() => {}}
-                  readOnly
-                />
-              )}
-            </div>
+            <SelectField
+              label="Perfil (Role)"
+              options={roleOptions}
+              disabled={roleLocked}
+              disabledHint="Só o superusuário altera este perfil"
+              error={errors.role?.message}
+              registration={register("role")}
+            />
 
             <div className="pt-4 flex justify-end">
               <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>

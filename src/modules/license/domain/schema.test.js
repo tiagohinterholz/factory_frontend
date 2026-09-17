@@ -1,13 +1,19 @@
 import { describe, it, expect } from "vitest"
-import { toLicenseRenewPayload } from "./schema"
+import { licenseRenewSchema } from "./schema"
 
-describe("toLicenseRenewPayload", () => {
-  it("manda só period e max_users", () => {
-    const payload = toLicenseRenewPayload({ period: "TRIMESTRAL", max_users: "3" })
-    expect(Object.keys(payload).sort()).toEqual(["max_users", "period"])
+describe("licenseRenewSchema", () => {
+  it("aceita period e method válidos", () => {
+    const result = licenseRenewSchema.safeParse({ period: "TRIMESTRAL", method: "PIX" })
+    expect(result.success).toBe(true)
   })
 
-  it("max_users vem como number, não string", () => {
-    expect(toLicenseRenewPayload({ period: "MENSAL", max_users: "3" }).max_users).toBe(3)
+  it("rejeita period inválido", () => {
+    const result = licenseRenewSchema.safeParse({ period: "SEMANAL", method: "PIX" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejeita method inválido", () => {
+    const result = licenseRenewSchema.safeParse({ period: "MENSAL", method: "DINHEIRO" })
+    expect(result.success).toBe(false)
   })
 })

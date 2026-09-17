@@ -13,6 +13,7 @@ import DashboardLayout from "@/modules/core/layout/DashboardLayout"
 import LandingRoutes from "@/modules/landing/routes"
 import AuthRoutes from "@/modules/auth/routes"
 import LegalRoutes from "@/modules/legal/routes"
+import SignupRoutes from "@/modules/signup/routes"
 import DashboardRoutes from "@/modules/dashboard/routes"
 import LocationRoutes from "@/modules/location/routes"
 import SupplierRoutes from "@/modules/supplier/routes"
@@ -27,6 +28,7 @@ import LicenseRoutes from "@/modules/license/routes"
 import UserRoutes from "@/modules/user/routes"
 import BudgetRoutes from "@/modules/budget/routes"
 import OrderRoutes from "@/modules/order/routes"
+import FinancialEntryRoutes from "@/modules/financial-entry/routes"
 import FiscalRoutes from "@/modules/fiscal/routes"
 import SettingsRoutes from "@/modules/settings/routes"
 
@@ -44,6 +46,7 @@ export default function App() {
                     {LandingRoutes}
                     {AuthRoutes}
                     {LegalRoutes}
+                    {SignupRoutes}
 
                     {/* Dashboard routes (Private & Layout wrapped) */}
                     <Route
@@ -66,6 +69,7 @@ export default function App() {
                       {AppointmentRoutes}
                       {BudgetRoutes}
                       {OrderRoutes}
+                      {FinancialEntryRoutes}
                       {FiscalRoutes}
                       {SettingsRoutes}
                       {UserRoutes}

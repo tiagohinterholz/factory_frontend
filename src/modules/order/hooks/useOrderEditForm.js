@@ -4,9 +4,10 @@ import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf, toDateTimeLocalInput, activeItems } from "@/api/dto"
 import { OrderService } from "@/modules/order/services/order"
-import { orderSchema, orderDefaults, toOrderPayload, orderKeys } from "../domain"
+import { orderSchema, orderDefaults, toOrderPayload, orderKeys, orderIsBilled } from "../domain"
 import { appointmentKeys } from "@/modules/appointment/domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
+import { FinancialEntryService } from "@/modules/financial-entry"
 
 const ORDER_WIDE = [orderKeys.all, appointmentKeys.all, dashboardKeys.all]
 
@@ -42,10 +43,21 @@ export function useOrderEditForm() {
     budgetId: "",
     client: null,
     vehicle: null,
+    financialEntryId: null,
   })
 
   const fetchMeta = useCallback(async () => {
     const data = await OrderService.getOrderById(id)
+
+    // lançamento financeiro nasce junto com o faturamento (invoice_order) —
+    // busca pra linkar a tela da OS direto no /financeiro/<id>, sem o
+    // usuário ter que procurar na lista.
+    let financialEntryId = null
+    if (orderIsBilled(data.status)) {
+      const entries = await FinancialEntryService.getFinancialEntry({ order_id: id })
+      financialEntryId = idOf(entries.results?.[0]) || null
+    }
+
     setMeta({
       products: activeItems(data.order_products),
       services: activeItems(data.order_services),
@@ -59,6 +71,7 @@ export function useOrderEditForm() {
       // cache de opções velho ou cortado por filtro em cascata
       client: data.client ?? null,
       vehicle: data.vehicle ?? null,
+      financialEntryId,
     })
     return data
   }, [id])
@@ -127,6 +140,7 @@ export function useOrderEditForm() {
     budgetId: meta.budgetId,
     relatedClient: meta.client,
     relatedVehicle: meta.vehicle,
+    financialEntryId: meta.financialEntryId,
     refresh: fetchMeta,
     handleDelete: remove.run,
     handleFinish: finish.run,

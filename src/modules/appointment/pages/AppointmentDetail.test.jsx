@@ -27,9 +27,6 @@ function mockApi({ orders = [], appointmentOverrides = {} } = {}) {
     http.get(`${API}/agendamentos/1/`, () =>
       HttpResponse.json({ ...appointment, ...appointmentOverrides }),
     ),
-    http.get(`${API}/empreendimentos/`, () =>
-      HttpResponse.json({ results: [{ id: 2, corporate_name: "Oficina Teste" }], count: 1 }),
-    ),
     http.get(`${API}/clientes/`, () =>
       HttpResponse.json({
         results: [{ id: 5, first_name: "Ana", last_name: "Lima", business: 2 }],

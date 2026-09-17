@@ -16,8 +16,21 @@ export default function UserCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isSuperUser, businessOptions, currentBusinessName, loadingBusinesses, roleOptions } =
-    useUserFormOptions()
+  const { isSuperUser, roleOptions } = useUserFormOptions()
+
+  if (isSuperUser) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="max-w-2xl mx-auto">
+          <BackLink to="/usuarios" />
+          <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Novo Usuário</h1>
+          <p className="text-slate-400 font-medium text-sm">
+            Superusuário não cadastra usuários por aqui.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -53,30 +66,12 @@ export default function UserCreate() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectField
-                label="Perfil (Role)"
-                options={roleOptions}
-                error={errors.role?.message}
-                registration={register("role")}
-              />
-
-              {isSuperUser ? (
-                <SelectField
-                  label="Empreendimento"
-                  options={businessOptions}
-                  error={errors.business_id?.message}
-                  registration={register("business_id")}
-                />
-              ) : (
-                <FormField
-                  label="Empreendimento"
-                  value={currentBusinessName || (loadingBusinesses ? "Carregando…" : "—")}
-                  onChange={() => {}}
-                  readOnly
-                />
-              )}
-            </div>
+            <SelectField
+              label="Perfil (Role)"
+              options={roleOptions}
+              error={errors.role?.message}
+              registration={register("role")}
+            />
 
             <div className="pt-6 pb-2">
               <div className="flex items-center gap-3 mb-6">

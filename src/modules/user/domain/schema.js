@@ -1,38 +1,30 @@
 import { z } from "zod"
-import { PASSWORD_RULES } from "@/modules/core/utils/password-policy"
+import {
+  passwordFields,
+  passwordFieldsDefaults,
+  passwordsMatch,
+  PASSWORD_MISMATCH_ISSUE,
+} from "@/modules/core/schemas/password"
 
 // Backend: validate_strong_password (>=8, maiúscula, minúscula, dígito, especial),
 // email formato + único no empreendimento, role em superuser/admin/colaborador,
 // business_id obrigatório para admin/colaborador.
-const passwordRuleFor = (id) => PASSWORD_RULES.find((rule) => rule.id === id)
-
 export const userSchema = z
   .object({
     name: z.string().trim().min(1, "Informe o nome"),
     email: z.email("E-mail inválido"),
     business_id: z.string().trim().optional().default(""),
     role: z.string().trim().min(1, "Selecione a função"),
-    password: z
-      .string()
-      .min(8, passwordRuleFor("length").label)
-      .refine(passwordRuleFor("upper").test, passwordRuleFor("upper").label)
-      .refine(passwordRuleFor("lower").test, passwordRuleFor("lower").label)
-      .refine(passwordRuleFor("digit").test, passwordRuleFor("digit").label)
-      .refine(passwordRuleFor("special").test, passwordRuleFor("special").label),
-    confirmPassword: z.string(),
+    ...passwordFields,
   })
-  .refine((values) => values.password === values.confirmPassword, {
-    message: "As senhas não coincidem",
-    path: ["confirmPassword"],
-  })
+  .refine(passwordsMatch, PASSWORD_MISMATCH_ISSUE)
 
 export const userDefaults = {
   name: "",
   email: "",
   business_id: "",
   role: "",
-  password: "",
-  confirmPassword: "",
+  ...passwordFieldsDefaults,
 }
 
 export function toUserPayload(values) {
@@ -71,24 +63,13 @@ export function toUserEditPayload(values) {
 export const changePasswordSchema = z
   .object({
     current_password: z.string().min(1, "Informe a senha atual"),
-    password: z
-      .string()
-      .min(8, passwordRuleFor("length").label)
-      .refine(passwordRuleFor("upper").test, passwordRuleFor("upper").label)
-      .refine(passwordRuleFor("lower").test, passwordRuleFor("lower").label)
-      .refine(passwordRuleFor("digit").test, passwordRuleFor("digit").label)
-      .refine(passwordRuleFor("special").test, passwordRuleFor("special").label),
-    confirmPassword: z.string(),
+    ...passwordFields,
   })
-  .refine((values) => values.password === values.confirmPassword, {
-    message: "As senhas não coincidem",
-    path: ["confirmPassword"],
-  })
+  .refine(passwordsMatch, PASSWORD_MISMATCH_ISSUE)
 
 export const changePasswordDefaults = {
   current_password: "",
-  password: "",
-  confirmPassword: "",
+  ...passwordFieldsDefaults,
 }
 
 export function toChangePasswordPayload(values) {

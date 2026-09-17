@@ -18,9 +18,6 @@ function mockUser() {
         business: { id: 3, corporate_name: "Oficina do João" },
       }),
     ),
-    http.get(`${API}/empreendimentos/`, () =>
-      HttpResponse.json({ results: [{ id: 3, corporate_name: "Oficina do João" }], count: 1 }),
-    ),
   )
 }
 
@@ -92,18 +89,6 @@ describe("<UserDetail> — dados cadastrais", () => {
     expect(screen.getByRole("button", { name: /excluir usuário/i })).toBeInTheDocument()
   })
 
-  it("mostra o empreendimento do próprio usuário editado, mesmo se /empreendimentos/ não trouxer nada", async () => {
-    mockUser()
-    // lista vazia — um admin comum pode nem ter acesso a ela; o nome exibido
-    // não pode depender disso, já vem no GET do próprio usuário
-    server.use(
-      http.get(`${API}/empreendimentos/`, () => HttpResponse.json({ results: [], count: 0 })),
-    )
-    renderPage()
-
-    expect(await screen.findByDisplayValue("Oficina do João")).toBeInTheDocument()
-  })
-
   it("usuário editado com perfil admin aparece selecionado e travado (viewer não é superuser)", async () => {
     server.use(
       http.get(`${API}/usuarios/1/`, () =>
@@ -115,9 +100,6 @@ describe("<UserDetail> — dados cadastrais", () => {
           business: { id: 3, corporate_name: "Oficina do João" },
         }),
       ),
-      http.get(`${API}/empreendimentos/`, () =>
-        HttpResponse.json({ results: [{ id: 3, corporate_name: "Oficina do João" }], count: 1 }),
-      ),
     )
     renderPage()
 
@@ -125,6 +107,17 @@ describe("<UserDetail> — dados cadastrais", () => {
     const roleSelect = screen.getByRole("combobox")
     expect(within(roleSelect).getByRole("option", { name: "Administrador", selected: true }))
     expect(roleSelect).toBeDisabled()
+  })
+
+  it("superusuário não vê o formulário — não gerencia usuários por aqui", async () => {
+    localStorage.setItem("user", JSON.stringify({ user_id: 9, email: "super@a.com" }))
+    mockUser()
+    renderPage()
+
+    expect(
+      await screen.findByText(/superusuário não gerencia usuários por aqui/i),
+    ).toBeInTheDocument()
+    expect(screen.queryByDisplayValue("Maria Souza")).not.toBeInTheDocument()
   })
 })
 

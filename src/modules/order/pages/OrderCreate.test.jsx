@@ -17,9 +17,6 @@ let lastBudgetsUrl
 
 function mockApi({ pending = [] } = {}) {
   server.use(
-    http.get(`${API}/empreendimentos/`, () =>
-      HttpResponse.json({ results: [{ id: 3, corporate_name: "Oficina Teste" }], count: 1 }),
-    ),
     http.get(`${API}/clientes/`, () =>
       HttpResponse.json({
         results: [{ id: 5, first_name: "Ana", last_name: "Lima", business: 3 }],

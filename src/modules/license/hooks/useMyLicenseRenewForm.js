@@ -1,29 +1,18 @@
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { LicenseService } from "@/modules/license/services/license"
-import {
-  licenseRenewSchema,
-  licenseRenewDefaults,
-  toLicenseRenewPayload,
-  licenseKeys,
-} from "../domain"
-import { businessKeys } from "@/modules/business/domain"
+import { licenseRenewSchema, licenseRenewDefaults } from "../domain"
 
-// Renovação self-service: sem business_id (sempre o próprio negócio) e sem
-// navegar pra outra tela — fica na mesma página, mostrando os dados
-// atualizados.
+// Renovação/upgrade de licença (4.4.2): sem business_id (sempre o próprio
+// negócio) e sem `load` — não é editar nada existente, é sempre gerar uma
+// cobrança nova. No sucesso, navega pra tela de espera do pagamento (mesmo
+// padrão do checkout público em SignupPayment.jsx); a licença em si só é
+// atualizada de fato quando o pagamento é confirmado.
 export function useMyLicenseRenewForm() {
   return useResourceForm({
     schema: licenseRenewSchema,
     defaultValues: licenseRenewDefaults,
-    load: async () => {
-      const data = await LicenseService.getMyLicense()
-      return {
-        period: data.period ?? "MENSAL",
-        max_users: String(data.max_users ?? 1),
-      }
-    },
-    submit: (values) => LicenseService.renewMyLicense(toLicenseRenewPayload(values)),
-    invalidate: [licenseKeys.mine, businessKeys.all],
-    errorFallback: "Erro ao renovar a licença",
+    submit: (values) => LicenseService.renewMyLicense(values),
+    redirectTo: (payment) => `/configuracoes/licenca/pagamento/${payment.id}`,
+    errorFallback: "Erro ao gerar a cobrança de renovação",
   })
 }

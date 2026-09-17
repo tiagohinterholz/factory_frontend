@@ -52,4 +52,13 @@ describe("<UserList>", () => {
 
     expect(await screen.findByText(/não foi possível carregar/i)).toBeInTheDocument()
   })
+
+  it("esconde o botão Novo Usuário pro superusuário — não gerencia usuários por aqui", async () => {
+    localStorage.setItem("user", JSON.stringify({ email: "super@a.com" }))
+    mockUsers()
+    renderWithProviders(<UserList />)
+
+    await screen.findByText("Ana Lima")
+    expect(screen.queryByRole("link", { name: /novo usuário/i })).not.toBeInTheDocument()
+  })
 })

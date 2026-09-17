@@ -17,6 +17,7 @@ import {
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
+  Wallet,
   X,
 } from "lucide-react"
 
@@ -35,7 +36,8 @@ const postVehicleItems = [
 
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
   const location = useLocation()
-  const { canManageLicenses, canManageUsers, businessId, userId } = usePermissions()
+  const { canManageLicenses, canManageUsers, canManageFinancial, businessId, userId } =
+    usePermissions()
   // /configuracoes/* é sempre "o meu negócio" — superusuário não tem um
   // (400 no back), então nem mostra Gestão. Licenças aponta pra própria
   // licença quando há negócio, ou pra navegação geral (/licencas) quando é
@@ -278,7 +280,11 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             )}
           </div>
 
-          <div className="pt-2 space-y-1.5">{postVehicleItems.map(renderNavItem)}</div>
+          <div className="pt-2 space-y-1.5">
+            {postVehicleItems.map(renderNavItem)}
+            {canManageFinancial &&
+              renderNavItem({ path: "/financeiro", name: "Financeiro", icon: Wallet })}
+          </div>
         </nav>
 
         <div className="mt-8 pt-6 border-t border-white/5 space-y-1">

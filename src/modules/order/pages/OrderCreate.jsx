@@ -3,13 +3,11 @@ import { useLocation } from "react-router-dom"
 import { useOrderForm } from "@/modules/order/hooks/useOrderForm"
 import { usePendingBudgets } from "@/modules/order/hooks/usePendingBudgets"
 import BackLink from "@/modules/core/components/BackLink"
-import { useBusinessOptions } from "@/modules/core/hooks/options"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { fromDateTimeLocalInput } from "@/api/dto"
 import { formatMoney } from "@/modules/core/utils/format"
 
@@ -27,8 +25,6 @@ export default function OrderCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { canChooseBusiness } = usePermissions()
-
   const businessId = watch("business_id")
   const clientId = watch("client_id")
   const vehicleId = watch("vehicle_id")
@@ -37,7 +33,6 @@ export default function OrderCreate() {
   const [selectedBudgetId, setSelectedBudgetId] = useState(null)
   const clearBudgetChoice = () => setSelectedBudgetId(null)
 
-  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
   const { client: clients, loading: loadingClients } = useClientOptions()
   const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { budgets: pendingBudgets, loading: loadingPendingBudgets } = usePendingBudgets(
@@ -45,7 +40,6 @@ export default function OrderCreate() {
     vehicleId,
   )
 
-  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
   const clientOptions = clients
     .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
     .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
@@ -53,7 +47,7 @@ export default function OrderCreate() {
     .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
     .map((v) => ({ id: v.id, name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})` }))
 
-  if (loadingBusinesses || loadingClients || loadingVehicles) {
+  if (loadingClients || loadingVehicles) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -74,25 +68,9 @@ export default function OrderCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            {canChooseBusiness && (
-              <SelectField
-                label="Empreendimento"
-                options={businessOptions}
-                error={errors.business_id?.message}
-                registration={register("business_id", {
-                  onChange: () => {
-                    setValue("client_id", "")
-                    setValue("vehicle_id", "")
-                    clearBudgetChoice()
-                  },
-                })}
-              />
-            )}
             <SelectField
               label="Cliente"
               options={clientOptions}
-              disabled={!businessId}
-              disabledHint="Selecione o empreendimento primeiro"
               error={errors.client_id?.message}
               registration={register("client_id", {
                 onChange: () => {

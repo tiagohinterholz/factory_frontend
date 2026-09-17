@@ -5,7 +5,6 @@ import BackLink from "@/modules/core/components/BackLink"
 import { useSupplierRelations } from "@/modules/supplier/hooks/useSupplierRelations"
 import { useStateOptions } from "@/modules/core/hooks/options"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
-import { useBusinessOptions } from "@/modules/core/hooks/options"
 
 import FormField from "@/modules/core/components/FormField"
 import { ADDRESS_COMPLEMENT_OPTIONS } from "@/modules/core/constants/address"
@@ -13,7 +12,6 @@ import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
-import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import { SupplierService } from "@/modules/supplier/services/supplier"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
@@ -34,18 +32,15 @@ export default function SupplierDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { canChooseBusiness } = usePermissions()
   const stateId = watch("state_id")
 
   const { states, loading: loadingStates } = useStateOptions()
   const { citiesByState, loading: loadingCities } = useCityOptionsByState(stateId)
-  const { business: businesses, loading: loadingBusinesses } = useBusinessOptions()
-  const businessOptions = businesses.map((b) => ({ id: b.id, name: b.corporate_name }))
 
   const [activeTab, setActiveTab] = useState("products")
   const { products, services, loading: loadingRelated } = useSupplierRelations(id)
 
-  if (loading || loadingStates || loadingBusinesses || (stateId && loadingCities)) {
+  if (loading || loadingStates || (stateId && loadingCities)) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -95,15 +90,6 @@ export default function SupplierDetail() {
             </div>
 
             <form className="space-y-6" onSubmit={onSubmit}>
-              {canChooseBusiness && (
-                <SelectField
-                  label="Empreendimento"
-                  options={businessOptions}
-                  error={errors.business_id?.message}
-                  registration={register("business_id")}
-                />
-              )}
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   label="Razão Social"

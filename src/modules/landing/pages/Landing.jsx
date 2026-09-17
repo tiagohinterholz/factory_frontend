@@ -16,6 +16,7 @@ import {
   ArrowRight,
   ChevronDown,
 } from "lucide-react"
+import { PLANS } from "@/modules/signup/domain/plans"
 
 const SEGMENTS = [
   { icon: Gauge, label: "Oficina mecânica" },
@@ -75,22 +76,6 @@ const STEPS = [
     title: "Orça, executa, fatura",
     text: "Do primeiro orçamento à OS faturada — e, no fim, a NF-e. Tudo com histórico.",
   },
-]
-
-// Preços provisórios — ajustar aqui. Todo plano: 1 admin + 3 usuários.
-// Curva: quanto mais longo o ciclo, menor o R$/mês (mensal 250 -> anual 190).
-const PLANS = [
-  { period: "Quinzenal", price: "150", cycle: "a cada 15 dias", equiv: "R$ 300/mês" },
-  { period: "Mensal", price: "250", cycle: "por mês", equiv: null },
-  {
-    period: "Trimestral",
-    price: "660",
-    cycle: "a cada 3 meses",
-    equiv: "R$ 220/mês",
-    tag: "Mais popular",
-  },
-  { period: "Semestral", price: "1.260", cycle: "a cada 6 meses", equiv: "R$ 210/mês" },
-  { period: "Anual", price: "2.280", cycle: "por ano", equiv: "R$ 190/mês", tag: "Melhor preço" },
 ]
 
 function Brand({ className = "" }) {
@@ -348,9 +333,9 @@ export default function Landing() {
             </p>
 
             <div className="grid gap-4 mt-[34px] sm:grid-cols-2 lg:grid-cols-5">
-              {PLANS.map(({ period, price, cycle, equiv, tag }) => (
+              {PLANS.map(({ code, period, price, cycle, equiv, tag }) => (
                 <div
-                  key={period}
+                  key={code}
                   className={`flex flex-col rounded-2xl border bg-surface p-5 ${
                     tag ? "border-brand shadow-card" : "border-line"
                   }`}
@@ -375,7 +360,7 @@ export default function Landing() {
                     1 admin + 3 usuários
                   </div>
                   <Link
-                    to="/login"
+                    to={`/assinar/${code}`}
                     className={`mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold transition-colors ${
                       tag
                         ? "bg-brand text-brand-fg hover:bg-brand-hover"
