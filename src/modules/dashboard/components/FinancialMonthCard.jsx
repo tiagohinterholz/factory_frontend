@@ -3,7 +3,7 @@ import { Wallet, CheckCircle2, Clock } from "lucide-react"
 import Quadro from "@/modules/dashboard/components/Quadro"
 import MiniStat from "@/modules/dashboard/components/MiniStat"
 import StatusToggle from "@/modules/dashboard/components/StatusToggle"
-import FinancialMonthEntryRow from "@/modules/dashboard/components/FinancialMonthEntryRow"
+import FinancialMonthEntryCard from "@/modules/dashboard/components/FinancialMonthEntryCard"
 import { useFinancialMonthEntries } from "@/modules/dashboard/hooks/useFinancialMonthEntries"
 import {
   financialMonthMiniStats,
@@ -83,15 +83,22 @@ export default function FinancialMonthCard({ breakdown }) {
         </div>
       </div>
 
-      <div className="mt-3 space-y-2">
+      <div className="mt-3">
         {loading && <p className="text-[13px] text-muted">Carregando lançamentos...</p>}
         {!loading && entries.length === 0 && (
           <p className="text-[13px] text-muted">
             Nenhum lançamento {STATUS_EMPTY_LABEL[status]} neste tipo, no mês.
           </p>
         )}
-        {!loading &&
-          entries.map((entry) => <FinancialMonthEntryRow key={entry.id} entry={entry} />)}
+        {!loading && entries.length > 0 && (
+          <div className="max-h-96 overflow-y-auto pr-1">
+            <div className="flex flex-wrap items-start gap-3">
+              {entries.map((entry) => (
+                <FinancialMonthEntryCard key={entry.id} entry={entry} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </Quadro>
   )
