@@ -3,8 +3,6 @@ import {
   Hourglass,
   ClipboardList,
   ClipboardCheck,
-  Wallet,
-  CheckCircle2,
   FileText,
   Users,
   Car,
@@ -15,75 +13,14 @@ import {
 } from "lucide-react"
 import { useDashboard } from "@/modules/dashboard/hooks/useDashboard"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
-import SummaryCard from "@/modules/dashboard/components/SummaryCard"
 import StatCard from "@/modules/dashboard/components/StatCard"
 import AppointmentCard from "@/modules/dashboard/components/AppointmentCard"
+import MiniStat from "@/modules/dashboard/components/MiniStat"
+import Quadro from "@/modules/dashboard/components/Quadro"
+import StatusToggle from "@/modules/dashboard/components/StatusToggle"
+import FinancialMonthCard from "@/modules/dashboard/components/FinancialMonthCard"
 import { appointmentStatusLabel, APPOINTMENT_STATUS } from "@/modules/appointment/domain"
 import { ORDER_STATUS } from "@/modules/order/domain"
-import { formatMoney } from "@/modules/core/utils/format"
-
-const MINI_STAT_TONE = {
-  warn: "text-amber-600",
-  danger: "text-rose-600",
-  ok: "text-emerald-600",
-}
-
-function MiniStat({ icon: Icon, label, value, tone }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1">
-      <Icon className={`w-3.5 h-3.5 ${MINI_STAT_TONE[tone] ?? "text-muted"}`} />
-      <span className="text-[11px] text-muted">{label}</span>
-      <span className="text-sm font-bold text-ink tabular-nums">{value}</span>
-    </span>
-  )
-}
-
-function Quadro({ title, subtitle, aside, children }) {
-  return (
-    <section className="rounded-xl border border-line bg-ground p-4 sm:p-5 space-y-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-sm font-semibold text-ink">{title}</h2>
-          {subtitle && <p className="text-[12.5px] text-muted mt-0.5">{subtitle}</p>}
-        </div>
-        {aside}
-      </div>
-      {children}
-    </section>
-  )
-}
-
-// Alterna entre os status do fluxo dentro do mesmo Quadro (Aguardando/Em
-// Andamento/A Faturar/Faturadas) — substitui os 3 quadros antigos (lista
-// misturada de atendimentos + par de Subquadros de movimentação) por um só:
-// um Quadro, uma lista, um toggle.
-function StatusToggle({ options, value, onChange }) {
-  return (
-    <div className="inline-flex items-center gap-1 rounded-lg border border-line bg-surface p-1 shrink-0">
-      {options.map((option) => (
-        <button
-          key={option.id}
-          type="button"
-          onClick={() => onChange(option.id)}
-          className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-bold transition-colors ${
-            value === option.id
-              ? "bg-brand text-brand-fg"
-              : "text-muted hover:bg-ground hover:text-ink"
-          }`}
-        >
-          {option.label}
-          <span
-            className={`tabular-nums rounded-full px-1.5 text-[10.5px] ${
-              value === option.id ? "bg-white/25" : "bg-ground"
-            }`}
-          >
-            {option.count}
-          </span>
-        </button>
-      ))}
-    </div>
-  )
-}
 
 function CardList({ items, emptyText, cardKey }) {
   if (items.length === 0) {
@@ -228,33 +165,7 @@ export default function Dashboard() {
         </div>
       </Quadro>
 
-      {isAdmin && financial && (
-        <Quadro title="Financeiro do mês" subtitle="Operação do mês vigente">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <SummaryCard
-              flat
-              tone="info"
-              icon={Wallet}
-              title="A faturar"
-              value={formatMoney(financial.to_bill_total)}
-            />
-            <SummaryCard
-              flat
-              tone="ok"
-              icon={CheckCircle2}
-              title="Faturado"
-              value={formatMoney(financial.billed_total)}
-            />
-            <SummaryCard
-              flat
-              tone="warn"
-              icon={FileText}
-              title="Orçamentos em aberto"
-              value={formatMoney(financial.open_budgets_total)}
-            />
-          </div>
-        </Quadro>
-      )}
+      {isAdmin && financial && <FinancialMonthCard breakdown={financial.entries_by_status} />}
 
       <Quadro title="Resumo" subtitle="Totais do empreendimento">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
