@@ -117,6 +117,14 @@ export default function ProductCreate() {
               />
             </div>
 
+            <FormField
+              label="Estoque Mínimo (opcional)"
+              type="number"
+              placeholder="Deixe em branco pra não alertar"
+              error={errors.minimum_stock?.message}
+              registration={register("minimum_stock")}
+            />
+
             <div className="pt-4 flex justify-end">
               <PrimaryButton type="submit" icon={Save} fullWidth={false} disabled={isSubmitting}>
                 Adicionar Produto

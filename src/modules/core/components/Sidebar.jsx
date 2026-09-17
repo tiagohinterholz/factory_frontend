@@ -50,7 +50,9 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
     ["/configuracoes", "/licencas", "/usuarios"].some((path) => location.pathname.startsWith(path)),
   )
   const [suppliesOpen, setSuppliesOpen] = useState(
-    ["/fornecedores", "/produtos", "/servicos"].some((path) => location.pathname.startsWith(path)),
+    ["/fornecedores", "/produtos", "/servicos", "/compras"].some((path) =>
+      location.pathname.startsWith(path),
+    ),
   )
   const [vehicleOpen, setVehicleOpen] = useState(
     ["/veiculos", "/marcas", "/modelos"].some((path) => location.pathname.startsWith(path)),
@@ -249,7 +251,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
               "Suprimentos",
               Boxes,
               suppliesOpen,
-              ["/fornecedores", "/produtos", "/servicos"],
+              ["/fornecedores", "/produtos", "/servicos", "/compras"],
               handleGroup(setSuppliesOpen),
             )}
 
@@ -276,6 +278,15 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                 >
                   Serviços
                 </Link>
+                {canManageFinancial && (
+                  <Link
+                    to="/compras"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/compras"))}
+                  >
+                    Compras
+                  </Link>
+                )}
               </div>
             )}
           </div>

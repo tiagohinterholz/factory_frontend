@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { Edit2, Trash2 } from "lucide-react"
+import { Edit2, Trash2, AlertTriangle } from "lucide-react"
 import { useProduct } from "../hooks/useProduct"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { ProductService } from "@/modules/product/services/product"
@@ -60,7 +60,17 @@ export default function ProductList() {
     {
       header: "Qtde. em estoque",
       sortKey: "stock_quantity",
-      accessor: (item) => (item.stock_quantity ? item.stock_quantity : "0"),
+      accessor: (item) => {
+        const belowMinimum = item.minimum_stock != null && item.stock_quantity < item.minimum_stock
+        return (
+          <span
+            className={`inline-flex items-center gap-1.5 ${belowMinimum ? "text-danger font-bold" : ""}`}
+          >
+            {belowMinimum && <AlertTriangle size={14} />}
+            {item.stock_quantity ? item.stock_quantity : "0"}
+          </span>
+        )
+      },
     },
     {
       header: "Referência",

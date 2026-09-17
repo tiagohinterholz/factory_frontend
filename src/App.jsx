@@ -28,6 +28,7 @@ import LicenseRoutes from "@/modules/license/routes"
 import UserRoutes from "@/modules/user/routes"
 import BudgetRoutes from "@/modules/budget/routes"
 import OrderRoutes from "@/modules/order/routes"
+import PurchaseRoutes from "@/modules/purchase/routes"
 import FinancialEntryRoutes from "@/modules/financial-entry/routes"
 import FiscalRoutes from "@/modules/fiscal/routes"
 import SettingsRoutes from "@/modules/settings/routes"
@@ -69,6 +70,7 @@ export default function App() {
                       {AppointmentRoutes}
                       {BudgetRoutes}
                       {OrderRoutes}
+                      {PurchaseRoutes}
                       {FinancialEntryRoutes}
                       {FiscalRoutes}
                       {SettingsRoutes}

@@ -3,7 +3,7 @@ import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { ProductService } from "@/modules/product/services/product"
-import { productSchema, productDefaults, productKeys } from "../domain"
+import { productSchema, productDefaults, toProductPayload, productKeys } from "../domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 
 function toProductForm(data) {
@@ -16,6 +16,7 @@ function toProductForm(data) {
     description: data.description ?? "",
     stock_quantity: data.stock_quantity ?? "",
     unit_price: data.unit_price ?? "",
+    minimum_stock: data.minimum_stock ?? "",
   }
 }
 
@@ -27,7 +28,7 @@ export function useProductEditForm() {
     schema: productSchema,
     defaultValues: productDefaults,
     load: async () => toProductForm(await ProductService.getProductById(id)),
-    submit: (values) => ProductService.updateProduct(id, values),
+    submit: (values) => ProductService.updateProduct(id, toProductPayload(values)),
     redirectTo: "/produtos",
     invalidate: [productKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar produto",
