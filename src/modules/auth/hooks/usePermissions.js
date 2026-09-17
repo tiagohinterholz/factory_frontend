@@ -29,6 +29,9 @@ export function usePermissions() {
     // gerencia outros usuários, mas edita o próprio (nome, senha)
     userId: user?.user_id ?? null,
     canManageUsers: has("users.can_manage_users"),
+    // meta-nível: ajustar grupo/permissão extra de outro usuário — nem
+    // todo mundo que gerencia usuário pode isso (só o Administrador).
+    canManagePermissions: has("users.can_manage_permissions"),
     canManageLicenses: has("businesses.can_renew_license"),
     canExportReports: has("core.can_export_reports"),
     canManageFinancial: has("financial.view_financialentry"),

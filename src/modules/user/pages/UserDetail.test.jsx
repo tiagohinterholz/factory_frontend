@@ -18,6 +18,12 @@ function mockUser() {
         business: { id: 3, corporate_name: "Oficina do João" },
       }),
     ),
+    // canManagePermissions (bypass de isAdmin no teste) faz o painel de
+    // permissões extras tentar carregar — devolve vazio de propósito, os
+    // testes desta suíte não são sobre ele.
+    http.get(`${API}/usuarios/1/permissoes/`, () =>
+      HttpResponse.json({ role: "atendente", assignable: [] }),
+    ),
   )
 }
 
@@ -99,6 +105,9 @@ describe("<UserDetail> — dados cadastrais", () => {
           role: "admin",
           business: { id: 3, corporate_name: "Oficina do João" },
         }),
+      ),
+      http.get(`${API}/usuarios/1/permissoes/`, () =>
+        HttpResponse.json({ role: "admin", assignable: [] }),
       ),
     )
     renderPage()
