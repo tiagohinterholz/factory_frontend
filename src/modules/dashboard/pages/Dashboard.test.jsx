@@ -70,9 +70,20 @@ const PAYLOAD = {
     total_bills_this_week: 2,
   },
   financial: {
-    to_bill_total: "1500.00",
-    billed_total: "8200.00",
-    open_budgets_total: "900.00",
+    entries_by_status: {
+      a_receber: {
+        pendente: { count: 2, total: "490.00" },
+        pago: { count: 3, total: "2640.00" },
+        atrasado: { count: 1, total: "480.00" },
+        cancelado: { count: 1, total: "390.00" },
+      },
+      a_pagar: {
+        pendente: { count: 2, total: "12760.00" },
+        pago: { count: 2, total: "4320.00" },
+        atrasado: { count: 2, total: "1430.00" },
+        cancelado: { count: 0, total: "0.00" },
+      },
+    },
   },
   summary: {
     clients: 15,
@@ -90,6 +101,36 @@ function mockDashboard(overrides = {}) {
   server.use(http.get(`${API}/dashboard/`, () => HttpResponse.json({ ...PAYLOAD, ...overrides })))
 }
 
+// GET /financeiro/ (lista filtrada do card "Financeiro do mês") — devolve
+// entradas diferentes conforme entry_type+status, pra dar pra testar a troca
+// de aba sem precisar decorar o formato de paginação do DRF.
+const FINANCIAL_ENTRIES = {
+  "a_receber:pendente": [
+    { id: 51, order: { id: 1051 }, due_date: "2026-09-22", amount: "340.00", status: "pendente" },
+  ],
+  "a_pagar:pendente": [
+    {
+      id: 60,
+      order: null,
+      description: "Folha de pagamento — Setembro",
+      due_date: "2026-09-30",
+      amount: "12500.00",
+      status: "pendente",
+    },
+  ],
+}
+
+function mockFinancialEntries() {
+  server.use(
+    http.get(`${API}/financeiro/`, ({ request }) => {
+      const url = new URL(request.url)
+      const key = `${url.searchParams.get("entry_type")}:${url.searchParams.get("status")}`
+      const results = FINANCIAL_ENTRIES[key] ?? []
+      return HttpResponse.json({ results, count: results.length })
+    }),
+  )
+}
+
 describe("<Dashboard>", () => {
   beforeEach(() => {
     localStorage.setItem(
@@ -100,6 +141,7 @@ describe("<Dashboard>", () => {
 
   it("um quadro só com toggle — abre em 'Em Andamento' e mostra os mini-stats", async () => {
     mockDashboard()
+    mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
     expect(await screen.findByText("Atendimentos e Movimentação")).toBeInTheDocument()
@@ -115,6 +157,7 @@ describe("<Dashboard>", () => {
 
   it("alterna pro 'Aguardando Execução' e mostra só quem tá nesse status", async () => {
     mockDashboard()
+    mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
     await screen.findByText("Maria Souza")
@@ -126,6 +169,7 @@ describe("<Dashboard>", () => {
 
   it("alterna pro 'A Faturar' e mostra só a OS a faturar", async () => {
     mockDashboard()
+    mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
     await screen.findByText("Maria Souza")
@@ -141,6 +185,7 @@ describe("<Dashboard>", () => {
 
   it("alterna pro 'Faturadas' e mostra só a OS faturada", async () => {
     mockDashboard()
+    mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
     await screen.findByText("Maria Souza")
@@ -150,14 +195,18 @@ describe("<Dashboard>", () => {
     expect(screen.queryByText("João Silva")).not.toBeInTheDocument()
   })
 
-  it("admin vê o quadro financeiro do mês", async () => {
+  it("admin vê o quadro financeiro do mês com os mini-stats em R$", async () => {
     mockDashboard()
+    mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
     expect(await screen.findByText("Financeiro do mês")).toBeInTheDocument()
-    expect(screen.getByText("Orçamentos em aberto")).toBeInTheDocument()
-    expect(screen.getByText("R$ 900,00")).toBeInTheDocument()
-    expect(screen.getByText("R$ 8.200,00")).toBeInTheDocument()
+    // A faturar = a_receber pendente(490) + atrasado(480)
+    expect(screen.getByText("R$ 970,00")).toBeInTheDocument()
+    // Faturado = a_receber pago
+    expect(screen.getByText("R$ 2.640,00")).toBeInTheDocument()
+    // A pagar em aberto = a_pagar pendente(12760) + atrasado(1430)
+    expect(screen.getByText("R$ 14.190,00")).toBeInTheDocument()
   })
 
   it("não-admin não vê o quadro financeiro", async () => {
@@ -167,7 +216,43 @@ describe("<Dashboard>", () => {
 
     await screen.findByText("Atendimentos e Movimentação")
     expect(screen.queryByText("Financeiro do mês")).not.toBeInTheDocument()
-    expect(screen.queryByText("R$ 900,00")).not.toBeInTheDocument()
+    expect(screen.queryByText("R$ 970,00")).not.toBeInTheDocument()
+  })
+
+  it("abre em 'A receber' + 'Pendente' e lista o lançamento correspondente", async () => {
+    mockDashboard()
+    mockFinancialEntries()
+    renderWithProviders(<Dashboard />)
+
+    await screen.findByText("Financeiro do mês")
+
+    expect(await screen.findByText("OS #1051")).toBeInTheDocument()
+    expect(screen.getByText("R$ 340,00")).toBeInTheDocument()
+  })
+
+  it("troca pro Tipo 'A pagar' e recalcula o filtro de Status", async () => {
+    mockDashboard()
+    mockFinancialEntries()
+    renderWithProviders(<Dashboard />)
+
+    await screen.findByText("OS #1051")
+    fireEvent.click(screen.getByRole("button", { name: /^a pagar/i }))
+
+    expect(await screen.findByText("Folha de pagamento — Setembro")).toBeInTheDocument()
+    expect(screen.queryByText("OS #1051")).not.toBeInTheDocument()
+  })
+
+  it("lançamento sem cobrança nesse filtro mostra o estado vazio", async () => {
+    mockDashboard()
+    mockFinancialEntries()
+    renderWithProviders(<Dashboard />)
+
+    await screen.findByText("OS #1051")
+    fireEvent.click(screen.getByRole("button", { name: /^cancelado/i }))
+
+    expect(
+      await screen.findByText("Nenhum lançamento cancelados neste tipo, no mês."),
+    ).toBeInTheDocument()
   })
 
   it("sem nada em 'Em Andamento' mostra o estado vazio dessa posição", async () => {
@@ -175,6 +260,7 @@ describe("<Dashboard>", () => {
       appointments: { scheduled_this_week: [] },
       movements: { bills_this_week: [] },
     })
+    mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
     expect(await screen.findByText("Nenhum atendimento em andamento.")).toBeInTheDocument()
@@ -182,6 +268,7 @@ describe("<Dashboard>", () => {
 
   it("Resumo continua mostrando os totais do empreendimento", async () => {
     mockDashboard()
+    mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
     await screen.findByText("Atendimentos e Movimentação")
@@ -191,6 +278,7 @@ describe("<Dashboard>", () => {
 
   it("esconde 'Agendados na semana' quando o back não manda o campo", async () => {
     mockDashboard({ appointments: { scheduled_this_week: [], total_scheduled_this_week: null } })
+    mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
     await screen.findByText("Atendimentos e Movimentação")
