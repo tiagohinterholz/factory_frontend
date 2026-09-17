@@ -32,7 +32,7 @@ export default function ClientDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { isAdmin } = usePermissions()
+  const { canAnonymizeClient } = usePermissions()
   const stateId = watch("state_id")
 
   const anonymize = useResourceAction({
@@ -78,7 +78,7 @@ export default function ClientDetail() {
           </p>
         </div>
         <div className="flex gap-2">
-          {isAdmin && (
+          {canAnonymizeClient && (
             <button
               type="button"
               onClick={anonymize.run}

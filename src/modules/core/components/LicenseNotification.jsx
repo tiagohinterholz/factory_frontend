@@ -22,7 +22,7 @@ export default function LicenseNotification() {
   const [open, setOpen] = useState(false)
   const containerRef = useRef(null)
   const { license, loading } = useMyLicense()
-  const { isSuperUser, isAdmin } = usePermissions()
+  const { isSuperUser, canManageLicenses } = usePermissions()
 
   useEffect(() => {
     if (!open) return
@@ -122,7 +122,7 @@ export default function LicenseNotification() {
                 </div>
               )}
 
-              {isAdmin && (
+              {canManageLicenses && (
                 <Link
                   to="/configuracoes/licenca"
                   onClick={() => setOpen(false)}

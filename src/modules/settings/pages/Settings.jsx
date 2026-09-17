@@ -26,7 +26,7 @@ const FORM_ID = "business-edit-form"
 // Empreendimento" libera o form inteiro de uma vez (bloco único, não campo
 // a campo).
 export default function Settings() {
-  const { isAdmin } = usePermissions()
+  const { canManageBusiness } = usePermissions()
   const { form, onSubmit, loading, editing, startEdit, cancelEdit } = useBusinessEditForm()
   const {
     register,
@@ -63,7 +63,7 @@ export default function Settings() {
             </p>
           </div>
 
-          {isAdmin &&
+          {canManageBusiness &&
             (editing ? (
               <div className="flex items-center gap-2">
                 <button
@@ -259,7 +259,7 @@ export default function Settings() {
             <BusinessHoursPanel
               hours={hours}
               loading={loadingHours}
-              canEdit={isAdmin && editing}
+              canEdit={canManageBusiness && editing}
               savingWeekday={savingWeekday}
               onSave={updateHour}
             />

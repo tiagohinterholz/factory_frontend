@@ -20,7 +20,7 @@ const STATUS_TONE = {
 
 // Painel de NF-e da ordem. Só renderiza quando a OS está faturada.
 export default function FiscalNotePanel({ orderId }) {
-  const { isAdmin } = usePermissions()
+  const { canEmitFiscalNote } = usePermissions()
   const { note, loading, emit, emitting } = useFiscalNote(orderId)
 
   const working = note && (note.status === "pending" || note.status === "processing")
@@ -50,7 +50,7 @@ export default function FiscalNotePanel({ orderId }) {
       ) : !note ? (
         <div className="space-y-3">
           <p className="text-sm text-muted">Nenhuma NF-e solicitada para esta ordem.</p>
-          {isAdmin && (
+          {canEmitFiscalNote && (
             <button
               type="button"
               onClick={() => emit()}
@@ -111,7 +111,7 @@ export default function FiscalNotePanel({ orderId }) {
             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
             <span>{note.error_message || "A emissão falhou."}</span>
           </div>
-          {isAdmin && (
+          {canEmitFiscalNote && (
             <button
               type="button"
               onClick={() => emit()}
