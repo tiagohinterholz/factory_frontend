@@ -57,8 +57,15 @@ export default function StateEdit() {
                 <FormField label="Sigla" readOnly registration={register("abbreviation")} />
               </div>
 
+              <FormField
+                label="Código IBGE"
+                readOnly
+                placeholder="Não cadastrado"
+                registration={register("ibge_code")}
+              />
+
               <p className="text-xs text-muted -mt-2">
-                Nome e sigla são definidos pelo sistema e não podem ser editados.
+                Nome, sigla e código IBGE são definidos pelo sistema e não podem ser editados.
               </p>
 
               <label className="flex items-center gap-3 text-sm font-medium text-ink">
