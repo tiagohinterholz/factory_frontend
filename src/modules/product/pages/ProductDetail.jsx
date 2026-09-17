@@ -9,6 +9,7 @@ import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { ProductService } from "@/modules/product/services/product"
+import { StockMovementHistory } from "@/modules/purchase"
 import { Package, Edit2, Trash2, Eye } from "lucide-react"
 
 export default function ProductDetail() {
@@ -135,12 +136,24 @@ export default function ProductDetail() {
               />
             </div>
 
+            <FormField
+              label="Estoque Mínimo (opcional)"
+              type="number"
+              placeholder="Deixe em branco pra não alertar"
+              error={errors.minimum_stock?.message}
+              registration={register("minimum_stock")}
+            />
+
             <div className="pt-4 flex justify-end">
               <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
                 Atualizar Produto
               </PrimaryButton>
             </div>
           </form>
+        </div>
+
+        <div className="mt-6">
+          <StockMovementHistory productId={id} />
         </div>
       </div>
     </div>
