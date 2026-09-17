@@ -8,8 +8,16 @@ export const LicenseService = {
     return response.data
   },
 
+  // renovação/upgrade (4.4.2) — só cria a cobrança (Payment), a licença em
+  // si só muda quando o pagamento é confirmado (webhook).
   async renewMyLicense(payload) {
-    const response = await api.patch("/configuracoes/licenca/renovar/", payload)
+    const response = await api.post("/configuracoes/licenca/renovar/", payload)
+    return response.data
+  },
+
+  // polling da cobrança de renovação até checkout_url/error_message aparecer.
+  async getPaymentStatus(paymentId) {
+    const response = await api.get(`/financeiro/pagamentos/${paymentId}/`)
     return response.data
   },
 
