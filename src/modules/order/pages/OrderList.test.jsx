@@ -26,7 +26,10 @@ function mockOrders(results) {
       }),
     ),
     http.get(`${API}/clientes/`, () =>
-      HttpResponse.json({ results: [{ id: 5, first_name: "Ana", last_name: "Lima" }], count: 1 }),
+      HttpResponse.json({
+        results: [{ id: 5, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima" }],
+        count: 1,
+      }),
     ),
   )
 }
@@ -40,7 +43,7 @@ describe("<OrderList> — links de cliente e veículo", () => {
     mockOrders([
       {
         id: 20,
-        client: { id: 6, first_name: "Beto", last_name: "Souza" },
+        client: { id: 6, first_name: "Beto", last_name: "Souza", display_name: "Beto Souza" },
         vehicle: { id: 12, model: "Onix", plate: "XYZ9K88" },
         status: "em andamento",
         total: "0",

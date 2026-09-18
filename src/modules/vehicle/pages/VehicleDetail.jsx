@@ -55,10 +55,7 @@ export default function VehicleEdit() {
     useModelOptionsByManufacturer(manufacturerId)
   const { orders, budgets, loading: loadingHistory } = useVehicleHistory(id)
 
-  const clientOptions = clients.map((c) => ({
-    id: c.id,
-    name: `${c.first_name} ${c.last_name}`,
-  }))
+  const clientOptions = clients.map((c) => ({ id: c.id, name: c.display_name }))
 
   if (loading || loadingClients || loadingManufacturers || (manufacturerId && loadingModels))
     return <p className="p-6">Carregando...</p>

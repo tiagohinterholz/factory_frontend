@@ -16,6 +16,8 @@ import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
+import ClientTypeToggle from "@/modules/client/components/ClientTypeToggle"
+import { CPF_MASK, CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 
 import { User, Car, Edit2, Trash2, Milestone, ChevronRight, ShieldOff } from "lucide-react"
 
@@ -34,15 +36,17 @@ export default function ClientDetail() {
 
   const { canAnonymizeClient } = usePermissions()
   const stateId = watch("state_id")
+  const clientType = watch("client_type")
+  const isPJ = clientType === "PJ"
 
   const anonymize = useResourceAction({
     mutationFn: () => ClientService.anonymizeClient(id),
     confirm: {
       title: "Anonimizar cliente? (LGPD)",
       message:
-        "Nome, CPF, telefone, e-mail e endereço serão apagados em definitivo e o " +
-        "cliente ficará inativo. O histórico de veículos, orçamentos e ordens é " +
-        "mantido. Esta ação NÃO pode ser desfeita.",
+        "Nome/Razão Social, CPF/CNPJ, telefone, e-mail e endereço serão apagados em " +
+        "definitivo e o cliente ficará inativo. O histórico de veículos, orçamentos e " +
+        "ordens é mantido. Esta ação NÃO pode ser desfeita.",
       confirmText: "Anonimizar",
       danger: true,
     },
@@ -111,40 +115,80 @@ export default function ClientDetail() {
             </div>
 
             <form className="space-y-6" onSubmit={onSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  label="Nome"
-                  error={errors.first_name?.message}
-                  registration={register("first_name")}
-                />
-                <FormField
-                  label="Sobrenome"
-                  error={errors.last_name?.message}
-                  registration={register("last_name")}
-                />
-              </div>
+              <ClientTypeToggle
+                value={clientType}
+                onChange={(nextType) => setValue("client_type", nextType)}
+              />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <MaskedField
-                  control={control}
-                  name="cpf"
-                  label="CPF"
-                  mask="___.___.___-__"
-                  error={errors.cpf?.message}
-                />
-                <FormField
-                  label="E-mail"
-                  type="email"
-                  error={errors.email?.message}
-                  registration={register("email")}
-                />
-              </div>
+              {isPJ ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      label="Razão Social"
+                      error={errors.corporate_name?.message}
+                      registration={register("corporate_name")}
+                    />
+                    <FormField
+                      label="Nome Fantasia"
+                      error={errors.trade_name?.message}
+                      registration={register("trade_name")}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <MaskedField
+                      control={control}
+                      name="cnpj"
+                      label="CNPJ"
+                      mask={CNPJ_MASK}
+                      error={errors.cnpj?.message}
+                    />
+                    <FormField
+                      label="E-mail"
+                      type="email"
+                      error={errors.email?.message}
+                      registration={register("email")}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      label="Nome"
+                      error={errors.first_name?.message}
+                      registration={register("first_name")}
+                    />
+                    <FormField
+                      label="Sobrenome"
+                      error={errors.last_name?.message}
+                      registration={register("last_name")}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <MaskedField
+                      control={control}
+                      name="cpf"
+                      label="CPF"
+                      mask={CPF_MASK}
+                      error={errors.cpf?.message}
+                    />
+                    <FormField
+                      label="E-mail"
+                      type="email"
+                      error={errors.email?.message}
+                      registration={register("email")}
+                    />
+                  </div>
+                </>
+              )}
 
               <MaskedField
                 control={control}
                 name="phone"
                 label="Telefone"
-                mask="(__) _____-____"
+                mask={PHONE_MASK}
                 error={errors.phone?.message}
               />
 

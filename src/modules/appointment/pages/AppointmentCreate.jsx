@@ -30,7 +30,7 @@ export default function AppointmentCreate() {
       const bizId = c.business?.id || c.business
       return !businessId || String(bizId) === String(businessId)
     })
-    .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
+    .map((c) => ({ id: c.id, name: c.display_name }))
 
   const vehicleOptions = vehicles
     .filter((v) => {

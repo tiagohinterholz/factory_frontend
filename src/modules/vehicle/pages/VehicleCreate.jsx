@@ -34,10 +34,7 @@ export default function VehicleCreate() {
   const { modelsByManufacturer, loading: loadingModels } =
     useModelOptionsByManufacturer(manufacturerId)
 
-  const clientOptions = clients.map((c) => ({
-    id: c.id,
-    name: `${c.first_name} ${c.last_name}`,
-  }))
+  const clientOptions = clients.map((c) => ({ id: c.id, name: c.display_name }))
 
   if (loadingClients || loadingManufacturers || (manufacturerId && loadingModels)) {
     return (
