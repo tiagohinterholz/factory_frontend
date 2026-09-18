@@ -10,12 +10,18 @@ function toProductForm(data) {
   return {
     business_id: idOf(data.business),
     supplier_id: idOf(data.supplier),
+    category_id: idOf(data.subcategory?.category),
+    subcategory_id: idOf(data.subcategory),
     name: data.name ?? "",
     brand: data.brand ?? "",
     reference: data.reference ?? "",
     description: data.description ?? "",
     stock_quantity: data.stock_quantity ?? "",
     unit_price: data.unit_price ?? "",
+    cost_price: data.cost_price ?? "",
+    unit_of_measure: data.unit_of_measure ?? "UN",
+    sku: data.sku ?? "",
+    ncm: data.ncm ?? "",
     minimum_stock: data.minimum_stock ?? "",
   }
 }

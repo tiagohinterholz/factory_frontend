@@ -2,6 +2,7 @@ import { Link } from "react-router-dom"
 import { Edit2, Trash2, AlertTriangle } from "lucide-react"
 import { useProduct } from "../hooks/useProduct"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
+import { useProductCategoryOptions } from "@/modules/core/hooks/options"
 import { ProductService } from "@/modules/product/services/product"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
@@ -27,15 +28,23 @@ export default function ProductList() {
   } = useProduct()
 
   const { supplier: suppliers } = useSupplierOptions()
+  const { productCategories } = useProductCategoryOptions()
 
   const filterFields = [
     { name: "name", label: "Nome", type: "text" },
     { name: "reference", label: "Referência", type: "text" },
+    { name: "sku", label: "SKU", type: "text" },
     {
       name: "supplier_id",
       label: "Fornecedor",
       type: "select",
       options: suppliers.map((s) => ({ id: s.id, name: s.corporate_name })),
+    },
+    {
+      name: "category_id",
+      label: "Categoria",
+      type: "select",
+      options: productCategories,
     },
   ]
 
@@ -52,6 +61,10 @@ export default function ProductList() {
         ),
     },
     { header: "Produto", sortKey: "name", accessor: (item) => item.name },
+    {
+      header: "Subcategoria",
+      accessor: (item) => (item.subcategory ? item.subcategory.name : "-"),
+    },
     {
       header: "Preço Venda",
       sortKey: "unit_price",

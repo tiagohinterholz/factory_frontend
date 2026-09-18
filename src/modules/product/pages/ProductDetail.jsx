@@ -4,12 +4,15 @@ import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
+import { useProductCategoryOptions } from "@/modules/core/hooks/options"
+import { useProductSubcategoryOptionsByCategory } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { ProductService } from "@/modules/product/services/product"
 import { StockMovementHistory } from "@/modules/purchase"
+import { unitOfMeasureOptions } from "@/modules/product/constants/product"
 import { Package, Edit2, Trash2, Eye } from "lucide-react"
 
 export default function ProductDetail() {
@@ -20,17 +23,22 @@ export default function ProductDetail() {
     register,
     control,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = form
 
   const supplierId = watch("supplier_id")
+  const categoryId = watch("category_id")
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
   const { product: products } = useProductOptions()
+  const { productCategories, loading: loadingCategories } = useProductCategoryOptions()
+  const { subcategoriesByCategory, loading: loadingSubcategories } =
+    useProductSubcategoryOptionsByCategory(categoryId)
 
   const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
   const brandOptions = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort()
 
-  if (loading || loadingSuppliers) {
+  if (loading || loadingSuppliers || loadingCategories) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -109,11 +117,18 @@ export default function ProductDetail() {
               />
             </div>
 
-            <FormField
-              label="Referência/SKU"
-              error={errors.reference?.message}
-              registration={register("reference")}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                label="Referência"
+                error={errors.reference?.message}
+                registration={register("reference")}
+              />
+              <FormField
+                label="SKU / Código de Barras"
+                error={errors.sku?.message}
+                registration={register("sku")}
+              />
+            </div>
 
             <FormField
               label="Descrição"
@@ -122,27 +137,69 @@ export default function ProductDetail() {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <SelectField
+                label="Categoria"
+                options={productCategories}
+                error={errors.category_id?.message}
+                registration={register("category_id", {
+                  onChange: () => setValue("subcategory_id", ""),
+                })}
+              />
+              <SelectField
+                label="Subcategoria"
+                options={subcategoriesByCategory}
+                disabled={!categoryId || loadingSubcategories}
+                disabledHint="Selecione a categoria primeiro"
+                error={errors.subcategory_id?.message}
+                registration={register("subcategory_id")}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 label="Qtd em Estoque"
                 type="number"
                 error={errors.stock_quantity?.message}
                 registration={register("stock_quantity")}
               />
+              <SelectField
+                label="Unidade de Medida"
+                options={unitOfMeasureOptions}
+                error={errors.unit_of_measure?.message}
+                registration={register("unit_of_measure")}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <MoneyField
                 control={control}
                 name="unit_price"
                 label="Preço Unitário"
                 error={errors.unit_price?.message}
               />
+              <MoneyField
+                control={control}
+                name="cost_price"
+                label="Preço de Custo (opcional)"
+                error={errors.cost_price?.message}
+              />
             </div>
 
-            <FormField
-              label="Estoque Mínimo (opcional)"
-              type="number"
-              placeholder="Deixe em branco pra não alertar"
-              error={errors.minimum_stock?.message}
-              registration={register("minimum_stock")}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                label="Estoque Mínimo (opcional)"
+                type="number"
+                placeholder="Deixe em branco pra não alertar"
+                error={errors.minimum_stock?.message}
+                registration={register("minimum_stock")}
+              />
+              <FormField
+                label="NCM (opcional)"
+                placeholder="Ex: 87089900"
+                error={errors.ncm?.message}
+                registration={register("ncm")}
+              />
+            </div>
 
             <div className="pt-4 flex justify-end">
               <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>

@@ -27,6 +27,7 @@ function mockProduct() {
     ),
     // datalist de "Marca" pré-populado com marcas já cadastradas em produtos
     http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
     // kardex (StockMovementHistory) — histórico de estoque do produto
     http.get(`${API}/compras/movimentos-estoque/`, () =>
       HttpResponse.json({ results: [], count: 0 }),
