@@ -11,9 +11,13 @@ import { dashboardKeys } from "@/modules/dashboard/domain"
 function toClientForm(data) {
   return {
     business_id: idOf(data.business),
+    client_type: data.client_type ?? "PF",
     first_name: data.first_name ?? "",
     last_name: data.last_name ?? "",
     cpf: data.cpf ?? "",
+    cnpj: data.cnpj ?? "",
+    corporate_name: data.corporate_name ?? "",
+    trade_name: data.trade_name ?? "",
     state_id: idOf(data.state),
     city_id: idOf(data.city),
     address: data.address ?? "",

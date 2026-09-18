@@ -22,6 +22,8 @@ import VehicleRoutes from "@/modules/vehicle/routes"
 import ManufacturerRoutes from "@/modules/manufacturer/routes"
 import VehicleModelRoutes from "@/modules/vehiclemodel/routes"
 import ProductRoutes from "@/modules/product/routes"
+import ProductCategoryRoutes from "@/modules/productcategory/routes"
+import ProductSubcategoryRoutes from "@/modules/productsubcategory/routes"
 import WorkServiceRoutes from "@/modules/workservice/routes"
 import AppointmentRoutes from "@/modules/appointment/routes"
 import LicenseRoutes from "@/modules/license/routes"
@@ -66,6 +68,8 @@ export default function App() {
                       {ManufacturerRoutes}
                       {VehicleModelRoutes}
                       {ProductRoutes}
+                      {ProductCategoryRoutes}
+                      {ProductSubcategoryRoutes}
                       {WorkServiceRoutes}
                       {AppointmentRoutes}
                       {BudgetRoutes}

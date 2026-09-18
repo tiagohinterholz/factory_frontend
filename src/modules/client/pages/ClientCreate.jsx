@@ -7,6 +7,8 @@ import { ADDRESS_COMPLEMENT_OPTIONS } from "@/modules/core/constants/address"
 import SelectField from "@/modules/core/components/SelectField"
 import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import ClientTypeToggle from "@/modules/client/components/ClientTypeToggle"
+import { CPF_MASK, CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 
 import { User, Save, Milestone } from "lucide-react"
 
@@ -21,6 +23,8 @@ export default function ClientCreate() {
   } = form
 
   const stateId = watch("state_id")
+  const clientType = watch("client_type")
+  const isPJ = clientType === "PJ"
 
   const { states, loading: loadingStates } = useStateOptions()
   const { citiesByState, loading: loadingCities } = useCityOptionsByState(stateId)
@@ -49,44 +53,88 @@ export default function ClientCreate() {
           </div>
 
           <form className="space-y-6" onSubmit={onSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Nome"
-                placeholder="Ex: João"
-                error={errors.first_name?.message}
-                registration={register("first_name")}
-              />
-              <FormField
-                label="Sobrenome"
-                placeholder="Ex: Silva"
-                error={errors.last_name?.message}
-                registration={register("last_name")}
-              />
-            </div>
+            <ClientTypeToggle
+              value={clientType}
+              onChange={(nextType) => setValue("client_type", nextType)}
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <MaskedField
-                control={control}
-                name="cpf"
-                label="CPF"
-                mask="___.___.___-__"
-                placeholder="000.000.000-00"
-                error={errors.cpf?.message}
-              />
-              <FormField
-                label="E-mail"
-                type="email"
-                placeholder="joao@email.com"
-                error={errors.email?.message}
-                registration={register("email")}
-              />
-            </div>
+            {isPJ ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    label="Razão Social"
+                    placeholder="Ex: Frota Veloz Transportes Ltda"
+                    error={errors.corporate_name?.message}
+                    registration={register("corporate_name")}
+                  />
+                  <FormField
+                    label="Nome Fantasia"
+                    placeholder="Ex: Frota Veloz"
+                    error={errors.trade_name?.message}
+                    registration={register("trade_name")}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <MaskedField
+                    control={control}
+                    name="cnpj"
+                    label="CNPJ"
+                    mask={CNPJ_MASK}
+                    placeholder="00.000.000/0000-00"
+                    error={errors.cnpj?.message}
+                  />
+                  <FormField
+                    label="E-mail"
+                    type="email"
+                    placeholder="contato@empresa.com"
+                    error={errors.email?.message}
+                    registration={register("email")}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    label="Nome"
+                    placeholder="Ex: João"
+                    error={errors.first_name?.message}
+                    registration={register("first_name")}
+                  />
+                  <FormField
+                    label="Sobrenome"
+                    placeholder="Ex: Silva"
+                    error={errors.last_name?.message}
+                    registration={register("last_name")}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <MaskedField
+                    control={control}
+                    name="cpf"
+                    label="CPF"
+                    mask={CPF_MASK}
+                    placeholder="000.000.000-00"
+                    error={errors.cpf?.message}
+                  />
+                  <FormField
+                    label="E-mail"
+                    type="email"
+                    placeholder="joao@email.com"
+                    error={errors.email?.message}
+                    registration={register("email")}
+                  />
+                </div>
+              </>
+            )}
 
             <MaskedField
               control={control}
               name="phone"
               label="Telefone"
-              mask="(__) _____-____"
+              mask={PHONE_MASK}
               placeholder="(00) 00000-0000"
               error={errors.phone?.message}
             />
