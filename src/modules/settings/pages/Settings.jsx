@@ -252,6 +252,19 @@ export default function Settings() {
                 error={errors.complement?.message}
                 registration={register("complement")}
               />
+              <FormField
+                label="Bairro"
+                disabled={!editing}
+                error={errors.neighborhood?.message}
+                registration={register("neighborhood")}
+              />
+              <FormField
+                label="CEP"
+                placeholder="00000-000"
+                disabled={!editing}
+                error={errors.postal_code?.message}
+                registration={register("postal_code")}
+              />
             </div>
           </form>
 

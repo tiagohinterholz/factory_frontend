@@ -26,6 +26,8 @@ export const clientSchema = z
     address: optionalText,
     number: optionalText,
     complement: optionalText,
+    neighborhood: optionalText,
+    postal_code: optionalText,
     phone: z.string().regex(PHONE_RE, "Telefone inválido. Formato: (00) 00000-0000"),
     email: z
       .union([z.email("E-mail inválido"), z.literal("")])
@@ -79,6 +81,8 @@ export const clientDefaults = {
   address: "",
   number: "",
   complement: "",
+  neighborhood: "",
+  postal_code: "",
   phone: "",
   email: "",
 }

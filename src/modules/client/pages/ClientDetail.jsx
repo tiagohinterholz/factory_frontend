@@ -244,6 +244,20 @@ export default function ClientDetail() {
                 registration={register("complement")}
               />
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  label="Bairro"
+                  error={errors.neighborhood?.message}
+                  registration={register("neighborhood")}
+                />
+                <FormField
+                  label="CEP"
+                  placeholder="00000-000"
+                  error={errors.postal_code?.message}
+                  registration={register("postal_code")}
+                />
+              </div>
+
               <div className="pt-4 flex justify-end">
                 <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
                   Salvar Alterações
