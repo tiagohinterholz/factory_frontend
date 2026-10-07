@@ -23,6 +23,8 @@ function toClientForm(data) {
     address: data.address ?? "",
     number: data.number ?? "",
     complement: data.complement ?? "",
+    neighborhood: data.neighborhood ?? "",
+    postal_code: data.postal_code ?? "",
     phone: data.phone ?? "",
     email: data.email ?? "",
   }

@@ -36,6 +36,8 @@ export const businessSchema = z.object({
   address: requiredText("Informe o endereço"),
   number: requiredText("Informe o número"),
   complement: optionalText,
+  neighborhood: optionalText,
+  postal_code: optionalText,
   phone: phoneField,
   email: emailField,
   logo: z
@@ -63,6 +65,8 @@ export const businessDefaults = {
   address: "",
   number: "",
   complement: "",
+  neighborhood: "",
+  postal_code: "",
   phone: "",
   email: "",
   logo: "",
