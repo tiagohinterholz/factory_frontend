@@ -64,7 +64,7 @@ const STEPS = [
   {
     n: "01",
     title: "Configura o empreendimento",
-    text: "Cadastra a empresa, os dados fiscais e a equipe — dono, admin e colaborador, cada um com o seu acesso.",
+    text: "Cadastra a empresa, os dados fiscais e a equipe — dono, admin e atendente, cada um com o seu acesso.",
   },
   {
     n: "02",

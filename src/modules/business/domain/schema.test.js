@@ -30,6 +30,17 @@ describe("toBusinessPayload", () => {
     expect(payload).not.toHaveProperty("logo")
   })
 
+  it("email nunca é reenviado — campo read-only, back rejeita a chave", () => {
+    const payload = toBusinessPayload({ ...base, logo: "" })
+    expect(payload).not.toHaveProperty("email")
+  })
+
+  it("email também fica de fora no multipart (com File novo)", () => {
+    const file = new File(["x"], "logo.png", { type: "image/png" })
+    const payload = toBusinessPayload({ ...base, logo: file })
+    expect(payload.get("email")).toBeNull()
+  })
+
   it("com File novo, vira FormData com o logo e os campos não-vazios", () => {
     const file = new File(["x"], "logo.png", { type: "image/png" })
     const payload = toBusinessPayload({ ...base, logo: file })

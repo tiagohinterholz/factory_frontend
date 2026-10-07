@@ -29,7 +29,9 @@ function mockApi({ orders = [], appointmentOverrides = {} } = {}) {
     ),
     http.get(`${API}/clientes/`, () =>
       HttpResponse.json({
-        results: [{ id: 5, first_name: "Ana", last_name: "Lima", business: 2 }],
+        results: [
+          { id: 5, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima", business: 2 },
+        ],
         count: 1,
       }),
     ),
@@ -82,7 +84,7 @@ describe("<AppointmentDetail>", () => {
     mockApi({
       orders: [],
       appointmentOverrides: {
-        client: { id: 5, first_name: "Ana", last_name: "Lima" },
+        client: { id: 5, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima" },
         vehicle: { id: 9, manufacturer: "VW", model: "Gol" },
       },
     })
@@ -123,7 +125,13 @@ describe("<AppointmentDetail>", () => {
   it("cards de vínculo linkam pra cliente, veículo, OS e orçamento", async () => {
     mockApi({
       appointmentOverrides: {
-        client: { id: 5, first_name: "Ana", last_name: "Lima", phone: "(41) 91234-5678" },
+        client: {
+          id: 5,
+          first_name: "Ana",
+          last_name: "Lima",
+          display_name: "Ana Lima",
+          phone: "(41) 91234-5678",
+        },
         vehicle: { id: 9, manufacturer: "VW", model: "Gol", plate: "ABC1D23" },
         order: { id: 77, status: "em andamento" },
         budget: { id: 33, status: "aprovado" },
@@ -154,7 +162,13 @@ describe("<AppointmentDetail>", () => {
   it("cliente sem telefone: sem botão de WhatsApp", async () => {
     mockApi({
       appointmentOverrides: {
-        client: { id: 5, first_name: "Ana", last_name: "Lima", phone: null },
+        client: {
+          id: 5,
+          first_name: "Ana",
+          last_name: "Lima",
+          display_name: "Ana Lima",
+          phone: null,
+        },
       },
     })
     renderPage()

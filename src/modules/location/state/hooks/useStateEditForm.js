@@ -14,10 +14,11 @@ export function useStateEditForm() {
       return {
         name: data.name ?? "",
         abbreviation: data.abbreviation ?? "",
+        ibge_code: data.ibge_code ?? null,
         is_active: data.is_active ?? true,
       }
     },
-    // PATCH grava só is_active; name/abbreviation são somente-leitura no backend.
+    // PATCH grava só is_active; name/abbreviation/ibge_code são somente-leitura no backend.
     submit: (values) => StateService.updateState(id, { is_active: values.is_active }),
     redirectTo: "/estados",
     invalidate: [stateKeys.all],

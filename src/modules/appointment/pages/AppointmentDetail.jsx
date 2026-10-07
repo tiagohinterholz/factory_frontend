@@ -87,10 +87,7 @@ export default function AppointmentDetail() {
 
   // rótulo da <option> de fallback a partir do registro cru do detalhe (ora
   // aninhado, ora id cru — degrada pra "#id" quando não tem o nome)
-  const clientLabel = (client) =>
-    client?.first_name
-      ? `${client.first_name} ${client.last_name ?? ""}`.trim()
-      : `Cliente #${idOf(client)}`
+  const clientLabel = (client) => client?.display_name || `Cliente #${idOf(client)}`
   const vehicleLabel = (vehicle) =>
     vehicle?.model || vehicle?.manufacturer
       ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""} ${vehicle.year ?? ""}`.trim()
@@ -110,7 +107,7 @@ export default function AppointmentDetail() {
         const bizId = c.business?.id || c.business
         return !businessId || String(bizId) === String(businessId)
       })
-      .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
+      .map((c) => ({ id: c.id, name: c.display_name })),
     clientId,
     relatedClient && { id: idOf(relatedClient), name: clientLabel(relatedClient) },
   )

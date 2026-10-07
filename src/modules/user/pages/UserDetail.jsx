@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { useUserEditForm } from "@/modules/user/hooks/useUserEditForm"
 import { useUserFormOptions } from "@/modules/user/hooks/useUserFormOptions"
 import { useChangePasswordForm } from "@/modules/user/hooks/useChangePasswordForm"
@@ -8,11 +9,13 @@ import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import PasswordFields from "@/modules/user/components/PasswordFields"
+import PermissionsPanel from "@/modules/user/components/PermissionsPanel"
 import { UserCog, Edit2, Trash2, Lock } from "lucide-react"
 
 export default function UserDetail() {
   const { id } = useParams()
   const { user: loggedUser } = useAuth()
+  const { canManagePermissions } = usePermissions()
   const isSelf = String(loggedUser?.user_id ?? "") === String(id)
 
   const { form, onSubmit, loading, handleDelete } = useUserEditForm()
@@ -115,6 +118,10 @@ export default function UserDetail() {
             </div>
           </form>
         </div>
+
+        {/* Permissão extra é sobre OUTRO usuário — o Administrador já tem
+            tudo por Group, não faz sentido ele ajustar a própria. */}
+        {canManagePermissions && !isSelf && <PermissionsPanel userId={id} />}
 
         {/* Só a própria conta troca a própria senha — PATCH de dados
             cadastrais não aceita mais "password" (400), e ninguém mexe na

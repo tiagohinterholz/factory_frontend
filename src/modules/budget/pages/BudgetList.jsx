@@ -44,7 +44,7 @@ export default function BudgetList() {
       name: "client_id",
       label: "Cliente",
       type: "select",
-      options: clients.map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
+      options: clients.map((c) => ({ id: c.id, name: c.display_name })),
     },
     { name: "date_from", label: "Criado a partir de", type: "date" },
     { name: "date_to", label: "Criado até", type: "date" },
@@ -58,10 +58,10 @@ export default function BudgetList() {
       accessor: (item) =>
         item.client?.id != null ? (
           <Link to={`/clientes/${item.client.id}`} className="text-brand hover:underline">
-            {item.client.first_name} {item.client.last_name}
+            {item.client.display_name}
           </Link>
         ) : (
-          item.first_name || "N/A"
+          "N/A"
         ),
     },
     {

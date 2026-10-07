@@ -13,6 +13,16 @@ import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 const FILTER_FIELDS = [
   { name: "name", label: "Nome", type: "text" },
   { name: "cpf", label: "CPF", type: "text" },
+  { name: "cnpj", label: "CNPJ", type: "text" },
+  {
+    name: "client_type",
+    label: "Tipo",
+    type: "select",
+    options: [
+      { id: "PF", name: "Pessoa Física" },
+      { id: "PJ", name: "Pessoa Jurídica" },
+    ],
+  },
 ]
 
 export default function ClientList() {
@@ -37,9 +47,13 @@ export default function ClientList() {
     {
       header: "Nome",
       sortKey: "first_name",
-      accessor: (item) => `${item.first_name} ${item.last_name}`,
+      accessor: (item) => item.display_name,
     },
-    { header: "CPF", sortKey: "cpf", accessor: (item) => item.cpf },
+    {
+      header: "Tipo",
+      accessor: (item) => (item.client_type === "PJ" ? "Pessoa Jurídica" : "Pessoa Física"),
+    },
+    { header: "CPF/CNPJ", accessor: (item) => item.document },
     { header: "Telefone", accessor: (item) => item.phone },
   ]
 

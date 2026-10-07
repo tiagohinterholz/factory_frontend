@@ -5,7 +5,7 @@ const base = {
   name: "Ana",
   email: "ana@a.com",
   business_id: "3",
-  role: "colaborador",
+  role: "atendente",
   password: "Senha@123",
   confirmPassword: "Senha@123",
 }
@@ -34,7 +34,7 @@ describe("toUserPayload (criação)", () => {
 describe("toUserEditPayload (edição)", () => {
   // PATCH /usuarios/<id>/ rejeita "password" no payload (400) — não existe
   // mais campo de senha nesse form, então não tem o que remover/manter aqui.
-  const editBase = { name: "Ana", email: "ana@a.com", business_id: "3", role: "colaborador" }
+  const editBase = { name: "Ana", email: "ana@a.com", business_id: "3", role: "atendente" }
 
   it("business_id vazio é omitido; preenchido é mantido", () => {
     expect(toUserEditPayload({ ...editBase, business_id: "" })).not.toHaveProperty("business_id")

@@ -18,6 +18,8 @@ function toBusinessForm(data) {
     address: data.address ?? "",
     number: data.number ?? "",
     complement: data.complement ?? "",
+    neighborhood: data.neighborhood ?? "",
+    postal_code: data.postal_code ?? "",
     phone: data.phone ?? "",
     email: data.email ?? "",
     // write-only: nunca vem no GET. O preview do logo atual vem de outro

@@ -42,7 +42,7 @@ export default function OrderCreate() {
 
   const clientOptions = clients
     .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
-    .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` }))
+    .map((c) => ({ id: c.id, name: c.display_name }))
   const vehicleOptions = vehicles
     .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
     .map((v) => ({ id: v.id, name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})` }))

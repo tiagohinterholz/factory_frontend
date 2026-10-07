@@ -1,7 +1,7 @@
 import { api } from "@/api/http"
 
 export const LicenseService = {
-  // self — negócio do usuário logado (admin/colaborador). Sem ID, resolvido
+  // self — negócio do usuário logado (admin/atendente). Sem ID, resolvido
   // pelo token. Superusuário (sem negócio) recebe 400.
   async getMyLicense() {
     const response = await api.get("/configuracoes/licenca/")

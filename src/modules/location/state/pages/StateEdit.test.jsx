@@ -14,6 +14,7 @@ function mockState(overrides = {}) {
         id: 1,
         name: "São Paulo",
         abbreviation: "SP",
+        ibge_code: 35,
         is_active: true,
         ...overrides,
       }),
@@ -31,14 +32,23 @@ const renderPage = () =>
   )
 
 describe("<StateEdit>", () => {
-  it("nome e sigla vêm somente-leitura, sem botão de excluir", async () => {
+  it("nome, sigla e código IBGE vêm somente-leitura, sem botão de excluir", async () => {
     mockState()
     renderPage()
 
     const name = await screen.findByDisplayValue("São Paulo")
     expect(name).toHaveAttribute("readonly")
     expect(screen.getByDisplayValue("SP")).toHaveAttribute("readonly")
+    expect(screen.getByDisplayValue("35")).toHaveAttribute("readonly")
     expect(screen.queryByText(/excluir estado/i)).not.toBeInTheDocument()
+  })
+
+  it("mostra placeholder quando o estado ainda não tem código IBGE", async () => {
+    mockState({ ibge_code: null })
+    renderPage()
+
+    await screen.findByDisplayValue("São Paulo")
+    expect(screen.getByPlaceholderText("Não cadastrado")).toHaveValue("")
   })
 
   it("salva só is_active via PATCH", async () => {

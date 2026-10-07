@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom"
-import { Edit2, Trash2 } from "lucide-react"
+import { Edit2, Trash2, AlertTriangle } from "lucide-react"
 import { useProduct } from "../hooks/useProduct"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
+import { useProductCategoryOptions } from "@/modules/core/hooks/options"
 import { ProductService } from "@/modules/product/services/product"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
@@ -27,15 +28,23 @@ export default function ProductList() {
   } = useProduct()
 
   const { supplier: suppliers } = useSupplierOptions()
+  const { productCategories } = useProductCategoryOptions()
 
   const filterFields = [
     { name: "name", label: "Nome", type: "text" },
     { name: "reference", label: "Referência", type: "text" },
+    { name: "sku", label: "SKU", type: "text" },
     {
       name: "supplier_id",
       label: "Fornecedor",
       type: "select",
       options: suppliers.map((s) => ({ id: s.id, name: s.corporate_name })),
+    },
+    {
+      name: "category_id",
+      label: "Categoria",
+      type: "select",
+      options: productCategories,
     },
   ]
 
@@ -53,6 +62,10 @@ export default function ProductList() {
     },
     { header: "Produto", sortKey: "name", accessor: (item) => item.name },
     {
+      header: "Subcategoria",
+      accessor: (item) => (item.subcategory ? item.subcategory.name : "-"),
+    },
+    {
       header: "Preço Venda",
       sortKey: "unit_price",
       accessor: (item) => formatMoney(item.unit_price),
@@ -60,7 +73,17 @@ export default function ProductList() {
     {
       header: "Qtde. em estoque",
       sortKey: "stock_quantity",
-      accessor: (item) => (item.stock_quantity ? item.stock_quantity : "0"),
+      accessor: (item) => {
+        const belowMinimum = item.minimum_stock != null && item.stock_quantity < item.minimum_stock
+        return (
+          <span
+            className={`inline-flex items-center gap-1.5 ${belowMinimum ? "text-danger font-bold" : ""}`}
+          >
+            {belowMinimum && <AlertTriangle size={14} />}
+            {item.stock_quantity ? item.stock_quantity : "0"}
+          </span>
+        )
+      },
     },
     {
       header: "Referência",

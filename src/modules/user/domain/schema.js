@@ -7,8 +7,8 @@ import {
 } from "@/modules/core/schemas/password"
 
 // Backend: validate_strong_password (>=8, maiúscula, minúscula, dígito, especial),
-// email formato + único no empreendimento, role em superuser/admin/colaborador,
-// business_id obrigatório para admin/colaborador.
+// email formato + único no empreendimento, role em superuser/admin/atendente/
+// mecanico/gerente/financeiro, business_id obrigatório pra qualquer um exceto superuser.
 export const userSchema = z
   .object({
     name: z.string().trim().min(1, "Informe o nome"),

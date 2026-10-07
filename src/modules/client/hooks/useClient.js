@@ -9,14 +9,14 @@ export function useClient() {
   const list = useResourceList({
     keyFactory: clientKeys,
     fetchPage: (params) => ClientService.getClient(params),
-    emptyFilters: { name: "", cpf: "" },
+    emptyFilters: { name: "", cpf: "", cnpj: "", client_type: "" },
   })
 
   const remove = useResourceAction({
     mutationFn: (item) => ClientService.deleteClient(item.id),
     confirm: (item) => ({
       title: "Excluir cliente?",
-      message: `O cliente "${item.first_name} ${item.last_name}" será removido permanentemente.`,
+      message: `O cliente "${item.display_name}" será removido permanentemente.`,
       confirmText: "Excluir",
       danger: true,
     }),

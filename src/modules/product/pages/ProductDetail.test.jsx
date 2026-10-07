@@ -27,6 +27,11 @@ function mockProduct() {
     ),
     // datalist de "Marca" pré-populado com marcas já cadastradas em produtos
     http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
+    // kardex (StockMovementHistory) — histórico de estoque do produto
+    http.get(`${API}/compras/movimentos-estoque/`, () =>
+      HttpResponse.json({ results: [], count: 0 }),
+    ),
   )
 }
 
@@ -53,5 +58,13 @@ describe("<ProductDetail>", () => {
     expect(
       await screen.findByRole("button", { name: /ver \/ editar fornecedor vinculado/i }),
     ).toBeEnabled()
+  })
+
+  it("mostra o histórico de estoque (kardex) do produto", async () => {
+    mockProduct()
+    renderPage()
+
+    expect(await screen.findByText("Histórico de Estoque")).toBeInTheDocument()
+    expect(await screen.findByText("Nenhum movimento registrado ainda.")).toBeInTheDocument()
   })
 })

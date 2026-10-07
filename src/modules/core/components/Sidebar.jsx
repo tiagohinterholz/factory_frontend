@@ -36,8 +36,14 @@ const postVehicleItems = [
 
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
   const location = useLocation()
-  const { canManageLicenses, canManageUsers, canManageFinancial, businessId, userId } =
-    usePermissions()
+  const {
+    canManageLicenses,
+    canManageUsers,
+    canManageFinancial,
+    canManagePurchases,
+    businessId,
+    userId,
+  } = usePermissions()
   // /configuracoes/* é sempre "o meu negócio" — superusuário não tem um
   // (400 no back), então nem mostra Gestão. Licenças aponta pra própria
   // licença quando há negócio, ou pra navegação geral (/licencas) quando é
@@ -50,7 +56,14 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
     ["/configuracoes", "/licencas", "/usuarios"].some((path) => location.pathname.startsWith(path)),
   )
   const [suppliesOpen, setSuppliesOpen] = useState(
-    ["/fornecedores", "/produtos", "/servicos"].some((path) => location.pathname.startsWith(path)),
+    [
+      "/fornecedores",
+      "/produtos",
+      "/categorias-produto",
+      "/subcategorias-produto",
+      "/servicos",
+      "/compras",
+    ].some((path) => location.pathname.startsWith(path)),
   )
   const [vehicleOpen, setVehicleOpen] = useState(
     ["/veiculos", "/marcas", "/modelos"].some((path) => location.pathname.startsWith(path)),
@@ -249,7 +262,14 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
               "Suprimentos",
               Boxes,
               suppliesOpen,
-              ["/fornecedores", "/produtos", "/servicos"],
+              [
+                "/fornecedores",
+                "/produtos",
+                "/categorias-produto",
+                "/subcategorias-produto",
+                "/servicos",
+                "/compras",
+              ],
               handleGroup(setSuppliesOpen),
             )}
 
@@ -269,6 +289,22 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                 >
                   Produtos
                 </Link>
+                <div className="ml-3 space-y-1 border-l border-slate-800 pl-3">
+                  <Link
+                    to="/categorias-produto"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/categorias-produto"))}
+                  >
+                    Categorias
+                  </Link>
+                  <Link
+                    to="/subcategorias-produto"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/subcategorias-produto"))}
+                  >
+                    Subcategorias
+                  </Link>
+                </div>
                 <Link
                   to="/servicos"
                   onClick={onCloseMobile}
@@ -276,6 +312,15 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                 >
                   Serviços
                 </Link>
+                {canManagePurchases && (
+                  <Link
+                    to="/compras"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/compras"))}
+                  >
+                    Compras
+                  </Link>
+                )}
               </div>
             )}
           </div>

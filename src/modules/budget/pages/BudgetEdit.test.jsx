@@ -22,7 +22,7 @@ vi.mock("react-router-dom", async (importOriginal) => {
 const budget = {
   id: 1,
   business: { id: 2 },
-  client: { id: 5, first_name: "Ana", last_name: "Lima" },
+  client: { id: 5, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima" },
   vehicle: { id: 9, manufacturer: "VW", model: "Gol", plate: "ABC1D23" },
   valid_until: null,
   status: "pendente",
@@ -37,7 +37,9 @@ function mockApi({ clientsDelayMs = 0, overrides = {} } = {}) {
     http.get(`${API}/clientes/`, async () => {
       if (clientsDelayMs) await delay(clientsDelayMs)
       return HttpResponse.json({
-        results: [{ id: 5, first_name: "Ana", last_name: "Lima", business: 2 }],
+        results: [
+          { id: 5, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima", business: 2 },
+        ],
         count: 1,
       })
     }),

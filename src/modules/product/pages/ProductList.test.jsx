@@ -11,6 +11,7 @@ function mockProducts() {
     http.get(`${API}/fornecedores/`, () =>
       HttpResponse.json({ results: [{ id: 9, corporate_name: "Bosch Ltda" }], count: 1 }),
     ),
+    http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
     http.get(`${API}/produtos/`, ({ request }) => {
       const supplierId = new URL(request.url).searchParams.get("supplier_id")
       return supplierId === "9"
@@ -39,6 +40,7 @@ describe("<ProductList>", () => {
   it("mostra o fornecedor na coluna, ou '-' quando o produto não tem um", async () => {
     server.use(
       http.get(`${API}/fornecedores/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/produtos/`, () =>
         HttpResponse.json({
           results: [
@@ -65,5 +67,31 @@ describe("<ProductList>", () => {
       "href",
       "/fornecedores/9",
     )
+  })
+
+  it("destaca em vermelho o produto abaixo do estoque mínimo", async () => {
+    server.use(
+      http.get(`${API}/fornecedores/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 1, name: "Abaixo do mínimo", stock_quantity: 2, minimum_stock: 5 },
+            { id: 2, name: "Estoque normal", stock_quantity: 10, minimum_stock: 5 },
+            { id: 3, name: "Sem alerta configurado", stock_quantity: 0, minimum_stock: null },
+          ],
+          count: 3,
+        }),
+      ),
+    )
+    renderWithProviders(<ProductList />)
+
+    const belowRow = (await screen.findByText("Abaixo do mínimo")).closest("tr")
+    const normalRow = screen.getByText("Estoque normal").closest("tr")
+    const noAlertRow = screen.getByText("Sem alerta configurado").closest("tr")
+
+    expect(within(belowRow).getByText("2")).toHaveClass("text-danger")
+    expect(within(normalRow).getByText("10")).not.toHaveClass("text-danger")
+    expect(within(noAlertRow).getByText("0")).not.toHaveClass("text-danger")
   })
 })

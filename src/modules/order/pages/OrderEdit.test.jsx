@@ -14,7 +14,13 @@ import { OrderService } from "../services/order"
 const order = {
   id: 1,
   business: { id: 2 },
-  client: { id: 5, first_name: "Ana", last_name: "Lima", phone: "(41) 91234-5678" },
+  client: {
+    id: 5,
+    first_name: "Ana",
+    last_name: "Lima",
+    display_name: "Ana Lima",
+    phone: "(41) 91234-5678",
+  },
   vehicle: { id: 9, manufacturer: "VW", model: "Gol", plate: "ABC1D23" },
   budget: { id: 77 },
   service_date: null,
@@ -32,7 +38,9 @@ function mockApi() {
     http.get(`${API}/ordens/1/`, () => HttpResponse.json(order)),
     http.get(`${API}/clientes/`, () =>
       HttpResponse.json({
-        results: [{ id: 5, first_name: "Ana", last_name: "Lima", business: 2 }],
+        results: [
+          { id: 5, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima", business: 2 },
+        ],
         count: 1,
       }),
     ),

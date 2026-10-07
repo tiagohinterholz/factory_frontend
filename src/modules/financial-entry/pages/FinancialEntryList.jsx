@@ -4,6 +4,7 @@ import { useFinancialEntry } from "../hooks/useFinancialEntry"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
+import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import { formatDate, formatMoney } from "@/modules/core/utils/format"
 import {
   FINANCIAL_ENTRY_TYPE_OPTIONS,
@@ -93,7 +94,12 @@ export default function FinancialEntryList() {
         title="Financeiro"
         buttonText="Novo Lançamento"
         buttonLink="/financeiro/novo"
-        actions={<ListFilters fields={filterFields} value={filters} onApply={applyFilters} />}
+        actions={
+          <div className="flex items-center gap-2">
+            <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
+            <ExportReportButton type="cashflow" label="Exportar Fluxo de Caixa" />
+          </div>
+        }
       />
       <ListTable
         dense

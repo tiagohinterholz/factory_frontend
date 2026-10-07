@@ -8,7 +8,7 @@ const fuelLabel = (value) => fuelOptions.find((option) => option.id === value)?.
 // Modal só-leitura com os veículos de um cliente. `client` nulo = fechado.
 export default function ClientVehiclesModal({ client, onClose }) {
   const { vehicles, loading, error } = useClientVehicles(client?.id)
-  const name = client ? `${client.first_name} ${client.last_name}` : ""
+  const name = client?.display_name ?? ""
 
   return (
     <Modal

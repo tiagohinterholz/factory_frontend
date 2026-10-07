@@ -5,4 +5,5 @@ export const userKeys = {
   lists: () => [...userKeys.all, "list"],
   list: (params) => [...userKeys.lists(), params],
   detail: (id) => [...userKeys.all, "detail", id],
+  permissions: (id) => [...userKeys.all, "permissions", id],
 }

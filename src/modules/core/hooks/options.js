@@ -21,6 +21,8 @@ import { stateKeys } from "@/modules/location/state/domain"
 import { cityKeys } from "@/modules/location/city/domain"
 import { ManufacturerService } from "@/modules/manufacturer"
 import { manufacturerKeys } from "@/modules/manufacturer/domain"
+import { ProductCategoryService } from "@/modules/productcategory"
+import { productCategoryKeys } from "@/modules/productcategory/domain"
 
 // Listas completas (todas as páginas) pra popular os <select> dos formulários.
 // Os hooks de lista (useClient, useVehicle, ...) só trazem a 1ª página — bom pra
@@ -112,4 +114,25 @@ export function useModelOptionsByManufacturer(manufacturerId) {
     select: (list) => [...list].sort((a, b) => (a.name || "").localeCompare(b.name || "")),
   })
   return { modelsByManufacturer: query.data ?? [], loading: query.isFetching }
+}
+
+export function useProductCategoryOptions() {
+  const query = useOptions(productCategoryKeys, (page) =>
+    ProductCategoryService.getProductCategories({ page }),
+  )
+  return { productCategories: query.data ?? [], loading: query.isPending }
+}
+
+export function useProductSubcategoryOptionsByCategory(categoryId) {
+  const query = useQuery({
+    queryKey: [...productCategoryKeys.subcategoriesByCategory(categoryId), "options"],
+    queryFn: () =>
+      fetchAllPages((page) =>
+        ProductCategoryService.getSubcategoriesByCategory(categoryId, { page }),
+      ),
+    enabled: Boolean(categoryId),
+    staleTime: OPTIONS_STALE,
+    select: (list) => [...list].sort((a, b) => (a.name || "").localeCompare(b.name || "")),
+  })
+  return { subcategoriesByCategory: query.data ?? [], loading: query.isFetching }
 }

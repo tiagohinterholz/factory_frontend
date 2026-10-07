@@ -23,7 +23,7 @@ const hours = [
 ]
 
 describe("<BusinessHoursPanel>", () => {
-  it("colaborador (canEdit=false) só visualiza os horários, sem controles de edição", () => {
+  it("atendente (canEdit=false) só visualiza os horários, sem controles de edição", () => {
     renderWithProviders(
       <BusinessHoursPanel hours={hours} loading={false} canEdit={false} onSave={vi.fn()} />,
     )

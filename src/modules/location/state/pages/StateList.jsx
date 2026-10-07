@@ -8,6 +8,7 @@ export default function StateList() {
   const columns = [
     { header: "Sigla", accessor: (item) => item.abbreviation },
     { header: "Estado", accessor: (item) => item.name },
+    { header: "Código IBGE", accessor: (item) => item.ibge_code ?? "—" },
     { header: "Ativo", accessor: (item) => (item.is_active ? "Sim" : "Não") },
   ]
 

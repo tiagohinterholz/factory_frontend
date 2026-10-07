@@ -40,7 +40,7 @@ export default function Topbar({ onOpenMobile }) {
           <div className="hidden sm:flex flex-col items-end mr-1">
             <span className="text-sm font-bold text-slate-700 leading-none">{user?.email}</span>
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
-              {user?.role || "Colaborador"}
+              {user?.role || "Usuário"}
             </span>
           </div>
 

@@ -25,7 +25,7 @@ beforeEach(() => {
             manufacturer: { id: 12, name: "Volkswagen" },
             model: { id: 90, name: "Gol" },
             color: "Prata",
-            client: { id: 3, first_name: "Ana", last_name: "Lima" },
+            client: { id: 3, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima" },
           },
         ],
         count: 1,

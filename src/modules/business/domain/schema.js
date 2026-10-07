@@ -36,6 +36,8 @@ export const businessSchema = z.object({
   address: requiredText("Informe o endereço"),
   number: requiredText("Informe o número"),
   complement: optionalText,
+  neighborhood: optionalText,
+  postal_code: optionalText,
   phone: phoneField,
   email: emailField,
   logo: z
@@ -63,6 +65,8 @@ export const businessDefaults = {
   address: "",
   number: "",
   complement: "",
+  neighborhood: "",
+  postal_code: "",
   phone: "",
   email: "",
   logo: "",
@@ -71,9 +75,12 @@ export const businessDefaults = {
 // form -> payload. Só vira multipart quando há um arquivo NOVO de logo (o back
 // recebe o upload junto do cadastro/edição). Sem arquivo novo, segue objeto
 // JSON e o campo logo (URL atual ou vazio) fica de fora — não reenvia a
-// string da imagem existente.
+// string da imagem existente. `email` também fica de fora: o campo é
+// read-only na tela (trava de e-mail no self-service, BusinessService.update)
+// e o back rejeita o payload inteiro se a chave aparecer, mesmo com o valor
+// igual ao que já estava.
 export function toBusinessPayload(values) {
-  const { logo, ...rest } = values
+  const { logo, email: _email, ...rest } = values
 
   if (!(logo instanceof File)) return rest
 

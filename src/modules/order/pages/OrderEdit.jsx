@@ -160,8 +160,7 @@ export default function OrderEdit() {
   // o cliente/veículo já vinculados à OS têm que aparecer no select mesmo que o
   // cache de opções esteja velho ou o filtro em cascata os corte — senão salvar
   // apagaria a FK. Fallback montado do payload de detalhe (relatedClient/Vehicle).
-  const clientLabel = (client) =>
-    `${client?.first_name ?? ""} ${client?.last_name ?? ""}`.trim() || `Cliente #${idOf(client)}`
+  const clientLabel = (client) => client?.display_name || `Cliente #${idOf(client)}`
   const vehicleLabel = (vehicle) =>
     vehicle?.manufacturer || vehicle?.model
       ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""} (${vehicle.plate ?? ""})`
@@ -170,7 +169,7 @@ export default function OrderEdit() {
   const clientOptions = withSelectedOption(
     clients
       .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
-      .map((c) => ({ id: c.id, name: `${c.first_name} ${c.last_name}` })),
+      .map((c) => ({ id: c.id, name: c.display_name })),
     clientId,
     relatedClient && { id: idOf(relatedClient), name: clientLabel(relatedClient) },
   )

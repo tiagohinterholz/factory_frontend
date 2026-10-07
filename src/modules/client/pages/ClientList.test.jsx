@@ -17,9 +17,12 @@ function mockClients(results) {
         results: results ?? [
           {
             id: 1,
+            client_type: "PF",
             first_name: "Ana",
             last_name: "Lima",
+            display_name: "Ana Lima",
             cpf: "111",
+            document: "111",
             phone: "(41) 91266-2552",
           },
         ],
@@ -110,10 +113,39 @@ describe("<ClientList>", () => {
   })
 
   it("não mostra o link do WhatsApp quando o cliente não tem telefone", async () => {
-    mockClients([{ id: 2, first_name: "Beto", last_name: "Souza", cpf: "222", phone: "" }])
+    mockClients([
+      {
+        id: 2,
+        first_name: "Beto",
+        last_name: "Souza",
+        display_name: "Beto Souza",
+        cpf: "222",
+        phone: "",
+      },
+    ])
     renderWithProviders(<ClientList />)
     await screen.findByText("Beto Souza")
 
     expect(screen.queryByRole("link", { name: /whatsapp/i })).not.toBeInTheDocument()
+  })
+
+  it("mostra tipo e documento certos pra cliente PJ", async () => {
+    mockClients([
+      {
+        id: 3,
+        client_type: "PJ",
+        corporate_name: "Frota Veloz Transportes Ltda",
+        trade_name: "Frota Veloz",
+        display_name: "Frota Veloz",
+        cnpj: "11.222.333/0001-44",
+        document: "11.222.333/0001-44",
+        phone: "",
+      },
+    ])
+    renderWithProviders(<ClientList />)
+
+    expect(await screen.findByText("Frota Veloz")).toBeInTheDocument()
+    expect(screen.getByText("Pessoa Jurídica")).toBeInTheDocument()
+    expect(screen.getByText("11.222.333/0001-44")).toBeInTheDocument()
   })
 })
