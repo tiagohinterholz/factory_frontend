@@ -19,6 +19,7 @@ describe("usePermissions", () => {
     expect(result.current.canManagePurchases).toBe(true)
     expect(result.current.canExportReports).toBe(true)
     expect(result.current.canEmitFiscalNote).toBe(true)
+    expect(result.current.canEmitServiceFiscalNote).toBe(true)
   })
 
   it("superusuário (sem business_id) também tem tudo", () => {
@@ -43,6 +44,7 @@ describe("usePermissions", () => {
     expect(result.current.canExportReports).toBe(true)
     expect(result.current.canManagePurchases).toBe(false)
     expect(result.current.canEmitFiscalNote).toBe(false)
+    expect(result.current.canEmitServiceFiscalNote).toBe(false)
   })
 
   it("gerente vê financeiro/relatório/NF-e mas não compras", () => {
@@ -61,6 +63,7 @@ describe("usePermissions", () => {
     expect(result.current.canManageFinancial).toBe(true)
     expect(result.current.canExportReports).toBe(true)
     expect(result.current.canEmitFiscalNote).toBe(true)
+    expect(result.current.canEmitServiceFiscalNote).toBe(false)
     expect(result.current.canManagePurchases).toBe(false)
   })
 
@@ -71,6 +74,7 @@ describe("usePermissions", () => {
     expect(result.current.canManageFinancial).toBe(false)
     expect(result.current.canExportReports).toBe(false)
     expect(result.current.canEmitFiscalNote).toBe(false)
+    expect(result.current.canEmitServiceFiscalNote).toBe(false)
     expect(result.current.canManagePurchases).toBe(false)
     expect(result.current.canManageUsers).toBe(false)
   })

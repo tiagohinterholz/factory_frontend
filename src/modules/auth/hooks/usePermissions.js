@@ -37,6 +37,7 @@ export function usePermissions() {
     canManageFinancial: has("financial.view_financialentry"),
     canManagePurchases: has("purchases.view_purchaseorder"),
     canEmitFiscalNote: has("orders.can_emit_fiscal_note"),
+    canEmitServiceFiscalNote: has("orders.can_emit_service_fiscal_note"),
     canManageBusiness: has("businesses.change_business"),
     canAnonymizeClient: has("customers.can_anonymize_client"),
   }
