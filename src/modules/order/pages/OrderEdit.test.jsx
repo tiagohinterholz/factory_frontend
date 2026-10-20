@@ -214,6 +214,76 @@ describe("<OrderEdit>", () => {
     ).toBeInTheDocument()
   })
 
+  it("faturado com produto e serviço ativos: mostra os dois cartões de nota fiscal", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "faturado",
+          order_products: [
+            { id: 1, quantity: 1, total: "10.00", is_active: true, product: { name: "Peça" } },
+          ],
+          order_services: [
+            { id: 1, unit_price: "50.00", is_active: true, service: { name: "Troca de óleo" } },
+          ],
+        }),
+      ),
+      http.get(`${API}/ordens/1/nota-fiscal/`, () => HttpResponse.json(null, { status: 404 })),
+      http.get(`${API}/ordens/1/nota-fiscal-servico/`, () =>
+        HttpResponse.json(null, { status: 404 }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Nota Fiscal (NF-e)")).toBeInTheDocument()
+    expect(screen.getByText("Nota de Serviço (NFS-e)")).toBeInTheDocument()
+  })
+
+  it("faturado só com produto ativo: mostra só o cartão de nota fiscal de produto", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "faturado",
+          order_products: [
+            { id: 1, quantity: 1, total: "10.00", is_active: true, product: { name: "Peça" } },
+          ],
+          order_services: [],
+        }),
+      ),
+      http.get(`${API}/ordens/1/nota-fiscal/`, () => HttpResponse.json(null, { status: 404 })),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Nota Fiscal (NF-e)")).toBeInTheDocument()
+    expect(screen.queryByText("Nota de Serviço (NFS-e)")).not.toBeInTheDocument()
+  })
+
+  it("faturado só com serviço ativo: mostra só o cartão de nota fiscal de serviço", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "faturado",
+          order_products: [],
+          order_services: [
+            { id: 1, unit_price: "50.00", is_active: true, service: { name: "Troca de óleo" } },
+          ],
+        }),
+      ),
+      http.get(`${API}/ordens/1/nota-fiscal-servico/`, () =>
+        HttpResponse.json(null, { status: 404 }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Nota de Serviço (NFS-e)")).toBeInTheDocument()
+    expect(screen.queryByText("Nota Fiscal (NF-e)")).not.toBeInTheDocument()
+  })
+
   it("não lista item com is_active=false (deletado que o back ainda devolve)", async () => {
     mockApi()
     server.use(

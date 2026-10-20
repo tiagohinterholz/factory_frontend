@@ -7,6 +7,7 @@ import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import FiscalNotePanel from "@/modules/order/components/FiscalNotePanel"
+import ServiceFiscalNotePanel from "@/modules/order/components/ServiceFiscalNotePanel"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
@@ -282,7 +283,11 @@ export default function OrderEdit() {
             </form>
           </div>
 
-          {orderIsBilled(status) && <FiscalNotePanel orderId={id} />}
+          {/* cada cartão só aparece se a OS faturada tiver pelo menos um item
+          ativo do tipo correspondente — produto e serviço são rastreados
+          (e emitidos) independentemente um do outro */}
+          {orderIsBilled(status) && products.length > 0 && <FiscalNotePanel orderId={id} />}
+          {orderIsBilled(status) && services.length > 0 && <ServiceFiscalNotePanel orderId={id} />}
 
           {financialEntryId && (
             <Link
