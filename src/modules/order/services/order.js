@@ -53,6 +53,17 @@ export const OrderService = {
     return response.data
   },
 
+  // NFS-e da ordem. GET dá 404 quando nunca foi solicitada.
+  async getServiceFiscalNote(id) {
+    const response = await api.get(`/ordens/${id}/nota-fiscal-servico/`)
+    return response.data
+  },
+
+  async requestServiceFiscalNote(id) {
+    const response = await api.post(`/ordens/${id}/nota-fiscal-servico/`)
+    return response.data
+  },
+
   async orderProduct(id) {
     const response = await api.get(`/ordens/${id}/produtos/`)
     return response.data
