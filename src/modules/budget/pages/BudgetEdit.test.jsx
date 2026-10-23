@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
-import { http, HttpResponse, delay } from "msw"
+import userEvent from "@testing-library/user-event"
+import { http, HttpResponse } from "msw"
 import { Routes, Route } from "react-router-dom"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
@@ -14,11 +15,6 @@ vi.mock("react-router-dom", async (importOriginal) => {
   return { ...actual, useNavigate: () => navigateSpy }
 })
 
-// BUG-1: na 1ª visita, o form.reset roda antes das listas de opção chegarem
-// (useClientOptions etc buscam todas as páginas). Os <select> do RHF são
-// uncontrolled: sem a <option> no DOM na hora do reset, o campo fica vazio.
-// O guard de loading da página tem que segurar o render até as opções virem.
-
 const budget = {
   id: 1,
   business: { id: 2 },
@@ -31,18 +27,24 @@ const budget = {
   budget_services: [],
 }
 
-function mockApi({ clientsDelayMs = 0, overrides = {} } = {}) {
+function mockApi({ overrides = {} } = {}) {
   server.use(
     http.get(`${API}/orcamentos/1/`, () => HttpResponse.json({ ...budget, ...overrides })),
-    http.get(`${API}/clientes/`, async () => {
-      if (clientsDelayMs) await delay(clientsDelayMs)
-      return HttpResponse.json({
+    http.get(`${API}/clientes/`, () =>
+      HttpResponse.json({
         results: [
           { id: 5, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima", business: 2 },
+          {
+            id: 6,
+            first_name: "Bruno",
+            last_name: "Souza",
+            display_name: "Bruno Souza",
+            business: 2,
+          },
         ],
-        count: 1,
-      })
-    }),
+        count: 2,
+      }),
+    ),
     http.get(`${API}/veiculos/`, () =>
       HttpResponse.json({
         results: [
@@ -70,41 +72,101 @@ const renderPage = () =>
     { route: "/orcamentos/1" },
   )
 
-describe("<BudgetEdit> — BUG-1 (opções antes do form)", () => {
-  it("segura o render enquanto as listas de opção não chegaram", () => {
-    mockApi({ clientsDelayMs: 60 })
-    renderPage()
-    expect(screen.getByText(/carregando/i)).toBeInTheDocument()
-  })
-
-  it("com as opções carregadas, o select de Cliente já vem com o cliente do orçamento", async () => {
-    mockApi({ clientsDelayMs: 60 })
-    renderPage()
-
-    await waitFor(() =>
-      expect(screen.getByRole("option", { name: "Ana Lima", selected: true })).toBeInTheDocument(),
-    )
-    // e o de Veículo também
-    expect(
-      screen.getByRole("option", { name: /VW Gol \(ABC1D23\)/, selected: true }),
-    ).toBeInTheDocument()
-  })
-
-  it("mantém o cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {
+describe("<BudgetEdit> — live-select de cliente/veículo", () => {
+  it("o select de Cliente/Veículo já vem com o cliente e o veículo do orçamento", async () => {
     mockApi()
-    // cache defasado: as listas de opção não trazem o cliente 5 nem o veículo 9
+    renderPage()
+
+    await screen.findByText("pendente")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
+    expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)")
+  })
+
+  // cenário: get_all() do back só traz is_active=True — um cliente/veículo
+  // excluído ou anonimizado some da lista, mas o orçamento histórico ainda
+  // aponta pra ele. Com o live-select controlado (value/onChange) o id do
+  // form não se perde no submit, e com o fallback `extraOption` o nome
+  // exibido também continua visível (não fica em branco) — ver
+  // validation.md, Gap 1.
+  it("cliente/veículo vinculados mas desativados (fora da lista de opções) continuam visíveis e no submit", async () => {
+    mockApi()
     server.use(
       http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
     )
+    const update = vi.spyOn(BudgetService, "updateBudget").mockResolvedValue(budget)
     renderPage()
 
+    await screen.findByText("pendente")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+
     await waitFor(() =>
-      expect(screen.getByRole("option", { name: "Ana Lima", selected: true })).toBeInTheDocument(),
+      expect(update).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({ client_id: "5", vehicle_id: "9" }),
+      ),
     )
-    expect(
-      screen.getByRole("option", { name: /VW Gol \(ABC1D23\)/, selected: true }),
-    ).toBeInTheDocument()
+    update.mockRestore()
+  })
+
+  it("trocar o cliente selecionado limpa o veículo já escolhido", async () => {
+    mockApi()
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("pendente")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    expect(vehicleInput).toHaveValue("")
+  })
+
+  it("reselecionar o MESMO cliente não limpa o veículo já escolhido", async () => {
+    // bug real reportado em uso: o Combobox dispara onChange mesmo ao
+    // clicar no cliente que já estava selecionado — sem a checagem de
+    // "mudou de verdade", isso zerava o veículo sem motivo.
+    mockApi()
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("pendente")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Ana Lima" }))
+
+    expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)")
+  })
+
+  it("trocar o cliente realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
+    // discrimina do filtro de exibição do VehicleLiveSelect (que já esconde o
+    // veículo do cliente antigo por clientId): sem o setValue("vehicle_id","")
+    // o id antigo continuaria no form e passaria a validação, enviando o
+    // veículo errado (do cliente anterior) pro back.
+    mockApi()
+    const update = vi.spyOn(BudgetService, "updateBudget")
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("pendente")
+    const [clientInput] = screen.getAllByRole("combobox")
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+
+    expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
+    expect(update).not.toHaveBeenCalled()
+    update.mockRestore()
   })
 })
 

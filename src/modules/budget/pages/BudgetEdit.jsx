@@ -6,15 +6,15 @@ import { BudgetService } from "../services/budgets"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import ApproveBudgetModal from "../components/ApproveBudgetModal"
-import { useClientOptions } from "@/modules/core/hooks/options"
-import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
 import { useWorkServiceOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
-import { idOf, withSelectedOption } from "@/api/dto"
+import { idOf } from "@/api/dto"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import { ClientLiveSelect } from "@/modules/client"
+import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Plus, Trash2, CheckCircle, XCircle, Copy } from "lucide-react"
 import { formatDateTime, formatMoney } from "@/modules/core/utils/format"
@@ -59,11 +59,9 @@ export default function BudgetEdit() {
     formState: { errors, isSubmitting },
   } = form
 
-  const businessId = watch("business_id")
   const clientId = watch("client_id")
+  const vehicleId = watch("vehicle_id")
 
-  const { client: clients, loading: loadingClients } = useClientOptions()
-  const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { product: allProducts } = useProductOptions()
   const { workservice: allServices } = useWorkServiceOptions()
 
@@ -154,34 +152,24 @@ export default function BudgetEdit() {
     }
   }
 
-  // espera as listas de opção antes de montar os <select> — senão o
-  // form.reset roda antes das <option> existirem e o campo fica vazio (BUG-1)
-  if (loading || loadingClients || loadingVehicles)
-    return <div className="p-6 text-center">Carregando...</div>
+  if (loading) return <div className="p-6 text-center">Carregando...</div>
 
-  // o cliente/veículo já vinculados ao orçamento têm que aparecer no select
-  // mesmo que o cache de opções esteja velho ou o filtro em cascata os corte —
-  // senão salvar apagaria a FK. Fallback montado do payload de detalhe.
+  // cliente/veículo já vinculados ao orçamento podem ter sido desativados
+  // (exclusão lógica/anonimização) e saído da lista de opções — sem isso o
+  // campo ficaria permanentemente em branco mesmo com o vínculo intacto.
   const clientLabel = (client) => client?.display_name || `Cliente #${idOf(client)}`
   const vehicleLabel = (vehicle) =>
     vehicle?.manufacturer || vehicle?.model
       ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""} (${vehicle.plate ?? ""})`
       : `Veículo #${idOf(vehicle)}`
-
-  const clientOptions = withSelectedOption(
-    clients
-      .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
-      .map((c) => ({ id: c.id, name: c.display_name })),
-    clientId,
-    relatedClient && { id: idOf(relatedClient), name: clientLabel(relatedClient) },
-  )
-  const vehicleOptions = withSelectedOption(
-    vehicles
-      .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
-      .map((v) => ({ id: v.id, name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})` })),
-    watch("vehicle_id"),
-    relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
-  )
+  const extraClientOption = relatedClient && {
+    id: idOf(relatedClient),
+    name: clientLabel(relatedClient),
+  }
+  const extraVehicleOption = relatedVehicle && {
+    id: idOf(relatedVehicle),
+    name: vehicleLabel(relatedVehicle),
+  }
 
   const isPending = budgetIsPending(status)
   const canDuplicate = budgetCanDuplicate(status)
@@ -259,22 +247,30 @@ export default function BudgetEdit() {
               </p>
             )}
             <form onSubmit={onSubmit} className="space-y-4">
-              <SelectField
+              <ClientLiveSelect
                 label="Cliente"
-                options={clientOptions}
+                value={clientId}
+                onChange={(value) => {
+                  // o Combobox dispara onChange mesmo reselecionando o
+                  // cliente já ativo — só limpa o veículo quando o cliente
+                  // realmente mudou.
+                  if (value === clientId) return
+                  setValue("client_id", value)
+                  setValue("vehicle_id", "")
+                }}
                 disabled={locked}
                 error={errors.client_id?.message}
-                registration={register("client_id", {
-                  onChange: () => setValue("vehicle_id", ""),
-                })}
+                extraOption={extraClientOption}
               />
-              <SelectField
+              <VehicleLiveSelect
                 label="Veículo"
-                options={vehicleOptions}
-                disabled={locked || !clientId}
-                disabledHint={locked ? undefined : "Selecione o cliente primeiro"}
+                value={vehicleId}
+                onChange={(value) => setValue("vehicle_id", value)}
+                clientId={clientId}
+                disabled={locked}
+                disabledHint="Selecione o cliente primeiro"
                 error={errors.vehicle_id?.message}
-                registration={register("vehicle_id")}
+                extraOption={extraVehicleOption}
               />
               <FormField
                 label="Validade"
