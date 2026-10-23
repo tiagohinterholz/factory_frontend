@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { Routes, Route } from "react-router-dom"
 import { server } from "@/test/msw/server"
@@ -80,24 +81,134 @@ describe("<AppointmentDetail>", () => {
     await waitFor(() => expect(screen.getAllByRole("option", { name: /OS 77/ })).toHaveLength(1))
   })
 
-  it("mantém cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {
+  it("cliente/veículo vinculados mas desativados (fora da lista de opções) continuam visíveis e no submit", async () => {
+    // cenário: get_all() do back só traz is_active=True — um cliente/veículo
+    // excluído ou anonimizado some da lista, mas o agendamento histórico
+    // ainda aponta pra ele. Com o live-select controlado (value/onChange) o
+    // id do form não se perde no submit, e com o fallback `extraOption` o
+    // nome exibido também continua visível (não fica em branco) — ver
+    // validation.md, Gap 1.
     mockApi({
       orders: [],
       appointmentOverrides: {
         client: { id: 5, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima" },
-        vehicle: { id: 9, manufacturer: "VW", model: "Gol" },
+        vehicle: { id: 9, manufacturer: "WV", model: "Gol" },
       },
     })
     server.use(
       http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
     )
+    const { AppointmentService } = await import("@/modules/appointment/services/appointment")
+    const update = vi.spyOn(AppointmentService, "updateAppointment").mockResolvedValue({})
     renderPage()
 
+    await screen.findByText("Editar Agendamento")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("WV Gol"))
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+
     await waitFor(() =>
-      expect(screen.getByRole("option", { name: "Ana Lima", selected: true })).toBeInTheDocument(),
+      expect(update).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({ client_id: "5", vehicle_id: "9" }),
+      ),
     )
-    expect(screen.getByRole("option", { name: /VW Gol/, selected: true })).toBeInTheDocument()
+    update.mockRestore()
+  })
+
+  it("trocar o cliente proprietário limpa o veículo e a OS já escolhidos", async () => {
+    mockApi({ orders: [{ id: 77, vehicle: 9, plate: "ABC1D23" }] })
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput.value).not.toBe(""))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    expect(vehicleInput).toHaveValue("")
+  })
+
+  it("reselecionar o MESMO cliente não limpa o veículo/OS já escolhidos", async () => {
+    // bug real reportado em uso: o Combobox dispara onChange mesmo ao
+    // clicar no cliente que já estava selecionado — sem a checagem de
+    // "mudou de verdade", isso zerava veículo/OS sem motivo.
+    mockApi({ orders: [{ id: 77, vehicle: 9, plate: "ABC1D23" }] })
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput.value).not.toBe(""))
+    const vehicleValueBefore = vehicleInput.value
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Ana Lima" }))
+
+    expect(vehicleInput).toHaveValue(vehicleValueBefore)
+  })
+
+  it("trocar o cliente proprietário realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
+    // discrimina do filtro de exibição do VehicleLiveSelect (que já esconde o
+    // veículo do cliente antigo por clientId): sem o setValue("vehicle_id","")
+    // o id antigo continuaria no form e passaria a validação, enviando o
+    // veículo errado (do cliente anterior) pro back.
+    mockApi({ orders: [{ id: 77, vehicle: 9, plate: "ABC1D23" }] })
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const { AppointmentService } = await import("@/modules/appointment/services/appointment")
+    const update = vi.spyOn(AppointmentService, "updateAppointment")
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+    const [clientInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(screen.getAllByRole("combobox")[1].value).not.toBe(""))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+
+    expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
+    expect(update).not.toHaveBeenCalled()
+    update.mockRestore()
   })
 
   it("OS 'em andamento': mostra 'Finalizar atendimento' e chama finishService", async () => {

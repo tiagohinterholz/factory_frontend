@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom"
 import { useAppointmentEditForm } from "@/modules/appointment/hooks/useAppointmentEditForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useClientOptions } from "@/modules/core/hooks/options"
-import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useOrderOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import { ClientLiveSelect } from "@/modules/client"
+import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import { idOf, withSelectedOption } from "@/api/dto"
@@ -77,12 +77,9 @@ export default function AppointmentDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const businessId = watch("business_id")
   const clientId = watch("client_id")
   const vehicleId = watch("vehicle_id")
 
-  const { client: clients, loading: loadingClients } = useClientOptions()
-  const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { orders, loading: loadingOrders } = useOrderOptions()
 
   // rótulo da <option> de fallback a partir do registro cru do detalhe (ora
@@ -97,35 +94,22 @@ export default function AppointmentDetail() {
     return `OS ${idOf(order)}${plate ? ` - ${plate}` : ""}`
   }
 
-  // as listas de opção vêm de um cache com staleTime alto ou de um filtro em
-  // cascata; o registro já vinculado ao agendamento tem que aparecer no select
+  // cliente/veículo já vinculados ao agendamento podem ter sido desativados
+  // (exclusão lógica/anonimização) e saído da lista de opções — sem isso o
+  // campo ficaria permanentemente em branco mesmo com o vínculo intacto.
+  const extraClientOption = relatedClient && {
+    id: idOf(relatedClient),
+    name: clientLabel(relatedClient),
+  }
+  const extraVehicleOption = relatedVehicle && {
+    id: idOf(relatedVehicle),
+    name: vehicleLabel(relatedVehicle),
+  }
+
+  // a lista de OS vem de um cache com staleTime alto ou de um filtro em
+  // cascata; a OS já vinculada ao agendamento tem que aparecer no select
   // mesmo assim (senão salvar apagaria a FK). withSelectedOption injeta só
   // quando o valor selecionado é o próprio registro do detalhe.
-  const clientOptions = withSelectedOption(
-    clients
-      .filter((c) => {
-        const bizId = c.business?.id || c.business
-        return !businessId || String(bizId) === String(businessId)
-      })
-      .map((c) => ({ id: c.id, name: c.display_name })),
-    clientId,
-    relatedClient && { id: idOf(relatedClient), name: clientLabel(relatedClient) },
-  )
-
-  const vehicleOptions = withSelectedOption(
-    vehicles
-      .filter((v) => {
-        const ownerId = v.client?.id || v.client
-        return !clientId || String(ownerId) === String(clientId)
-      })
-      .map((v) => ({
-        id: v.id,
-        name: `${v.manufacturer?.name || ""} ${v.model?.name || ""} ${v.year || ""}`.trim(),
-      })),
-    vehicleId,
-    relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
-  )
-
   const orderOptions = withSelectedOption(
     orders
       .filter((o) => {
@@ -141,7 +125,7 @@ export default function AppointmentDetail() {
     names.forEach((name) => setValue(name, ""))
   }
 
-  if (loading || loadingClients || loadingVehicles || loadingOrders)
+  if (loading || loadingOrders)
     return <p className="p-6 text-slate-500 font-medium">Carregando...</p>
 
   return (
@@ -181,24 +165,32 @@ export default function AppointmentDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7 card-premium">
             <form className="space-y-6" onSubmit={onSubmit}>
-              <SelectField
+              <ClientLiveSelect
                 label="Cliente Proprietário"
-                options={clientOptions}
+                value={clientId}
+                onChange={(value) => {
+                  // o Combobox dispara onChange mesmo reselecionando o
+                  // cliente já ativo — só limpa veículo/OS quando o cliente
+                  // realmente mudou.
+                  if (value === clientId) return
+                  setValue("client_id", value)
+                  resetChildren("vehicle_id", "order_id")
+                }}
                 error={errors.client_id?.message}
-                registration={register("client_id", {
-                  onChange: () => resetChildren("vehicle_id", "order_id"),
-                })}
+                extraOption={extraClientOption}
               />
 
-              <SelectField
+              <VehicleLiveSelect
                 label="Veículo"
-                options={vehicleOptions}
-                disabled={!clientId}
+                value={vehicleId}
+                onChange={(value) => {
+                  setValue("vehicle_id", value)
+                  resetChildren("order_id")
+                }}
+                clientId={clientId}
                 disabledHint="Selecione o cliente primeiro"
                 error={errors.vehicle_id?.message}
-                registration={register("vehicle_id", {
-                  onChange: () => resetChildren("order_id"),
-                })}
+                extraOption={extraVehicleOption}
               />
 
               <SelectField
