@@ -12,28 +12,28 @@ Todo campo de seleção do sistema hoje é um `<select>` nativo (`SelectField.js
 
 ## Out of Scope
 
-| Feature | Reason |
-| --- | --- |
-| Busca no servidor (debounce + endpoint de busca) | Decidido em Discuss — filtro é 100% em cima da lista já carregada hoje (`useClientOptions`/`useVehicleOptions`), sem mudança de backend. Só vale a pena se o volume de registros crescer muito (fica de nota pra revisar no futuro). |
-| Estender pra Produto/Serviço/Fornecedor | Fora do P1 por decisão do usuário — vira feature própria depois (P2 do backlog maior). |
-| Estender pra Categoria/Subcategoria, Marca/Modelo, Estado/Cidade | Fora do P1 — campos de cadastro menos usados no dia a dia, ficam pro P3 do backlog maior. |
-| Mudar o comportamento de filtro veículo-por-cliente (hoje client-side) pra usar o filtro `client_id` que já existe no backend (`VehicleFilterSet`) | Não é bloqueador do P1 — o filtro atual já funciona, só não usa o endpoint; otimizar isso é independente desta feature. |
+| Feature                                                                                                                                            | Reason                                                                                                                                                                                                                               |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Busca no servidor (debounce + endpoint de busca)                                                                                                   | Decidido em Discuss — filtro é 100% em cima da lista já carregada hoje (`useClientOptions`/`useVehicleOptions`), sem mudança de backend. Só vale a pena se o volume de registros crescer muito (fica de nota pra revisar no futuro). |
+| Estender pra Produto/Serviço/Fornecedor                                                                                                            | Fora do P1 por decisão do usuário — vira feature própria depois (P2 do backlog maior).                                                                                                                                               |
+| Estender pra Categoria/Subcategoria, Marca/Modelo, Estado/Cidade                                                                                   | Fora do P1 — campos de cadastro menos usados no dia a dia, ficam pro P3 do backlog maior.                                                                                                                                            |
+| Mudar o comportamento de filtro veículo-por-cliente (hoje client-side) pra usar o filtro `client_id` que já existe no backend (`VehicleFilterSet`) | Não é bloqueador do P1 — o filtro atual já funciona, só não usa o endpoint; otimizar isso é independente desta feature.                                                                                                              |
 
 ---
 
 ## Assumptions & Open Questions
 
-| Assumption / decision | Chosen default | Rationale | Confirmed? |
-| --- | --- | --- | --- |
-| Atalho de cadastro rápido | Modal inline, sem navegar pra outra página | Decidido em Discuss | y |
-| Fonte da busca | Filtra em cima da lista já carregada (`useClientOptions`/`useVehicleOptions`), sem endpoint novo | Decidido em Discuss | y |
-| Escopo do P1 | Só Cliente e Veículo | Decidido em Discuss | y |
-| Campo mínimo do modal de cliente | PF: nome + sobrenome + CPF + estado + cidade + telefone. PJ: razão social + CNPJ + estado + cidade + telefone. `business_id` preenchido automaticamente (já é assim no cadastro completo hoje) | Grounded em `apps/customers/serializers/client_serializer.py` (PF/PJ obrigatórios) + `src/modules/client/domain/schema.js` (estado/cidade/telefone obrigatórios no front) | y |
-| Campo mínimo do modal de veículo | client_id (pré-preenchido pelo cliente já selecionado no formulário-pai) + marca + modelo (cascata, igual ao cadastro completo) + ano + ano modelo + placa + combustível | Grounded em `apps/customers/models/vehicle.py` + `src/modules/vehicle/domain/schema.js` — nenhum desses é opcional em nenhuma das pontas | y |
-| Veículo sem cliente selecionado ainda | O atalho "cadastrar veículo" fica desabilitado/pede primeiro escolher ou cadastrar o cliente, já que `client` é FK obrigatória do veículo | Consequência direta do modelo de dados — não dá pra criar veículo órfão | y |
-| Critério de filtro por texto (cliente) | Compara contra nome/razão social E documento (CPF/CNPJ), case-insensitive, substring em qualquer posição | Busca por documento é um caso de uso real (cliente repetido lembra o CPF, não o nome) — enriquecimento razoável do "digita e filtra" pedido, não é escopo novo | y |
-| Critério de filtro por texto (veículo) | Compara contra placa E marca+modelo, case-insensitive, substring em qualquer posição | Placa é o dado mais natural que um mecânico digitaria pra achar um veículo | y |
-| Nenhum cliente/veículo cadastrado ainda (lista vazia) | O campo abre direto mostrando só o atalho "cadastrar novo", sem mensagem de "nenhum resultado" confusa | Evita UX ruim no primeiro uso do sistema (base vazia) | y |
+| Assumption / decision                                 | Chosen default                                                                                                                                                                                 | Rationale                                                                                                                                                                 | Confirmed? |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Atalho de cadastro rápido                             | Modal inline, sem navegar pra outra página                                                                                                                                                     | Decidido em Discuss                                                                                                                                                       | y          |
+| Fonte da busca                                        | Filtra em cima da lista já carregada (`useClientOptions`/`useVehicleOptions`), sem endpoint novo                                                                                               | Decidido em Discuss                                                                                                                                                       | y          |
+| Escopo do P1                                          | Só Cliente e Veículo                                                                                                                                                                           | Decidido em Discuss                                                                                                                                                       | y          |
+| Campo mínimo do modal de cliente                      | PF: nome + sobrenome + CPF + estado + cidade + telefone. PJ: razão social + CNPJ + estado + cidade + telefone. `business_id` preenchido automaticamente (já é assim no cadastro completo hoje) | Grounded em `apps/customers/serializers/client_serializer.py` (PF/PJ obrigatórios) + `src/modules/client/domain/schema.js` (estado/cidade/telefone obrigatórios no front) | y          |
+| Campo mínimo do modal de veículo                      | client_id (pré-preenchido pelo cliente já selecionado no formulário-pai) + marca + modelo (cascata, igual ao cadastro completo) + ano + ano modelo + placa + combustível                       | Grounded em `apps/customers/models/vehicle.py` + `src/modules/vehicle/domain/schema.js` — nenhum desses é opcional em nenhuma das pontas                                  | y          |
+| Veículo sem cliente selecionado ainda                 | O atalho "cadastrar veículo" fica desabilitado/pede primeiro escolher ou cadastrar o cliente, já que `client` é FK obrigatória do veículo                                                      | Consequência direta do modelo de dados — não dá pra criar veículo órfão                                                                                                   | y          |
+| Critério de filtro por texto (cliente)                | Compara contra nome/razão social E documento (CPF/CNPJ), case-insensitive, substring em qualquer posição                                                                                       | Busca por documento é um caso de uso real (cliente repetido lembra o CPF, não o nome) — enriquecimento razoável do "digita e filtra" pedido, não é escopo novo            | y          |
+| Critério de filtro por texto (veículo)                | Compara contra placa E marca+modelo, case-insensitive, substring em qualquer posição                                                                                                           | Placa é o dado mais natural que um mecânico digitaria pra achar um veículo                                                                                                | y          |
+| Nenhum cliente/veículo cadastrado ainda (lista vazia) | O campo abre direto mostrando só o atalho "cadastrar novo", sem mensagem de "nenhum resultado" confusa                                                                                         | Evita UX ruim no primeiro uso do sistema (base vazia)                                                                                                                     | y          |
 
 **Open questions:** nenhuma pendente — todas as linhas acima já foram decididas em Discuss ou são consequência direta do modelo de dados existente.
 
@@ -75,18 +75,18 @@ Todo campo de seleção do sistema hoje é um `<select>` nativo (`SelectField.js
 
 ## Requirement Traceability
 
-| Requirement ID | Story | Phase | Status |
-| --- | --- | --- | --- |
-| LIVESEL-01 | P1 | Design | Pending |
-| LIVESEL-02 | P1 | Design | Pending |
-| LIVESEL-03 | P1 | Design | Pending |
-| LIVESEL-04 | P1 | Design | Pending |
-| LIVESEL-05 | P1 | Design | Pending |
-| LIVESEL-06 | P1 | Design | Pending |
-| LIVESEL-07 | P1 | Design | Pending |
-| LIVESEL-08 | P1 | Design | Pending |
-| LIVESEL-09 | P1 | Design | Pending |
-| LIVESEL-10 | P1 | Design | Pending |
+| Requirement ID | Story | Phase  | Status  |
+| -------------- | ----- | ------ | ------- |
+| LIVESEL-01     | P1    | Design | Pending |
+| LIVESEL-02     | P1    | Design | Pending |
+| LIVESEL-03     | P1    | Design | Pending |
+| LIVESEL-04     | P1    | Design | Pending |
+| LIVESEL-05     | P1    | Design | Pending |
+| LIVESEL-06     | P1    | Design | Pending |
+| LIVESEL-07     | P1    | Design | Pending |
+| LIVESEL-08     | P1    | Design | Pending |
+| LIVESEL-09     | P1    | Design | Pending |
+| LIVESEL-10     | P1    | Design | Pending |
 
 **Coverage:** 10 total, 0 mapped to tasks, 10 unmapped ⚠️ (normal nesta fase — Tasks ainda não rodou)
 

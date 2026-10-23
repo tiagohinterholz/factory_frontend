@@ -19,30 +19,30 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 
 > Generated from codebase sampling — confirm before Execute. Guidelines found: none (`CLAUDE.md`/`AGENTS.md` not present in this repo) — strong defaults applied. Floor confirmed from existing siblings: `OrderCreate.test.jsx`, `OrderEdit.test.jsx`, `BudgetEdit.test.jsx`, `AppointmentDetail.test.jsx`, `useOrderForm.test.jsx`, `useBudgetForm.test.jsx` already exist at this depth; `BudgetCreate.jsx` and `AppointmentCreate.jsx` currently have NO page-level test at all (gap pre-dates this feature) — this feature adds one for each as part of wiring them, since the spec's ACs apply to those pages too.
 
-| Code Layer | Required Test Type | Coverage Expectation | Location Pattern | Run Command |
-| --- | --- | --- | --- | --- |
-| `LiveSelect` (generic primitive) | unit | Every interactive behavior: opens list on click, filters as you type (case-insensitive, custom `getSearchText`), shows create-shortcut only when `onCreateNew` is set AND nothing matches, selects an option, hides create-shortcut when a match exists | `src/modules/core/components/LiveSelect.test.jsx` | `npx vitest run src/modules/core --silent` |
-| `useClientForm`/`useVehicleForm` (modified) | unit | Default behavior unchanged (regression: same `redirectTo` as before when no override passed) + new override params (`redirectTo: null`, custom `onSuccess`) work | `src/modules/client/hooks/useClientForm.test.jsx`, `src/modules/vehicle/hooks/useVehicleForm.test.jsx` | `npx vitest run src/modules/client src/modules/vehicle --silent` |
-| `ClientQuickCreateModal`/`VehicleQuickCreateModal` | unit | 1:1 to spec ACs 4-5 (client) and 8-10 (vehicle): renders the minimum fields from the spec, validates via the existing schema, submits via the existing service, calls `onCreated` with the new record, shows backend field errors inline, closes without side-effects on cancel | `src/modules/client/components/ClientQuickCreateModal.test.jsx`, `src/modules/vehicle/components/VehicleQuickCreateModal.test.jsx` | `npx vitest run src/modules/client src/modules/vehicle --silent` |
-| `ClientLiveSelect`/`VehicleLiveSelect` (composites) | unit | Filter+create wiring end-to-end per spec ACs 1-3 and 6-7; `VehicleLiveSelect` additionally covers AC9 (disabled + hint when no `clientId`) | `src/modules/client/components/ClientLiveSelect.test.jsx`, `src/modules/vehicle/components/VehicleLiveSelect.test.jsx` | same as above |
-| Page wiring (6 pages: Order/Budget/Appointment × Create+Edit, except Budget/Appointment Create which are Create-only without a matching Edit named differently) | unit (component, matches existing page-test depth) | Existing test suite for the page still passes after the swap; new assertion per spec's Discuss decision: changing Cliente clears the already-selected Veículo | `src/modules/order/pages/OrderCreate.test.jsx`, `OrderEdit.test.jsx`, `src/modules/budget/pages/BudgetCreate.test.jsx` (new), `BudgetEdit.test.jsx`, `src/modules/appointment/pages/AppointmentCreate.test.jsx` (new), `AppointmentDetail.test.jsx` | `npx vitest run --silent` |
+| Code Layer                                                                                                                                                      | Required Test Type                                 | Coverage Expectation                                                                                                                                                                                                                                                            | Location Pattern                                                                                                                                                                                                                                    | Run Command                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `LiveSelect` (generic primitive)                                                                                                                                | unit                                               | Every interactive behavior: opens list on click, filters as you type (case-insensitive, custom `getSearchText`), shows create-shortcut only when `onCreateNew` is set AND nothing matches, selects an option, hides create-shortcut when a match exists                         | `src/modules/core/components/LiveSelect.test.jsx`                                                                                                                                                                                                   | `npx vitest run src/modules/core --silent`                       |
+| `useClientForm`/`useVehicleForm` (modified)                                                                                                                     | unit                                               | Default behavior unchanged (regression: same `redirectTo` as before when no override passed) + new override params (`redirectTo: null`, custom `onSuccess`) work                                                                                                                | `src/modules/client/hooks/useClientForm.test.jsx`, `src/modules/vehicle/hooks/useVehicleForm.test.jsx`                                                                                                                                              | `npx vitest run src/modules/client src/modules/vehicle --silent` |
+| `ClientQuickCreateModal`/`VehicleQuickCreateModal`                                                                                                              | unit                                               | 1:1 to spec ACs 4-5 (client) and 8-10 (vehicle): renders the minimum fields from the spec, validates via the existing schema, submits via the existing service, calls `onCreated` with the new record, shows backend field errors inline, closes without side-effects on cancel | `src/modules/client/components/ClientQuickCreateModal.test.jsx`, `src/modules/vehicle/components/VehicleQuickCreateModal.test.jsx`                                                                                                                  | `npx vitest run src/modules/client src/modules/vehicle --silent` |
+| `ClientLiveSelect`/`VehicleLiveSelect` (composites)                                                                                                             | unit                                               | Filter+create wiring end-to-end per spec ACs 1-3 and 6-7; `VehicleLiveSelect` additionally covers AC9 (disabled + hint when no `clientId`)                                                                                                                                      | `src/modules/client/components/ClientLiveSelect.test.jsx`, `src/modules/vehicle/components/VehicleLiveSelect.test.jsx`                                                                                                                              | same as above                                                    |
+| Page wiring (6 pages: Order/Budget/Appointment × Create+Edit, except Budget/Appointment Create which are Create-only without a matching Edit named differently) | unit (component, matches existing page-test depth) | Existing test suite for the page still passes after the swap; new assertion per spec's Discuss decision: changing Cliente clears the already-selected Veículo                                                                                                                   | `src/modules/order/pages/OrderCreate.test.jsx`, `OrderEdit.test.jsx`, `src/modules/budget/pages/BudgetCreate.test.jsx` (new), `BudgetEdit.test.jsx`, `src/modules/appointment/pages/AppointmentCreate.test.jsx` (new), `AppointmentDetail.test.jsx` | `npx vitest run --silent`                                        |
 
 ## Parallelism Assessment
 
 > Generated from codebase — confirm before Execute.
 
-| Test Type | Parallel-Safe? | Isolation Model | Evidence |
-| --- | --- | --- | --- |
-| vitest (all layers in this feature) | Yes | Per-file module isolation, no shared backend/global mutable state — confirmed pattern across the whole frontend test suite this session (unrelated test files run together without interference) | Observed repeatedly: `npx vitest run --silent` consistently green across unrelated files |
+| Test Type                           | Parallel-Safe? | Isolation Model                                                                                                                                                                                  | Evidence                                                                                 |
+| ----------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| vitest (all layers in this feature) | Yes            | Per-file module isolation, no shared backend/global mutable state — confirmed pattern across the whole frontend test suite this session (unrelated test files run together without interference) | Observed repeatedly: `npx vitest run --silent` consistently green across unrelated files |
 
 ## Gate Check Commands
 
 > Generated from codebase — confirm before Execute.
 
-| Gate Level | When to Use | Command |
-| --- | --- | --- |
-| Quick | After a task touching one module | `cd factory_project_frontend && npx vitest run src/modules/<area> --silent` |
-| Full | After phase completion | `cd factory_project_frontend && npx vitest run --silent && npm run lint && npm run format:check` |
+| Gate Level | When to Use                      | Command                                                                                          |
+| ---------- | -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Quick      | After a task touching one module | `cd factory_project_frontend && npx vitest run src/modules/<area> --silent`                      |
+| Full       | After phase completion           | `cd factory_project_frontend && npx vitest run --silent && npm run lint && npm run format:check` |
 
 ---
 
@@ -85,10 +85,12 @@ T6, T7 done, then:
 **Requirement**: LIVESEL-01, LIVESEL-02, LIVESEL-03
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Abre a lista de opções ao clicar/focar
 - [ ] Filtra conforme digita, usando `getSearchText(option)` (default: `option.name`), case-insensitive, substring em qualquer posição
 - [ ] Mostra o atalho de criação (texto de `createLabel`, chama `onCreateNew`) só quando `onCreateNew` está definido E nenhuma opção bate com o texto digitado
@@ -109,10 +111,12 @@ T6, T7 done, then:
 **Requirement**: LIVESEL-04, LIVESEL-05
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Chamado sem argumentos, comportamento idêntico a hoje (navega pra `/clientes` no sucesso)
 - [ ] Chamado com `{ redirectTo: null, onSuccess }`, NÃO navega e chama o `onSuccess` recebido com o cliente criado
 - [ ] Gate check passa: `cd factory_project_frontend && npx vitest run src/modules/client --silent`
@@ -131,10 +135,12 @@ T6, T7 done, then:
 **Requirement**: LIVESEL-08, LIVESEL-10
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Chamado com só `{ clientId }` (como hoje), comportamento idêntico a hoje
 - [ ] Chamado com `{ clientId, redirectTo: null, onSuccess }`, NÃO navega e chama o `onSuccess` recebido com o veículo criado
 - [ ] Gate check passa: `cd factory_project_frontend && npx vitest run src/modules/vehicle --silent`
@@ -153,10 +159,12 @@ T6, T7 done, then:
 **Requirement**: LIVESEL-04, LIVESEL-05
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Renderiza exatamente os campos do spec (AC4), nada a mais
 - [ ] Submete via `ClientService.createClient` (igual ao cadastro completo), chama `onCreated(client)` e fecha no sucesso
 - [ ] Erro de validação (campo vazio, CPF/CNPJ mal formatado) aparece embaixo do campo certo
@@ -178,10 +186,12 @@ T6, T7 done, then:
 **Requirement**: LIVESEL-08, LIVESEL-09, LIVESEL-10
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Renderiza exatamente os campos do spec (AC8), com `client_id` pré-preenchido e não editável
 - [ ] Recusa abrir (ou loga aviso) se chamado sem `clientId` — defesa, já que quem abre normalmente é o `VehicleLiveSelect` desabilitado nesse caso (AC9)
 - [ ] Submete via `VehicleService.createVehicle`, chama `onCreated(vehicle)` e fecha no sucesso
@@ -202,10 +212,12 @@ T6, T7 done, then:
 **Requirement**: LIVESEL-01, LIVESEL-02, LIVESEL-03, LIVESEL-04, LIVESEL-05
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Filtra por nome/razão social OU documento (CPF/CNPJ), case-insensitive
 - [ ] Sem match, mostra "Cadastrar novo cliente" que abre o modal do T4
 - [ ] Modal criado com sucesso seleciona o cliente novo automaticamente e fecha
@@ -226,10 +238,12 @@ T6, T7 done, then:
 **Requirement**: LIVESEL-06, LIVESEL-07, LIVESEL-08, LIVESEL-09, LIVESEL-10
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Filtra as opções pelo `clientId` recebido antes de aplicar o filtro de texto
 - [ ] Filtro de texto bate contra placa OU marca+modelo, case-insensitive
 - [ ] Sem `clientId`, campo fica desabilitado com `disabledHint` (não mostra atalho de criar)
@@ -251,10 +265,12 @@ T6, T7 done, then:
 **Requirement**: LIVESEL-01 a LIVESEL-10 (ponta a ponta nesta página)
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Campo Cliente é `ClientLiveSelect`, campo Veículo é `VehicleLiveSelect` com `clientId` do campo Cliente
 - [ ] Trocar o cliente selecionado limpa o veículo já selecionado
 - [ ] `OrderCreate.test.jsx` atualizado cobrindo os 2 pontos acima, suíte existente continua passando
@@ -275,10 +291,12 @@ T6, T7 done, then:
 **Reuses**: nada novo
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Mesmos 2 pontos do T8
 - [ ] `OrderEdit.test.jsx` atualizado, suíte existente continua passando
 - [ ] Gate check passa: `cd factory_project_frontend && npx vitest run src/modules/order --silent`
@@ -298,10 +316,12 @@ T6, T7 done, then:
 **Reuses**: nada novo
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Mesmos 2 pontos do T8
 - [ ] `BudgetCreate.test.jsx` criado (não existia), mesmo padrão de profundidade de `OrderCreate.test.jsx`
 - [ ] Gate check passa: `cd factory_project_frontend && npx vitest run src/modules/budget --silent`
@@ -321,10 +341,12 @@ T6, T7 done, then:
 **Reuses**: nada novo
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Mesmos 2 pontos do T8
 - [ ] `BudgetEdit.test.jsx` atualizado, suíte existente continua passando
 - [ ] Gate check passa: `cd factory_project_frontend && npx vitest run src/modules/budget --silent`
@@ -344,10 +366,12 @@ T6, T7 done, then:
 **Reuses**: nada novo
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Mesmos 2 pontos do T8 (campo se chama "Cliente Proprietário" nesta tela, mesma troca)
 - [ ] `AppointmentCreate.test.jsx` criado (não existia), mesmo padrão de profundidade de `AppointmentDetail.test.jsx`
 - [ ] Gate check passa: `cd factory_project_frontend && npx vitest run src/modules/appointment --silent`
@@ -367,10 +391,12 @@ T6, T7 done, then:
 **Reuses**: nada novo
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Mesmos 2 pontos do T8
 - [ ] `AppointmentDetail.test.jsx` atualizado, suíte existente continua passando
 - [ ] Gate check passa (ÚLTIMA task — gate completo): `cd factory_project_frontend && npx vitest run --silent && npm run lint && npm run format:check`
@@ -402,50 +428,50 @@ Phase 3 (Parallel, after T6+T7):
 
 ## Task Granularity Check
 
-| Task | Scope | Status |
-| --- | --- | --- |
-| T1: `LiveSelect` | 1 component | ✅ Granular |
-| T2: `useClientForm` overrides | 1 hook, additive params only | ✅ Granular |
+| Task                           | Scope                        | Status      |
+| ------------------------------ | ---------------------------- | ----------- |
+| T1: `LiveSelect`               | 1 component                  | ✅ Granular |
+| T2: `useClientForm` overrides  | 1 hook, additive params only | ✅ Granular |
 | T3: `useVehicleForm` overrides | 1 hook, additive params only | ✅ Granular |
-| T4: `ClientQuickCreateModal` | 1 component | ✅ Granular |
-| T5: `VehicleQuickCreateModal` | 1 component | ✅ Granular |
-| T6: `ClientLiveSelect` | 1 component | ✅ Granular |
-| T7: `VehicleLiveSelect` | 1 component | ✅ Granular |
-| T8-T13: page wiring | 1 file change each | ✅ Granular |
+| T4: `ClientQuickCreateModal`   | 1 component                  | ✅ Granular |
+| T5: `VehicleQuickCreateModal`  | 1 component                  | ✅ Granular |
+| T6: `ClientLiveSelect`         | 1 component                  | ✅ Granular |
+| T7: `VehicleLiveSelect`        | 1 component                  | ✅ Granular |
+| T8-T13: page wiring            | 1 file change each           | ✅ Granular |
 
 ---
 
 ## Diagram-Definition Cross-Check
 
-| Task | Depends On (task body) | Diagram Shows | Status |
-| --- | --- | --- | --- |
-| T1 | None | None | ✅ Match |
-| T2 | None | None | ✅ Match |
-| T3 | None | None | ✅ Match |
-| T4 | T2 | T2→T4 | ✅ Match |
-| T5 | T3 | T3→T5 | ✅ Match |
-| T6 | T1, T4 | T1→T6, T4→T6 | ✅ Match |
-| T7 | T1, T5 | T1→T7, T5→T7 | ✅ Match |
-| T8 | T6, T7 | T6,T7→T8 | ✅ Match |
-| T9 | T6, T7 | T6,T7→T9 | ✅ Match |
-| T10 | T6, T7 | T6,T7→T10 | ✅ Match |
-| T11 | T6, T7 | T6,T7→T11 | ✅ Match |
-| T12 | T6, T7 | T6,T7→T12 | ✅ Match |
-| T13 | T6, T7 | T6,T7→T13 | ✅ Match |
+| Task | Depends On (task body) | Diagram Shows | Status   |
+| ---- | ---------------------- | ------------- | -------- |
+| T1   | None                   | None          | ✅ Match |
+| T2   | None                   | None          | ✅ Match |
+| T3   | None                   | None          | ✅ Match |
+| T4   | T2                     | T2→T4         | ✅ Match |
+| T5   | T3                     | T3→T5         | ✅ Match |
+| T6   | T1, T4                 | T1→T6, T4→T6  | ✅ Match |
+| T7   | T1, T5                 | T1→T7, T5→T7  | ✅ Match |
+| T8   | T6, T7                 | T6,T7→T8      | ✅ Match |
+| T9   | T6, T7                 | T6,T7→T9      | ✅ Match |
+| T10  | T6, T7                 | T6,T7→T10     | ✅ Match |
+| T11  | T6, T7                 | T6,T7→T11     | ✅ Match |
+| T12  | T6, T7                 | T6,T7→T12     | ✅ Match |
+| T13  | T6, T7                 | T6,T7→T13     | ✅ Match |
 
 ---
 
 ## Test Co-location Validation
 
-| Task | Code Layer Created/Modified | Matrix Requires | Task Says | Status |
-| --- | --- | --- | --- | --- |
-| T1 | `LiveSelect` | unit | unit | ✅ OK |
-| T2 | `useClientForm` | unit | unit | ✅ OK |
-| T3 | `useVehicleForm` | unit | unit | ✅ OK |
-| T4 | `ClientQuickCreateModal` | unit | unit | ✅ OK |
-| T5 | `VehicleQuickCreateModal` | unit | unit | ✅ OK |
-| T6 | `ClientLiveSelect` | unit | unit | ✅ OK |
-| T7 | `VehicleLiveSelect` | unit | unit | ✅ OK |
-| T8-T13 | page wiring | unit | unit | ✅ OK |
+| Task   | Code Layer Created/Modified | Matrix Requires | Task Says | Status |
+| ------ | --------------------------- | --------------- | --------- | ------ |
+| T1     | `LiveSelect`                | unit            | unit      | ✅ OK  |
+| T2     | `useClientForm`             | unit            | unit      | ✅ OK  |
+| T3     | `useVehicleForm`            | unit            | unit      | ✅ OK  |
+| T4     | `ClientQuickCreateModal`    | unit            | unit      | ✅ OK  |
+| T5     | `VehicleQuickCreateModal`   | unit            | unit      | ✅ OK  |
+| T6     | `ClientLiveSelect`          | unit            | unit      | ✅ OK  |
+| T7     | `VehicleLiveSelect`         | unit            | unit      | ✅ OK  |
+| T8-T13 | page wiring                 | unit            | unit      | ✅ OK  |
 
 No ❌ violations.

@@ -21,27 +21,27 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 
 > Generated from codebase sampling — confirm before Execute. Guidelines found: none.
 
-| Code Layer | Required Test Type | Coverage Expectation | Location Pattern | Run Command |
-| --- | --- | --- | --- | --- |
-| Backend model/migration (`Service.cost_price`, `Supplier.is_business_mirror`) | none (migração/campo) + integration pro serializer | Serializer expõe o campo novo; data migration coberta por um teste que confirma a flag foi setada certo num cenário de teste | `apps/workservices/tests/`, `apps/suppliers/tests/` | `HOST_DB=localhost PORT_DB=5433 .venv/bin/python -m pytest apps -q` |
-| Novos composites (`ManufacturerLiveSelect`, `ModelLiveSelect`, `SupplierLiveSelect`, `ProductFinancialEntryModal`) | unit | Mesma profundidade que `ClientLiveSelect`/`VehicleLiveSelect` já exigiram na feature `live-select` — 1:1 pros ACs que cada um cobre | `src/modules/vehicle/components/*.test.jsx`, `src/modules/supplier/components/*.test.jsx`, `src/modules/product/components/*.test.jsx` | `npx vitest run --silent` |
-| Wiring por módulo (Cliente/Veículo/Fornecedor/Produto) | unit (component, matches existing page-test depth) | Suíte existente de cada página continua passando + nova asserção por AC coberta naquele módulo | `src/modules/client/pages/*.test.jsx`, `src/modules/vehicle/pages/*.test.jsx`, `src/modules/supplier/pages/*.test.jsx`, `src/modules/product/pages/*.test.jsx` | `npx vitest run --silent` |
+| Code Layer                                                                                                         | Required Test Type                                 | Coverage Expectation                                                                                                                | Location Pattern                                                                                                                                               | Run Command                                                         |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Backend model/migration (`Service.cost_price`, `Supplier.is_business_mirror`)                                      | none (migração/campo) + integration pro serializer | Serializer expõe o campo novo; data migration coberta por um teste que confirma a flag foi setada certo num cenário de teste        | `apps/workservices/tests/`, `apps/suppliers/tests/`                                                                                                            | `HOST_DB=localhost PORT_DB=5433 .venv/bin/python -m pytest apps -q` |
+| Novos composites (`ManufacturerLiveSelect`, `ModelLiveSelect`, `SupplierLiveSelect`, `ProductFinancialEntryModal`) | unit                                               | Mesma profundidade que `ClientLiveSelect`/`VehicleLiveSelect` já exigiram na feature `live-select` — 1:1 pros ACs que cada um cobre | `src/modules/vehicle/components/*.test.jsx`, `src/modules/supplier/components/*.test.jsx`, `src/modules/product/components/*.test.jsx`                         | `npx vitest run --silent`                                           |
+| Wiring por módulo (Cliente/Veículo/Fornecedor/Produto)                                                             | unit (component, matches existing page-test depth) | Suíte existente de cada página continua passando + nova asserção por AC coberta naquele módulo                                      | `src/modules/client/pages/*.test.jsx`, `src/modules/vehicle/pages/*.test.jsx`, `src/modules/supplier/pages/*.test.jsx`, `src/modules/product/pages/*.test.jsx` | `npx vitest run --silent`                                           |
 
 ## Parallelism Assessment
 
-| Test Type | Parallel-Safe? | Isolation Model | Evidence |
-| --- | --- | --- | --- |
-| pytest (backend) | Não | Postgres de teste compartilhado, mesmo padrão já observado a sessão inteira | `.github/workflows` single-process |
-| vitest (frontend) | Sim | Isolamento por arquivo | Confirmado repetidamente nesta sessão |
+| Test Type         | Parallel-Safe? | Isolation Model                                                             | Evidence                              |
+| ----------------- | -------------- | --------------------------------------------------------------------------- | ------------------------------------- |
+| pytest (backend)  | Não            | Postgres de teste compartilhado, mesmo padrão já observado a sessão inteira | `.github/workflows` single-process    |
+| vitest (frontend) | Sim            | Isolamento por arquivo                                                      | Confirmado repetidamente nesta sessão |
 
 ## Gate Check Commands
 
-| Gate Level | When to Use | Command |
-| --- | --- | --- |
-| Quick (backend) | Após TB1/TB2 | `cd factory_project && HOST_DB=localhost PORT_DB=5433 .venv/bin/python -m pytest apps/workservices apps/suppliers apps/businesses -q` |
-| Full (backend) | Fim da fase 1 | `cd factory_project && HOST_DB=localhost PORT_DB=5433 .venv/bin/python -m pytest apps -q && .venv/bin/python -m flake8 apps --max-line-length=79 --count --statistics && .venv/bin/python -m isort apps --check-only --diff` |
-| Quick (frontend) | Após uma task de um módulo | `cd factory_project_frontend && npx vitest run src/modules/<area> --silent` |
-| Full (frontend) | Fim de fase | `cd factory_project_frontend && npx vitest run --silent && npm run lint && npm run format:check` |
+| Gate Level       | When to Use                | Command                                                                                                                                                                                                                      |
+| ---------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Quick (backend)  | Após TB1/TB2               | `cd factory_project && HOST_DB=localhost PORT_DB=5433 .venv/bin/python -m pytest apps/workservices apps/suppliers apps/businesses -q`                                                                                        |
+| Full (backend)   | Fim da fase 1              | `cd factory_project && HOST_DB=localhost PORT_DB=5433 .venv/bin/python -m pytest apps -q && .venv/bin/python -m flake8 apps --max-line-length=79 --count --statistics && .venv/bin/python -m isort apps --check-only --diff` |
+| Quick (frontend) | Após uma task de um módulo | `cd factory_project_frontend && npx vitest run src/modules/<area> --silent`                                                                                                                                                  |
+| Full (frontend)  | Fim de fase                | `cd factory_project_frontend && npx vitest run --silent && npm run lint && npm run format:check`                                                                                                                             |
 
 ---
 
@@ -85,6 +85,7 @@ T8 [P] (Produto — depende de T3, T4, TB1)
 **Requirement**: CVSP-P3-07
 
 **Done when**:
+
 - [ ] Campo `cost_price` nullable, serializer expõe
 - [ ] Teste de serializer/model cobrindo o campo novo
 - [ ] Gate: `cd factory_project && HOST_DB=localhost PORT_DB=5433 .venv/bin/python -m pytest apps/workservices -q`
@@ -103,6 +104,7 @@ T8 [P] (Produto — depende de T3, T4, TB1)
 **Requirement**: CVSP-P3-06
 
 **Done when**:
+
 - [ ] Campo booleano `is_business_mirror`, default `False`
 - [ ] Data migration marca `True` nos registros existentes que batem por CNPJ, loga os que não batem
 - [ ] `business_service.create()` marca `True` no espelho criado a partir de agora
@@ -122,6 +124,7 @@ T8 [P] (Produto — depende de T3, T4, TB1)
 **Requirement**: CVSP-P2-06
 
 **Done when**:
+
 - [ ] Filtra por nome, cadastra inline (só campo "Nome")
 - [ ] Gate: `cd factory_project_frontend && npx vitest run src/modules/vehicle --silent`
 
@@ -138,6 +141,7 @@ T8 [P] (Produto — depende de T3, T4, TB1)
 **Requirement**: CVSP-P2-06
 
 **Done when**:
+
 - [ ] Desabilitado sem `manufacturerId`, filtra por nome com `manufacturerId` presente
 - [ ] Modal de cadastro traz Marca pré-preenchida e travada + campo Nome
 - [ ] Gate: `cd factory_project_frontend && npx vitest run src/modules/vehicle --silent`
@@ -155,6 +159,7 @@ T8 [P] (Produto — depende de T3, T4, TB1)
 **Requirement**: CVSP-P2-04, CVSP-P3-06
 
 **Done when**:
+
 - [ ] Fornecedor-espelho aparece primeiro, antes do filtro de texto ser aplicado
 - [ ] Modal de cadastro rápido com campos mínimos (razão social/nome fantasia, CNPJ, telefone)
 - [ ] Gate: `cd factory_project_frontend && npx vitest run src/modules/supplier --silent`
@@ -172,6 +177,7 @@ T8 [P] (Produto — depende de T3, T4, TB1)
 **Requirement**: CVSP-P3-05
 
 **Done when**:
+
 - [ ] Abre com valor sugerido (custo × quantidade), confirma cria `FinancialEntry` via serviço já existente, recusa não cria nada
 - [ ] Gate: `cd factory_project_frontend && npx vitest run src/modules/product --silent`
 
@@ -188,6 +194,7 @@ T8 [P] (Produto — depende de T3, T4, TB1)
 **Requirement**: CVSP-P1-01, 02, 06, 07, 11, 12; CVSP-P2-01
 
 **Done when**:
+
 - [ ] Todos os ACs acima verificados nos respectivos arquivos
 - [ ] Testes de página atualizados, suíte existente passa
 - [ ] Gate: `cd factory_project_frontend && npx vitest run src/modules/client --silent`
@@ -207,6 +214,7 @@ T8 [P] (Produto — depende de T3, T4, TB1)
 **Requirement**: CVSP-P1-03, 04, 09, 10; CVSP-P2-05, 06
 
 **Done when**:
+
 - [ ] Todos os ACs acima verificados
 - [ ] Testes de página atualizados
 - [ ] Gate: `cd factory_project_frontend && npx vitest run src/modules/vehicle --silent`
@@ -226,6 +234,7 @@ T8 [P] (Produto — depende de T3, T4, TB1)
 **Requirement**: CVSP-P1-05, 08; CVSP-P2-02, 03; CVSP-P3-01
 
 **Done when**:
+
 - [ ] Todos os ACs acima verificados
 - [ ] Testes de página atualizados
 - [ ] Gate: `cd factory_project_frontend && npx vitest run src/modules/supplier --silent`
@@ -245,6 +254,7 @@ T8 [P] (Produto — depende de T3, T4, TB1)
 **Requirement**: CVSP-P2-04, 07, 08; CVSP-P3-02, 03, 04, 05, 07
 
 **Done when**:
+
 - [ ] Todos os ACs acima verificados
 - [ ] Testes de página atualizados
 - [ ] Gate: `cd factory_project_frontend && npx vitest run --silent && npm run lint && npm run format:check` (última task do feature — gate completo)
@@ -268,11 +278,11 @@ Phase 3: T5 [P], T7 [P] (sem dependência de fase 2) | T6 [P] (precisa T1,T2) | 
 
 ## Task Granularity Check
 
-| Task | Scope | Status |
-| --- | --- | --- |
-| TB1, TB2 | 1 model/migration cada | ✅ Granular |
-| T1-T4 | 1 componente composto cada (+ seu modal) | ✅ Granular |
-| T5-T8 | Múltiplos arquivos, MESMO módulo, UM resultado coerente por módulo (decisão consciente: 27 ACs individuais agrupados em 4 tasks por módulo em vez de 27 micro-tasks, dado o volume da feature) | ⚠️ Aceito — ver nota abaixo |
+| Task     | Scope                                                                                                                                                                                          | Status                      |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| TB1, TB2 | 1 model/migration cada                                                                                                                                                                         | ✅ Granular                 |
+| T1-T4    | 1 componente composto cada (+ seu modal)                                                                                                                                                       | ✅ Granular                 |
+| T5-T8    | Múltiplos arquivos, MESMO módulo, UM resultado coerente por módulo (decisão consciente: 27 ACs individuais agrupados em 4 tasks por módulo em vez de 27 micro-tasks, dado o volume da feature) | ⚠️ Aceito — ver nota abaixo |
 
 **Nota sobre T5-T8**: cada um toca 2-4 arquivos do MESMO módulo, mas entrega UM resultado testável e commitável por vez (não é "fazer dois recursos não relacionados na mesma task"). Trade-off deliberado dado o tamanho da feature (27 ACs) — rastreável porque cada task já lista exatamente quais Requirement IDs cobre.
 
@@ -280,27 +290,27 @@ Phase 3: T5 [P], T7 [P] (sem dependência de fase 2) | T6 [P] (precisa T1,T2) | 
 
 ## Diagram-Definition Cross-Check
 
-| Task | Depends On (corpo) | Diagrama Mostra | Status |
-| --- | --- | --- | --- |
-| TB1 | None | None | ✅ Match |
-| TB2 | None | None | ✅ Match |
-| T1 | live-select T1 | (externo à fase, citado no corpo) | ✅ Match |
-| T2 | live-select T1 | (externo à fase, citado no corpo) | ✅ Match |
-| T3 | live-select T1, TB2 | TB2→T3 | ✅ Match |
-| T4 | None | None | ✅ Match |
-| T5 | None | T5 solto na Fase 3 | ✅ Match |
-| T6 | T1, T2, live-select ClientLiveSelect | T1,T2→T6 | ✅ Match |
-| T7 | None | T7 solto na Fase 3 | ✅ Match |
-| T8 | T3, T4, TB1 | T3,T4,TB1→T8 | ✅ Match |
+| Task | Depends On (corpo)                   | Diagrama Mostra                   | Status   |
+| ---- | ------------------------------------ | --------------------------------- | -------- |
+| TB1  | None                                 | None                              | ✅ Match |
+| TB2  | None                                 | None                              | ✅ Match |
+| T1   | live-select T1                       | (externo à fase, citado no corpo) | ✅ Match |
+| T2   | live-select T1                       | (externo à fase, citado no corpo) | ✅ Match |
+| T3   | live-select T1, TB2                  | TB2→T3                            | ✅ Match |
+| T4   | None                                 | None                              | ✅ Match |
+| T5   | None                                 | T5 solto na Fase 3                | ✅ Match |
+| T6   | T1, T2, live-select ClientLiveSelect | T1,T2→T6                          | ✅ Match |
+| T7   | None                                 | T7 solto na Fase 3                | ✅ Match |
+| T8   | T3, T4, TB1                          | T3,T4,TB1→T8                      | ✅ Match |
 
 ---
 
 ## Test Co-location Validation
 
-| Task | Camada | Matriz Exige | Task Diz | Status |
-| --- | --- | --- | --- | --- |
-| TB1, TB2 | backend model/migration | integration | integration | ✅ OK |
-| T1-T4 | componente novo | unit | unit | ✅ OK |
-| T5-T8 | wiring de página | unit | unit (T8 full no final) | ✅ OK |
+| Task     | Camada                  | Matriz Exige | Task Diz                | Status |
+| -------- | ----------------------- | ------------ | ----------------------- | ------ |
+| TB1, TB2 | backend model/migration | integration  | integration             | ✅ OK  |
+| T1-T4    | componente novo         | unit         | unit                    | ✅ OK  |
+| T5-T8    | wiring de página        | unit         | unit (T8 full no final) | ✅ OK  |
 
 No ❌ violations.
