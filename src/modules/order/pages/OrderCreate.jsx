@@ -3,10 +3,9 @@ import { useLocation } from "react-router-dom"
 import { useOrderForm } from "@/modules/order/hooks/useOrderForm"
 import { usePendingBudgets } from "@/modules/order/hooks/usePendingBudgets"
 import BackLink from "@/modules/core/components/BackLink"
-import { useClientOptions } from "@/modules/core/hooks/options"
-import { useVehicleOptions } from "@/modules/core/hooks/options"
+import { ClientLiveSelect } from "@/modules/client"
+import { VehicleLiveSelect } from "@/modules/vehicle"
 import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { fromDateTimeLocalInput } from "@/api/dto"
 import { formatMoney } from "@/modules/core/utils/format"
@@ -25,7 +24,6 @@ export default function OrderCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const businessId = watch("business_id")
   const clientId = watch("client_id")
   const vehicleId = watch("vehicle_id")
   const serviceDate = watch("service_date")
@@ -33,27 +31,10 @@ export default function OrderCreate() {
   const [selectedBudgetId, setSelectedBudgetId] = useState(null)
   const clearBudgetChoice = () => setSelectedBudgetId(null)
 
-  const { client: clients, loading: loadingClients } = useClientOptions()
-  const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { budgets: pendingBudgets, loading: loadingPendingBudgets } = usePendingBudgets(
     clientId,
     vehicleId,
   )
-
-  const clientOptions = clients
-    .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
-    .map((c) => ({ id: c.id, name: c.display_name }))
-  const vehicleOptions = vehicles
-    .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
-    .map((v) => ({ id: v.id, name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})` }))
-
-  if (loadingClients || loadingVehicles) {
-    return (
-      <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
-  }
 
   return (
     <div className="p-6 space-y-6">
@@ -68,24 +49,30 @@ export default function OrderCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            <SelectField
+            <ClientLiveSelect
               label="Cliente"
-              options={clientOptions}
+              value={clientId}
+              onChange={(value) => {
+                // o Combobox dispara onChange mesmo reselecionando o cliente
+                // já ativo (comportamento do Headless UI) — só limpa
+                // veículo/orçamento quando o cliente realmente mudou.
+                if (value === clientId) return
+                setValue("client_id", value)
+                setValue("vehicle_id", "")
+                clearBudgetChoice()
+              }}
               error={errors.client_id?.message}
-              registration={register("client_id", {
-                onChange: () => {
-                  setValue("vehicle_id", "")
-                  clearBudgetChoice()
-                },
-              })}
             />
-            <SelectField
+            <VehicleLiveSelect
               label="Veículo"
-              options={vehicleOptions}
-              disabled={!clientId}
+              value={vehicleId}
+              onChange={(value) => {
+                setValue("vehicle_id", value)
+                clearBudgetChoice()
+              }}
+              clientId={clientId}
               disabledHint="Selecione o cliente primeiro"
               error={errors.vehicle_id?.message}
-              registration={register("vehicle_id", { onChange: clearBudgetChoice })}
             />
 
             {clientId && vehicleId && (

@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import OrderCreate from "./OrderCreate"
 import { BudgetService } from "@/modules/budget/services/budgets"
+import { OrderService } from "@/modules/order/services/order"
 
 const { navigateSpy } = vi.hoisted(() => ({ navigateSpy: vi.fn() }))
 vi.mock("react-router-dom", async (importOriginal) => {
@@ -19,8 +21,17 @@ function mockApi({ pending = [] } = {}) {
   server.use(
     http.get(`${API}/clientes/`, () =>
       HttpResponse.json({
-        results: [{ id: 5, first_name: "Ana", last_name: "Lima", business: 3 }],
-        count: 1,
+        results: [
+          { id: 5, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima", business: 3 },
+          {
+            id: 6,
+            first_name: "Bruno",
+            last_name: "Souza",
+            display_name: "Bruno Souza",
+            business: 3,
+          },
+        ],
+        count: 2,
       }),
     ),
     http.get(`${API}/veiculos/`, () =>
@@ -58,9 +69,12 @@ beforeEach(() => {
 })
 
 async function pickClientAndVehicle() {
-  const [clientSelect, vehicleSelect] = await screen.findAllByRole("combobox")
-  fireEvent.change(clientSelect, { target: { value: "5" } })
-  fireEvent.change(vehicleSelect, { target: { value: "9" } })
+  const user = userEvent.setup()
+  const [clientInput, vehicleInput] = await screen.findAllByRole("combobox")
+  await user.click(clientInput)
+  await user.click(await screen.findByRole("option", { name: "Ana Lima" }))
+  await user.click(vehicleInput)
+  await user.click(await screen.findByRole("option", { name: /VW Gol \(ABC1D23\)/ }))
 }
 
 describe("<OrderCreate> — orçamento base", () => {
@@ -103,5 +117,63 @@ describe("<OrderCreate> — orçamento base", () => {
     await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/ordens/42"))
 
     approve.mockRestore()
+  })
+})
+
+describe("<OrderCreate> — trocar cliente limpa o veículo", () => {
+  it("trocar o cliente selecionado depois de escolher um veículo limpa o veículo", async () => {
+    mockApi({ pending: [] })
+    const user = userEvent.setup()
+    renderWithProviders(<OrderCreate />)
+    await pickClientAndVehicle()
+
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)")
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    expect(vehicleInput).toHaveValue("")
+  })
+
+  it("trocar o cliente realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
+    // discrimina do filtro de exibição do VehicleLiveSelect (que já esconde o
+    // veículo do cliente antigo por clientId): sem o setValue("vehicle_id","")
+    // o id antigo continuaria no form e passaria a validação, enviando o
+    // veículo errado (do cliente anterior) pro back.
+    mockApi({ pending: [] })
+    const create = vi.spyOn(OrderService, "createOrder")
+    const user = userEvent.setup()
+    renderWithProviders(<OrderCreate />)
+    await pickClientAndVehicle()
+
+    const [clientInput] = screen.getAllByRole("combobox")
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    await user.click(screen.getByRole("button", { name: /prosseguir para itens/i }))
+
+    expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
+    expect(create).not.toHaveBeenCalled()
+    create.mockRestore()
+  })
+
+  it("reselecionar o MESMO cliente não limpa o veículo já escolhido", async () => {
+    // bug real reportado em uso: o Combobox dispara onChange mesmo ao
+    // clicar no cliente que já estava selecionado (ex.: usuário abre a
+    // lista pra conferir/buscar e clica no mesmo cliente de novo) — sem a
+    // checagem de "mudou de verdade", isso zerava o veículo sem motivo.
+    mockApi({ pending: [] })
+    const user = userEvent.setup()
+    renderWithProviders(<OrderCreate />)
+    await pickClientAndVehicle()
+
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)")
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Ana Lima" }))
+
+    expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)")
   })
 })
