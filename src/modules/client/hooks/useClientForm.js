@@ -4,14 +4,18 @@ import { ClientService } from "@/modules/client/services/client"
 import { clientSchema, clientDefaults, toClientPayload, clientKeys } from "../domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 
-export function useClientForm() {
+// `redirectTo`/`onSuccess`: default = comportamento atual exato (navega pra
+// /clientes no sucesso). O quick-create (LiveSelect) sobrescreve os dois pra
+// ficar na mesma tela e selecionar o cliente novo em vez de navegar.
+export function useClientForm({ redirectTo = "/clientes", onSuccess } = {}) {
   const { businessId } = useAuth()
 
   return useResourceForm({
     schema: clientSchema,
     defaultValues: { ...clientDefaults, business_id: businessId ? String(businessId) : "" },
     submit: (values) => ClientService.createClient(toClientPayload(values)),
-    redirectTo: "/clientes",
+    redirectTo,
+    onSuccess,
     invalidate: [clientKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao criar cliente. Verifique se os dados estão corretos.",
   })
