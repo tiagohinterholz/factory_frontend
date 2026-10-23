@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { Routes, Route } from "react-router-dom"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
@@ -195,23 +196,28 @@ describe("<OrderEdit>", () => {
     expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeEnabled()
   })
 
-  it("mantém o cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {
-    // cache de opções defasado: as listas não trazem o cliente 5 nem o veículo 9
+  it("mantém o client_id/vehicle_id no submit mesmo quando o cache de opções não traz o registro vinculado", async () => {
+    // cache de opções defasado: as listas não trazem o cliente 5 nem o veículo 9 —
+    // como o live-select é controlado (value/onChange), o id do form não se
+    // perde mesmo que o combo não encontre o registro pra exibir o nome.
+    mockApi()
     server.use(
-      http.get(`${API}/ordens/1/`, () => HttpResponse.json(order)),
       http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
-      http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
-      http.get(`${API}/servicos/`, () => HttpResponse.json({ results: [], count: 0 })),
     )
+    const update = vi.spyOn(OrderService, "updateOrder").mockResolvedValue(order)
     renderPage()
 
+    await screen.findByText("Orçamento de origem")
+    fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+
     await waitFor(() =>
-      expect(screen.getByRole("option", { name: "Ana Lima", selected: true })).toBeInTheDocument(),
+      expect(update).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({ client_id: "5", vehicle_id: "9" }),
+      ),
     )
-    expect(
-      screen.getByRole("option", { name: "VW Gol (ABC1D23)", selected: true }),
-    ).toBeInTheDocument()
+    update.mockRestore()
   })
 
   it("faturado com produto e serviço ativos: mostra os dois cartões de nota fiscal", async () => {
@@ -351,5 +357,123 @@ describe("<OrderEdit> — finalizar serviço e trava de itens", () => {
     expect(screen.queryByText("Selecionar Produto")).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Faturar OS" })).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /finalizar serviço/i })).not.toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — live-select de cliente/veículo", () => {
+  it("mostra o cliente e o veículo já vinculados nos campos de busca", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+  })
+
+  it("cliente/veículo vinculados mas desativados (fora da lista de opções) continuam visíveis no campo", async () => {
+    // cenário: get_all() do back só traz is_active=True — um cliente/veículo
+    // excluído ou anonimizado some da lista, mas a OS histórica ainda aponta
+    // pra ele. Sem o fallback, o campo ficaria em branco pra sempre mesmo
+    // com o vínculo intacto (ver validation.md, Gap 1).
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    )
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+  })
+
+  it("trocar o cliente selecionado limpa o veículo já escolhido", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    expect(vehicleInput).toHaveValue("")
+  })
+
+  it("reselecionar o MESMO cliente não limpa o veículo já escolhido", async () => {
+    // bug real reportado em uso: o Combobox dispara onChange mesmo ao
+    // clicar no cliente que já estava selecionado — sem a checagem de
+    // "mudou de verdade", isso zerava o veículo sem motivo.
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Ana Lima" }))
+
+    expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)")
+  })
+
+  it("trocar o cliente realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
+    // discrimina do filtro de exibição do VehicleLiveSelect (que já esconde o
+    // veículo do cliente antigo por clientId): sem o setValue("vehicle_id","")
+    // o id antigo continuaria no form e passaria a validação, enviando o
+    // veículo errado (do cliente anterior) pro back.
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const update = vi.spyOn(OrderService, "updateOrder")
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput] = screen.getAllByRole("combobox")
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+
+    expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
+    expect(update).not.toHaveBeenCalled()
+    update.mockRestore()
   })
 })
