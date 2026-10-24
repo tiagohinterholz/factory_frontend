@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
-import { CheckCircle, Edit2, XCircle } from "lucide-react"
+import { CheckCircle, Edit2, Eye, XCircle } from "lucide-react"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { useFinancialEntry } from "../hooks/useFinancialEntry"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
@@ -38,6 +39,12 @@ export default function FinancialEntryList() {
     markPaid,
     cancel,
   } = useFinancialEntry()
+  const {
+    canCreateFinancialEntry,
+    canChangeFinancialEntry,
+    canMarkFinancialEntryPaid,
+    canCancelFinancialEntry,
+  } = usePermissions()
 
   const filterFields = [
     { name: "entry_type", label: "Tipo", type: "select", options: FINANCIAL_ENTRY_TYPE_OPTIONS },
@@ -92,8 +99,8 @@ export default function FinancialEntryList() {
     <div className="p-6 space-y-4">
       <ListHeader
         title="Financeiro"
-        buttonText="Novo Lançamento"
-        buttonLink="/financeiro/novo"
+        buttonText={canCreateFinancialEntry ? "Novo Lançamento" : undefined}
+        buttonLink={canCreateFinancialEntry ? "/financeiro/novo" : undefined}
         actions={
           <div className="flex items-center gap-2">
             <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
@@ -115,32 +122,35 @@ export default function FinancialEntryList() {
         onSort={toggleSort}
         renderActions={(item) => (
           <div className="flex items-center justify-end gap-1">
-            {financialEntryCanAct(item.status) && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => markPaid(item)}
-                  title="Marcar como pago"
-                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
-                >
-                  <CheckCircle size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => cancel(item)}
-                  title="Cancelar lançamento"
-                  className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                >
-                  <XCircle size={16} />
-                </button>
-              </>
+            {financialEntryCanAct(item.status) && canMarkFinancialEntryPaid && (
+              <button
+                type="button"
+                onClick={() => markPaid(item)}
+                title="Marcar como pago"
+                aria-label="Marcar como pago"
+                className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+              >
+                <CheckCircle size={16} />
+              </button>
+            )}
+            {financialEntryCanAct(item.status) && canCancelFinancialEntry && (
+              <button
+                type="button"
+                onClick={() => cancel(item)}
+                title="Cancelar lançamento"
+                aria-label="Cancelar lançamento"
+                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors"
+              >
+                <XCircle size={16} />
+              </button>
             )}
             <Link
               to={`/financeiro/${item.id}`}
-              title="Ver/editar lançamento"
+              title={canChangeFinancialEntry ? "Ver/editar lançamento" : "Ver lançamento"}
+              aria-label={canChangeFinancialEntry ? "Ver/editar lançamento" : "Ver lançamento"}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >
-              <Edit2 size={16} />
+              {canChangeFinancialEntry ? <Edit2 size={16} /> : <Eye size={16} />}
             </Link>
           </div>
         )}

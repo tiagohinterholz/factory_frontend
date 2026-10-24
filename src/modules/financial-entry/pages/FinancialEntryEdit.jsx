@@ -18,6 +18,7 @@ import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { formatDate, formatDateTime } from "@/modules/core/utils/format"
 import { CheckCircle, CreditCard, Wallet, XCircle } from "lucide-react"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 export default function FinancialEntryEdit() {
   const {
@@ -38,6 +39,12 @@ export default function FinancialEntryEdit() {
   } = useFinancialEntryEditForm()
   const [chargeMethod, setChargeMethod] = useState("PIX")
   const {
+    canChangeFinancialEntry,
+    canMarkFinancialEntryPaid,
+    canCancelFinancialEntry,
+    canGenerateCharge,
+  } = usePermissions()
+  const {
     register,
     control,
     formState: { errors, isSubmitting },
@@ -45,10 +52,8 @@ export default function FinancialEntryEdit() {
 
   if (loading) return <div className="p-6 text-center">Carregando...</div>
 
-  // travado (pago/cancelado): nunca edita, só exibe. Automático (nasceu de
-  // faturamento/compra): só o vencimento é editável — o resto reflete o
-  // evento real, mesma trava que o back aplica.
-  const locked = !financialEntryCanAct(status)
+  const actionable = financialEntryCanAct(status)
+  const locked = !actionable || !canChangeFinancialEntry
   const fieldsLocked = locked || isAutomatic
 
   return (
@@ -57,7 +62,9 @@ export default function FinancialEntryEdit() {
         <BackLink to="/financeiro" />
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start mb-4">
           <div>
-            <h1 className="text-xl font-semibold text-ink tracking-tight">Editar Lançamento</h1>
+            <h1 className="text-xl font-semibold text-ink tracking-tight">
+              {canChangeFinancialEntry ? "Editar Lançamento" : "Lançamento"}
+            </h1>
             <div className="flex items-center gap-3 mt-1 text-sm uppercase font-bold tracking-wider">
               <p className="text-slate-400">{financialEntryTypeLabel(entryType)}</p>
               <span className={`px-2 py-0.5 rounded-md ${financialEntryStatusTone(status)}`}>
@@ -65,22 +72,26 @@ export default function FinancialEntryEdit() {
               </span>
             </div>
           </div>
-          {financialEntryCanAct(status) && (
+          {actionable && (canMarkFinancialEntryPaid || canCancelFinancialEntry) && (
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={handleMarkPaid}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold text-sm shadow-sm transition-all"
-              >
-                <CheckCircle size={18} /> Marcar como pago
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-sm shadow-sm transition-all"
-              >
-                <XCircle size={18} /> Cancelar
-              </button>
+              {canMarkFinancialEntryPaid && (
+                <button
+                  type="button"
+                  onClick={handleMarkPaid}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold text-sm shadow-sm transition-all"
+                >
+                  <CheckCircle size={18} /> Marcar como pago
+                </button>
+              )}
+              {canCancelFinancialEntry && (
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-sm shadow-sm transition-all"
+                >
+                  <XCircle size={18} /> Cancelar
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -113,9 +124,6 @@ export default function FinancialEntryEdit() {
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {isAutomatic ? (
-                // categoria automática (ex.: venda_servico) não existe na
-                // lista de categorias manuais do <select> — mostrar como
-                // texto fixo em vez de um <select> sem opção correspondente.
                 <div className="flex flex-col">
                   <span className="label-premium">Categoria</span>
                   <p className="input-premium bg-ground text-muted cursor-not-allowed">
@@ -165,8 +173,6 @@ export default function FinancialEntryEdit() {
           </form>
         </div>
 
-        {/* cobrança via gateway: só faz sentido pra receita vinculada a uma
-            OS — mesma regra que o back aplica em payment_service. */}
         {entryType === "a_receber" && relatedOrder && (
           <div className="card-premium mt-6">
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
@@ -176,26 +182,28 @@ export default function FinancialEntryEdit() {
               <h3 className="font-bold text-slate-800 tracking-tight">Cobrança</h3>
             </div>
 
-            {!locked && !payments.some((payment) => paymentIsActive(payment.status)) && (
-              <div className="flex flex-wrap items-end gap-4 mb-6 bg-slate-50 p-4 rounded-xl">
-                <div className="flex-1 min-w-[180px]">
-                  <SelectField
-                    label="Forma de pagamento"
-                    options={PAYMENT_METHOD_OPTIONS}
-                    value={chargeMethod}
-                    onChange={(event) => setChargeMethod(event.target.value)}
-                  />
+            {actionable &&
+              canGenerateCharge &&
+              !payments.some((payment) => paymentIsActive(payment.status)) && (
+                <div className="flex flex-wrap items-end gap-4 mb-6 bg-slate-50 p-4 rounded-xl">
+                  <div className="flex-1 min-w-[180px]">
+                    <SelectField
+                      label="Forma de pagamento"
+                      options={PAYMENT_METHOD_OPTIONS}
+                      value={chargeMethod}
+                      onChange={(event) => setChargeMethod(event.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateCharge(chargeMethod)}
+                    disabled={generatingCharge}
+                    className="px-4 py-3 bg-brand text-white rounded-xl hover:bg-brand-hover font-bold text-sm shadow-sm transition-all disabled:opacity-50"
+                  >
+                    Gerar cobrança
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleGenerateCharge(chargeMethod)}
-                  disabled={generatingCharge}
-                  className="px-4 py-3 bg-brand text-white rounded-xl hover:bg-brand-hover font-bold text-sm shadow-sm transition-all disabled:opacity-50"
-                >
-                  Gerar cobrança
-                </button>
-              </div>
-            )}
+              )}
 
             <div className="divide-y divide-slate-100">
               {payments.map((payment) => (
