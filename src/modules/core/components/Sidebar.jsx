@@ -202,13 +202,6 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             {vehicleOpen && !collapsed && (
               <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
                 <Link
-                  to="/veiculos"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/veiculos"))}
-                >
-                  Veículos
-                </Link>
-                <Link
                   to="/marcas"
                   onClick={onCloseMobile}
                   className={subLinkClass(isActive("/marcas"))}
@@ -221,6 +214,13 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                   className={subLinkClass(isActive("/modelos"))}
                 >
                   Modelos
+                </Link>
+                <Link
+                  to="/veiculos"
+                  onClick={onCloseMobile}
+                  className={subLinkClass(isActive("/veiculos"))}
+                >
+                  Veículos
                 </Link>
               </div>
             )}

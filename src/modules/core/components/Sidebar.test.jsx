@@ -33,6 +33,23 @@ describe("<Sidebar>", () => {
     expect(screen.getByRole("link", { name: "Serviços" })).toHaveAttribute("href", "/servicos")
   })
 
+  it("o grupo Veículos abre em Marca, Modelo e Veículo, nessa ordem (CVSP-P1-09)", () => {
+    renderSidebar()
+
+    fireEvent.click(screen.getByRole("button", { name: /^veículos$/i }))
+
+    expect(screen.getByRole("link", { name: "Marcas" })).toHaveAttribute("href", "/marcas")
+    expect(screen.getByRole("link", { name: "Modelos" })).toHaveAttribute("href", "/modelos")
+    expect(screen.getByRole("link", { name: "Veículos" })).toHaveAttribute("href", "/veiculos")
+
+    const linkNames = screen.getAllByRole("link").map((link) => link.textContent)
+    const marcaIndex = linkNames.indexOf("Marcas")
+    const modeloIndex = linkNames.indexOf("Modelos")
+    const veiculoIndex = linkNames.indexOf("Veículos")
+    expect(marcaIndex).toBeLessThan(modeloIndex)
+    expect(modeloIndex).toBeLessThan(veiculoIndex)
+  })
+
   it("tem o item Notas Fiscais apontando para /notas-fiscais", () => {
     renderSidebar()
     expect(screen.getByRole("link", { name: /notas fiscais/i })).toHaveAttribute(
