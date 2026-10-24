@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, useLocation } from "react-router-dom"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
@@ -54,10 +54,22 @@ function mockApi({ orders = [], appointmentOverrides = {} } = {}) {
   )
 }
 
+function CreatePageProbe({ title }) {
+  const location = useLocation()
+  return (
+    <div>
+      <h1>{title}</h1>
+      <pre data-testid="state">{JSON.stringify(location.state)}</pre>
+    </div>
+  )
+}
+
 const renderPage = () =>
   renderWithProviders(
     <Routes>
       <Route path="/agendamentos/:id" element={<AppointmentDetail />} />
+      <Route path="/ordens/novo" element={<CreatePageProbe title="Nova OS" />} />
+      <Route path="/orcamentos/novo" element={<CreatePageProbe title="Novo Orçamento" />} />
     </Routes>,
     { route: "/agendamentos/1" },
   )
@@ -285,5 +297,51 @@ describe("<AppointmentDetail>", () => {
     expect(screen.getByText("Sem orçamento vinculado")).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: /os #/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("link", { name: /orçamento #/i })).not.toBeInTheDocument()
+  })
+
+  it("sem OS nem orçamento: 'Criar OS' abre a criação já com cliente, veículo e agendamento (RAD-P2-01/02)", async () => {
+    mockApi({ appointmentOverrides: { order: null, budget: null } })
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("link", { name: /criar os/i }))
+
+    expect(await screen.findByRole("heading", { name: "Nova OS" })).toBeInTheDocument()
+    expect(JSON.parse(screen.getByTestId("state").textContent)).toEqual({
+      clientId: "5",
+      vehicleId: "9",
+      appointmentId: "1",
+    })
+  })
+
+  it("sem OS nem orçamento: 'Criar Orçamento' abre a criação já com cliente, veículo e agendamento", async () => {
+    mockApi({ appointmentOverrides: { order: null, budget: null } })
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("link", { name: /criar orçamento/i }))
+
+    expect(await screen.findByRole("heading", { name: "Novo Orçamento" })).toBeInTheDocument()
+    expect(JSON.parse(screen.getByTestId("state").textContent)).toEqual({
+      clientId: "5",
+      vehicleId: "9",
+      appointmentId: "1",
+    })
+  })
+
+  it("com OS vinculada: não mostra nenhum botão de criar", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+
+    expect(screen.queryByRole("link", { name: /criar os/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
+  })
+
+  it("só com orçamento vinculado: mostra 'Criar OS' mas não 'Criar Orçamento'", async () => {
+    mockApi({ appointmentOverrides: { order: null, budget: { id: 31, status: "pendente" } } })
+    renderPage()
+
+    expect(await screen.findByRole("link", { name: /criar os/i })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
   })
 })

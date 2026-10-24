@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { useAppointmentEditForm } from "@/modules/appointment/hooks/useAppointmentEditForm"
 import BackLink from "@/modules/core/components/BackLink"
 import { useOrderOptions } from "@/modules/core/hooks/options"
@@ -20,12 +20,23 @@ import {
   Car,
   ClipboardList,
   FileText,
+  Plus,
 } from "lucide-react"
 
-// Card de vínculo — linka pra tela da entidade relacionada (mesmo tipo de
-// atalho que a OS e o orçamento já têm entre si). `to` ausente = sem vínculo
-// ainda (ex.: agendamento sem OS/orçamento) e o card vira só informativo.
-function ReferenceCard({ icon: Icon, label, title, subtitle, to }) {
+function CreateLink({ to, state, children }) {
+  return (
+    <Link
+      to={to}
+      state={state}
+      className="inline-flex items-center gap-1 text-[12px] font-semibold text-brand border border-line rounded-md px-2 py-1 hover:bg-brand-subtle transition-colors shrink-0"
+    >
+      <Plus className="w-3.5 h-3.5" />
+      {children}
+    </Link>
+  )
+}
+
+function ReferenceCard({ icon: Icon, label, title, subtitle, to, action }) {
   const content = (
     <>
       <div className="w-10 h-10 rounded-lg bg-ground flex items-center justify-center text-brand border border-line shrink-0">
@@ -43,6 +54,7 @@ function ReferenceCard({ icon: Icon, label, title, subtitle, to }) {
     return (
       <div className="flex items-center gap-3 p-4 rounded-xl border border-dashed border-line bg-ground/50">
         {content}
+        {action}
       </div>
     )
   }
@@ -59,6 +71,7 @@ function ReferenceCard({ icon: Icon, label, title, subtitle, to }) {
 }
 
 export default function AppointmentDetail() {
+  const { id: appointmentId } = useParams()
   const {
     form,
     onSubmit,
@@ -115,6 +128,13 @@ export default function AppointmentDetail() {
     watch("order_id"),
     linkedOrder && { id: idOf(linkedOrder), name: orderLabel(linkedOrder) },
   )
+
+  const prefill = {
+    clientId: relatedClient ? idOf(relatedClient) : null,
+    vehicleId: relatedVehicle ? idOf(relatedVehicle) : null,
+    appointmentId,
+  }
+  const canCreateLinked = Boolean(relatedClient && relatedVehicle)
 
   function resetChildren(...names) {
     names.forEach((name) => setValue(name, ""))
@@ -247,6 +267,14 @@ export default function AppointmentDetail() {
               title={linkedOrder ? `OS #${idOf(linkedOrder)}` : "Sem OS vinculada"}
               subtitle={linkedOrder?.status}
               to={linkedOrder && `/ordens/${idOf(linkedOrder)}`}
+              action={
+                !linkedOrder &&
+                canCreateLinked && (
+                  <CreateLink to="/ordens/novo" state={prefill}>
+                    Criar OS
+                  </CreateLink>
+                )
+              }
             />
             <ReferenceCard
               icon={FileText}
@@ -254,6 +282,15 @@ export default function AppointmentDetail() {
               title={linkedBudget ? `Orçamento #${idOf(linkedBudget)}` : "Sem orçamento vinculado"}
               subtitle={linkedBudget?.status}
               to={linkedBudget && `/orcamentos/${idOf(linkedBudget)}`}
+              action={
+                !linkedBudget &&
+                !linkedOrder &&
+                canCreateLinked && (
+                  <CreateLink to="/orcamentos/novo" state={prefill}>
+                    Criar Orçamento
+                  </CreateLink>
+                )
+              }
             />
           </div>
         </div>
