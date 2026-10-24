@@ -9,7 +9,9 @@ import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
+import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import { formatMoney } from "@/modules/core/utils/format"
+import { purchaseRequestMessage } from "@/modules/product/constants/product"
 
 export default function ProductList() {
   const {
@@ -74,12 +76,20 @@ export default function ProductList() {
       header: "Qtde. em estoque",
       sortKey: "stock_quantity",
       accessor: (item) => {
-        const belowMinimum = item.minimum_stock != null && item.stock_quantity < item.minimum_stock
+        const zeroOrNegative = item.stock_quantity <= 0
+        const belowMinimum =
+          !zeroOrNegative && item.minimum_stock != null && item.stock_quantity < item.minimum_stock
         return (
           <span
-            className={`inline-flex items-center gap-1.5 ${belowMinimum ? "text-danger font-bold" : ""}`}
+            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md ${
+              zeroOrNegative
+                ? "bg-danger-subtle text-danger font-bold"
+                : belowMinimum
+                  ? "text-danger font-bold"
+                  : ""
+            }`}
           >
-            {belowMinimum && <AlertTriangle size={14} />}
+            {(zeroOrNegative || belowMinimum) && <AlertTriangle size={14} />}
             {item.stock_quantity ? item.stock_quantity : "0"}
           </span>
         )
@@ -119,6 +129,10 @@ export default function ProductList() {
         onSort={toggleSort}
         renderActions={(item) => (
           <div className="flex items-center justify-end gap-1">
+            <WhatsAppButton
+              phone={item.supplier?.phone}
+              message={purchaseRequestMessage(item.name)}
+            />
             <PdfIconButton
               request={() => ProductService.getProductPdf(item.id)}
               title="Baixar PDF do produto"

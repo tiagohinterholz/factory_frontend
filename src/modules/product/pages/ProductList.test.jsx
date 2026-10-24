@@ -78,9 +78,8 @@ describe("<ProductList>", () => {
           results: [
             { id: 1, name: "Abaixo do mínimo", stock_quantity: 2, minimum_stock: 5 },
             { id: 2, name: "Estoque normal", stock_quantity: 10, minimum_stock: 5 },
-            { id: 3, name: "Sem alerta configurado", stock_quantity: 0, minimum_stock: null },
           ],
-          count: 3,
+          count: 2,
         }),
       ),
     )
@@ -88,10 +87,64 @@ describe("<ProductList>", () => {
 
     const belowRow = (await screen.findByText("Abaixo do mínimo")).closest("tr")
     const normalRow = screen.getByText("Estoque normal").closest("tr")
-    const noAlertRow = screen.getByText("Sem alerta configurado").closest("tr")
 
     expect(within(belowRow).getByText("2")).toHaveClass("text-danger")
     expect(within(normalRow).getByText("10")).not.toHaveClass("text-danger")
-    expect(within(noAlertRow).getByText("0")).not.toHaveClass("text-danger")
+  })
+
+  it("estoque zero ou negativo ganha destaque mais forte, mesmo sem mínimo configurado", async () => {
+    server.use(
+      http.get(`${API}/fornecedores/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 1, name: "Zero sem mínimo", stock_quantity: 0, minimum_stock: null },
+            { id: 2, name: "Negativo", stock_quantity: -3, minimum_stock: null },
+            { id: 3, name: "Abaixo do mínimo só", stock_quantity: 2, minimum_stock: 5 },
+          ],
+          count: 3,
+        }),
+      ),
+    )
+    renderWithProviders(<ProductList />)
+
+    const zeroRow = (await screen.findByText("Zero sem mínimo")).closest("tr")
+    const negativeRow = screen.getByText("Negativo").closest("tr")
+    const belowMinimumOnlyRow = screen.getByText("Abaixo do mínimo só").closest("tr")
+
+    expect(within(zeroRow).getByText("0")).toHaveClass("bg-danger-subtle")
+    expect(within(negativeRow).getByText("-3")).toHaveClass("bg-danger-subtle")
+    expect(within(belowMinimumOnlyRow).getByText("2")).not.toHaveClass("bg-danger-subtle")
+  })
+
+  it("mostra o ícone de WhatsApp (pedido de compra) quando o fornecedor do produto tem telefone", async () => {
+    server.use(
+      http.get(`${API}/fornecedores/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            {
+              id: 1,
+              name: "Filtro de óleo",
+              supplier: { id: 9, corporate_name: "Bosch Ltda", phone: "(41) 91266-2552" },
+            },
+            { id: 2, name: "Sem telefone", supplier: { id: 10, corporate_name: "Sem Fone" } },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    renderWithProviders(<ProductList />)
+
+    const withPhoneRow = (await screen.findByText("Filtro de óleo")).closest("tr")
+    const withoutPhoneRow = screen.getByText("Sem telefone").closest("tr")
+
+    const link = within(withPhoneRow).getByRole("link", { name: /whatsapp/i })
+    expect(link.getAttribute("href")).toContain("https://wa.me/5541912662552?text=")
+    expect(
+      within(withoutPhoneRow).queryByRole("link", { name: /whatsapp/i }),
+    ).not.toBeInTheDocument()
   })
 })

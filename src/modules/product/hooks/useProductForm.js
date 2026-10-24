@@ -5,7 +5,7 @@ import { ProductService } from "@/modules/product/services/product"
 import { productSchema, productDefaults, toProductPayload, productKeys } from "../domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 
-export function useProductForm() {
+export function useProductForm({ redirectTo = "/produtos", onSuccess } = {}) {
   const location = useLocation()
   const { businessId } = useAuth()
 
@@ -17,7 +17,8 @@ export function useProductForm() {
       supplier_id: location.state?.supplierId ? String(location.state.supplierId) : "",
     },
     submit: (values) => ProductService.createProduct(toProductPayload(values)),
-    redirectTo: "/produtos",
+    redirectTo,
+    onSuccess,
     invalidate: [productKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao criar produto",
   })

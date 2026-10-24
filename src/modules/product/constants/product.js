@@ -8,3 +8,7 @@ export const unitOfMeasureOptions = [
   { id: "PAR", name: "Par" },
   { id: "CJ", name: "Conjunto" },
 ]
+
+export function purchaseRequestMessage(productName) {
+  return `Olá! Gostaria de solicitar a compra/reposição do produto ${productName}.`
+}
