@@ -92,7 +92,9 @@ describe("<AppointmentList>", () => {
       { route: "/agendamentos" },
     )
 
-    const card = await screen.findByRole("link", { name: /abrir agendamento de ana lima/i })
+    const card = (
+      await screen.findByRole("link", { name: /abrir agendamento de ana lima/i })
+    ).closest("[data-appointment-card]")
     expect(within(card).getByRole("link", { name: /criar orçamento/i })).toHaveAttribute(
       "href",
       "/orcamentos/novo",
@@ -147,5 +149,54 @@ describe("<AppointmentList>", () => {
     expect(screen.getByRole("link", { name: /abrir agendamento de beto/i }).className).not.toMatch(
       /\babsolute\b/,
     )
+  })
+
+  it("Criar Orçamento do card leva cliente, veículo e agendamento no state", async () => {
+    mockAppointments([{ ...appointment, order: null, budget: null }])
+    renderWithProviders(
+      <Routes>
+        <Route path="/agendamentos" element={<AppointmentList />} />
+        <Route path="/orcamentos/novo" element={<StateProbe title="Novo Orçamento" />} />
+      </Routes>,
+      { route: "/agendamentos" },
+    )
+
+    fireEvent.click(await screen.findByRole("link", { name: /criar orçamento/i }))
+
+    expect(await screen.findByRole("heading", { name: "Novo Orçamento" })).toBeInTheDocument()
+    expect(JSON.parse(screen.getByTestId("state").textContent)).toEqual({
+      clientId: 5,
+      vehicleId: 9,
+      appointmentId: 42,
+    })
+  })
+
+  it("com OS e orçamento vinculados mostra os dois links e nenhum botão de criar", async () => {
+    mockAppointments([{ ...appointment, budget: { id: 31 } }])
+    renderWithProviders(<AppointmentList />)
+
+    expect(await screen.findByRole("link", { name: "OS #77" })).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Orçamento #31" })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar os/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
+  })
+
+  it("sem cliente ou veículo não oferece criar OS/orçamento", async () => {
+    mockAppointments([{ ...appointment, client: null, order: null, budget: null }])
+    renderWithProviders(<AppointmentList />)
+
+    expect(
+      await screen.findByRole("link", { name: /abrir agendamento de cliente/i }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar os/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
+  })
+
+  it("o card não aninha links dentro de outro link", async () => {
+    mockAppointments([{ ...appointment, order: null, budget: { id: 31 } }])
+    renderWithProviders(<AppointmentList />)
+
+    const open = await screen.findByRole("link", { name: /abrir agendamento de ana lima/i })
+    expect(open.querySelector("a")).toBeNull()
   })
 })

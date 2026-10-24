@@ -10,7 +10,7 @@ import {
   ClipboardList,
   FileText,
 } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { appointmentWhen } from "@/modules/appointment/domain"
 
 function clientName(appointment) {
@@ -29,85 +29,78 @@ function vehicleName(appointment) {
   return `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""}`.trim()
 }
 
-const stop = (event) => event.stopPropagation()
-
 const shortcutClass =
   "inline-flex items-center gap-0.5 rounded border border-line px-1 py-0.5 text-[9px] font-semibold text-brand hover:bg-brand-subtle transition-colors"
 
+const relatedLinkClass =
+  "flex items-center gap-1 truncate text-[9px] font-semibold text-brand hover:underline"
+
 function CalendarAppointmentCard({ appointment }) {
-  const navigate = useNavigate()
-  const open = () => navigate(`/agendamentos/${appointment.id}`)
   const orderId = appointment.order?.id ?? null
   const budgetId = appointment.budget?.id ?? null
-  const prefill = {
-    clientId: appointment.client?.id ?? null,
-    vehicleId: appointment.vehicle?.id ?? null,
-    appointmentId: appointment.id,
-  }
+  const clientId = appointment.client?.id ?? null
+  const vehicleId = appointment.vehicle?.id ?? null
+  const canCreateLinked = clientId != null && vehicleId != null
+  const prefill = { clientId, vehicleId, appointmentId: appointment.id }
   const name = clientName(appointment)
   const vehicle = vehicleName(appointment)
 
   return (
     <div
-      role="link"
-      tabIndex={0}
-      aria-label={`Abrir agendamento de ${name}`}
-      onClick={open}
-      onKeyDown={(event) => {
-        if (event.key === "Enter") open()
-      }}
-      className="flex cursor-pointer flex-col gap-0.5 overflow-hidden rounded-lg border-l-4 border-brand bg-surface p-2 shadow-card transition-all hover:border-brand-hover hover:shadow-pop"
+      data-appointment-card
+      className="flex flex-col gap-0.5 overflow-hidden rounded-lg border-l-4 border-brand bg-surface p-2 shadow-card transition-all hover:border-brand-hover hover:shadow-pop"
     >
-      <p className="flex items-center gap-1 truncate text-[10px] font-black uppercase text-brand">
-        <User size={10} className="shrink-0" />
-        <span className="truncate">{name}</span>
-      </p>
-      <p className="flex items-center gap-1 truncate text-[9px] font-bold text-muted">
-        <Clock size={10} className="shrink-0" />
-        {appointmentWhen(appointment.date, appointment.time)}
-      </p>
-      {(vehicle || appointment.vehicle?.plate) && (
-        <p className="flex items-center gap-1 truncate text-[9px] text-muted">
-          <Car size={10} className="shrink-0" />
-          <span className="truncate">
-            {[vehicle, appointment.vehicle?.plate].filter(Boolean).join(" · ")}
+      <Link
+        to={`/agendamentos/${appointment.id}`}
+        aria-label={`Abrir agendamento de ${name}`}
+        className="flex flex-col gap-0.5 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+      >
+        <span className="flex items-center gap-1 truncate text-[10px] font-black uppercase text-brand">
+          <User size={10} className="shrink-0" />
+          <span className="truncate">{name}</span>
+        </span>
+        <span className="flex items-center gap-1 truncate text-[9px] font-bold text-muted">
+          <Clock size={10} className="shrink-0" />
+          {appointmentWhen(appointment.date, appointment.time)}
+        </span>
+        {(vehicle || appointment.vehicle?.plate) && (
+          <span className="flex items-center gap-1 truncate text-[9px] text-muted">
+            <Car size={10} className="shrink-0" />
+            <span className="truncate">
+              {[vehicle, appointment.vehicle?.plate].filter(Boolean).join(" · ")}
+            </span>
           </span>
-        </p>
-      )}
-      {appointment.client?.phone && (
-        <p className="flex items-center gap-1 truncate text-[9px] text-muted">
-          <Phone size={10} className="shrink-0" />
-          <span className="truncate">{appointment.client.phone}</span>
-        </p>
-      )}
+        )}
+        {appointment.client?.phone && (
+          <span className="flex items-center gap-1 truncate text-[9px] text-muted">
+            <Phone size={10} className="shrink-0" />
+            <span className="truncate">{appointment.client.phone}</span>
+          </span>
+        )}
+      </Link>
       <div className="flex flex-wrap items-center gap-1 pt-0.5">
         {orderId != null ? (
-          <Link
-            to={`/ordens/${orderId}`}
-            onClick={stop}
-            className="flex items-center gap-1 truncate text-[9px] font-semibold text-brand hover:underline"
-          >
+          <Link to={`/ordens/${orderId}`} className={relatedLinkClass}>
             <ClipboardList size={10} className="shrink-0" />
             OS #{orderId}
           </Link>
         ) : (
-          <Link to="/ordens/novo" state={prefill} onClick={stop} className={shortcutClass}>
-            <Plus size={10} />
-            Criar OS
-          </Link>
+          canCreateLinked && (
+            <Link to="/ordens/novo" state={prefill} className={shortcutClass}>
+              <Plus size={10} />
+              Criar OS
+            </Link>
+          )
         )}
         {budgetId != null ? (
-          <Link
-            to={`/orcamentos/${budgetId}`}
-            onClick={stop}
-            className="flex items-center gap-1 truncate text-[9px] font-semibold text-brand hover:underline"
-          >
+          <Link to={`/orcamentos/${budgetId}`} className={relatedLinkClass}>
             <FileText size={10} className="shrink-0" />
             Orçamento #{budgetId}
           </Link>
         ) : (
-          orderId == null && (
-            <Link to="/orcamentos/novo" state={prefill} onClick={stop} className={shortcutClass}>
+          orderId == null &&
+          canCreateLinked && (
+            <Link to="/orcamentos/novo" state={prefill} className={shortcutClass}>
               <Plus size={10} />
               Criar Orçamento
             </Link>

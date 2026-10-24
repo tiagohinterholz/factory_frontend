@@ -344,4 +344,30 @@ describe("<AppointmentDetail>", () => {
     expect(await screen.findByRole("link", { name: /criar os/i })).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
   })
+
+  it("com OS e orçamento vinculados mostra os dois links e nenhum botão de criar", async () => {
+    mockApi({ appointmentOverrides: { budget: { id: 31, status: "aprovado" } } })
+    renderPage()
+
+    expect(await screen.findByRole("link", { name: /os #77/i })).toHaveAttribute(
+      "href",
+      "/ordens/77",
+    )
+    expect(screen.getByRole("link", { name: /orçamento #31/i })).toHaveAttribute(
+      "href",
+      "/orcamentos/31",
+    )
+    expect(screen.queryByRole("link", { name: /criar os/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
+  })
+
+  it("sem veículo vinculado não oferece criar OS/orçamento", async () => {
+    mockApi({ appointmentOverrides: { vehicle: null, order: null, budget: null } })
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+
+    expect(screen.queryByRole("link", { name: /criar os/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
+  })
 })
