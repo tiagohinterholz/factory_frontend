@@ -1,5 +1,6 @@
 import {
   Edit2,
+  Eye,
   Trash2,
   ChevronLeft,
   ChevronRight,
@@ -53,6 +54,7 @@ export default function ListTable({
   dense = false,
   ordering,
   onSort,
+  readOnly = false,
 }) {
   const totalPages = Math.ceil(totalItems / itemsPerPage)
   // `dense`: aperta o padding horizontal das células (tabelas com muitas colunas)
@@ -138,11 +140,11 @@ export default function ListTable({
                           {editLinkPrefix && (
                             <Link
                               to={`${editLinkPrefix}/${item.id}`}
-                              title="Editar"
-                              aria-label="Editar"
+                              title={readOnly ? "Ver" : "Editar"}
+                              aria-label={readOnly ? "Ver" : "Editar"}
                               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
                             >
-                              <Edit2 size={16} />
+                              {readOnly ? <Eye size={16} /> : <Edit2 size={16} />}
                             </Link>
                           )}
                           {onDelete && (
