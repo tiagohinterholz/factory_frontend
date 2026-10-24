@@ -88,6 +88,12 @@ export default function WorkServiceCreate() {
                 label="Preço Unitário"
                 error={errors.unit_price?.message}
               />
+              <MoneyField
+                control={control}
+                name="cost_price"
+                label="Preço de Custo (opcional)"
+                error={errors.cost_price?.message}
+              />
             </div>
 
             <div className="pt-4 flex justify-end">

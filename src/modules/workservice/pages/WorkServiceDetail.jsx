@@ -103,12 +103,18 @@ export default function WorkServiceDetail() {
               registration={register("description")}
             />
 
-            <div className="max-w-xs">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-xl">
               <MoneyField
                 control={control}
                 name="unit_price"
                 label="Preço do Serviço (Mão de Obra)"
                 error={errors.unit_price?.message}
+              />
+              <MoneyField
+                control={control}
+                name="cost_price"
+                label="Preço de Custo (opcional)"
+                error={errors.cost_price?.message}
               />
             </div>
 
