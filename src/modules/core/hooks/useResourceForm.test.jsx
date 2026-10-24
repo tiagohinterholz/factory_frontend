@@ -49,7 +49,7 @@ describe("useResourceForm", () => {
     })
 
     expect(submit).toHaveBeenCalledWith({ name: "Ana" })
-    expect(navigateSpy).toHaveBeenCalledWith("/lista")
+    expect(navigateSpy).toHaveBeenCalledWith("/lista", { replace: true })
   })
 
   it("redirectTo como função -> navega com base no resultado do submit", async () => {
@@ -66,7 +66,7 @@ describe("useResourceForm", () => {
       await result.current.onSubmit()
     })
 
-    expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/42")
+    expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/42", { replace: true })
   })
 
   it("submit inválido -> não chama submit, seta erro do schema", async () => {

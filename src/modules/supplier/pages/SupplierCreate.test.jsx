@@ -68,6 +68,8 @@ describe("<SupplierCreate>", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /salvar fornecedor/i }))
 
-    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/fornecedores/42"))
+    await waitFor(() =>
+      expect(navigateSpy).toHaveBeenCalledWith("/fornecedores/42", { replace: true }),
+    )
   })
 })

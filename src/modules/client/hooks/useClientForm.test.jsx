@@ -53,7 +53,7 @@ describe("useClientForm", () => {
     })
 
     expect(create).toHaveBeenCalled()
-    expect(navigateSpy).toHaveBeenCalledWith("/clientes")
+    expect(navigateSpy).toHaveBeenCalledWith("/clientes", { replace: true })
     create.mockRestore()
   })
 

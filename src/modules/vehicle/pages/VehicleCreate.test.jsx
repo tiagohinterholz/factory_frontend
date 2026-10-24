@@ -119,7 +119,7 @@ describe("<VehicleCreate>", () => {
     const user = userEvent.setup()
     await fillAndSubmit(user)
 
-    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/veiculos/99"))
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/veiculos/99", { replace: true }))
   })
 
   it("vindo do botão 'Adicionar veículo' de um Cliente, volta pra edição desse Cliente (não /veiculos)", async () => {
@@ -132,6 +132,6 @@ describe("<VehicleCreate>", () => {
     const user = userEvent.setup()
     await fillAndSubmit(user)
 
-    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/clientes/5"))
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/clientes/5", { replace: true }))
   })
 })

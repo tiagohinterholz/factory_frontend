@@ -55,7 +55,7 @@ describe("useVehicleForm", () => {
     })
 
     expect(create).toHaveBeenCalled()
-    expect(navigateSpy).toHaveBeenCalledWith("/veiculos")
+    expect(navigateSpy).toHaveBeenCalledWith("/veiculos", { replace: true })
     create.mockRestore()
   })
 

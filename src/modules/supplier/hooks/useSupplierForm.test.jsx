@@ -56,7 +56,7 @@ describe("useSupplierForm", () => {
     })
 
     expect(create).toHaveBeenCalled()
-    expect(navigateSpy).toHaveBeenCalledWith("/fornecedores")
+    expect(navigateSpy).toHaveBeenCalledWith("/fornecedores", { replace: true })
     create.mockRestore()
   })
 

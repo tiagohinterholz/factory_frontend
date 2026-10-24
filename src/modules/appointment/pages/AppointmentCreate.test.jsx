@@ -93,7 +93,9 @@ describe("<AppointmentCreate>", () => {
     })
     await user.click(screen.getByRole("button", { name: /salvar agendamento/i }))
 
-    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/agendamentos"))
+    await waitFor(() =>
+      expect(navigateSpy).toHaveBeenCalledWith("/agendamentos", { replace: true }),
+    )
   })
 
   it("trocar o cliente proprietário depois de escolher o veículo limpa o veículo", async () => {

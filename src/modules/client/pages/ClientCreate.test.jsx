@@ -92,6 +92,6 @@ describe("<ClientCreate>", () => {
     await fillMinimumValidPf(user)
     fireEvent.click(screen.getByRole("button", { name: /salvar cliente/i }))
 
-    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/clientes/42"))
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/clientes/42", { replace: true }))
   })
 })

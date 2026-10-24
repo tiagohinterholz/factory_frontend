@@ -80,7 +80,9 @@ describe("<BudgetCreate>", () => {
 
     await user.click(screen.getByRole("button", { name: /prosseguir para itens/i }))
 
-    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/42"))
+    await waitFor(() =>
+      expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/42", { replace: true }),
+    )
   })
 
   it("trocar o cliente selecionado depois de escolher um veículo limpa o veículo", async () => {
