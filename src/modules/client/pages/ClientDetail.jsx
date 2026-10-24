@@ -6,6 +6,8 @@ import { dashboardKeys } from "@/modules/dashboard/domain"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import BackLink from "@/modules/core/components/BackLink"
 import { useClientVehicles } from "@/modules/client/hooks/useClientVehicles"
+import { useClientRecords } from "@/modules/client/hooks/useClientRecords"
+import { formatMoney } from "@/modules/core/utils/format"
 import { useStateOptions } from "@/modules/core/hooks/options"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
@@ -19,10 +21,46 @@ import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import ClientTypeToggle from "@/modules/client/components/ClientTypeToggle"
 import { CPF_MASK, CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 
-import { User, Car, Edit2, Trash2, Milestone, ChevronRight, ShieldOff } from "lucide-react"
+import {
+  User,
+  Car,
+  Edit2,
+  Trash2,
+  Milestone,
+  ChevronRight,
+  ShieldOff,
+  ClipboardList,
+  FileText,
+} from "lucide-react"
 
 function capitalize(value) {
   return value ? value.charAt(0).toUpperCase() + value.slice(1) : value
+}
+
+function LinkedItem({ icon: Icon, name, subtitle, onOpen }) {
+  return (
+    <div
+      onClick={onOpen}
+      className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between group cursor-pointer transition duration-300 hover:bg-white hover:border-line hover:shadow-md"
+    >
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-slate-400 group-hover:text-brand transition duration-300 shadow-sm border border-slate-100">
+          <Icon className="w-5 h-5" />
+        </div>
+        <div>
+          <p className="font-bold text-slate-700 text-sm group-hover:text-brand transition duration-300">
+            {name}
+          </p>
+          <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-0.5">
+            {subtitle}
+          </p>
+        </div>
+      </div>
+      <div className="text-slate-300 group-hover:text-brand transition duration-300 translate-x-0 group-hover:translate-x-1">
+        <ChevronRight className="w-5 h-5" />
+      </div>
+    </div>
+  )
 }
 
 export default function ClientDetail() {
@@ -64,6 +102,7 @@ export default function ClientDetail() {
   const { citiesByState, loading: loadingCities } = useCityOptionsByState(stateId)
 
   const { vehicles, loading: loadingVehicles } = useClientVehicles(id)
+  const { orders, budgets } = useClientRecords(id)
 
   if (loading || loadingStates || (stateId && loadingCities)) {
     return (
@@ -295,29 +334,52 @@ export default function ClientDetail() {
             onAddClick={() => navigate("/veiculos/novo", { state: { clientId: id } })}
             addLabel="Adicionar veículo"
             renderItem={(item) => (
-              <div
-                onClick={() => navigate(`/veiculos/${item.id}`)}
-                className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 flex items-center justify-between group cursor-pointer transition duration-300 hover:bg-white hover:border-line hover:shadow-md"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-slate-400 group-hover:text-brand transition duration-300 shadow-sm border border-slate-100">
-                    <Car className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-700 text-sm group-hover:text-brand transition duration-300">
-                      {item.name}
-                    </p>
-                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-0.5">
-                      {item.subtitle}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-slate-300 group-hover:text-brand transition duration-300 translate-x-0 group-hover:translate-x-1">
-                  <ChevronRight className="w-5 h-5" />
-                </div>
-              </div>
+              <LinkedItem
+                icon={Car}
+                name={item.name}
+                subtitle={item.subtitle}
+                onOpen={() => navigate(`/veiculos/${item.id}`)}
+              />
             )}
           />
+          {budgets.length > 0 && (
+            <RelatedDataCard
+              title="Orçamentos"
+              icon={FileText}
+              items={budgets.map((budget) => ({
+                id: budget.id,
+                name: `Orçamento #${budget.id}`,
+                subtitle: `${budget.status} · ${formatMoney(budget.total)}`,
+              }))}
+              renderItem={(item) => (
+                <LinkedItem
+                  icon={FileText}
+                  name={item.name}
+                  subtitle={item.subtitle}
+                  onOpen={() => navigate(`/orcamentos/${item.id}`)}
+                />
+              )}
+            />
+          )}
+          {orders.length > 0 && (
+            <RelatedDataCard
+              title="Ordens de Serviço"
+              icon={ClipboardList}
+              items={orders.map((order) => ({
+                id: order.id,
+                name: `OS #${order.id}`,
+                subtitle: `${order.status} · ${formatMoney(order.total)}`,
+              }))}
+              renderItem={(item) => (
+                <LinkedItem
+                  icon={ClipboardList}
+                  name={item.name}
+                  subtitle={item.subtitle}
+                  onOpen={() => navigate(`/ordens/${item.id}`)}
+                />
+              )}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -13,7 +13,9 @@ vi.mock("react-router-dom", async (importOriginal) => {
   return { ...actual, useNavigate: () => navigateSpy }
 })
 
-function mockClient({ vehicles = [] } = {}) {
+let lastOrdersQuery
+
+function mockClient({ vehicles = [], orders = [], budgets = [] } = {}) {
   server.use(
     http.get(`${API}/clientes/1/`, () =>
       HttpResponse.json({
@@ -36,6 +38,13 @@ function mockClient({ vehicles = [] } = {}) {
     ),
     http.get(`${API}/clientes/1/veiculos/`, () =>
       HttpResponse.json({ results: vehicles, count: vehicles.length }),
+    ),
+    http.get(`${API}/ordens/`, ({ request }) => {
+      lastOrdersQuery = new URL(request.url).searchParams
+      return HttpResponse.json({ results: orders, count: orders.length })
+    }),
+    http.get(`${API}/orcamentos/`, () =>
+      HttpResponse.json({ results: budgets, count: budgets.length }),
     ),
   )
 }
@@ -116,5 +125,29 @@ describe("<ClientDetail>", () => {
     fireEvent.click(screen.getByRole("button", { name: /salvar alterações/i }))
 
     await waitFor(() => expect(navigateSpy).not.toHaveBeenCalledWith("/clientes"))
+  })
+
+  it("mostra cards de orçamentos e OS do cliente com link pra cada um (CVSP-P1-06)", async () => {
+    mockClient({
+      orders: [{ id: 31, status: "faturado", total: "260.00" }],
+      budgets: [{ id: 12, status: "pendente", total: "150.00" }],
+    })
+    renderPage()
+
+    expect(await screen.findByRole("heading", { name: "Ordens de Serviço" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Orçamentos" })).toBeInTheDocument()
+    expect(screen.getByText("OS #31")).toBeInTheDocument()
+    expect(screen.getByText("Orçamento #12")).toBeInTheDocument()
+    expect(lastOrdersQuery.get("client_id")).toBe("1")
+  })
+
+  it("sem orçamento nem OS, os cards nem aparecem", async () => {
+    mockClient()
+    renderPage()
+
+    await screen.findByDisplayValue("Ana")
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(screen.queryByRole("heading", { name: "Ordens de Serviço" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("heading", { name: "Orçamentos" })).not.toBeInTheDocument()
   })
 })
