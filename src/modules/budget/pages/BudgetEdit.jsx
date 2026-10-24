@@ -17,6 +17,7 @@ import SelectField from "@/modules/core/components/SelectField"
 import { ClientLiveSelect } from "@/modules/client"
 import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import ServiceItemForm from "@/modules/core/components/ServiceItemForm"
 import { Plus, Trash2, CheckCircle, XCircle, Copy } from "lucide-react"
 import { formatDateTime, formatMoney } from "@/modules/core/utils/format"
 import {
@@ -68,7 +69,6 @@ export default function BudgetEdit() {
 
   const [selectedProduct, setSelectedProduct] = useState("")
   const [quantity, setQuantity] = useState(1)
-  const [selectedService, setSelectedService] = useState("")
   const [approveOpen, setApproveOpen] = useState(false)
   const [savingItem, setSavingItem] = useState(false)
 
@@ -109,23 +109,17 @@ export default function BudgetEdit() {
     }
   }
 
-  async function handleAddService(event) {
-    event.preventDefault()
-    if (!selectedService || savingItem) return
-    const service = allServices.find((item) => String(item.id) === String(selectedService))
+  async function handleAddService(payload) {
     setSavingItem(true)
     try {
-      await BudgetService.budgetServiceCreate(id, {
-        service_id: selectedService,
-        budget_id: id,
-        unit_price: service?.unit_price,
-      })
-      setSelectedService("")
+      await BudgetService.budgetServiceCreate(id, { ...payload, budget_id: id })
       refresh()
       invalidateBudgetCaches()
+      return true
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao adicionar serviço").message)
+      return false
     } finally {
       setSavingItem(false)
     }
@@ -363,35 +357,24 @@ export default function BudgetEdit() {
             </h2>
 
             {isPending && (
-              <form
-                onSubmit={handleAddService}
-                className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
-              >
-                <div className="flex-1 min-w-[200px]">
-                  <SelectField
-                    label="Selecionar Serviço"
-                    value={selectedService}
-                    onChange={(event) => setSelectedService(event.target.value)}
-                    options={allServices.map((s) => ({
-                      id: s.id,
-                      name: `${s.name} (${formatMoney(s.unit_price)})`,
-                    }))}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={savingItem}
-                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors disabled:opacity-50"
-                >
-                  <Plus size={24} />
-                </button>
-              </form>
+              <ServiceItemForm
+                services={allServices}
+                saving={savingItem}
+                onAdd={handleAddService}
+              />
             )}
 
             <div className="divide-y divide-slate-100">
               {services.map((item) => (
                 <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span>{item.service?.name}</span>
+                  <span className="flex items-center gap-2">
+                    {item.name ?? item.service?.name}
+                    {!item.service && (
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500">
+                        Personalizado
+                      </span>
+                    )}
+                  </span>
                   <div className="flex items-center gap-4">
                     <span className="font-bold text-slate-700">{formatMoney(item.unit_price)}</span>
                     {isPending && (

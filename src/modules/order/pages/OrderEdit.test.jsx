@@ -516,3 +516,54 @@ describe("<OrderEdit> — faturamento", () => {
     expect(screen.getByLabelText(/forma de pagamento/i)).toBeInTheDocument()
   })
 })
+
+describe("<OrderEdit> — serviço personalizado", () => {
+  it("lista o item personalizado pelo nome com a marca 'Personalizado'", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          order_services: [
+            {
+              id: 3,
+              service: null,
+              custom_name: "Solda no escapamento",
+              name: "Solda no escapamento",
+              unit_price: "80.00",
+              is_active: true,
+            },
+          ],
+        }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Solda no escapamento")).toBeInTheDocument()
+    expect(screen.getByText("Personalizado")).toBeInTheDocument()
+  })
+
+  it("adicionar personalizado chama a API com nome e valor", async () => {
+    const user = userEvent.setup()
+    mockApi()
+    const create = vi.spyOn(OrderService, "orderServiceCreate").mockResolvedValue({})
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const serviceCombobox = screen.getAllByRole("combobox").at(-1)
+    await user.click(serviceCombobox)
+    await user.click(await screen.findByRole("option", { name: "Serviço personalizado" }))
+    await user.type(screen.getByLabelText(/nome do serviço/i), "Revisão elétrica")
+    await user.type(screen.getByLabelText(/valor \(r\$\)/i), "90")
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar serviço" }))
+
+    await waitFor(() =>
+      expect(create).toHaveBeenCalledWith("1", {
+        custom_name: "Revisão elétrica",
+        unit_price: "90.00",
+        order_id: "1",
+      }),
+    )
+    create.mockRestore()
+  })
+})
