@@ -340,4 +340,37 @@ describe("<BudgetEdit> — aprovar com data opcional", () => {
     )
     approve.mockRestore()
   })
+
+  describe("<BudgetEdit> — fica na tela e informa o cliente", () => {
+    it("salvar não volta pra listagem (OSFIN-P1-01)", async () => {
+      mockApi()
+      const update = vi.spyOn(BudgetService, "updateBudget").mockResolvedValue(budget)
+      navigateSpy.mockClear()
+      renderPage()
+
+      await screen.findByText("pendente")
+      fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+
+      await waitFor(() => expect(update).toHaveBeenCalled())
+      expect(navigateSpy).not.toHaveBeenCalledWith("/orcamentos")
+      expect(screen.getByRole("heading", { name: "Editar Orçamento" })).toBeInTheDocument()
+      update.mockRestore()
+    })
+
+    it("botão de WhatsApp leva o resumo do orçamento pro cliente (OSFIN-P1-03)", async () => {
+      mockApi({
+        overrides: {
+          client: { ...budget.client, phone: "(41) 99999-0000" },
+          total: "350.00",
+        },
+      })
+      renderPage()
+
+      const link = await screen.findByRole("link", { name: /informar cliente/i })
+      const url = new URL(link.getAttribute("href"))
+      expect(url.pathname).toBe("/5541999990000")
+      expect(url.searchParams.get("text")).toContain("orçamento #1")
+      expect(url.searchParams.get("text")).toContain("350,00")
+    })
+  })
 })

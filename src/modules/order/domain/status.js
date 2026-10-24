@@ -24,3 +24,5 @@ export const orderCanEditItems = (status) => status === ORDER_STATUS.IN_PROGRESS
 export const orderCanFinish = (status) => status === ORDER_STATUS.IN_PROGRESS
 export const orderCanInvoice = (status) => status === ORDER_STATUS.TO_BILL
 export const orderIsBilled = (status) => status === ORDER_STATUS.BILLED
+export const orderIsLocked = (status) =>
+  status === ORDER_STATUS.BILLED || status === ORDER_STATUS.CANCELLED

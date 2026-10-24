@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom"
-import { CheckCircle2, Edit2, Receipt, Trash2 } from "lucide-react"
+import { CheckCircle2, Edit2, Eye, Receipt, Trash2 } from "lucide-react"
 import { useOrder } from "../hooks/useOrder"
 import { OrderService } from "../services/order"
-import { orderStatusTone, orderCanFinish, orderCanInvoice } from "@/modules/order/domain"
+import {
+  orderStatusTone,
+  orderCanFinish,
+  orderCanInvoice,
+  orderIsLocked,
+} from "@/modules/order/domain"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
 import ListTable from "@/modules/core/components/ListTable"
@@ -106,7 +111,7 @@ export default function OrderList() {
         actions={
           <div className="flex items-center gap-2">
             <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
-            <ExportReportButton type="orders" />
+            <ExportReportButton type="orders" label="Gerar Relatórios" />
           </div>
         }
       />
@@ -149,13 +154,17 @@ export default function OrderList() {
             )}
             <Link
               to={`/ordens/${item.id}`}
+              title={orderIsLocked(item.status) ? "Ver OS" : "Editar OS"}
+              aria-label={orderIsLocked(item.status) ? "Ver OS" : "Editar OS"}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >
-              <Edit2 size={16} />
+              {orderIsLocked(item.status) ? <Eye size={16} /> : <Edit2 size={16} />}
             </Link>
             <button
               type="button"
               onClick={() => remove(item)}
+              title="Excluir OS"
+              aria-label="Excluir OS"
               className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
             >
               <Trash2 size={16} />

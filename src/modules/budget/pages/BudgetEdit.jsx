@@ -5,6 +5,7 @@ import { useBudgetEditForm } from "../hooks/useBudgetEditForm"
 import { BudgetService } from "../services/budgets"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
+import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import ApproveBudgetModal from "../components/ApproveBudgetModal"
 import { useProductOptions } from "@/modules/core/hooks/options"
 import { useWorkServiceOptions } from "@/modules/core/hooks/options"
@@ -196,6 +197,11 @@ export default function BudgetEdit() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <WhatsAppButton
+            phone={relatedClient?.phone}
+            label="Informar cliente"
+            message={`Olá${relatedClient?.first_name ? `, ${relatedClient.first_name}` : ""}! Seu orçamento #${id} está ${status} no valor de ${formatMoney(total)}.`}
+          />
           <RecordPdfButton request={() => BudgetService.getBudgetPdf(id)} />
           {canDuplicate && (
             <button

@@ -462,4 +462,25 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
     expect(update).not.toHaveBeenCalled()
     update.mockRestore()
   })
+
+  describe("<OrderEdit> — fica na tela ao salvar", () => {
+    it("salvar não volta pra listagem (OSFIN-P1-01)", async () => {
+      mockApi()
+      const update = vi.spyOn(OrderService, "updateOrder").mockResolvedValue(order)
+      renderWithProviders(
+        <Routes>
+          <Route path="/ordens/:id" element={<OrderEdit />} />
+          <Route path="/ordens" element={<h1>Lista de OS</h1>} />
+        </Routes>,
+        { route: "/ordens/1" },
+      )
+
+      await screen.findByText("Orçamento de origem")
+      fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+
+      await waitFor(() => expect(update).toHaveBeenCalled())
+      expect(screen.queryByRole("heading", { name: "Lista de OS" })).not.toBeInTheDocument()
+      update.mockRestore()
+    })
+  })
 })

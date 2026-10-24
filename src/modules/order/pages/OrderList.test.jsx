@@ -128,4 +128,27 @@ describe("<OrderList> — filtros", () => {
 
     await waitFor(() => expect(lastOrdersUrl.searchParams.get("plate")).toBe("ABC1D23"))
   })
+
+  describe("<OrderList> — ícones conforme o status", () => {
+    it.each([
+      ["faturado", "Ver OS"],
+      ["cancelado", "Ver OS"],
+      ["em andamento", "Editar OS"],
+      ["a faturar", "Editar OS"],
+    ])("OS %s mostra '%s'", async (status, label) => {
+      mockOrders([{ id: 10, first_name: "Ana", vehicle_name: "Gol", status, total: "1.00" }])
+      renderWithProviders(<OrderList />)
+
+      expect(await screen.findByRole("link", { name: label })).toHaveAttribute("href", "/ordens/10")
+      expect(screen.getByRole("button", { name: "Excluir OS" })).toBeInTheDocument()
+    })
+
+    it("botão em massa se chama Gerar Relatórios (OSFIN-P1-04)", async () => {
+      mockOrders()
+      renderWithProviders(<OrderList />)
+
+      expect(await screen.findByRole("button", { name: /gerar relatórios/i })).toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: /exportar pdf/i })).not.toBeInTheDocument()
+    })
+  })
 })

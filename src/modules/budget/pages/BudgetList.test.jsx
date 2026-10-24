@@ -254,4 +254,45 @@ describe("<BudgetList>", () => {
 
     duplicate.mockRestore()
   })
+
+  describe("<BudgetList> — ícones conforme o status", () => {
+    it.each([
+      ["aprovado", "Ver orçamento"],
+      ["cancelado", "Ver orçamento"],
+      ["pendente", "Editar orçamento"],
+      ["expirado", "Editar orçamento"],
+    ])("orçamento %s mostra '%s' (OSFIN-P1-02)", async (status, label) => {
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ email: "a@a.com", business_id: 3, role: "admin" }),
+      )
+      mockBudgets([
+        {
+          id: 12,
+          first_name: "Ana",
+          vehicle_name: "Gol",
+          valid_until: null,
+          status,
+          total: "1.00",
+        },
+      ])
+      renderWithProviders(<BudgetList />)
+
+      expect(await screen.findByRole("link", { name: label })).toHaveAttribute(
+        "href",
+        "/orcamentos/12",
+      )
+    })
+
+    it("botão em massa se chama Gerar Relatórios (OSFIN-P1-04)", async () => {
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ email: "a@a.com", business_id: 3, role: "admin" }),
+      )
+      mockBudgets()
+      renderWithProviders(<BudgetList />)
+
+      expect(await screen.findByRole("button", { name: /gerar relatórios/i })).toBeInTheDocument()
+    })
+  })
 })

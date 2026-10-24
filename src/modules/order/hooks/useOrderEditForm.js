@@ -81,7 +81,7 @@ export function useOrderEditForm() {
     defaultValues: orderDefaults,
     load: async () => toOrderForm(await fetchMeta()),
     submit: (values) => OrderService.updateOrder(id, toOrderPayload(values)),
-    redirectTo: "/ordens",
+    onSuccess: () => fetchMeta(),
     invalidate: ORDER_WIDE,
     errorFallback: "Erro ao atualizar a ordem de serviço",
   })
