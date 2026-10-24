@@ -27,6 +27,7 @@ export default function ProductList() {
     refetch,
     remove,
     error,
+    setSearch,
   } = useProduct()
 
   const { supplier: suppliers } = useSupplierOptions()
@@ -105,6 +106,8 @@ export default function ProductList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por nome, referência ou SKU"
         title="Produtos"
         buttonText="Novo Produto"
         buttonLink="/produtos/novo"

@@ -151,4 +151,21 @@ describe("<ClientList>", () => {
     expect(screen.getByText("Pessoa Jurídica")).toBeInTheDocument()
     expect(screen.getByText("11.222.333/0001-44")).toBeInTheDocument()
   })
+
+  it("busca rápida manda ?search= e volta pra página 1 (busca geral)", async () => {
+    let lastSearch = null
+    server.use(
+      http.get(`${API}/clientes/`, ({ request }) => {
+        lastSearch = new URL(request.url).searchParams.get("search")
+        return HttpResponse.json({ results: [], count: 0 })
+      }),
+    )
+    renderWithProviders(<ClientList />)
+
+    fireEvent.change(await screen.findByLabelText("Busca rápida"), {
+      target: { value: "marcela" },
+    })
+
+    await waitFor(() => expect(lastSearch).toBe("marcela"))
+  })
 })

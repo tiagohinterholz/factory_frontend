@@ -38,6 +38,7 @@ export default function BudgetList() {
     duplicate,
     approving,
     error,
+    setSearch,
   } = useBudget()
 
   const { client: clients } = useClientOptions()
@@ -130,6 +131,8 @@ export default function BudgetList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por cliente ou placa"
         title="Orçamentos"
         buttonText="Novo Orçamento"
         buttonLink="/orcamentos/novo"

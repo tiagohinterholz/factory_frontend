@@ -39,6 +39,7 @@ export default function ClientList() {
     refetch,
     remove,
     error,
+    setSearch,
   } = useClient()
 
   const [vehiclesClient, setVehiclesClient] = useState(null)
@@ -60,6 +61,8 @@ export default function ClientList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por nome, CPF/CNPJ, telefone"
         title="Clientes"
         buttonText="Novo Cliente"
         buttonLink="/clientes/novo"

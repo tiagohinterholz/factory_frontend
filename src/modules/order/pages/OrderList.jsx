@@ -36,6 +36,7 @@ export default function OrderList() {
     remove,
     finish,
     error,
+    setSearch,
   } = useOrder()
 
   const { client: clients } = useClientOptions()
@@ -136,6 +137,8 @@ export default function OrderList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por cliente ou placa"
         title="Ordens de Serviço"
         buttonText="Nova OS"
         buttonLink="/ordens/novo"

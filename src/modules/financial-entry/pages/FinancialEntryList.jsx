@@ -38,6 +38,7 @@ export default function FinancialEntryList() {
     error,
     markPaid,
     cancel,
+    setSearch,
   } = useFinancialEntry()
   const {
     canCreateFinancialEntry,
@@ -124,6 +125,8 @@ export default function FinancialEntryList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por descrição, categoria, tag ou cliente"
         title="Financeiro"
         buttonText={canCreateFinancialEntry ? "Novo Lançamento" : undefined}
         buttonLink={canCreateFinancialEntry ? "/financeiro/novo" : undefined}
