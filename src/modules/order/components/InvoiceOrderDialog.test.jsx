@@ -116,4 +116,18 @@ describe("<InvoiceOrderDialog>", () => {
     await waitFor(() => expect(onClose).toHaveBeenCalled())
     expect(screen.queryByText(/serviço de terceiro/i)).not.toBeInTheDocument()
   })
+
+  it("forma sem cartão não manda parcelas no payload", async () => {
+    const invoice = vi
+      .spyOn(OrderService, "invoiceOrder")
+      .mockResolvedValue({ has_external_service_suppliers: false })
+    renderWithProviders(<InvoiceOrderDialog order={{ id: 7 }} onClose={vi.fn()} />)
+
+    choose("cartao")
+    fireEvent.change(screen.getByLabelText(/parcelas/i), { target: { value: "3" } })
+    choose("pix")
+    fireEvent.click(screen.getByRole("button", { name: "Faturar" }))
+
+    await waitFor(() => expect(invoice).toHaveBeenCalledWith(7, { payment_method: "pix" }))
+  })
 })

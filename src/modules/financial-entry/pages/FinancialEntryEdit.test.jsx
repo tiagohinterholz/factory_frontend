@@ -1,11 +1,12 @@
-import { describe, it, expect } from "vitest"
-import { screen } from "@testing-library/react"
+import { describe, it, expect, vi } from "vitest"
+import { screen, fireEvent, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { Routes, Route } from "react-router-dom"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import FinancialEntryEdit from "./FinancialEntryEdit"
+import { FinancialEntryService } from "../services/financial-entry"
 
 const ENTRY = {
   id: 7,
@@ -95,5 +96,30 @@ describe("<FinancialEntryEdit>", () => {
     )
 
     expect(await screen.findByRole("button", { name: /gerar cobrança/i })).toBeInTheDocument()
+  })
+
+  it("edita as tags do lançamento e manda no payload", async () => {
+    server.use(
+      http.get(`${API}/categorias-financeiro/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/financeiro/tags/`, () => HttpResponse.json({ results: [], count: 0 })),
+    )
+    const update = vi.spyOn(FinancialEntryService, "updateFinancialEntry").mockResolvedValue({})
+    renderAs(
+      { email: "a@a.com", business_id: 3, role: "admin" },
+      { ...ENTRY, tags: ["Fixo"], financial_category: { id: 4, name: "Aluguel" } },
+    )
+
+    expect(await screen.findByText("Fixo")).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText("Tags"), { target: { value: "Prioridade" } })
+    fireEvent.keyDown(screen.getByLabelText("Tags"), { key: "Enter" })
+    fireEvent.click(screen.getByRole("button", { name: /salvar alterações/i }))
+
+    await waitFor(() =>
+      expect(update).toHaveBeenCalledWith(
+        "7",
+        expect.objectContaining({ tags: ["Fixo", "Prioridade"], financial_category_id: "4" }),
+      ),
+    )
+    update.mockRestore()
   })
 })

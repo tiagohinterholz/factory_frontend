@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import LiveSelect from "@/modules/core/components/LiveSelect"
 import Modal from "@/modules/core/components/Modal"
 import { parseApiError } from "@/api/parse-api-error"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { useFinancialCategoryOptions } from "../hooks/useFinancialCategories"
 import { FinancialCategoryService } from "../services/financial-category"
 import { categoryUsableInManualEntry, financialCategoryKeys } from "../domain"
@@ -11,6 +12,7 @@ export default function FinancialCategoryLiveSelect({ value, onChange, error, ex
   const inputId = useId()
   const queryClient = useQueryClient()
   const { categories } = useFinancialCategoryOptions()
+  const { canManageFinancialCategories } = usePermissions()
   const [creating, setCreating] = useState(false)
   const [name, setName] = useState("")
   const [saving, setSaving] = useState(false)
@@ -62,7 +64,7 @@ export default function FinancialCategoryLiveSelect({ value, onChange, error, ex
         error={error}
         extraOption={extraOption}
         createLabel="Cadastrar nova categoria"
-        onCreateNew={() => setCreating(true)}
+        onCreateNew={canManageFinancialCategories ? () => setCreating(true) : undefined}
       />
       <Modal
         open={creating}

@@ -115,4 +115,25 @@ describe("<FinancialEntryCreate>", () => {
     expect(await screen.findByText("Selecione a categoria")).toBeInTheDocument()
     expect(create).not.toHaveBeenCalled()
   })
+
+  it("quem não cadastra categoria não vê o atalho de nova categoria", async () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        email: "f@a.com",
+        business_id: 3,
+        role: "financeiro",
+        permissions: ["financial.view_financialentry", "financial.add_financialentry"],
+      }),
+    )
+    const user = userEvent.setup()
+    renderWithProviders(<FinancialEntryCreate />)
+
+    await user.click(screen.getByPlaceholderText(/selecione o\(a\) categoria/i))
+
+    expect(await screen.findByRole("option", { name: "Marketing" })).toBeInTheDocument()
+    expect(
+      screen.queryByRole("option", { name: "Cadastrar nova categoria" }),
+    ).not.toBeInTheDocument()
+  })
 })

@@ -116,4 +116,12 @@ describe("<FiscalNotes>", () => {
     await waitFor(() => expect(lastUrl.searchParams.get("kind")).toBe("servico"))
     expect(lastUrl.searchParams.get("status")).toBe("issued")
   })
+
+  it("nota só com XML mostra o XML e não mostra link de PDF", async () => {
+    mockApi([{ ...NOTES[0], pdf_url: null }])
+    renderWithProviders(<FiscalNotes />)
+
+    expect(await screen.findByRole("link", { name: "Baixar XML da NFS-e" })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: "Baixar PDF da NFS-e" })).not.toBeInTheDocument()
+  })
 })
