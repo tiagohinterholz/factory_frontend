@@ -20,9 +20,9 @@ const ENTRY = {
   payments: [],
 }
 
-function renderAs(user) {
+function renderAs(user, entry = ENTRY) {
   localStorage.setItem("user", JSON.stringify(user))
-  server.use(http.get(`${API}/financeiro/7/`, () => HttpResponse.json(ENTRY)))
+  server.use(http.get(`${API}/financeiro/7/`, () => HttpResponse.json(entry)))
   return renderWithProviders(
     <Routes>
       <Route path="/financeiro/:id" element={<FinancialEntryEdit />} />
@@ -54,5 +54,46 @@ describe("<FinancialEntryEdit>", () => {
     expect(screen.queryByRole("button", { name: /cancelar/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /salvar alterações/i })).not.toBeInTheDocument()
     expect(document.querySelector('input[name="due_date"]')).toBeDisabled()
+  })
+
+  it("quem só pode cancelar vê Cancelar mas não Marcar como pago", async () => {
+    renderAs({
+      email: "f@a.com",
+      business_id: 3,
+      role: "financeiro",
+      permissions: ["financial.view_financialentry", "financial.can_cancel_financial_entry"],
+    })
+
+    expect(await screen.findByRole("button", { name: /cancelar/i })).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /marcar como pago/i })).not.toBeInTheDocument()
+  })
+
+  it("sem permissão de cobrança não mostra Gerar cobrança em receita de OS", async () => {
+    const orderEntry = {
+      ...ENTRY,
+      category: "venda_servico",
+      order: { id: 55, client: null, vehicle: null },
+    }
+    renderAs(
+      {
+        email: "f@a.com",
+        business_id: 3,
+        role: "financeiro",
+        permissions: ["financial.view_financialentry", "financial.change_financialentry"],
+      },
+      orderEntry,
+    )
+
+    expect(await screen.findByText("Cobrança")).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /gerar cobrança/i })).not.toBeInTheDocument()
+  })
+
+  it("com permissão de cobrança mostra Gerar cobrança em receita de OS", async () => {
+    renderAs(
+      { email: "a@a.com", business_id: 3, role: "admin" },
+      { ...ENTRY, category: "venda_servico", order: { id: 55, client: null, vehicle: null } },
+    )
+
+    expect(await screen.findByRole("button", { name: /gerar cobrança/i })).toBeInTheDocument()
   })
 })

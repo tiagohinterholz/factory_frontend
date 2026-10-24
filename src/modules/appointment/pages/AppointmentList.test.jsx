@@ -181,13 +181,14 @@ describe("<AppointmentList>", () => {
     expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
   })
 
-  it("sem cliente ou veículo não oferece criar OS/orçamento", async () => {
-    mockAppointments([{ ...appointment, client: null, order: null, budget: null }])
+  it.each([
+    ["cliente", { client: null }, /abrir agendamento de cliente/i],
+    ["veículo", { vehicle: null }, /abrir agendamento de ana lima/i],
+  ])("sem %s não oferece criar OS/orçamento", async (_, overrides, openName) => {
+    mockAppointments([{ ...appointment, ...overrides, order: null, budget: null }])
     renderWithProviders(<AppointmentList />)
 
-    expect(
-      await screen.findByRole("link", { name: /abrir agendamento de cliente/i }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole("link", { name: openName })).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: /criar os/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
   })
