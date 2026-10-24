@@ -36,9 +36,6 @@ export default function BudgetCreate() {
               label="Cliente"
               value={clientId}
               onChange={(value) => {
-                // o Combobox dispara onChange mesmo reselecionando o
-                // cliente já ativo — só limpa o veículo quando o cliente
-                // realmente mudou.
                 if (value === clientId) return
                 setValue("client_id", value)
                 setValue("vehicle_id", "")

@@ -56,9 +56,6 @@ export default function AppointmentCreate() {
               label="Cliente Proprietário"
               value={clientId}
               onChange={(value) => {
-                // o Combobox dispara onChange mesmo reselecionando o
-                // cliente já ativo — só limpa veículo/OS quando o cliente
-                // realmente mudou.
                 if (value === clientId) return
                 setValue("client_id", value)
                 resetChildren("vehicle_id", "order_id")

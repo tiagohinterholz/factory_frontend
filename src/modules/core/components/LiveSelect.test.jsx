@@ -47,7 +47,6 @@ describe("<LiveSelect>", () => {
     const input = screen.getByRole("combobox")
     await user.click(input)
     await screen.findByRole("option", { name: "Ana Silva" })
-    // "222555" só bate com o documento de Bruno, não com o nome de nenhum dos dois
     await user.type(input, "222555")
 
     expect(await screen.findByRole("option", { name: "Bruno Souza" })).toBeInTheDocument()
@@ -55,9 +54,6 @@ describe("<LiveSelect>", () => {
   })
 
   it("mostra o atalho de criação sempre que onCreateNew está definido, com ou sem match (primeira opção da lista)", async () => {
-    // feedback de uso real: escondido até zerar a lista forçava apagar tudo
-    // e digitar de novo só pra conseguir cadastrar — agora fica sempre à
-    // mão, como primeira opção.
     const user = userEvent.setup()
     const onCreateNew = vi.fn()
     render(
@@ -112,9 +108,6 @@ describe("<LiveSelect>", () => {
   })
 
   it("extraOption: mantém visível o registro selecionado mesmo ausente da lista de opções (ex.: cliente/veículo desativado)", async () => {
-    // cenário real: a OS/orçamento/agendamento aponta pro cliente 99, mas ele
-    // foi excluído/anonimizado e não vem mais em `options` (get_all() só traz
-    // is_active=True) — sem extraOption o campo ficaria em branco pra sempre.
     render(
       <LiveSelect
         label="Cliente"

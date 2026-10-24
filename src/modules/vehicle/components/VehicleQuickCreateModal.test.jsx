@@ -45,7 +45,6 @@ async function fillMinimum(user) {
   await within(dialog).findByRole("option", { name: "Volkswagen" })
   const firstSelects = within(dialog).getAllByRole("combobox")
 
-  // ordem no DOM: Marca, Modelo, Ano de Fabricação, Ano do Modelo, Combustível
   await user.selectOptions(firstSelects[0], "1")
   await within(dialog).findByRole("option", { name: "Gol" })
   await waitFor(() => expect(within(dialog).getAllByRole("combobox")[1]).not.toBeDisabled())
@@ -70,10 +69,8 @@ describe("<VehicleQuickCreateModal>", () => {
     expect(within(dialog).getByPlaceholderText("ABC-1234")).toBeInTheDocument()
     expect(within(dialog).getByText("Combustível")).toBeInTheDocument()
 
-    // client_id vem pré-preenchido via prop — não é um campo editável aqui
     expect(within(dialog).queryByText("Cliente")).not.toBeInTheDocument()
     expect(within(dialog).queryByText("Cliente Proprietário")).not.toBeInTheDocument()
-    // nada a mais do que o mínimo do spec
     expect(within(dialog).queryByText("Cor")).not.toBeInTheDocument()
     expect(within(dialog).queryByText("Quilometragem")).not.toBeInTheDocument()
   })

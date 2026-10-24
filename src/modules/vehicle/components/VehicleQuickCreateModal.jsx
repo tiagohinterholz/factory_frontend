@@ -7,16 +7,6 @@ import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { useManufacturerOptions, useModelOptionsByManufacturer } from "@/modules/core/hooks/options"
 import { fuelOptions, manufactureYearOptions, modelYearOptions } from "../constants/vehicle"
 
-// Modal de cadastro rápido de veículo (LIVESEL-08/09/10) — abre inline a
-// partir do VehicleLiveSelect, com `clientId` do cliente JÁ selecionado no
-// formulário-pai pré-preenchido e travado: chega como prop, não é um campo
-// que o usuário edita aqui. Renderiza só marca→modelo (cascata, igual ao
-// cadastro completo), ano, ano modelo, placa e combustível. Reaproveita
-// vehicleSchema/vehicleDefaults (via useVehicleForm) sem alteração.
-//
-// Defesa: `client` é FK obrigatória do veículo — não existe veículo órfão.
-// Quem normalmente abre este modal (VehicleLiveSelect) já fica desabilitado
-// sem clientId (AC9), mas se for chamado mesmo assim, recusa abrir e loga.
 export default function VehicleQuickCreateModal({ open, onClose, onCreated, clientId }) {
   const canOpen = Boolean(open && clientId)
 
@@ -46,9 +36,6 @@ export default function VehicleQuickCreateModal({ open, onClose, onCreated, clie
 
   const manufacturerId = watch("manufacturer_id")
 
-  // `clientId` vem do cliente já selecionado no formulário-pai — se trocar
-  // (ex.: abre o modal de novo pra outro cliente), mantém o campo oculto
-  // sincronizado sem perder marca/modelo/ano já digitados.
   useEffect(() => {
     setValue("client_id", clientId ? String(clientId) : "")
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,7 +44,6 @@ export default function VehicleQuickCreateModal({ open, onClose, onCreated, clie
   const { manufacturers } = useManufacturerOptions()
   const { modelsByManufacturer } = useModelOptionsByManufacturer(manufacturerId)
 
-  // Fecha SEM salvar (Escape/overlay/X) — nenhum efeito colateral.
   function handleClose() {
     form.reset()
     onClose?.()

@@ -82,12 +82,6 @@ describe("<AppointmentDetail>", () => {
   })
 
   it("cliente/veículo vinculados mas desativados (fora da lista de opções) continuam visíveis e no submit", async () => {
-    // cenário: get_all() do back só traz is_active=True — um cliente/veículo
-    // excluído ou anonimizado some da lista, mas o agendamento histórico
-    // ainda aponta pra ele. Com o live-select controlado (value/onChange) o
-    // id do form não se perde no submit, e com o fallback `extraOption` o
-    // nome exibido também continua visível (não fica em branco) — ver
-    // validation.md, Gap 1.
     mockApi({
       orders: [],
       appointmentOverrides: {
@@ -146,9 +140,6 @@ describe("<AppointmentDetail>", () => {
   })
 
   it("reselecionar o MESMO cliente não limpa o veículo/OS já escolhidos", async () => {
-    // bug real reportado em uso: o Combobox dispara onChange mesmo ao
-    // clicar no cliente que já estava selecionado — sem a checagem de
-    // "mudou de verdade", isso zerava veículo/OS sem motivo.
     mockApi({ orders: [{ id: 77, vehicle: 9, plate: "ABC1D23" }] })
     server.use(
       http.get(`${API}/clientes/`, () =>
@@ -176,10 +167,6 @@ describe("<AppointmentDetail>", () => {
   })
 
   it("trocar o cliente proprietário realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
-    // discrimina do filtro de exibição do VehicleLiveSelect (que já esconde o
-    // veículo do cliente antigo por clientId): sem o setValue("vehicle_id","")
-    // o id antigo continuaria no form e passaria a validação, enviando o
-    // veículo errado (do cliente anterior) pro back.
     mockApi({ orders: [{ id: 77, vehicle: 9, plate: "ABC1D23" }] })
     server.use(
       http.get(`${API}/clientes/`, () =>

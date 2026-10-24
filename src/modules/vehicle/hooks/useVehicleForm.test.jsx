@@ -30,9 +30,6 @@ beforeEach(() => {
   localStorage.setItem("user", JSON.stringify({ email: "a@a.com", business_id: 3, role: "admin" }))
 })
 
-// vehicleDefaults puro não passa no zodResolver (business_id/client_id/marca/
-// modelo/ano/placa/combustível obrigatórios) — mínimo válido pra exercitar o
-// submit real.
 const validVehicleValues = {
   ...vehicleDefaults,
   business_id: "3",

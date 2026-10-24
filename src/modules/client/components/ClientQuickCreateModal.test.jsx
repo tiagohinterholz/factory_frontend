@@ -63,7 +63,6 @@ describe("<ClientQuickCreateModal>", () => {
     expect(within(dialog).getByText("Cidade")).toBeInTheDocument()
     expect(within(dialog).getByPlaceholderText("(00) 00000-0000")).toBeInTheDocument()
 
-    // nada a mais do que o mínimo do spec — sem endereço/e-mail/etc.
     expect(within(dialog).queryByText("E-mail")).not.toBeInTheDocument()
     expect(within(dialog).queryByText("Endereço")).not.toBeInTheDocument()
   })

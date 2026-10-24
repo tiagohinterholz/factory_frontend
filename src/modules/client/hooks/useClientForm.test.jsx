@@ -8,8 +8,6 @@ import { useClientForm } from "./useClientForm"
 import { ClientService } from "../services/client"
 import { clientDefaults } from "../domain"
 
-// clientDefaults puro não passa no zodResolver (cpf/nome/estado/cidade/telefone
-// obrigatórios pra PF) — valores mínimos válidos pra exercitar o submit real.
 const validPfValues = {
   ...clientDefaults,
   first_name: "Ana",

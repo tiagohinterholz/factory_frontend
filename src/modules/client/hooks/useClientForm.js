@@ -4,9 +4,6 @@ import { ClientService } from "@/modules/client/services/client"
 import { clientSchema, clientDefaults, toClientPayload, clientKeys } from "../domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 
-// `redirectTo`/`onSuccess`: default = comportamento atual exato (navega pra
-// /clientes no sucesso). O quick-create (LiveSelect) sobrescreve os dois pra
-// ficar na mesma tela e selecionar o cliente novo em vez de navegar.
 export function useClientForm({ redirectTo = "/clientes", onSuccess } = {}) {
   const { businessId } = useAuth()
 

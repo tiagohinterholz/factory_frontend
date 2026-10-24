@@ -94,9 +94,6 @@ export default function AppointmentDetail() {
     return `OS ${idOf(order)}${plate ? ` - ${plate}` : ""}`
   }
 
-  // cliente/veículo já vinculados ao agendamento podem ter sido desativados
-  // (exclusão lógica/anonimização) e saído da lista de opções — sem isso o
-  // campo ficaria permanentemente em branco mesmo com o vínculo intacto.
   const extraClientOption = relatedClient && {
     id: idOf(relatedClient),
     name: clientLabel(relatedClient),
@@ -106,8 +103,6 @@ export default function AppointmentDetail() {
     name: vehicleLabel(relatedVehicle),
   }
 
-  // a lista de OS vem de um cache com staleTime alto ou de um filtro em
-  // cascata; a OS já vinculada ao agendamento tem que aparecer no select
   // mesmo assim (senão salvar apagaria a FK). withSelectedOption injeta só
   // quando o valor selecionado é o próprio registro do detalhe.
   const orderOptions = withSelectedOption(
@@ -169,9 +164,6 @@ export default function AppointmentDetail() {
                 label="Cliente Proprietário"
                 value={clientId}
                 onChange={(value) => {
-                  // o Combobox dispara onChange mesmo reselecionando o
-                  // cliente já ativo — só limpa veículo/OS quando o cliente
-                  // realmente mudou.
                   if (value === clientId) return
                   setValue("client_id", value)
                   resetChildren("vehicle_id", "order_id")

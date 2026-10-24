@@ -8,13 +8,6 @@ import ClientTypeToggle from "@/modules/client/components/ClientTypeToggle"
 import { useStateOptions, useCityOptionsByState } from "@/modules/core/hooks/options"
 import { CPF_MASK, CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 
-// Modal de cadastro rápido de cliente (LIVESEL-04/05) — abre inline a partir
-// do LiveSelect de Cliente, sem navegar pra outra página. Renderiza só os
-// campos mínimos do spec: tipo PF/PJ, nome+sobrenome+CPF (PF) OU razão
-// social+CNPJ (PJ), estado, cidade, telefone. Reaproveita clientSchema/
-// clientDefaults/toClientPayload (via useClientForm) SEM alteração — todo
-// campo escondido aqui (endereço, e-mail, etc.) já é opcional nos dois lados,
-// e a cascata estado→cidade é a MESMA de ClientCreate.jsx.
 export default function ClientQuickCreateModal({ open, onClose, onCreated }) {
   const { form, onSubmit } = useClientForm({
     redirectTo: null,
@@ -39,8 +32,6 @@ export default function ClientQuickCreateModal({ open, onClose, onCreated }) {
   const { states } = useStateOptions()
   const { citiesByState } = useCityOptionsByState(stateId)
 
-  // Fecha SEM salvar (Escape/overlay/X) — nenhum efeito colateral: o
-  // formulário-pai fica intacto e este modal esquece o que foi digitado.
   function handleClose() {
     form.reset()
     onClose?.()

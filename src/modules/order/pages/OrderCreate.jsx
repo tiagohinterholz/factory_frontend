@@ -53,9 +53,6 @@ export default function OrderCreate() {
               label="Cliente"
               value={clientId}
               onChange={(value) => {
-                // o Combobox dispara onChange mesmo reselecionando o cliente
-                // já ativo (comportamento do Headless UI) — só limpa
-                // veículo/orçamento quando o cliente realmente mudou.
                 if (value === clientId) return
                 setValue("client_id", value)
                 setValue("vehicle_id", "")

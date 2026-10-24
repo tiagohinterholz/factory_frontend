@@ -114,9 +114,6 @@ describe("<AppointmentCreate>", () => {
   })
 
   it("reselecionar o MESMO cliente não limpa o veículo já escolhido", async () => {
-    // bug real reportado em uso: o Combobox dispara onChange mesmo ao
-    // clicar no cliente que já estava selecionado — sem a checagem de
-    // "mudou de verdade", isso zerava o veículo sem motivo.
     mockApi()
     const user = userEvent.setup()
     renderWithProviders(<AppointmentCreate />)
@@ -134,10 +131,6 @@ describe("<AppointmentCreate>", () => {
   })
 
   it("trocar o cliente proprietário realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
-    // discrimina do filtro de exibição do VehicleLiveSelect (que já esconde o
-    // veículo do cliente antigo por clientId): sem o setValue("vehicle_id","")
-    // o id antigo continuaria no form e passaria a validação, enviando o
-    // veículo errado (do cliente anterior) pro back.
     mockApi()
     const create = vi.spyOn(AppointmentService, "createAppointment")
     const user = userEvent.setup()
