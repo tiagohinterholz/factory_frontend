@@ -95,6 +95,8 @@ export default function ClientList() {
               <Car size={16} />
             </button>
             <Link
+              title="Editar cliente"
+              aria-label="Editar cliente"
               to={`/clientes/${item.id}`}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >

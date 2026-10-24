@@ -89,6 +89,8 @@ export default function WorkServiceList() {
               title="Baixar PDF do serviço"
             />
             <Link
+              title="Editar serviço"
+              aria-label="Editar serviço"
               to={`/servicos/${item.id}`}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >

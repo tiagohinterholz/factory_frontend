@@ -127,6 +127,8 @@ export default function PurchaseOrderList() {
               </>
             )}
             <Link
+              title="Editar pedido de compra"
+              aria-label="Editar pedido de compra"
               to={`/compras/${item.id}`}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >

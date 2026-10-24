@@ -193,6 +193,8 @@ export default function PurchaseOrderEdit() {
                   />
                 </div>
                 <button
+                  title="Adicionar item"
+                  aria-label="Adicionar item"
                   type="submit"
                   disabled={savingItem}
                   className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors disabled:opacity-50"

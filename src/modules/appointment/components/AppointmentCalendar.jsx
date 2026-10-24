@@ -177,6 +177,8 @@ export default function AppointmentCalendar({ appointments, loading }) {
           <h2 className="text-xl font-bold text-ink capitalize">{formatMonth(currentDate)}</h2>
           <div className="flex bg-surface rounded-xl border border-line p-1 shadow-sm">
             <button
+              title="Semana anterior"
+              aria-label="Semana anterior"
               onClick={prevWeek}
               className="p-1.5 hover:bg-ground rounded-lg text-muted hover:text-ink transition-colors"
             >
@@ -189,6 +191,8 @@ export default function AppointmentCalendar({ appointments, loading }) {
               Hoje
             </button>
             <button
+              title="Próxima semana"
+              aria-label="Próxima semana"
               onClick={nextWeek}
               className="p-1.5 hover:bg-ground rounded-lg text-muted hover:text-ink transition-colors"
             >

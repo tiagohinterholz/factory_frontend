@@ -141,6 +141,8 @@ export default function ProductList() {
               title="Baixar PDF do produto"
             />
             <Link
+              title="Editar produto"
+              aria-label="Editar produto"
               to={`/produtos/${item.id}`}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >
