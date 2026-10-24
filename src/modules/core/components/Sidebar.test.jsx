@@ -105,4 +105,72 @@ describe("<Sidebar>", () => {
     expect(screen.queryByText("Principal")).not.toBeInTheDocument()
     expect(screen.queryByText("Serviços & Catálogos")).not.toBeInTheDocument()
   })
+
+  it("contador vê só Dashboard, Notas Fiscais e Financeiro no menu (RAD-P3-01)", () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        email: "cont@a.com",
+        business_id: 3,
+        role: "contador",
+        user_id: 9,
+        permissions: [
+          "orders.view_fiscalnote",
+          "orders.view_servicefiscalnote",
+          "financial.view_financialentry",
+          "core.can_export_reports",
+        ],
+      }),
+    )
+    renderSidebar()
+
+    const nav = screen.getByRole("navigation")
+    const navLinks = Array.from(nav.querySelectorAll("a")).map((link) => link.getAttribute("href"))
+    expect(navLinks).toEqual(["/dashboard", "/notas-fiscais", "/financeiro"])
+    expect(screen.queryByRole("button", { name: /^veículos$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /localização/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /suprimentos/i })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: /^configurações$/i }))
+    expect(screen.queryByRole("link", { name: "Gestão" })).not.toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Usuário" })).toHaveAttribute("href", "/usuarios/9")
+  })
+
+  it("atendente continua vendo as telas operacionais e não vê Financeiro", () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        email: "at@a.com",
+        business_id: 3,
+        role: "atendente",
+        permissions: [
+          "customers.view_client",
+          "customers.view_vehicle",
+          "workservices.view_appointment",
+          "workservices.view_service",
+          "locations.view_state",
+          "suppliers.view_supplier",
+          "products.view_product",
+          "budgets.view_budget",
+          "orders.view_order",
+          "orders.view_fiscalnote",
+          "businesses.view_business",
+        ],
+      }),
+    )
+    renderSidebar()
+
+    for (const name of [
+      "Clientes",
+      "Agendamentos",
+      "Orçamentos",
+      "Ordens de Serviço",
+      "Notas Fiscais",
+    ]) {
+      expect(screen.getByRole("link", { name })).toBeInTheDocument()
+    }
+    expect(screen.getByRole("button", { name: /^veículos$/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /suprimentos/i })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: "Financeiro" })).not.toBeInTheDocument()
+  })
 })

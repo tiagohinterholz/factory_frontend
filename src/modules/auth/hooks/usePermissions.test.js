@@ -78,4 +78,45 @@ describe("usePermissions", () => {
     expect(result.current.canManagePurchases).toBe(false)
     expect(result.current.canManageUsers).toBe(false)
   })
+
+  it("contador só vê notas fiscais e financeiro, sem nenhuma tela operacional", () => {
+    setUser({
+      email: "cont@a.com",
+      business_id: 5,
+      role: "contador",
+      permissions: [
+        "orders.view_fiscalnote",
+        "orders.view_servicefiscalnote",
+        "financial.view_financialentry",
+        "core.can_export_reports",
+      ],
+    })
+    const { result } = renderHook(() => usePermissions(), { wrapper })
+
+    expect(result.current.canViewFiscalNotes).toBe(true)
+    expect(result.current.canViewFinancial).toBe(true)
+    expect(result.current.canExportReports).toBe(true)
+    expect(result.current.canViewClients).toBe(false)
+    expect(result.current.canViewAppointments).toBe(false)
+    expect(result.current.canViewVehicles).toBe(false)
+    expect(result.current.canViewLocations).toBe(false)
+    expect(result.current.canViewSupplies).toBe(false)
+    expect(result.current.canViewBudgets).toBe(false)
+    expect(result.current.canViewOrders).toBe(false)
+    expect(result.current.canViewBusiness).toBe(false)
+    expect(result.current.canEmitFiscalNote).toBe(false)
+    expect(result.current.canEmitServiceFiscalNote).toBe(false)
+  })
+
+  it("só a permissão de NFS-e já libera ver notas fiscais", () => {
+    setUser({
+      email: "x@a.com",
+      business_id: 5,
+      role: "gerente",
+      permissions: ["orders.view_servicefiscalnote"],
+    })
+    const { result } = renderHook(() => usePermissions(), { wrapper })
+
+    expect(result.current.canViewFiscalNotes).toBe(true)
+  })
 })
