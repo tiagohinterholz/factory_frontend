@@ -5,9 +5,6 @@ import { useId } from "react"
 //   - react-hook-form:        registration={register("campo")}
 // Atributos extras (step, min, readOnly, ...) passam direto pro <input>.
 // Mostra `error` (string) com borda e mensagem em vermelho.
-// `datalist` (array de string): sugestões pré-populadas — continua um campo
-// de texto livre, só ganha autocomplete nativo (<input list="...">) com as
-// opções mais comuns (ex.: cor do veículo, complemento de endereço).
 export default function FormField({
   label,
   type = "text",
@@ -39,9 +36,15 @@ export default function FormField({
       />
       {datalist && (
         <datalist id={datalistId}>
-          {datalist.map((option) => (
-            <option key={option} value={option} />
-          ))}
+          {datalist.map((option) =>
+            typeof option === "string" ? (
+              <option key={option} value={option} />
+            ) : (
+              <option key={option.id} value={option.id}>
+                {option.name}
+              </option>
+            ),
+          )}
         </datalist>
       )}
       {error && <span className="mt-1 text-xs text-danger">{error}</span>}
