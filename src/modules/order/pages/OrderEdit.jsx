@@ -7,6 +7,7 @@ import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import FiscalNotePanel from "@/modules/order/components/FiscalNotePanel"
+import InvoiceOrderDialog from "@/modules/order/components/InvoiceOrderDialog"
 import ServiceFiscalNotePanel from "@/modules/order/components/ServiceFiscalNotePanel"
 import { useProductOptions } from "@/modules/core/hooks/options"
 import { useWorkServiceOptions } from "@/modules/core/hooks/options"
@@ -20,6 +21,7 @@ import { ClientLiveSelect } from "@/modules/client"
 import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import {
+  paymentLabel,
   orderKeys,
   orderStatusTone,
   orderCanEditItems,
@@ -44,13 +46,13 @@ export default function OrderEdit() {
     productsTotal,
     servicesTotal,
     billingDate,
+    payment,
     budgetId,
     relatedClient,
     relatedVehicle,
     financialEntryId,
     handleDelete,
     handleFinish,
-    handleInvoice,
     refresh,
   } = useOrderEditForm()
 
@@ -75,6 +77,7 @@ export default function OrderEdit() {
   const [quantity, setQuantity] = useState(1)
   const [selectedService, setSelectedService] = useState("")
   const [savingItem, setSavingItem] = useState(false)
+  const [invoiceOpen, setInvoiceOpen] = useState(false)
 
   // Invalida orderKeys.all (lista/detalhe/histórico) sempre que um item muda
   // — sem isso, a listagem de OS fica com o total desatualizado por até o
@@ -181,6 +184,11 @@ export default function OrderEdit() {
                 Faturado em {formatDate(billingDate)}
               </span>
             )}
+            {payment && (
+              <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-medium normal-case tracking-normal">
+                Pago: {paymentLabel(payment)}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -198,7 +206,7 @@ export default function OrderEdit() {
           {orderCanInvoice(status) && (
             <button
               type="button"
-              onClick={handleInvoice}
+              onClick={() => setInvoiceOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold text-sm shadow-sm transition-all"
             >
               Faturar OS
@@ -431,6 +439,11 @@ export default function OrderEdit() {
           </div>
         </div>
       </div>
+      <InvoiceOrderDialog
+        order={invoiceOpen ? { id, total } : null}
+        onClose={() => setInvoiceOpen(false)}
+        onInvoiced={() => refresh()}
+      />
     </div>
   )
 }

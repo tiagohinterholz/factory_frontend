@@ -80,9 +80,12 @@ describe("<OrderList> — ações da linha", () => {
     expect(screen.getAllByRole("button", { name: "Faturar OS" })).toHaveLength(1)
 
     fireEvent.click(screen.getByRole("button", { name: "Faturar OS" }))
-    fireEvent.click(await screen.findByRole("button", { name: "Faturar" }))
+    fireEvent.change(await screen.findByLabelText(/forma de pagamento/i), {
+      target: { value: "pix" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Faturar" }))
 
-    await waitFor(() => expect(invoice).toHaveBeenCalledWith(1))
+    await waitFor(() => expect(invoice).toHaveBeenCalledWith(1, { payment_method: "pix" }))
     invoice.mockRestore()
   })
 
@@ -150,5 +153,39 @@ describe("<OrderList> — filtros", () => {
       expect(await screen.findByRole("button", { name: /gerar relatórios/i })).toBeInTheDocument()
       expect(screen.queryByRole("button", { name: /exportar pdf/i })).not.toBeInTheDocument()
     })
+  })
+})
+
+describe("<OrderList> — nota fiscal e pagamento na linha", () => {
+  it("mostra o status de NF-e/NFS-e e 'Não gerada' quando não há nota (OSFIN-P2-07)", async () => {
+    mockOrders([
+      {
+        id: 1,
+        status: "faturado",
+        total: "0",
+        fiscal_note_status: "issued",
+        service_fiscal_note_status: "failed",
+      },
+      { id: 2, status: "faturado", total: "0" },
+    ])
+    renderWithProviders(<OrderList />)
+
+    expect(await screen.findByText("NF-e: Emitida")).toBeInTheDocument()
+    expect(screen.getByText("NFS-e: Falhou")).toBeInTheDocument()
+    expect(screen.getByText("Não gerada")).toBeInTheDocument()
+  })
+
+  it("OS faturada mostra como foi paga (OSFIN-P2-06)", async () => {
+    mockOrders([
+      {
+        id: 1,
+        status: "faturado",
+        total: "0",
+        payment: { payment_method: "cartao", payment_method_display: "Cartão", installments: 3 },
+      },
+    ])
+    renderWithProviders(<OrderList />)
+
+    expect(await screen.findByText("Cartão 3x")).toBeInTheDocument()
   })
 })

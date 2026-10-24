@@ -484,3 +484,35 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
     })
   })
 })
+
+describe("<OrderEdit> — faturamento", () => {
+  it("OS faturada mostra como foi paga (OSFIN-P2-06)", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "faturado",
+          billing_date: "2026-09-10",
+          payment: { payment_method: "pix", payment_method_display: "Pix", installments: null },
+        }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Pago: Pix")).toBeInTheDocument()
+  })
+
+  it("'Faturar OS' abre o pedido de forma de pagamento", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json({ ...order, status: "a faturar" })),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Faturar OS" }))
+
+    expect(await screen.findByRole("dialog", { name: "Faturar OS #1" })).toBeInTheDocument()
+    expect(screen.getByLabelText(/forma de pagamento/i)).toBeInTheDocument()
+  })
+})

@@ -32,8 +32,13 @@ export const OrderService = {
     return response.data
   },
 
-  async invoiceOrder(id) {
-    const response = await api.post(`/ordens/${id}/faturar/`)
+  async invoiceOrder(id, payment) {
+    const response = await api.post(`/ordens/${id}/faturar/`, payment)
+    return response.data
+  },
+
+  async registerExternalServicePayable(id) {
+    const response = await api.post(`/ordens/${id}/registrar-saida-servico-externo/`)
     return response.data
   },
 

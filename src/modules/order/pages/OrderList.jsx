@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import { CheckCircle2, Edit2, Eye, Receipt, Trash2 } from "lucide-react"
 import { useOrder } from "../hooks/useOrder"
@@ -7,9 +8,12 @@ import {
   orderCanFinish,
   orderCanInvoice,
   orderIsLocked,
+  paymentLabel,
+  fiscalStatusInfo,
 } from "@/modules/order/domain"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
+import InvoiceOrderDialog from "@/modules/order/components/InvoiceOrderDialog"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
@@ -31,11 +35,11 @@ export default function OrderList() {
     refetch,
     remove,
     finish,
-    invoice,
     error,
   } = useOrder()
 
   const { client: clients } = useClientOptions()
+  const [invoiceTarget, setInvoiceTarget] = useState(null)
 
   const filterFields = [
     { name: "status", label: "Status", type: "select", options: REPORT_STATUS_OPTIONS.orders },
@@ -88,12 +92,39 @@ export default function OrderList() {
       header: "Status",
       sortKey: "status",
       accessor: (item) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${orderStatusTone(item.status)}`}
-        >
-          {item.status}
-        </span>
+        <div className="flex flex-col items-start gap-1">
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${orderStatusTone(item.status)}`}
+          >
+            {item.status}
+          </span>
+          {item.payment && (
+            <span className="text-[11px] text-muted">{paymentLabel(item.payment)}</span>
+          )}
+        </div>
       ),
+    },
+    {
+      header: "Nota fiscal",
+      accessor: (item) => {
+        const notes = [
+          ["NF-e", fiscalStatusInfo(item.fiscal_note_status)],
+          ["NFS-e", fiscalStatusInfo(item.service_fiscal_note_status)],
+        ].filter(([, info]) => info)
+        if (notes.length === 0) return <span className="text-xs text-muted">Não gerada</span>
+        return (
+          <div className="flex flex-col items-start gap-1">
+            {notes.map(([kind, info]) => (
+              <span
+                key={kind}
+                className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${info.tone}`}
+              >
+                {kind}: {info.label}
+              </span>
+            ))}
+          </div>
+        )
+      },
     },
     {
       header: "Total",
@@ -145,8 +176,9 @@ export default function OrderList() {
             {orderCanInvoice(item.status) && (
               <button
                 type="button"
-                onClick={() => invoice(item)}
+                onClick={() => setInvoiceTarget(item)}
                 title="Faturar OS"
+                aria-label="Faturar OS"
                 className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
               >
                 <Receipt size={16} />
@@ -172,6 +204,7 @@ export default function OrderList() {
           </div>
         )}
       />
+      <InvoiceOrderDialog order={invoiceTarget} onClose={() => setInvoiceTarget(null)} />
     </div>
   )
 }

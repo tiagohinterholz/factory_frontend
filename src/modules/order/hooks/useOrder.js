@@ -39,24 +39,11 @@ export function useOrder() {
     errorFallback: "Erro ao finalizar o serviço.",
   })
 
-  const invoice = useResourceAction({
-    mutationFn: (item) => OrderService.invoiceOrder(item.id),
-    confirm: (item) => ({
-      title: "Faturar ordem de serviço?",
-      message: `A OS #${item.id} será marcada como faturada. Esta ação não pode ser desfeita.`,
-      confirmText: "Faturar",
-    }),
-    invalidate: [orderKeys.all, dashboardKeys.all],
-    success: (item) => `OS #${item.id} faturada.`,
-    errorFallback: "Erro ao faturar a ordem de serviço.",
-  })
-
   const { items, ...rest } = list
   return {
     ...rest,
     orders: items,
     remove: remove.run,
     finish: finish.run,
-    invoice: invoice.run,
   }
 }
