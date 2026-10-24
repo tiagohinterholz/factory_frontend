@@ -9,7 +9,9 @@ export default function RelatedDataCard({
   icon: Icon,
   viewAllLink,
   onAddClick,
+  addLabel,
   renderItem,
+  hideEmptyState = false,
 }) {
   return (
     <div className="card-premium h-full flex flex-col">
@@ -26,9 +28,14 @@ export default function RelatedDataCard({
         {onAddClick && (
           <button
             onClick={onAddClick}
-            className="w-8 h-8 rounded-lg bg-brand-subtle text-brand flex items-center justify-center hover:bg-brand hover:text-brand-fg transition-colors"
+            className={
+              addLabel
+                ? "flex items-center gap-1.5 px-3 h-8 rounded-lg bg-brand-subtle text-brand text-xs font-bold hover:bg-brand hover:text-brand-fg transition-colors"
+                : "w-8 h-8 rounded-lg bg-brand-subtle text-brand flex items-center justify-center hover:bg-brand hover:text-brand-fg transition-colors"
+            }
           >
             <PlusCircle className="w-4 h-4" />
+            {addLabel}
           </button>
         )}
       </div>
@@ -40,9 +47,11 @@ export default function RelatedDataCard({
             <p className="text-[13px] text-muted">Carregando...</p>
           </div>
         ) : items.length === 0 ? (
-          <div className="py-10 text-center bg-ground rounded-lg border border-dashed border-line">
-            <p className="text-[13px] text-muted px-4">{emptyMessage}</p>
-          </div>
+          hideEmptyState ? null : (
+            <div className="py-10 text-center bg-ground rounded-lg border border-dashed border-line">
+              <p className="text-[13px] text-muted px-4">{emptyMessage}</p>
+            </div>
+          )
         ) : (
           items.map((item, index) => (
             <div key={item.id || index}>
