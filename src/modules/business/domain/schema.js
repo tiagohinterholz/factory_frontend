@@ -79,8 +79,17 @@ export const businessDefaults = {
 // read-only na tela (trava de e-mail no self-service, BusinessService.update)
 // e o back rejeita o payload inteiro se a chave aparecer, mesmo com o valor
 // igual ao que já estava.
-export function toBusinessPayload(values) {
-  const { logo, email: _email, ...rest } = values
+export const BUSINESS_IDENTITY_FIELDS = ["corporate_name", "cnpj", "logo"]
+
+export function toBusinessPayload(values, { canEditIdentity = true } = {}) {
+  const { logo, email: _email, ...allowed } = values
+  const rest = canEditIdentity
+    ? allowed
+    : Object.fromEntries(
+        Object.entries(allowed).filter(([key]) => !BUSINESS_IDENTITY_FIELDS.includes(key)),
+      )
+
+  if (!canEditIdentity) return rest
 
   if (!(logo instanceof File)) return rest
 
