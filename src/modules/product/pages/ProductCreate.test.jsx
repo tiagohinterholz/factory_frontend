@@ -92,4 +92,59 @@ describe("<ProductCreate>", () => {
 
     await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/produtos"))
   })
+
+  describe("Unidade de Medida grava o código, não o rótulo (CVSP-P2-07)", () => {
+    async function fillAndSubmit(user, unitValue) {
+      await screen.findByText("Fornecedor *")
+      await user.click(supplierCombobox())
+      await user.click(await screen.findByRole("option", { name: "Bosch Ltda" }))
+      await user.type(screen.getByPlaceholderText("Ex: Óleo 5W30"), "Óleo 5W30")
+      fireEvent.change(screen.getByText("Preço Unitário").closest("div").querySelector("input"), {
+        target: { value: "5000" },
+      })
+      const unitInput = screen.getByText("Unidade de Medida").closest("div").querySelector("input")
+      fireEvent.change(unitInput, { target: { value: unitValue } })
+      fireEvent.click(screen.getByRole("button", { name: /adicionar produto/i }))
+      return unitInput
+    }
+
+    it("a sugestão 'Unidade' tem valor UN e é isso que vai pro back", async () => {
+      mockApi()
+      let body
+      server.use(
+        http.post(`${API}/produtos/`, async ({ request }) => {
+          body = await request.json()
+          return HttpResponse.json({ id: 50, name: "Óleo", cost_price: 0 }, { status: 201 })
+        }),
+      )
+      renderWithProviders(<ProductCreate />)
+      const user = userEvent.setup()
+
+      const unitInput = await fillAndSubmit(user, "UN")
+      const option = document.querySelector(
+        `#${CSS.escape(unitInput.getAttribute("list"))} option[value="UN"]`,
+      )
+
+      expect(option).toHaveTextContent("Unidade")
+      await waitFor(() => expect(body?.unit_of_measure).toBe("UN"))
+    })
+
+    it("digitar o rótulo em vez do código é recusado antes de enviar", async () => {
+      mockApi()
+      let posted = false
+      server.use(
+        http.post(`${API}/produtos/`, () => {
+          posted = true
+          return HttpResponse.json({ id: 50 }, { status: 201 })
+        }),
+      )
+      renderWithProviders(<ProductCreate />)
+      const user = userEvent.setup()
+
+      await fillAndSubmit(user, "Unidade")
+
+      expect(await screen.findByText(/escolha uma unidade da lista/i)).toBeInTheDocument()
+      expect(posted).toBe(false)
+    })
+  })
 })
