@@ -15,4 +15,9 @@ export const REPORT_STATUS_OPTIONS = {
 }
 
 // Tipos que aceitam filtros no POST /relatorios/{type}/
-export const FILTERABLE_REPORTS = ["orders", "budgets"]
+export const FILTERABLE_REPORTS = ["orders", "budgets", "cashflow"]
+
+export const CASHFLOW_ENTRY_TYPE_OPTIONS = [
+  { id: "a_receber", name: "Entradas" },
+  { id: "a_pagar", name: "Saídas" },
+]
