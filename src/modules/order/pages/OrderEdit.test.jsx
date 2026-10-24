@@ -325,7 +325,7 @@ describe("<OrderEdit> — finalizar serviço e trava de itens", () => {
     renderPage()
 
     expect(await screen.findByRole("button", { name: /finalizar serviço/i })).toBeInTheDocument()
-    expect(screen.getByText("Selecionar Produto")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Adicionar produto" })).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "Faturar OS" })).not.toBeInTheDocument()
   })
 
@@ -351,7 +351,7 @@ describe("<OrderEdit> — finalizar serviço e trava de itens", () => {
     renderPage()
 
     expect(await screen.findByText(/Itens travados/i)).toBeInTheDocument()
-    expect(screen.queryByText("Selecionar Produto")).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Adicionar produto" })).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Faturar OS" })).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /finalizar serviço/i })).not.toBeInTheDocument()
   })

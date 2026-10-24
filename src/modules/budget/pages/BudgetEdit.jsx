@@ -18,6 +18,7 @@ import { ClientLiveSelect } from "@/modules/client"
 import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import ServiceItemForm from "@/modules/core/components/ServiceItemForm"
+import ProductItemForm from "@/modules/core/components/ProductItemForm"
 import { Plus, Trash2, CheckCircle, XCircle, Copy } from "lucide-react"
 import { formatDateTime, formatMoney } from "@/modules/core/utils/format"
 import {
@@ -67,8 +68,6 @@ export default function BudgetEdit() {
   const { product: allProducts } = useProductOptions()
   const { workservice: allServices } = useWorkServiceOptions()
 
-  const [selectedProduct, setSelectedProduct] = useState("")
-  const [quantity, setQuantity] = useState(1)
   const [approveOpen, setApproveOpen] = useState(false)
   const [savingItem, setSavingItem] = useState(false)
 
@@ -85,25 +84,17 @@ export default function BudgetEdit() {
     queryClient.invalidateQueries({ queryKey: budgetKeys.all })
   }
 
-  async function handleAddProduct(event) {
-    event.preventDefault()
-    if (!selectedProduct || savingItem) return
-    const product = allProducts.find((item) => String(item.id) === String(selectedProduct))
+  async function handleAddProduct(payload) {
     setSavingItem(true)
     try {
-      await BudgetService.budgetProductCreate(id, {
-        product_id: selectedProduct,
-        budget_id: id,
-        quantity,
-        unit_price: product?.unit_price,
-      })
-      setSelectedProduct("")
-      setQuantity(1)
+      await BudgetService.budgetProductCreate(id, { ...payload, budget_id: id })
       refresh()
       invalidateBudgetCaches()
+      return true
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao adicionar produto").message)
+      return false
     } finally {
       setSavingItem(false)
     }
@@ -287,37 +278,11 @@ export default function BudgetEdit() {
             </h2>
 
             {isPending && (
-              <form
-                onSubmit={handleAddProduct}
-                className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
-              >
-                <div className="flex-1 min-w-[200px]">
-                  <SelectField
-                    label="Selecionar Produto"
-                    value={selectedProduct}
-                    onChange={(event) => setSelectedProduct(event.target.value)}
-                    options={allProducts.map((p) => ({
-                      id: p.id,
-                      name: `${p.name} (${formatMoney(p.unit_price)})`,
-                    }))}
-                  />
-                </div>
-                <div className="w-24">
-                  <FormField
-                    label="Qtd"
-                    type="number"
-                    value={quantity}
-                    onChange={(event) => setQuantity(event.target.value)}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={savingItem}
-                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors disabled:opacity-50"
-                >
-                  <Plus size={24} />
-                </button>
-              </form>
+              <ProductItemForm
+                products={allProducts}
+                saving={savingItem}
+                onAdd={handleAddProduct}
+              />
             )}
 
             <div className="divide-y divide-slate-100">
