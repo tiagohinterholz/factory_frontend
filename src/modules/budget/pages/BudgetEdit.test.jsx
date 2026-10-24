@@ -80,15 +80,9 @@ describe("<BudgetEdit> — live-select de cliente/veículo", () => {
     await screen.findByText("pendente")
     const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
     await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
-    expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)")
+    expect(vehicleInput).toHaveValue("VW Gol")
   })
 
-  // cenário: get_all() do back só traz is_active=True — um cliente/veículo
-  // excluído ou anonimizado some da lista, mas o orçamento histórico ainda
-  // aponta pra ele. Com o live-select controlado (value/onChange) o id do
-  // form não se perde no submit, e com o fallback `extraOption` o nome
-  // exibido também continua visível (não fica em branco) — ver
-  // validation.md, Gap 1.
   it("cliente/veículo vinculados mas desativados (fora da lista de opções) continuam visíveis e no submit", async () => {
     mockApi()
     server.use(
@@ -101,7 +95,7 @@ describe("<BudgetEdit> — live-select de cliente/veículo", () => {
     await screen.findByText("pendente")
     const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
     await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
-    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
 
     fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
 
@@ -121,7 +115,7 @@ describe("<BudgetEdit> — live-select de cliente/veículo", () => {
 
     await screen.findByText("pendente")
     const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
-    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
 
     await user.click(clientInput)
     await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
@@ -130,28 +124,21 @@ describe("<BudgetEdit> — live-select de cliente/veículo", () => {
   })
 
   it("reselecionar o MESMO cliente não limpa o veículo já escolhido", async () => {
-    // bug real reportado em uso: o Combobox dispara onChange mesmo ao
-    // clicar no cliente que já estava selecionado — sem a checagem de
-    // "mudou de verdade", isso zerava o veículo sem motivo.
     mockApi()
     const user = userEvent.setup()
     renderPage()
 
     await screen.findByText("pendente")
     const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
-    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
 
     await user.click(clientInput)
     await user.click(await screen.findByRole("option", { name: "Ana Lima" }))
 
-    expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)")
+    expect(vehicleInput).toHaveValue("VW Gol")
   })
 
   it("trocar o cliente realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
-    // discrimina do filtro de exibição do VehicleLiveSelect (que já esconde o
-    // veículo do cliente antigo por clientId): sem o setValue("vehicle_id","")
-    // o id antigo continuaria no form e passaria a validação, enviando o
-    // veículo errado (do cliente anterior) pro back.
     mockApi()
     const update = vi.spyOn(BudgetService, "updateBudget")
     const user = userEvent.setup()

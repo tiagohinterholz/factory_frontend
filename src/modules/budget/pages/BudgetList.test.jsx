@@ -70,10 +70,8 @@ describe("<BudgetList>", () => {
 
     await screen.findByText("#30")
     expect(screen.getByRole("link", { name: /beto souza/i })).toHaveAttribute("href", "/clientes/6")
-    expect(screen.getByRole("link", { name: /onix xyz9k88/i })).toHaveAttribute(
-      "href",
-      "/veiculos/12",
-    )
+    expect(screen.getByRole("link", { name: "Onix" })).toHaveAttribute("href", "/veiculos/12")
+    expect(screen.getByRole("cell", { name: "XYZ9K88" })).toBeInTheDocument()
   })
 
   it("gera o PDF do orçamento pela linha da tabela", async () => {
@@ -197,6 +195,20 @@ describe("<BudgetList>", () => {
     await waitFor(() => expect(lastBudgetsUrl.searchParams.get("status")).toBe("aprovado"))
     // sem search fuzzy
     expect(lastBudgetsUrl.searchParams.has("search")).toBe(false)
+  })
+
+  it("filtro de placa manda ?plate= na requisição", async () => {
+    mockBudgets()
+    renderWithProviders(<BudgetList />)
+    await screen.findByText("#12")
+
+    fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
+    fireEvent.change(await screen.findByPlaceholderText("Digite o(a) placa"), {
+      target: { value: "ABC1D23" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Filtrar" }))
+
+    await waitFor(() => expect(lastBudgetsUrl.searchParams.get("plate")).toBe("ABC1D23"))
   })
 
   it("ordena pelo cabeçalho: 1º clique asc, 2º desc (?ordering=)", async () => {

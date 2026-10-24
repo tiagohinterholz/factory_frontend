@@ -5,7 +5,7 @@ import { dashboardKeys } from "@/modules/dashboard/domain"
 import { useResourceList } from "@/modules/core/hooks/useResourceList"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
-const EMPTY_FILTERS = { status: "", client_id: "", date_from: "", date_to: "" }
+const EMPTY_FILTERS = { status: "", client_id: "", plate: "", date_from: "", date_to: "" }
 // excluir e finalizar mexem na OS, no card do board e nos números da Movimentação
 const ORDER_WIDE = [orderKeys.all, appointmentKeys.all, dashboardKeys.all]
 

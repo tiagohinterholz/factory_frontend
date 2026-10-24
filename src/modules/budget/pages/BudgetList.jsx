@@ -46,6 +46,7 @@ export default function BudgetList() {
       type: "select",
       options: clients.map((c) => ({ id: c.id, name: c.display_name })),
     },
+    { name: "plate", label: "Placa", type: "text" },
     { name: "date_from", label: "Criado a partir de", type: "date" },
     { name: "date_to", label: "Criado até", type: "date" },
   ]
@@ -69,11 +70,15 @@ export default function BudgetList() {
       accessor: (item) =>
         item.vehicle?.id != null ? (
           <Link to={`/veiculos/${item.vehicle.id}`} className="text-brand hover:underline">
-            {item.vehicle.model} {item.vehicle.plate}
+            {item.vehicle.model}
           </Link>
         ) : (
           item.vehicle_name || ""
         ),
+    },
+    {
+      header: "Placa",
+      accessor: (item) => item.vehicle?.plate || "",
     },
     {
       header: "Validade",

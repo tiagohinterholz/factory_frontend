@@ -7,7 +7,7 @@ import { dashboardKeys } from "@/modules/dashboard/domain"
 import { useResourceList } from "@/modules/core/hooks/useResourceList"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 
-const EMPTY_FILTERS = { status: "", client_id: "", date_from: "", date_to: "" }
+const EMPTY_FILTERS = { status: "", client_id: "", plate: "", date_from: "", date_to: "" }
 
 export function useBudget() {
   const navigate = useNavigate()

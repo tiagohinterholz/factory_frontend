@@ -47,10 +47,25 @@ describe("<VehicleLiveSelect>", () => {
     const input = await screen.findByRole("combobox")
     await user.click(input)
 
-    expect(
-      await screen.findByRole("option", { name: /Volkswagen Gol \(ABC-1234\)/ }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole("option", { name: "Volkswagen Gol" })).toBeInTheDocument()
     expect(screen.queryByRole("option", { name: /Fiat Uno/ })).not.toBeInTheDocument()
+  })
+
+  it("a placa entra na busca mas não aparece no texto exibido da opção", async () => {
+    mockVehicles([baseVehicles[0]])
+    const user = userEvent.setup()
+    renderWithProviders(
+      <VehicleLiveSelect label="Veículo" value="" onChange={vi.fn()} clientId={9} />,
+    )
+
+    const input = await screen.findByRole("combobox")
+    await user.click(input)
+
+    const option = await screen.findByRole("option", { name: "Volkswagen Gol" })
+    expect(option).not.toHaveTextContent("ABC-1234")
+
+    await user.type(input, "ABC-1234")
+    expect(await screen.findByRole("option", { name: "Volkswagen Gol" })).toBeInTheDocument()
   })
 
   it("filtro de texto bate contra placa OU marca+modelo, case-insensitive", async () => {

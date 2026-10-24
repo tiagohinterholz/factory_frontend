@@ -197,9 +197,6 @@ describe("<OrderEdit>", () => {
   })
 
   it("mantém o client_id/vehicle_id no submit mesmo quando o cache de opções não traz o registro vinculado", async () => {
-    // cache de opções defasado: as listas não trazem o cliente 5 nem o veículo 9 —
-    // como o live-select é controlado (value/onChange), o id do form não se
-    // perde mesmo que o combo não encontre o registro pra exibir o nome.
     mockApi()
     server.use(
       http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
@@ -368,14 +365,10 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
     await screen.findByText("Orçamento de origem")
     const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
     await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
-    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
   })
 
   it("cliente/veículo vinculados mas desativados (fora da lista de opções) continuam visíveis no campo", async () => {
-    // cenário: get_all() do back só traz is_active=True — um cliente/veículo
-    // excluído ou anonimizado some da lista, mas a OS histórica ainda aponta
-    // pra ele. Sem o fallback, o campo ficaria em branco pra sempre mesmo
-    // com o vínculo intacto (ver validation.md, Gap 1).
     mockApi()
     server.use(
       http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
@@ -386,7 +379,7 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
     await screen.findByText("Orçamento de origem")
     const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
     await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
-    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
   })
 
   it("trocar o cliente selecionado limpa o veículo já escolhido", async () => {
@@ -407,7 +400,7 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
 
     await screen.findByText("Orçamento de origem")
     const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
-    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
 
     await user.click(clientInput)
     await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
@@ -416,9 +409,6 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
   })
 
   it("reselecionar o MESMO cliente não limpa o veículo já escolhido", async () => {
-    // bug real reportado em uso: o Combobox dispara onChange mesmo ao
-    // clicar no cliente que já estava selecionado — sem a checagem de
-    // "mudou de verdade", isso zerava o veículo sem motivo.
     mockApi()
     server.use(
       http.get(`${API}/clientes/`, () =>
@@ -436,19 +426,15 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
 
     await screen.findByText("Orçamento de origem")
     const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
-    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
 
     await user.click(clientInput)
     await user.click(await screen.findByRole("option", { name: "Ana Lima" }))
 
-    expect(vehicleInput).toHaveValue("VW Gol (ABC1D23)")
+    expect(vehicleInput).toHaveValue("VW Gol")
   })
 
   it("trocar o cliente realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
-    // discrimina do filtro de exibição do VehicleLiveSelect (que já esconde o
-    // veículo do cliente antigo por clientId): sem o setValue("vehicle_id","")
-    // o id antigo continuaria no form e passaria a validação, enviando o
-    // veículo errado (do cliente anterior) pro back.
     mockApi()
     server.use(
       http.get(`${API}/clientes/`, () =>

@@ -53,10 +53,8 @@ describe("<OrderList> — links de cliente e veículo", () => {
 
     await screen.findByText("#20")
     expect(screen.getByRole("link", { name: /beto souza/i })).toHaveAttribute("href", "/clientes/6")
-    expect(screen.getByRole("link", { name: /onix xyz9k88/i })).toHaveAttribute(
-      "href",
-      "/veiculos/12",
-    )
+    expect(screen.getByRole("link", { name: "Onix" })).toHaveAttribute("href", "/veiculos/12")
+    expect(screen.getByRole("cell", { name: "XYZ9K88" })).toBeInTheDocument()
   })
 })
 
@@ -107,5 +105,27 @@ describe("<OrderList> — ações da linha", () => {
 
     await waitFor(() => expect(finish).toHaveBeenCalledWith(3))
     finish.mockRestore()
+  })
+})
+
+describe("<OrderList> — filtros", () => {
+  it("filtro de placa manda ?plate= na requisição", async () => {
+    mockOrders()
+    let lastOrdersUrl
+    server.use(
+      http.get(`${API}/ordens/`, ({ request }) => {
+        lastOrdersUrl = new URL(request.url)
+        return HttpResponse.json({ results: [], count: 0 })
+      }),
+    )
+    renderWithProviders(<OrderList />)
+
+    fireEvent.click(await screen.findByRole("button", { name: /filtros/i }))
+    fireEvent.change(await screen.findByPlaceholderText("Digite o(a) placa"), {
+      target: { value: "ABC1D23" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Filtrar" }))
+
+    await waitFor(() => expect(lastOrdersUrl.searchParams.get("plate")).toBe("ABC1D23"))
   })
 })

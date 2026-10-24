@@ -3,14 +3,6 @@ import { useVehicleOptions } from "@/modules/core/hooks/options"
 import LiveSelect from "@/modules/core/components/LiveSelect"
 import VehicleQuickCreateModal from "./VehicleQuickCreateModal"
 
-// Composto pronto pra substituir o SelectField de Veículo nas páginas de
-// OS/Orçamento/Agendamento (LIVESEL-06 a 10): junta o LiveSelect genérico
-// com o VehicleQuickCreateModal. Centraliza aqui o MESMO filtro client-side
-// por client_id que hoje está repetido em cada página (ex.: OrderCreate.jsx).
-//
-// Sem clientId, `client` é FK obrigatória do veículo — não dá pra criar
-// veículo órfão, então o campo fica desabilitado com `disabledHint` e sem
-// atalho de criação (AC9).
 export default function VehicleLiveSelect({
   label,
   value,
@@ -26,13 +18,11 @@ export default function VehicleLiveSelect({
 
   const hasClient = Boolean(clientId)
 
-  // Mesma lógica client-side hoje duplicada em cada página (OrderCreate.jsx
-  // e afins) — filtra pelo cliente ANTES de passar as opções pro LiveSelect.
   const options = vehicles
     .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
     .map((v) => ({
       id: v.id,
-      name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})`,
+      name: `${v.manufacturer?.name} ${v.model?.name}`,
       plate: v.plate ?? "",
     }))
 

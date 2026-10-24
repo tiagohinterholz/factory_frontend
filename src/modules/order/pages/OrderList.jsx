@@ -40,6 +40,7 @@ export default function OrderList() {
       type: "select",
       options: clients.map((c) => ({ id: c.id, name: c.display_name })),
     },
+    { name: "plate", label: "Placa", type: "text" },
     { name: "date_from", label: "Serviço a partir de", type: "date" },
     { name: "date_to", label: "Serviço até", type: "date" },
   ]
@@ -63,11 +64,15 @@ export default function OrderList() {
       accessor: (item) =>
         item.vehicle?.id != null ? (
           <Link to={`/veiculos/${item.vehicle.id}`} className="text-brand hover:underline">
-            {item.vehicle.model} {item.vehicle.plate}
+            {item.vehicle.model}
           </Link>
         ) : (
           item.vehicle_name || ""
         ),
+    },
+    {
+      header: "Placa",
+      accessor: (item) => item.vehicle?.plate || "",
     },
     {
       header: "Data/Hora Serviço",

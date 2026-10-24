@@ -153,13 +153,10 @@ export default function OrderEdit() {
 
   if (loading) return <div className="p-6 text-center">Carregando...</div>
 
-  // cliente/veículo já vinculados à OS podem ter sido desativados (exclusão
-  // lógica/anonimização) e saído da lista de opções — sem isso o campo
-  // ficaria permanentemente em branco mesmo com o vínculo intacto.
   const clientLabel = (client) => client?.display_name || `Cliente #${idOf(client)}`
   const vehicleLabel = (vehicle) =>
     vehicle?.manufacturer || vehicle?.model
-      ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""} (${vehicle.plate ?? ""})`
+      ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""}`.trim()
       : `Veículo #${idOf(vehicle)}`
   const extraClientOption = relatedClient && {
     id: idOf(relatedClient),
@@ -231,9 +228,6 @@ export default function OrderEdit() {
                 label="Cliente"
                 value={clientId}
                 onChange={(value) => {
-                  // o Combobox dispara onChange mesmo reselecionando o
-                  // cliente já ativo — só limpa o veículo quando o cliente
-                  // realmente mudou.
                   if (value === clientId) return
                   setValue("client_id", value)
                   setValue("vehicle_id", "")
