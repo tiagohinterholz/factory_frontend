@@ -136,6 +136,7 @@ describe("<Sidebar>", () => {
       "/financeiro",
       "/financeiro/categorias",
       "/financeiro/tags",
+      "/financeiro/relatorios",
     ])
     expect(screen.queryByRole("button", { name: /^veículos$/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /localização/i })).not.toBeInTheDocument()
@@ -195,5 +196,9 @@ describe("<Sidebar>", () => {
       "/financeiro/categorias",
     )
     expect(screen.getByRole("link", { name: "Tags" })).toHaveAttribute("href", "/financeiro/tags")
+    expect(screen.getByRole("link", { name: "Relatórios" })).toHaveAttribute(
+      "href",
+      "/financeiro/relatorios",
+    )
   })
 })

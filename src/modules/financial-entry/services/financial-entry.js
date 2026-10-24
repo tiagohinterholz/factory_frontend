@@ -6,6 +6,11 @@ export const FinancialEntryService = {
     return response.data
   },
 
+  async getCharts(params = {}) {
+    const response = await api.get("/financeiro/graficos/", { params })
+    return response.data
+  },
+
   async getFinancialEntryById(id) {
     const response = await api.get(`/financeiro/${id}/`)
     return response.data

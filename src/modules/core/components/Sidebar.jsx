@@ -365,9 +365,11 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                     onClick={onCloseMobile}
                     className={subLinkClass(
                       isActive("/financeiro") &&
-                        !["/financeiro/categorias", "/financeiro/tags"].some((path) =>
-                          location.pathname.startsWith(path),
-                        ),
+                        ![
+                          "/financeiro/categorias",
+                          "/financeiro/tags",
+                          "/financeiro/relatorios",
+                        ].some((path) => location.pathname.startsWith(path)),
                     )}
                   >
                     Lançamentos
@@ -385,6 +387,13 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                     className={subLinkClass(isActive("/financeiro/tags"))}
                   >
                     Tags
+                  </Link>
+                  <Link
+                    to="/financeiro/relatorios"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/financeiro/relatorios"))}
+                  >
+                    Relatórios
                   </Link>
                 </div>
               )}

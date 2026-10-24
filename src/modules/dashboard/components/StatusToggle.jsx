@@ -35,13 +35,15 @@ export default function StatusToggle({ options, value, onChange }) {
             className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-bold transition-colors ${toneClass}`}
           >
             {option.label}
-            <span
-              className={`tabular-nums rounded-full px-1.5 text-[10.5px] ${
-                active ? "bg-white/25" : "bg-ground"
-              }`}
-            >
-              {option.count}
-            </span>
+            {option.count != null && (
+              <span
+                className={`tabular-nums rounded-full px-1.5 text-[10.5px] ${
+                  active ? "bg-white/25" : "bg-ground"
+                }`}
+              >
+                {option.count}
+              </span>
+            )}
           </button>
         )
       })}
