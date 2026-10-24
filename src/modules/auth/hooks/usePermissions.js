@@ -53,5 +53,11 @@ export function usePermissions() {
     canViewFiscalNotes: has("orders.view_fiscalnote") || has("orders.view_servicefiscalnote"),
     canViewFinancial: has("financial.view_financialentry"),
     canViewBusiness: has("businesses.view_business"),
+    canViewDashboard: has("orders.view_order"),
+    canCreateFinancialEntry: has("financial.add_financialentry"),
+    canChangeFinancialEntry: has("financial.change_financialentry"),
+    canMarkFinancialEntryPaid: has("financial.can_mark_financial_entry_paid"),
+    canCancelFinancialEntry: has("financial.can_cancel_financial_entry"),
+    canGenerateCharge: has("financial.can_generate_charge"),
   }
 }

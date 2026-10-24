@@ -21,7 +21,9 @@ import {
   X,
 } from "lucide-react"
 
-const primaryItems = [{ path: "/dashboard", name: "Dashboard", icon: LayoutDashboard }]
+const primaryItems = [
+  { path: "/dashboard", name: "Dashboard", icon: LayoutDashboard, permission: "canViewDashboard" },
+]
 
 const preVehicleItems = [
   { path: "/clientes", name: "Clientes", icon: Users, permission: "canViewClients" },
@@ -200,7 +202,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
         </div>
 
         <nav className="flex-1 space-y-1.5 overflow-y-auto no-scrollbar pr-1 scrollbar-thin">
-          {primaryItems.map(renderNavItem)}
+          {allowed(primaryItems).map(renderNavItem)}
 
           <div className="space-y-1.5">{allowed(preVehicleItems).map(renderNavItem)}</div>
 

@@ -106,7 +106,7 @@ describe("<Sidebar>", () => {
     expect(screen.queryByText("Serviços & Catálogos")).not.toBeInTheDocument()
   })
 
-  it("contador vê só Dashboard, Notas Fiscais e Financeiro no menu (RAD-P3-01)", () => {
+  it("contador vê só Notas Fiscais e Financeiro no menu (RAD-P3-01)", () => {
     localStorage.setItem(
       "user",
       JSON.stringify({
@@ -126,7 +126,7 @@ describe("<Sidebar>", () => {
 
     const nav = screen.getByRole("navigation")
     const navLinks = Array.from(nav.querySelectorAll("a")).map((link) => link.getAttribute("href"))
-    expect(navLinks).toEqual(["/dashboard", "/notas-fiscais", "/financeiro"])
+    expect(navLinks).toEqual(["/notas-fiscais", "/financeiro"])
     expect(screen.queryByRole("button", { name: /^veículos$/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /localização/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /suprimentos/i })).not.toBeInTheDocument()

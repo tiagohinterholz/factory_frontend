@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "@/modules/auth/context/auth-context"
 import { useToast } from "@/modules/core/feedback/toast-context"
+import { landingPathFor } from "@/modules/auth/domain/landing"
 
 export default function Login() {
   const navigate = useNavigate()
@@ -14,8 +15,8 @@ export default function Login() {
     ev.preventDefault()
 
     try {
-      await login({ email, password })
-      navigate("/dashboard")
+      const user = await login({ email, password })
+      navigate(landingPathFor(user))
     } catch {
       toast.error("Credenciais inválidas")
     }
