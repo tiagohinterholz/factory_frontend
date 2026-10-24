@@ -1,4 +1,5 @@
 import { Car } from "lucide-react"
+import { Link } from "react-router-dom"
 import Modal from "@/modules/core/components/Modal"
 import { useClientVehicles } from "@/modules/client/hooks/useClientVehicles"
 import { fuelOptions } from "@/modules/vehicle"
@@ -38,20 +39,26 @@ export default function ClientVehiclesModal({ client, onClose }) {
       ) : (
         <ul className="divide-y divide-slate-100">
           {vehicles.map((vehicle) => (
-            <li key={vehicle.id} className="flex items-start gap-3 py-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-subtle text-brand">
-                <Car className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink">
-                  {vehicle.manufacturer?.name} {vehicle.model?.name}
-                </p>
-                <p className="text-[12.5px] text-muted">
-                  {vehicle.plate} · {vehicle.year}
-                  {vehicle.year_model ? `/${vehicle.year_model}` : ""} · {fuelLabel(vehicle.fuel)}
-                  {vehicle.color ? ` · ${vehicle.color}` : ""}
-                </p>
-              </div>
+            <li key={vehicle.id}>
+              <Link
+                to={`/veiculos/${vehicle.id}`}
+                onClick={onClose}
+                className="flex items-start gap-3 py-3 rounded-lg transition-colors hover:bg-slate-50"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-subtle text-brand">
+                  <Car className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-ink">
+                    {vehicle.manufacturer?.name} {vehicle.model?.name}
+                  </p>
+                  <p className="text-[12.5px] text-muted">
+                    {vehicle.plate} · {vehicle.year}
+                    {vehicle.year_model ? `/${vehicle.year_model}` : ""} · {fuelLabel(vehicle.fuel)}
+                    {vehicle.color ? ` · ${vehicle.color}` : ""}
+                  </p>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>

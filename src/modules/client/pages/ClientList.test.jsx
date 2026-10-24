@@ -96,6 +96,9 @@ describe("<ClientList>", () => {
     expect(await screen.findByText("VW Gol")).toBeInTheDocument()
     expect(screen.getByText(/ABC-1D23 · 2020\/2021 · Flex · Prata/)).toBeInTheDocument()
 
+    const vehicleLink = screen.getByRole("link", { name: /vw gol/i })
+    expect(vehicleLink).toHaveAttribute("href", "/veiculos/7")
+
     // X do header + botão no rodapé compartilham o nome "Fechar"; o rodapé é o último
     const fechar = screen.getAllByRole("button", { name: "Fechar" })
     fireEvent.click(fechar[fechar.length - 1])

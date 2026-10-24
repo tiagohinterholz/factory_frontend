@@ -21,6 +21,10 @@ import { CPF_MASK, CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-field
 
 import { User, Car, Edit2, Trash2, Milestone, ChevronRight, ShieldOff } from "lucide-react"
 
+function capitalize(value) {
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) : value
+}
+
 export default function ClientDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -124,7 +128,7 @@ export default function ClientDetail() {
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
-                      label="Razão Social"
+                      label="Razão Social *"
                       error={errors.corporate_name?.message}
                       registration={register("corporate_name")}
                     />
@@ -139,7 +143,7 @@ export default function ClientDetail() {
                     <MaskedField
                       control={control}
                       name="cnpj"
-                      label="CNPJ"
+                      label="CNPJ *"
                       mask={CNPJ_MASK}
                       error={errors.cnpj?.message}
                     />
@@ -155,14 +159,18 @@ export default function ClientDetail() {
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
-                      label="Nome"
+                      label="Nome *"
                       error={errors.first_name?.message}
-                      registration={register("first_name")}
+                      registration={register("first_name", {
+                        onChange: (event) => setValue("first_name", capitalize(event.target.value)),
+                      })}
                     />
                     <FormField
-                      label="Sobrenome"
+                      label="Sobrenome *"
                       error={errors.last_name?.message}
-                      registration={register("last_name")}
+                      registration={register("last_name", {
+                        onChange: (event) => setValue("last_name", capitalize(event.target.value)),
+                      })}
                     />
                   </div>
 
@@ -170,7 +178,7 @@ export default function ClientDetail() {
                     <MaskedField
                       control={control}
                       name="cpf"
-                      label="CPF"
+                      label="CPF *"
                       mask={CPF_MASK}
                       error={errors.cpf?.message}
                     />
@@ -187,7 +195,7 @@ export default function ClientDetail() {
               <MaskedField
                 control={control}
                 name="phone"
-                label="Telefone"
+                label="Telefone *"
                 mask={PHONE_MASK}
                 error={errors.phone?.message}
               />
@@ -205,7 +213,7 @@ export default function ClientDetail() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <SelectField
-                  label="Estado"
+                  label="Estado *"
                   options={states}
                   error={errors.state_id?.message}
                   registration={register("state_id", {
@@ -213,7 +221,7 @@ export default function ClientDetail() {
                   })}
                 />
                 <SelectField
-                  label="Cidade"
+                  label="Cidade *"
                   options={citiesByState}
                   disabled={!stateId}
                   disabledHint="Selecione o estado primeiro"
@@ -227,7 +235,9 @@ export default function ClientDetail() {
                   <FormField
                     label="Endereço"
                     error={errors.address?.message}
-                    registration={register("address")}
+                    registration={register("address", {
+                      onChange: (event) => setValue("address", capitalize(event.target.value)),
+                    })}
                   />
                 </div>
                 <FormField
@@ -248,7 +258,9 @@ export default function ClientDetail() {
                 <FormField
                   label="Bairro"
                   error={errors.neighborhood?.message}
-                  registration={register("neighborhood")}
+                  registration={register("neighborhood", {
+                    onChange: (event) => setValue("neighborhood", capitalize(event.target.value)),
+                  })}
                 />
                 <FormField
                   label="CEP"
@@ -278,8 +290,10 @@ export default function ClientDetail() {
               subtitle: v.plate,
             }))}
             loading={loadingVehicles}
+            hideEmptyState
             emptyMessage="Este cliente ainda não possui veículos cadastrados."
             onAddClick={() => navigate("/veiculos/novo", { state: { clientId: id } })}
+            addLabel="Adicionar veículo"
             renderItem={(item) => (
               <div
                 onClick={() => navigate(`/veiculos/${item.id}`)}
@@ -304,18 +318,6 @@ export default function ClientDetail() {
               </div>
             )}
           />
-
-          {/* Espaço para futuros componentes como Orçamentos ou Ordens de Serviço */}
-          <div className="card-premium border-dashed border-slate-200 bg-slate-50 flex items-center justify-center py-10">
-            <div className="text-center p-6">
-              <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mb-1 opacity-50">
-                Histórico em Breve
-              </p>
-              <p className="text-[10px] text-slate-300 px-4">
-                Aqui você poderá visualizar Orçamentos e Ordens de Serviço vinculados.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
