@@ -64,6 +64,7 @@ describe("<SupplierCreate>", () => {
     await user.type(screen.getByPlaceholderText("Rua, Avenida, etc."), "Rua das Flores")
     await user.type(screen.getByPlaceholderText("123"), "100")
     await user.type(screen.getByPlaceholderText("(00) 00000-0000"), "41912345678")
+    await user.tab()
 
     fireEvent.click(screen.getByRole("button", { name: /salvar fornecedor/i }))
 

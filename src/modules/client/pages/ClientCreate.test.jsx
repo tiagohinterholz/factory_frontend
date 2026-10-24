@@ -39,6 +39,7 @@ async function fillMinimumValidPf(user) {
   const [, citySelect] = screen.getAllByRole("combobox")
   await user.selectOptions(citySelect, "1")
   await user.type(screen.getByPlaceholderText("(00) 00000-0000"), "41912345678")
+  await user.tab()
 }
 
 describe("<ClientCreate>", () => {
