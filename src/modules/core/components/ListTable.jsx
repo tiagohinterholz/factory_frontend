@@ -138,6 +138,8 @@ export default function ListTable({
                           {editLinkPrefix && (
                             <Link
                               to={`${editLinkPrefix}/${item.id}`}
+                              title="Editar"
+                              aria-label="Editar"
                               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
                             >
                               <Edit2 size={16} />
@@ -146,6 +148,8 @@ export default function ListTable({
                           {onDelete && (
                             <button
                               onClick={() => onDelete(item)}
+                              title="Excluir"
+                              aria-label="Excluir"
                               className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
                             >
                               <Trash2 size={16} />

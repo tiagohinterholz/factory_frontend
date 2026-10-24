@@ -55,6 +55,7 @@ export default function FinancialEntryList() {
       options: FINANCIAL_ENTRY_CATEGORY_OPTIONS,
     },
     { name: "status", label: "Status", type: "select", options: STATUS_OPTIONS },
+    { name: "tag", label: "Tag", type: "text" },
     { name: "date_from", label: "Vencimento a partir de", type: "date" },
     { name: "date_to", label: "Vencimento até", type: "date" },
   ]
@@ -69,7 +70,32 @@ export default function FinancialEntryList() {
     {
       header: "Categoria",
       sortKey: "category",
-      accessor: (item) => financialEntryCategoryLabel(item.category),
+      accessor: (item) => (
+        <div className="flex flex-col gap-0.5">
+          <span>{item.financial_category?.name ?? financialEntryCategoryLabel(item.category)}</span>
+          {item.financial_subcategory && (
+            <span className="text-[11px] text-muted">{item.financial_subcategory.name}</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      header: "Tags",
+      accessor: (item) =>
+        item.tags?.length ? (
+          <div className="flex flex-wrap gap-1">
+            {item.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-brand-subtle px-2 py-0.5 text-[11px] font-semibold text-brand"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : (
+          "—"
+        ),
     },
     { header: "Descrição", accessor: (item) => item.description || "—" },
     {

@@ -59,5 +59,6 @@ export function usePermissions() {
     canMarkFinancialEntryPaid: has("financial.can_mark_financial_entry_paid"),
     canCancelFinancialEntry: has("financial.can_cancel_financial_entry"),
     canGenerateCharge: has("financial.can_generate_charge"),
+    canManageFinancialCategories: has("financial.add_financialentrycategory"),
   }
 }

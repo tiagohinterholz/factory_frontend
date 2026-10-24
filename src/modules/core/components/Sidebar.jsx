@@ -44,7 +44,6 @@ const postVehicleItems = [
     icon: FileText,
     permission: "canViewFiscalNotes",
   },
-  { path: "/financeiro", name: "Financeiro", icon: Wallet, permission: "canViewFinancial" },
 ]
 
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
@@ -58,6 +57,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
     canViewLocations,
     canViewSupplies,
     canViewBusiness,
+    canViewFinancial,
     businessId,
     userId,
   } = permissions
@@ -83,6 +83,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
       "/compras",
     ].some((path) => location.pathname.startsWith(path)),
   )
+  const [financialOpen, setFinancialOpen] = useState(location.pathname.startsWith("/financeiro"))
   const [vehicleOpen, setVehicleOpen] = useState(
     ["/veiculos", "/marcas", "/modelos"].some((path) => location.pathname.startsWith(path)),
   )
@@ -346,6 +347,49 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
           )}
 
           <div className="pt-2 space-y-1.5">{allowed(postVehicleItems).map(renderNavItem)}</div>
+
+          {canViewFinancial && (
+            <div className="pt-2">
+              {renderGroupButton(
+                "Financeiro",
+                Wallet,
+                financialOpen,
+                ["/financeiro"],
+                handleGroup(setFinancialOpen),
+              )}
+
+              {financialOpen && !collapsed && (
+                <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
+                  <Link
+                    to="/financeiro"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(
+                      isActive("/financeiro") &&
+                        !["/financeiro/categorias", "/financeiro/tags"].some((path) =>
+                          location.pathname.startsWith(path),
+                        ),
+                    )}
+                  >
+                    Lançamentos
+                  </Link>
+                  <Link
+                    to="/financeiro/categorias"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/financeiro/categorias"))}
+                  >
+                    Categorias
+                  </Link>
+                  <Link
+                    to="/financeiro/tags"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/financeiro/tags"))}
+                  >
+                    Tags
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </nav>
 
         <div className="mt-8 pt-6 border-t border-white/5 space-y-1">

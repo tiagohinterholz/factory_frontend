@@ -2,7 +2,7 @@ import { useState, useCallback } from "react"
 import { useParams } from "react-router-dom"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
-import { toDateInput } from "@/api/dto"
+import { idOf, toDateInput } from "@/api/dto"
 import { FinancialEntryService } from "@/modules/financial-entry/services/financial-entry"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 import {
@@ -18,6 +18,9 @@ import {
 function toFinancialEntryForm(data) {
   return {
     category: data.category ?? "",
+    financial_category_id: idOf(data.financial_category) || "",
+    financial_subcategory_id: idOf(data.financial_subcategory) || "",
+    tags: data.tags ?? [],
     description: data.description ?? "",
     amount: data.amount ?? "",
     due_date: toDateInput(data.due_date),
@@ -37,6 +40,7 @@ export function useFinancialEntryEditForm() {
     order: null,
     supplier: null,
     payments: [],
+    financialCategory: null,
   })
 
   const fetchMeta = useCallback(async () => {
@@ -49,6 +53,7 @@ export function useFinancialEntryEditForm() {
       order: data.order ?? null,
       supplier: data.supplier ?? null,
       payments: data.payments ?? [],
+      financialCategory: data.financial_category ?? null,
     })
     return data
   }, [id])
@@ -59,6 +64,9 @@ export function useFinancialEntryEditForm() {
     schema: financialEntryEditSchema,
     defaultValues: {
       category: "",
+      financial_category_id: "",
+      financial_subcategory_id: "",
+      tags: [],
       description: "",
       amount: "",
       due_date: "",
@@ -122,6 +130,7 @@ export function useFinancialEntryEditForm() {
     relatedOrder: meta.order,
     relatedSupplier: meta.supplier,
     payments: meta.payments,
+    financialCategory: meta.financialCategory,
     isAutomatic,
     handleMarkPaid: markPaid.run,
     handleCancel: cancel.run,

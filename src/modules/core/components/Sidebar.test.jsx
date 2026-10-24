@@ -126,7 +126,17 @@ describe("<Sidebar>", () => {
 
     const nav = screen.getByRole("navigation")
     const navLinks = Array.from(nav.querySelectorAll("a")).map((link) => link.getAttribute("href"))
-    expect(navLinks).toEqual(["/notas-fiscais", "/financeiro"])
+    expect(navLinks).toEqual(["/notas-fiscais"])
+    fireEvent.click(screen.getByRole("button", { name: /^financeiro$/i }))
+    const openedLinks = Array.from(nav.querySelectorAll("a")).map((link) =>
+      link.getAttribute("href"),
+    )
+    expect(openedLinks).toEqual([
+      "/notas-fiscais",
+      "/financeiro",
+      "/financeiro/categorias",
+      "/financeiro/tags",
+    ])
     expect(screen.queryByRole("button", { name: /^veículos$/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /localização/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /suprimentos/i })).not.toBeInTheDocument()
@@ -171,6 +181,19 @@ describe("<Sidebar>", () => {
     }
     expect(screen.getByRole("button", { name: /^veículos$/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /suprimentos/i })).toBeInTheDocument()
-    expect(screen.queryByRole("link", { name: "Financeiro" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /^financeiro$/i })).not.toBeInTheDocument()
+  })
+
+  it("grupo Financeiro abre em Lançamentos, Categorias e Tags (OSFIN-P3-03)", () => {
+    renderSidebar()
+
+    fireEvent.click(screen.getByRole("button", { name: /^financeiro$/i }))
+
+    expect(screen.getByRole("link", { name: "Lançamentos" })).toHaveAttribute("href", "/financeiro")
+    expect(screen.getByRole("link", { name: "Categorias" })).toHaveAttribute(
+      "href",
+      "/financeiro/categorias",
+    )
+    expect(screen.getByRole("link", { name: "Tags" })).toHaveAttribute("href", "/financeiro/tags")
   })
 })

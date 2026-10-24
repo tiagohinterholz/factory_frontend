@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { useFinancialEntryEditForm } from "../hooks/useFinancialEntryEditForm"
 import {
-  FINANCIAL_ENTRY_CATEGORY_OPTIONS,
   PAYMENT_METHOD_OPTIONS,
   financialEntryStatusTone,
   financialEntryCanAct,
@@ -12,6 +11,7 @@ import {
   paymentIsActive,
 } from "../domain"
 import BackLink from "@/modules/core/components/BackLink"
+import EntryClassificationFields from "../components/EntryClassificationFields"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
@@ -32,6 +32,7 @@ export default function FinancialEntryEdit() {
     relatedOrder,
     payments,
     isAutomatic,
+    financialCategory,
     handleMarkPaid,
     handleCancel,
     handleGenerateCharge,
@@ -123,21 +124,14 @@ export default function FinancialEntryEdit() {
 
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {isAutomatic ? (
+              {fieldsLocked && (
                 <div className="flex flex-col">
                   <span className="label-premium">Categoria</span>
                   <p className="input-premium bg-ground text-muted cursor-not-allowed">
-                    {financialEntryCategoryLabel(form.getValues("category"))}
+                    {financialCategory?.name ??
+                      financialEntryCategoryLabel(form.getValues("category"))}
                   </p>
                 </div>
-              ) : (
-                <SelectField
-                  label="Categoria"
-                  options={FINANCIAL_ENTRY_CATEGORY_OPTIONS}
-                  disabled={fieldsLocked}
-                  error={errors.category?.message}
-                  registration={register("category")}
-                />
               )}
               <MoneyField
                 control={control}
@@ -153,6 +147,13 @@ export default function FinancialEntryEdit() {
               disabled={fieldsLocked}
               error={errors.description?.message}
               registration={register("description")}
+            />
+
+            <EntryClassificationFields
+              form={form}
+              categoryLocked={fieldsLocked}
+              tagsLocked={locked}
+              extraCategory={financialCategory}
             />
 
             <FormField
