@@ -39,6 +39,27 @@ export function usePermissions() {
     canEmitFiscalNote: has("orders.can_emit_fiscal_note"),
     canEmitServiceFiscalNote: has("orders.can_emit_service_fiscal_note"),
     canManageBusiness: has("businesses.change_business"),
+    canEditBusinessIdentity: has("businesses.can_edit_business_identity"),
     canAnonymizeClient: has("customers.can_anonymize_client"),
+    canViewClients: has("customers.view_client"),
+    canViewAppointments: has("workservices.view_appointment"),
+    canViewVehicles: has("customers.view_vehicle"),
+    canViewLocations: has("locations.view_state"),
+    canViewSupplies:
+      has("suppliers.view_supplier") ||
+      has("products.view_product") ||
+      has("workservices.view_service"),
+    canViewBudgets: has("budgets.view_budget"),
+    canViewOrders: has("orders.view_order"),
+    canViewFiscalNotes: has("orders.view_fiscalnote") || has("orders.view_servicefiscalnote"),
+    canViewFinancial: has("financial.view_financialentry"),
+    canViewBusiness: has("businesses.view_business"),
+    canViewDashboard: has("orders.view_order"),
+    canCreateFinancialEntry: has("financial.add_financialentry"),
+    canChangeFinancialEntry: has("financial.change_financialentry"),
+    canMarkFinancialEntryPaid: has("financial.can_mark_financial_entry_paid"),
+    canCancelFinancialEntry: has("financial.can_cancel_financial_entry"),
+    canGenerateCharge: has("financial.can_generate_charge"),
+    canManageFinancialCategories: has("financial.add_financialentrycategory"),
   }
 }

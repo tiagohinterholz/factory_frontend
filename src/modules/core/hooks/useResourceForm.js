@@ -74,7 +74,7 @@ export function useResourceForm({
       form.reset(values)
       onSuccess?.(result)
       const target = typeof redirectTo === "function" ? redirectTo(result) : redirectTo
-      if (target) navigate(target)
+      if (target) navigate(target, { replace: true })
     } catch (error) {
       console.error(error)
       const { message, fields } = parseApiError(error, errorFallback)

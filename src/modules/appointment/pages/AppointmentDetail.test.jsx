@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, useLocation } from "react-router-dom"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
@@ -53,10 +54,22 @@ function mockApi({ orders = [], appointmentOverrides = {} } = {}) {
   )
 }
 
+function CreatePageProbe({ title }) {
+  const location = useLocation()
+  return (
+    <div>
+      <h1>{title}</h1>
+      <pre data-testid="state">{JSON.stringify(location.state)}</pre>
+    </div>
+  )
+}
+
 const renderPage = () =>
   renderWithProviders(
     <Routes>
       <Route path="/agendamentos/:id" element={<AppointmentDetail />} />
+      <Route path="/ordens/novo" element={<CreatePageProbe title="Nova OS" />} />
+      <Route path="/orcamentos/novo" element={<CreatePageProbe title="Novo Orçamento" />} />
     </Routes>,
     { route: "/agendamentos/1" },
   )
@@ -80,24 +93,121 @@ describe("<AppointmentDetail>", () => {
     await waitFor(() => expect(screen.getAllByRole("option", { name: /OS 77/ })).toHaveLength(1))
   })
 
-  it("mantém cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {
+  it("cliente/veículo vinculados mas desativados (fora da lista de opções) continuam visíveis e no submit", async () => {
     mockApi({
       orders: [],
       appointmentOverrides: {
         client: { id: 5, first_name: "Ana", last_name: "Lima", display_name: "Ana Lima" },
-        vehicle: { id: 9, manufacturer: "VW", model: "Gol" },
+        vehicle: { id: 9, manufacturer: "WV", model: "Gol" },
       },
     })
     server.use(
       http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
     )
+    const { AppointmentService } = await import("@/modules/appointment/services/appointment")
+    const update = vi.spyOn(AppointmentService, "updateAppointment").mockResolvedValue({})
     renderPage()
 
+    await screen.findByText("Editar Agendamento")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("WV Gol"))
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+
     await waitFor(() =>
-      expect(screen.getByRole("option", { name: "Ana Lima", selected: true })).toBeInTheDocument(),
+      expect(update).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({ client_id: "5", vehicle_id: "9" }),
+      ),
     )
-    expect(screen.getByRole("option", { name: /VW Gol/, selected: true })).toBeInTheDocument()
+    update.mockRestore()
+  })
+
+  it("trocar o cliente proprietário limpa o veículo e a OS já escolhidos", async () => {
+    mockApi({ orders: [{ id: 77, vehicle: 9, plate: "ABC1D23" }] })
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput.value).not.toBe(""))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    expect(vehicleInput).toHaveValue("")
+  })
+
+  it("reselecionar o MESMO cliente não limpa o veículo/OS já escolhidos", async () => {
+    mockApi({ orders: [{ id: 77, vehicle: 9, plate: "ABC1D23" }] })
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput.value).not.toBe(""))
+    const vehicleValueBefore = vehicleInput.value
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Ana Lima" }))
+
+    expect(vehicleInput).toHaveValue(vehicleValueBefore)
+  })
+
+  it("trocar o cliente proprietário realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
+    mockApi({ orders: [{ id: 77, vehicle: 9, plate: "ABC1D23" }] })
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const { AppointmentService } = await import("@/modules/appointment/services/appointment")
+    const update = vi.spyOn(AppointmentService, "updateAppointment")
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+    const [clientInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(screen.getAllByRole("combobox")[1].value).not.toBe(""))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+
+    expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
+    expect(update).not.toHaveBeenCalled()
+    update.mockRestore()
   })
 
   it("OS 'em andamento': mostra 'Finalizar atendimento' e chama finishService", async () => {
@@ -187,5 +297,77 @@ describe("<AppointmentDetail>", () => {
     expect(screen.getByText("Sem orçamento vinculado")).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: /os #/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("link", { name: /orçamento #/i })).not.toBeInTheDocument()
+  })
+
+  it("sem OS nem orçamento: 'Criar OS' abre a criação já com cliente, veículo e agendamento (RAD-P2-01/02)", async () => {
+    mockApi({ appointmentOverrides: { order: null, budget: null } })
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("link", { name: /criar os/i }))
+
+    expect(await screen.findByRole("heading", { name: "Nova OS" })).toBeInTheDocument()
+    expect(JSON.parse(screen.getByTestId("state").textContent)).toEqual({
+      clientId: "5",
+      vehicleId: "9",
+      appointmentId: "1",
+    })
+  })
+
+  it("sem OS nem orçamento: 'Criar Orçamento' abre a criação já com cliente, veículo e agendamento", async () => {
+    mockApi({ appointmentOverrides: { order: null, budget: null } })
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("link", { name: /criar orçamento/i }))
+
+    expect(await screen.findByRole("heading", { name: "Novo Orçamento" })).toBeInTheDocument()
+    expect(JSON.parse(screen.getByTestId("state").textContent)).toEqual({
+      clientId: "5",
+      vehicleId: "9",
+      appointmentId: "1",
+    })
+  })
+
+  it("com OS vinculada: não mostra nenhum botão de criar", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+
+    expect(screen.queryByRole("link", { name: /criar os/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
+  })
+
+  it("só com orçamento vinculado: mostra 'Criar OS' mas não 'Criar Orçamento'", async () => {
+    mockApi({ appointmentOverrides: { order: null, budget: { id: 31, status: "pendente" } } })
+    renderPage()
+
+    expect(await screen.findByRole("link", { name: /criar os/i })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
+  })
+
+  it("com OS e orçamento vinculados mostra os dois links e nenhum botão de criar", async () => {
+    mockApi({ appointmentOverrides: { budget: { id: 31, status: "aprovado" } } })
+    renderPage()
+
+    expect(await screen.findByRole("link", { name: /os #77/i })).toHaveAttribute(
+      "href",
+      "/ordens/77",
+    )
+    expect(screen.getByRole("link", { name: /orçamento #31/i })).toHaveAttribute(
+      "href",
+      "/orcamentos/31",
+    )
+    expect(screen.queryByRole("link", { name: /criar os/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
+  })
+
+  it("sem veículo vinculado não oferece criar OS/orçamento", async () => {
+    mockApi({ appointmentOverrides: { vehicle: null, order: null, budget: null } })
+    renderPage()
+
+    await screen.findByText("Editar Agendamento")
+
+    expect(screen.queryByRole("link", { name: /criar os/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /criar orçamento/i })).not.toBeInTheDocument()
   })
 })

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { Routes, Route } from "react-router-dom"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
@@ -195,23 +196,25 @@ describe("<OrderEdit>", () => {
     expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeEnabled()
   })
 
-  it("mantém o cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {
-    // cache de opções defasado: as listas não trazem o cliente 5 nem o veículo 9
+  it("mantém o client_id/vehicle_id no submit mesmo quando o cache de opções não traz o registro vinculado", async () => {
+    mockApi()
     server.use(
-      http.get(`${API}/ordens/1/`, () => HttpResponse.json(order)),
       http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
-      http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
-      http.get(`${API}/servicos/`, () => HttpResponse.json({ results: [], count: 0 })),
     )
+    const update = vi.spyOn(OrderService, "updateOrder").mockResolvedValue(order)
     renderPage()
 
+    await screen.findByText("Orçamento de origem")
+    fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+
     await waitFor(() =>
-      expect(screen.getByRole("option", { name: "Ana Lima", selected: true })).toBeInTheDocument(),
+      expect(update).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({ client_id: "5", vehicle_id: "9" }),
+      ),
     )
-    expect(
-      screen.getByRole("option", { name: "VW Gol (ABC1D23)", selected: true }),
-    ).toBeInTheDocument()
+    update.mockRestore()
   })
 
   it("faturado com produto e serviço ativos: mostra os dois cartões de nota fiscal", async () => {
@@ -322,7 +325,7 @@ describe("<OrderEdit> — finalizar serviço e trava de itens", () => {
     renderPage()
 
     expect(await screen.findByRole("button", { name: /finalizar serviço/i })).toBeInTheDocument()
-    expect(screen.getByText("Selecionar Produto")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Adicionar produto" })).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "Faturar OS" })).not.toBeInTheDocument()
   })
 
@@ -348,8 +351,219 @@ describe("<OrderEdit> — finalizar serviço e trava de itens", () => {
     renderPage()
 
     expect(await screen.findByText(/Itens travados/i)).toBeInTheDocument()
-    expect(screen.queryByText("Selecionar Produto")).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Adicionar produto" })).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Faturar OS" })).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /finalizar serviço/i })).not.toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — live-select de cliente/veículo", () => {
+  it("mostra o cliente e o veículo já vinculados nos campos de busca", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
+  })
+
+  it("cliente/veículo vinculados mas desativados (fora da lista de opções) continuam visíveis no campo", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    )
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
+  })
+
+  it("trocar o cliente selecionado limpa o veículo já escolhido", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    expect(vehicleInput).toHaveValue("")
+  })
+
+  it("reselecionar o MESMO cliente não limpa o veículo já escolhido", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Ana Lima" }))
+
+    expect(vehicleInput).toHaveValue("VW Gol")
+  })
+
+  it("trocar o cliente realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const update = vi.spyOn(OrderService, "updateOrder")
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput] = screen.getAllByRole("combobox")
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+
+    expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
+    expect(update).not.toHaveBeenCalled()
+    update.mockRestore()
+  })
+
+  describe("<OrderEdit> — fica na tela ao salvar", () => {
+    it("salvar não volta pra listagem (OSFIN-P1-01)", async () => {
+      mockApi()
+      const update = vi.spyOn(OrderService, "updateOrder").mockResolvedValue(order)
+      renderWithProviders(
+        <Routes>
+          <Route path="/ordens/:id" element={<OrderEdit />} />
+          <Route path="/ordens" element={<h1>Lista de OS</h1>} />
+        </Routes>,
+        { route: "/ordens/1" },
+      )
+
+      await screen.findByText("Orçamento de origem")
+      fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+
+      await waitFor(() => expect(update).toHaveBeenCalled())
+      expect(screen.queryByRole("heading", { name: "Lista de OS" })).not.toBeInTheDocument()
+      update.mockRestore()
+    })
+  })
+})
+
+describe("<OrderEdit> — faturamento", () => {
+  it("OS faturada mostra como foi paga (OSFIN-P2-06)", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "faturado",
+          billing_date: "2026-09-10",
+          payment: { payment_method: "pix", payment_method_display: "Pix", installments: null },
+        }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Pago: Pix")).toBeInTheDocument()
+  })
+
+  it("'Faturar OS' abre o pedido de forma de pagamento", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json({ ...order, status: "a faturar" })),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Faturar OS" }))
+
+    expect(await screen.findByRole("dialog", { name: "Faturar OS #1" })).toBeInTheDocument()
+    expect(screen.getByLabelText(/forma de pagamento/i)).toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — serviço personalizado", () => {
+  it("lista o item personalizado pelo nome com a marca 'Personalizado'", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          order_services: [
+            {
+              id: 3,
+              service: null,
+              custom_name: "Solda no escapamento",
+              name: "Solda no escapamento",
+              unit_price: "80.00",
+              is_active: true,
+            },
+          ],
+        }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Solda no escapamento")).toBeInTheDocument()
+    expect(screen.getByText("Personalizado")).toBeInTheDocument()
+  })
+
+  it("adicionar personalizado chama a API com nome e valor", async () => {
+    const user = userEvent.setup()
+    mockApi()
+    const create = vi.spyOn(OrderService, "orderServiceCreate").mockResolvedValue({})
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const serviceCombobox = screen.getAllByRole("combobox").at(-1)
+    await user.click(serviceCombobox)
+    await user.click(await screen.findByRole("option", { name: "Serviço personalizado" }))
+    await user.type(screen.getByLabelText(/nome do serviço/i), "Revisão elétrica")
+    await user.type(screen.getByLabelText(/valor \(r\$\)/i), "90")
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar serviço" }))
+
+    await waitFor(() =>
+      expect(create).toHaveBeenCalledWith("1", {
+        custom_name: "Revisão elétrica",
+        unit_price: "90.00",
+        order_id: "1",
+      }),
+    )
+    create.mockRestore()
   })
 })

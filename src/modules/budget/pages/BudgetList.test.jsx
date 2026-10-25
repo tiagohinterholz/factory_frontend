@@ -70,10 +70,8 @@ describe("<BudgetList>", () => {
 
     await screen.findByText("#30")
     expect(screen.getByRole("link", { name: /beto souza/i })).toHaveAttribute("href", "/clientes/6")
-    expect(screen.getByRole("link", { name: /onix xyz9k88/i })).toHaveAttribute(
-      "href",
-      "/veiculos/12",
-    )
+    expect(screen.getByRole("link", { name: "Onix" })).toHaveAttribute("href", "/veiculos/12")
+    expect(screen.getByRole("cell", { name: "XYZ9K88" })).toBeInTheDocument()
   })
 
   it("gera o PDF do orçamento pela linha da tabela", async () => {
@@ -199,6 +197,20 @@ describe("<BudgetList>", () => {
     expect(lastBudgetsUrl.searchParams.has("search")).toBe(false)
   })
 
+  it("filtro de placa manda ?plate= na requisição", async () => {
+    mockBudgets()
+    renderWithProviders(<BudgetList />)
+    await screen.findByText("#12")
+
+    fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
+    fireEvent.change(await screen.findByPlaceholderText("Digite o(a) placa"), {
+      target: { value: "ABC1D23" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Filtrar" }))
+
+    await waitFor(() => expect(lastBudgetsUrl.searchParams.get("plate")).toBe("ABC1D23"))
+  })
+
   it("ordena pelo cabeçalho: 1º clique asc, 2º desc (?ordering=)", async () => {
     mockBudgets()
     renderWithProviders(<BudgetList />)
@@ -241,5 +253,46 @@ describe("<BudgetList>", () => {
     await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/99"))
 
     duplicate.mockRestore()
+  })
+
+  describe("<BudgetList> — ícones conforme o status", () => {
+    it.each([
+      ["aprovado", "Ver orçamento"],
+      ["cancelado", "Ver orçamento"],
+      ["pendente", "Editar orçamento"],
+      ["expirado", "Editar orçamento"],
+    ])("orçamento %s mostra '%s' (OSFIN-P1-02)", async (status, label) => {
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ email: "a@a.com", business_id: 3, role: "admin" }),
+      )
+      mockBudgets([
+        {
+          id: 12,
+          first_name: "Ana",
+          vehicle_name: "Gol",
+          valid_until: null,
+          status,
+          total: "1.00",
+        },
+      ])
+      renderWithProviders(<BudgetList />)
+
+      expect(await screen.findByRole("link", { name: label })).toHaveAttribute(
+        "href",
+        "/orcamentos/12",
+      )
+    })
+
+    it("botão em massa se chama Gerar Relatórios (OSFIN-P1-04)", async () => {
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ email: "a@a.com", business_id: 3, role: "admin" }),
+      )
+      mockBudgets()
+      renderWithProviders(<BudgetList />)
+
+      expect(await screen.findByRole("button", { name: /gerar relatórios/i })).toBeInTheDocument()
+    })
   })
 })

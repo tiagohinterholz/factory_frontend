@@ -8,6 +8,7 @@ const EMPTY_FILTERS = {
   entry_type: "",
   category: "",
   status: "",
+  tag: "",
   date_from: "",
   date_to: "",
 }

@@ -4,7 +4,7 @@ import { SupplierService } from "@/modules/supplier/services/supplier"
 import { supplierSchema, supplierDefaults, supplierKeys } from "../domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 
-export function useSupplierForm() {
+export function useSupplierForm({ redirectTo = "/fornecedores", onSuccess } = {}) {
   const { businessId } = useAuth()
 
   return useResourceForm({
@@ -14,7 +14,8 @@ export function useSupplierForm() {
       business_id: businessId ? String(businessId) : "",
     },
     submit: (values) => SupplierService.createSupplier(values),
-    redirectTo: "/fornecedores",
+    redirectTo,
+    onSuccess,
     invalidate: [supplierKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao criar fornecedor",
   })

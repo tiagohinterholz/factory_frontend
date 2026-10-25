@@ -4,7 +4,7 @@ import { VehicleService } from "@/modules/vehicle/services/vehicle"
 import { vehicleSchema, vehicleDefaults, vehicleKeys } from "../domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 
-export function useVehicleForm({ clientId } = {}) {
+export function useVehicleForm({ clientId, redirectTo = "/veiculos", onSuccess } = {}) {
   const { businessId } = useAuth()
 
   return useResourceForm({
@@ -15,7 +15,8 @@ export function useVehicleForm({ clientId } = {}) {
       client_id: clientId ? String(clientId) : "",
     },
     submit: (values) => VehicleService.createVehicle(values),
-    redirectTo: "/veiculos",
+    redirectTo,
+    onSuccess,
     invalidate: [vehicleKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao criar veículo",
   })

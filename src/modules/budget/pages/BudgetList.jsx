@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { CheckCircle, Copy, Edit2, Trash2, XCircle } from "lucide-react"
+import { CheckCircle, Copy, Edit2, Eye, Trash2, XCircle } from "lucide-react"
 import { useBudget } from "../hooks/useBudget"
 import { BudgetService } from "../services/budgets"
 import ApproveBudgetModal from "../components/ApproveBudgetModal"
@@ -12,7 +12,13 @@ import PdfIconButton from "@/modules/core/components/PdfIconButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { REPORT_STATUS_OPTIONS } from "@/modules/core/constants/report"
 import { formatDate, formatDateTime, formatMoney } from "@/modules/core/utils/format"
-import { budgetStatusTone, budgetIsPending, budgetCanDuplicate, budgetStatusDate } from "../domain"
+import {
+  budgetStatusTone,
+  budgetIsLocked,
+  budgetIsPending,
+  budgetCanDuplicate,
+  budgetStatusDate,
+} from "../domain"
 
 export default function BudgetList() {
   const {
@@ -32,6 +38,7 @@ export default function BudgetList() {
     duplicate,
     approving,
     error,
+    setSearch,
   } = useBudget()
 
   const { client: clients } = useClientOptions()
@@ -46,6 +53,7 @@ export default function BudgetList() {
       type: "select",
       options: clients.map((c) => ({ id: c.id, name: c.display_name })),
     },
+    { name: "plate", label: "Placa", type: "text" },
     { name: "date_from", label: "Criado a partir de", type: "date" },
     { name: "date_to", label: "Criado até", type: "date" },
   ]
@@ -69,11 +77,15 @@ export default function BudgetList() {
       accessor: (item) =>
         item.vehicle?.id != null ? (
           <Link to={`/veiculos/${item.vehicle.id}`} className="text-brand hover:underline">
-            {item.vehicle.model} {item.vehicle.plate}
+            {item.vehicle.model}
           </Link>
         ) : (
           item.vehicle_name || ""
         ),
+    },
+    {
+      header: "Placa",
+      accessor: (item) => item.vehicle?.plate || "",
     },
     {
       header: "Validade",
@@ -119,13 +131,15 @@ export default function BudgetList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por cliente ou placa"
         title="Orçamentos"
         buttonText="Novo Orçamento"
         buttonLink="/orcamentos/novo"
         actions={
           <div className="flex items-center gap-2">
             <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
-            <ExportReportButton type="budgets" />
+            <ExportReportButton type="budgets" label="Gerar Relatórios" />
           </div>
         }
       />
@@ -179,13 +193,17 @@ export default function BudgetList() {
             )}
             <Link
               to={`/orcamentos/${item.id}`}
+              title={budgetIsLocked(item.status) ? "Ver orçamento" : "Editar orçamento"}
+              aria-label={budgetIsLocked(item.status) ? "Ver orçamento" : "Editar orçamento"}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >
-              <Edit2 size={16} />
+              {budgetIsLocked(item.status) ? <Eye size={16} /> : <Edit2 size={16} />}
             </Link>
             <button
               type="button"
               onClick={() => remove(item)}
+              title="Excluir orçamento"
+              aria-label="Excluir orçamento"
               className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
             >
               <Trash2 size={16} />

@@ -11,7 +11,9 @@ import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 import { Factory, Save, Milestone } from "lucide-react"
 
 export default function SupplierCreate() {
-  const { form, onSubmit } = useSupplierForm()
+  const { form, onSubmit } = useSupplierForm({
+    redirectTo: (result) => `/fornecedores/${result.id}`,
+  })
   const {
     register,
     control,
@@ -51,7 +53,7 @@ export default function SupplierCreate() {
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
-                label="Razão Social"
+                label="Razão Social *"
                 placeholder="Ex: Fornecedora de Insumos LTDA"
                 error={errors.corporate_name?.message}
                 registration={register("corporate_name")}
@@ -68,13 +70,13 @@ export default function SupplierCreate() {
               <MaskedField
                 control={control}
                 name="cnpj"
-                label="CNPJ"
+                label="CNPJ *"
                 mask={CNPJ_MASK}
                 placeholder="00.000.000/0000-00"
                 error={errors.cnpj?.message}
               />
               <FormField
-                label="E-mail"
+                label="E-mail *"
                 type="email"
                 placeholder="contato@fornecedor.com"
                 error={errors.email?.message}
@@ -85,7 +87,7 @@ export default function SupplierCreate() {
             <MaskedField
               control={control}
               name="phone"
-              label="Telefone"
+              label="Telefone *"
               mask={PHONE_MASK}
               placeholder="(00) 00000-0000"
               error={errors.phone?.message}
@@ -102,13 +104,13 @@ export default function SupplierCreate() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SelectField
-                label="Estado"
+                label="Estado *"
                 options={states}
                 error={errors.state_id?.message}
                 registration={register("state_id", { onChange: () => setValue("city_id", "") })}
               />
               <SelectField
-                label="Cidade"
+                label="Cidade *"
                 options={citiesByState}
                 error={errors.city_id?.message}
                 registration={register("city_id")}
@@ -118,14 +120,14 @@ export default function SupplierCreate() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">
                 <FormField
-                  label="Endereço"
+                  label="Endereço *"
                   placeholder="Rua, Avenida, etc."
                   error={errors.address?.message}
                   registration={register("address")}
                 />
               </div>
               <FormField
-                label="Número"
+                label="Número *"
                 placeholder="123"
                 error={errors.number?.message}
                 registration={register("number")}

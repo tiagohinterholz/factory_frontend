@@ -45,7 +45,11 @@ export default function Topbar({ onOpenMobile }) {
           </div>
 
           <div className="relative group">
-            <button className="w-10 h-10 bg-brand-subtle border border-line rounded-lg flex items-center justify-center text-brand transition-colors group-hover:bg-brand group-hover:text-brand-fg">
+            <button
+              title="Meu usuário"
+              aria-label="Meu usuário"
+              className="w-10 h-10 bg-brand-subtle border border-line rounded-lg flex items-center justify-center text-brand transition-colors group-hover:bg-brand group-hover:text-brand-fg"
+            >
               <User className="w-6 h-6" />
             </button>
 

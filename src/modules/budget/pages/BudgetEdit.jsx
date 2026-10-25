@@ -5,17 +5,20 @@ import { useBudgetEditForm } from "../hooks/useBudgetEditForm"
 import { BudgetService } from "../services/budgets"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
+import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import ApproveBudgetModal from "../components/ApproveBudgetModal"
-import { useClientOptions } from "@/modules/core/hooks/options"
-import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
 import { useWorkServiceOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
-import { idOf, withSelectedOption } from "@/api/dto"
+import { idOf } from "@/api/dto"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import { ClientLiveSelect } from "@/modules/client"
+import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import ServiceItemForm from "@/modules/core/components/ServiceItemForm"
+import ProductItemForm from "@/modules/core/components/ProductItemForm"
 import { Plus, Trash2, CheckCircle, XCircle, Copy } from "lucide-react"
 import { formatDateTime, formatMoney } from "@/modules/core/utils/format"
 import {
@@ -59,17 +62,12 @@ export default function BudgetEdit() {
     formState: { errors, isSubmitting },
   } = form
 
-  const businessId = watch("business_id")
   const clientId = watch("client_id")
+  const vehicleId = watch("vehicle_id")
 
-  const { client: clients, loading: loadingClients } = useClientOptions()
-  const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { product: allProducts } = useProductOptions()
   const { workservice: allServices } = useWorkServiceOptions()
 
-  const [selectedProduct, setSelectedProduct] = useState("")
-  const [quantity, setQuantity] = useState(1)
-  const [selectedService, setSelectedService] = useState("")
   const [approveOpen, setApproveOpen] = useState(false)
   const [savingItem, setSavingItem] = useState(false)
 
@@ -86,47 +84,33 @@ export default function BudgetEdit() {
     queryClient.invalidateQueries({ queryKey: budgetKeys.all })
   }
 
-  async function handleAddProduct(event) {
-    event.preventDefault()
-    if (!selectedProduct || savingItem) return
-    const product = allProducts.find((item) => String(item.id) === String(selectedProduct))
+  async function handleAddProduct(payload) {
     setSavingItem(true)
     try {
-      await BudgetService.budgetProductCreate(id, {
-        product_id: selectedProduct,
-        budget_id: id,
-        quantity,
-        unit_price: product?.unit_price,
-      })
-      setSelectedProduct("")
-      setQuantity(1)
+      await BudgetService.budgetProductCreate(id, { ...payload, budget_id: id })
       refresh()
       invalidateBudgetCaches()
+      return true
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao adicionar produto").message)
+      return false
     } finally {
       setSavingItem(false)
     }
   }
 
-  async function handleAddService(event) {
-    event.preventDefault()
-    if (!selectedService || savingItem) return
-    const service = allServices.find((item) => String(item.id) === String(selectedService))
+  async function handleAddService(payload) {
     setSavingItem(true)
     try {
-      await BudgetService.budgetServiceCreate(id, {
-        service_id: selectedService,
-        budget_id: id,
-        unit_price: service?.unit_price,
-      })
-      setSelectedService("")
+      await BudgetService.budgetServiceCreate(id, { ...payload, budget_id: id })
       refresh()
       invalidateBudgetCaches()
+      return true
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao adicionar serviço").message)
+      return false
     } finally {
       setSavingItem(false)
     }
@@ -154,34 +138,21 @@ export default function BudgetEdit() {
     }
   }
 
-  // espera as listas de opção antes de montar os <select> — senão o
-  // form.reset roda antes das <option> existirem e o campo fica vazio (BUG-1)
-  if (loading || loadingClients || loadingVehicles)
-    return <div className="p-6 text-center">Carregando...</div>
+  if (loading) return <div className="p-6 text-center">Carregando...</div>
 
-  // o cliente/veículo já vinculados ao orçamento têm que aparecer no select
-  // mesmo que o cache de opções esteja velho ou o filtro em cascata os corte —
-  // senão salvar apagaria a FK. Fallback montado do payload de detalhe.
   const clientLabel = (client) => client?.display_name || `Cliente #${idOf(client)}`
   const vehicleLabel = (vehicle) =>
     vehicle?.manufacturer || vehicle?.model
-      ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""} (${vehicle.plate ?? ""})`
+      ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""}`.trim()
       : `Veículo #${idOf(vehicle)}`
-
-  const clientOptions = withSelectedOption(
-    clients
-      .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
-      .map((c) => ({ id: c.id, name: c.display_name })),
-    clientId,
-    relatedClient && { id: idOf(relatedClient), name: clientLabel(relatedClient) },
-  )
-  const vehicleOptions = withSelectedOption(
-    vehicles
-      .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
-      .map((v) => ({ id: v.id, name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})` })),
-    watch("vehicle_id"),
-    relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
-  )
+  const extraClientOption = relatedClient && {
+    id: idOf(relatedClient),
+    name: clientLabel(relatedClient),
+  }
+  const extraVehicleOption = relatedVehicle && {
+    id: idOf(relatedVehicle),
+    name: vehicleLabel(relatedVehicle),
+  }
 
   const isPending = budgetIsPending(status)
   const canDuplicate = budgetCanDuplicate(status)
@@ -211,6 +182,11 @@ export default function BudgetEdit() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <WhatsAppButton
+            phone={relatedClient?.phone}
+            label="Informar cliente"
+            message={`Olá${relatedClient?.first_name ? `, ${relatedClient.first_name}` : ""}! Seu orçamento #${id} está ${status} no valor de ${formatMoney(total)}.`}
+          />
           <RecordPdfButton request={() => BudgetService.getBudgetPdf(id)} />
           {canDuplicate && (
             <button
@@ -259,22 +235,27 @@ export default function BudgetEdit() {
               </p>
             )}
             <form onSubmit={onSubmit} className="space-y-4">
-              <SelectField
+              <ClientLiveSelect
                 label="Cliente"
-                options={clientOptions}
+                value={clientId}
+                onChange={(value) => {
+                  if (value === clientId) return
+                  setValue("client_id", value)
+                  setValue("vehicle_id", "")
+                }}
                 disabled={locked}
                 error={errors.client_id?.message}
-                registration={register("client_id", {
-                  onChange: () => setValue("vehicle_id", ""),
-                })}
+                extraOption={extraClientOption}
               />
-              <SelectField
+              <VehicleLiveSelect
                 label="Veículo"
-                options={vehicleOptions}
-                disabled={locked || !clientId}
-                disabledHint={locked ? undefined : "Selecione o cliente primeiro"}
+                value={vehicleId}
+                onChange={(value) => setValue("vehicle_id", value)}
+                clientId={clientId}
+                disabled={locked}
+                disabledHint="Selecione o cliente primeiro"
                 error={errors.vehicle_id?.message}
-                registration={register("vehicle_id")}
+                extraOption={extraVehicleOption}
               />
               <FormField
                 label="Validade"
@@ -297,37 +278,11 @@ export default function BudgetEdit() {
             </h2>
 
             {isPending && (
-              <form
-                onSubmit={handleAddProduct}
-                className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
-              >
-                <div className="flex-1 min-w-[200px]">
-                  <SelectField
-                    label="Selecionar Produto"
-                    value={selectedProduct}
-                    onChange={(event) => setSelectedProduct(event.target.value)}
-                    options={allProducts.map((p) => ({
-                      id: p.id,
-                      name: `${p.name} (${formatMoney(p.unit_price)})`,
-                    }))}
-                  />
-                </div>
-                <div className="w-24">
-                  <FormField
-                    label="Qtd"
-                    type="number"
-                    value={quantity}
-                    onChange={(event) => setQuantity(event.target.value)}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={savingItem}
-                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors disabled:opacity-50"
-                >
-                  <Plus size={24} />
-                </button>
-              </form>
+              <ProductItemForm
+                products={allProducts}
+                saving={savingItem}
+                onAdd={handleAddProduct}
+              />
             )}
 
             <div className="divide-y divide-slate-100">
@@ -367,35 +322,24 @@ export default function BudgetEdit() {
             </h2>
 
             {isPending && (
-              <form
-                onSubmit={handleAddService}
-                className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
-              >
-                <div className="flex-1 min-w-[200px]">
-                  <SelectField
-                    label="Selecionar Serviço"
-                    value={selectedService}
-                    onChange={(event) => setSelectedService(event.target.value)}
-                    options={allServices.map((s) => ({
-                      id: s.id,
-                      name: `${s.name} (${formatMoney(s.unit_price)})`,
-                    }))}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={savingItem}
-                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors disabled:opacity-50"
-                >
-                  <Plus size={24} />
-                </button>
-              </form>
+              <ServiceItemForm
+                services={allServices}
+                saving={savingItem}
+                onAdd={handleAddService}
+              />
             )}
 
             <div className="divide-y divide-slate-100">
               {services.map((item) => (
                 <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span>{item.service?.name}</span>
+                  <span className="flex items-center gap-2">
+                    {item.name ?? item.service?.name}
+                    {!item.service && (
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500">
+                        Personalizado
+                      </span>
+                    )}
+                  </span>
                   <div className="flex items-center gap-4">
                     <span className="font-bold text-slate-700">{formatMoney(item.unit_price)}</span>
                     {isPending && (

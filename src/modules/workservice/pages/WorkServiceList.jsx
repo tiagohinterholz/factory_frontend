@@ -23,6 +23,7 @@ export default function WorkServiceList() {
     refetch,
     remove,
     error,
+    setSearch,
   } = useWorkService()
 
   const { supplier: suppliers } = useSupplierOptions()
@@ -62,6 +63,8 @@ export default function WorkServiceList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar serviço ou fornecedor"
         title="Serviços"
         buttonText="Novo Serviço"
         buttonLink="/servicos/novo"
@@ -86,6 +89,8 @@ export default function WorkServiceList() {
               title="Baixar PDF do serviço"
             />
             <Link
+              title="Editar serviço"
+              aria-label="Editar serviço"
               to={`/servicos/${item.id}`}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >

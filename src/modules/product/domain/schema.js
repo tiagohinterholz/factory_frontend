@@ -19,7 +19,11 @@ export const productSchema = z.object({
     (value) => (value === "" || value === null ? undefined : value),
     z.coerce.number().min(0, "Preço inválido").optional(),
   ),
-  unit_of_measure: z.enum(["UN", "LT", "KG", "MT", "CX", "PAR", "CJ"]).default("UN"),
+  unit_of_measure: z
+    .enum(["UN", "LT", "KG", "MT", "CX", "PAR", "CJ"], {
+      message: "Escolha uma unidade da lista (UN, LT, KG, MT, CX, PAR, CJ)",
+    })
+    .default("UN"),
   sku: optionalText,
   ncm: z
     .string()

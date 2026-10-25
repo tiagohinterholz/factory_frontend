@@ -96,6 +96,9 @@ describe("<ClientList>", () => {
     expect(await screen.findByText("VW Gol")).toBeInTheDocument()
     expect(screen.getByText(/ABC-1D23 · 2020\/2021 · Flex · Prata/)).toBeInTheDocument()
 
+    const vehicleLink = screen.getByRole("link", { name: /vw gol/i })
+    expect(vehicleLink).toHaveAttribute("href", "/veiculos/7")
+
     // X do header + botão no rodapé compartilham o nome "Fechar"; o rodapé é o último
     const fechar = screen.getAllByRole("button", { name: "Fechar" })
     fireEvent.click(fechar[fechar.length - 1])
@@ -147,5 +150,22 @@ describe("<ClientList>", () => {
     expect(await screen.findByText("Frota Veloz")).toBeInTheDocument()
     expect(screen.getByText("Pessoa Jurídica")).toBeInTheDocument()
     expect(screen.getByText("11.222.333/0001-44")).toBeInTheDocument()
+  })
+
+  it("busca rápida manda ?search= e volta pra página 1 (busca geral)", async () => {
+    let lastSearch = null
+    server.use(
+      http.get(`${API}/clientes/`, ({ request }) => {
+        lastSearch = new URL(request.url).searchParams.get("search")
+        return HttpResponse.json({ results: [], count: 0 })
+      }),
+    )
+    renderWithProviders(<ClientList />)
+
+    fireEvent.change(await screen.findByLabelText("Busca rápida"), {
+      target: { value: "marcela" },
+    })
+
+    await waitFor(() => expect(lastSearch).toBe("marcela"))
   })
 })

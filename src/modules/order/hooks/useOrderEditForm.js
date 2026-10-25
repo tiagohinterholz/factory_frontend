@@ -40,6 +40,7 @@ export function useOrderEditForm() {
     productsTotal: "",
     servicesTotal: "",
     billingDate: null,
+    payment: null,
     budgetId: "",
     client: null,
     vehicle: null,
@@ -66,6 +67,7 @@ export function useOrderEditForm() {
       productsTotal: data.products_total ?? "0.00",
       servicesTotal: data.services_total ?? "0.00",
       billingDate: data.billing_date ?? null,
+      payment: data.payment ?? null,
       budgetId: idOf(data.budget),
       // registros crus do detalhe: garantem a <option> do select mesmo com o
       // cache de opções velho ou cortado por filtro em cascata
@@ -81,7 +83,7 @@ export function useOrderEditForm() {
     defaultValues: orderDefaults,
     load: async () => toOrderForm(await fetchMeta()),
     submit: (values) => OrderService.updateOrder(id, toOrderPayload(values)),
-    redirectTo: "/ordens",
+    onSuccess: () => fetchMeta(),
     invalidate: ORDER_WIDE,
     errorFallback: "Erro ao atualizar a ordem de serviço",
   })
@@ -114,18 +116,6 @@ export function useOrderEditForm() {
     errorFallback: "Erro ao finalizar o serviço",
   })
 
-  const invoice = useResourceAction({
-    mutationFn: () => OrderService.invoiceOrder(id),
-    confirm: {
-      title: "Faturar ordem de serviço?",
-      message: "Esta ação não pode ser desfeita.",
-      confirmText: "Faturar",
-    },
-    invalidate: [orderKeys.all, dashboardKeys.all],
-    onSuccess: () => fetchMeta(),
-    errorFallback: "Erro ao faturar a ordem de serviço",
-  })
-
   return {
     form,
     onSubmit,
@@ -137,6 +127,7 @@ export function useOrderEditForm() {
     productsTotal: meta.productsTotal,
     servicesTotal: meta.servicesTotal,
     billingDate: meta.billingDate,
+    payment: meta.payment,
     budgetId: meta.budgetId,
     relatedClient: meta.client,
     relatedVehicle: meta.vehicle,
@@ -144,6 +135,5 @@ export function useOrderEditForm() {
     refresh: fetchMeta,
     handleDelete: remove.run,
     handleFinish: finish.run,
-    handleInvoice: invoice.run,
   }
 }

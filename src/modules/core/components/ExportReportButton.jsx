@@ -9,7 +9,11 @@ import {
 } from "@/modules/core/hooks/options"
 import FilterSelect from "@/modules/core/components/FilterSelect"
 import FormField from "@/modules/core/components/FormField"
-import { REPORT_STATUS_OPTIONS, FILTERABLE_REPORTS } from "@/modules/core/constants/report"
+import {
+  REPORT_STATUS_OPTIONS,
+  FILTERABLE_REPORTS,
+  CASHFLOW_ENTRY_TYPE_OPTIONS,
+} from "@/modules/core/constants/report"
 
 const EMPTY = {
   status: "",
@@ -20,12 +24,9 @@ const EMPTY = {
   date_to: "",
 }
 
-function FilterPopover({ type, onSubmit, onClose }) {
-  const [filters, setFilters] = useState(EMPTY)
-  const setField = (key) => (event) =>
-    setFilters((current) => ({ ...current, [key]: event.target.value }))
-  const setValue = (key) => (next) => setFilters((current) => ({ ...current, [key]: next }))
+const CASHFLOW_EMPTY = { entry_type: "", date_from: "", date_to: "" }
 
+function RecordFilterFields({ type, filters, setValue }) {
   const { client } = useClientOptions()
   const { vehicle } = useVehicleOptions()
   const { supplier } = useSupplierOptions()
@@ -38,19 +39,7 @@ function FilterPopover({ type, onSubmit, onClose }) {
   const supplierOpts = supplier.map((s) => ({ id: s.id, name: s.trade_name || s.corporate_name }))
 
   return (
-    <div className="fixed inset-x-3 top-24 z-40 max-h-[70vh] overflow-y-auto rounded-xl border border-line bg-surface shadow-pop p-4 space-y-3 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 sm:max-h-none sm:overflow-visible">
-      <div className="flex items-center justify-between">
-        <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Fechar filtros"
-          className="-mr-1 rounded p-1 text-muted hover:bg-ground hover:text-ink"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
+    <>
       <FilterSelect
         label="Status"
         options={REPORT_STATUS_OPTIONS[type]}
@@ -75,6 +64,42 @@ function FilterPopover({ type, onSubmit, onClose }) {
         value={filters.supplier_id}
         onChange={setValue("supplier_id")}
       />
+    </>
+  )
+}
+
+function FilterPopover({ type, onSubmit, onClose }) {
+  const isCashflow = type === "cashflow"
+  const empty = isCashflow ? CASHFLOW_EMPTY : EMPTY
+  const [filters, setFilters] = useState(empty)
+  const setField = (key) => (event) =>
+    setFilters((current) => ({ ...current, [key]: event.target.value }))
+  const setValue = (key) => (next) => setFilters((current) => ({ ...current, [key]: next }))
+
+  return (
+    <div className="fixed inset-x-3 top-24 z-40 max-h-[70vh] overflow-y-auto rounded-xl border border-line bg-surface shadow-pop p-4 space-y-3 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 sm:max-h-none sm:overflow-visible">
+      <div className="flex items-center justify-between">
+        <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fechar filtros"
+          className="-mr-1 rounded p-1 text-muted hover:bg-ground hover:text-ink"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {isCashflow ? (
+        <FilterSelect
+          label="Tipo"
+          options={CASHFLOW_ENTRY_TYPE_OPTIONS}
+          value={filters.entry_type}
+          onChange={setValue("entry_type")}
+        />
+      ) : (
+        <RecordFilterFields type={type} filters={filters} setValue={setValue} />
+      )}
 
       <div className="grid grid-cols-2 gap-2">
         <FormField
@@ -89,7 +114,7 @@ function FilterPopover({ type, onSubmit, onClose }) {
       <div className="flex items-center justify-between pt-1">
         <button
           type="button"
-          onClick={() => setFilters(EMPTY)}
+          onClick={() => setFilters(empty)}
           className="text-[13px] text-muted hover:text-ink"
         >
           Limpar
@@ -106,8 +131,6 @@ function FilterPopover({ type, onSubmit, onClose }) {
   )
 }
 
-// `type`: "orders" | "budgets" | "stock". orders/budgets abrem um popover
-// de filtros; stock dispara direto. Só aparece pra superusuário / admin.
 export default function ExportReportButton({ type, label = "Exportar PDF" }) {
   const { canExportReports } = usePermissions()
   const { exportReport, isExporting } = useReportExport()

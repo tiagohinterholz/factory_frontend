@@ -21,29 +21,47 @@ import {
   X,
 } from "lucide-react"
 
-const primaryItems = [{ path: "/dashboard", name: "Dashboard", icon: LayoutDashboard }]
+const primaryItems = [
+  { path: "/dashboard", name: "Dashboard", icon: LayoutDashboard, permission: "canViewDashboard" },
+]
 
 const preVehicleItems = [
-  { path: "/clientes", name: "Clientes", icon: Users },
-  { path: "/agendamentos", name: "Agendamentos", icon: Calendar },
+  { path: "/clientes", name: "Clientes", icon: Users, permission: "canViewClients" },
+  {
+    path: "/agendamentos",
+    name: "Agendamentos",
+    icon: Calendar,
+    permission: "canViewAppointments",
+  },
 ]
 
 const postVehicleItems = [
-  { path: "/orcamentos", name: "Orçamentos", icon: TrendingUp },
-  { path: "/ordens", name: "Ordens de Serviço", icon: ClipboardList },
-  { path: "/notas-fiscais", name: "Notas Fiscais", icon: FileText },
+  { path: "/orcamentos", name: "Orçamentos", icon: TrendingUp, permission: "canViewBudgets" },
+  { path: "/ordens", name: "Ordens de Serviço", icon: ClipboardList, permission: "canViewOrders" },
+  {
+    path: "/notas-fiscais",
+    name: "Notas Fiscais",
+    icon: FileText,
+    permission: "canViewFiscalNotes",
+  },
 ]
 
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
   const location = useLocation()
+  const permissions = usePermissions()
   const {
     canManageLicenses,
     canManageUsers,
-    canManageFinancial,
     canManagePurchases,
+    canViewVehicles,
+    canViewLocations,
+    canViewSupplies,
+    canViewBusiness,
+    canViewFinancial,
     businessId,
     userId,
-  } = usePermissions()
+  } = permissions
+  const allowed = (items) => items.filter((item) => permissions[item.permission])
   // /configuracoes/* é sempre "o meu negócio" — superusuário não tem um
   // (400 no back), então nem mostra Gestão. Licenças aponta pra própria
   // licença quando há negócio, ou pra navegação geral (/licencas) quando é
@@ -65,6 +83,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
       "/compras",
     ].some((path) => location.pathname.startsWith(path)),
   )
+  const [financialOpen, setFinancialOpen] = useState(location.pathname.startsWith("/financeiro"))
   const [vehicleOpen, setVehicleOpen] = useState(
     ["/veiculos", "/marcas", "/modelos"].some((path) => location.pathname.startsWith(path)),
   )
@@ -167,7 +186,6 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
           <X className="w-5 h-5" />
         </button>
 
-        {/* Logo */}
         <div
           className={`flex items-center gap-3 mb-10 px-2 ${
             collapsed ? "lg:px-0 lg:justify-center" : ""
@@ -185,151 +203,202 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
         </div>
 
         <nav className="flex-1 space-y-1.5 overflow-y-auto no-scrollbar pr-1 scrollbar-thin">
-          {primaryItems.map(renderNavItem)}
+          {allowed(primaryItems).map(renderNavItem)}
 
-          <div className="space-y-1.5">{preVehicleItems.map(renderNavItem)}</div>
+          <div className="space-y-1.5">{allowed(preVehicleItems).map(renderNavItem)}</div>
 
-          {/* Veículos */}
-          <div className="pt-2">
-            {renderGroupButton(
-              "Veículos",
-              Car,
-              vehicleOpen,
-              ["/veiculos", "/marcas", "/modelos"],
-              handleGroup(setVehicleOpen),
-            )}
+          {canViewVehicles && (
+            <div className="pt-2">
+              {renderGroupButton(
+                "Veículos",
+                Car,
+                vehicleOpen,
+                ["/veiculos", "/marcas", "/modelos"],
+                handleGroup(setVehicleOpen),
+              )}
 
-            {vehicleOpen && !collapsed && (
-              <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
-                <Link
-                  to="/veiculos"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/veiculos"))}
-                >
-                  Veículos
-                </Link>
-                <Link
-                  to="/marcas"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/marcas"))}
-                >
-                  Marcas
-                </Link>
-                <Link
-                  to="/modelos"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/modelos"))}
-                >
-                  Modelos
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Localização */}
-          <div className="pt-2">
-            {renderGroupButton(
-              "Localização",
-              MapPin,
-              locationOpen,
-              ["/estados", "/cidades"],
-              handleGroup(setLocationOpen),
-            )}
-
-            {locationOpen && !collapsed && (
-              <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
-                <Link
-                  to="/estados"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/estados"))}
-                >
-                  Estados
-                </Link>
-                <Link
-                  to="/cidades"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/cidades"))}
-                >
-                  Cidades
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Suprimentos */}
-          <div className="pt-2">
-            {renderGroupButton(
-              "Suprimentos",
-              Boxes,
-              suppliesOpen,
-              [
-                "/fornecedores",
-                "/produtos",
-                "/categorias-produto",
-                "/subcategorias-produto",
-                "/servicos",
-                "/compras",
-              ],
-              handleGroup(setSuppliesOpen),
-            )}
-
-            {suppliesOpen && !collapsed && (
-              <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
-                <Link
-                  to="/fornecedores"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/fornecedores"))}
-                >
-                  Fornecedores
-                </Link>
-                <Link
-                  to="/produtos"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/produtos"))}
-                >
-                  Produtos
-                </Link>
-                <div className="ml-3 space-y-1 border-l border-slate-800 pl-3">
+              {vehicleOpen && !collapsed && (
+                <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
                   <Link
-                    to="/categorias-produto"
+                    to="/marcas"
                     onClick={onCloseMobile}
-                    className={subLinkClass(isActive("/categorias-produto"))}
+                    className={subLinkClass(isActive("/marcas"))}
+                  >
+                    Marcas
+                  </Link>
+                  <Link
+                    to="/modelos"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/modelos"))}
+                  >
+                    Modelos
+                  </Link>
+                  <Link
+                    to="/veiculos"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/veiculos"))}
+                  >
+                    Veículos
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+
+          {canViewLocations && (
+            <div className="pt-2">
+              {renderGroupButton(
+                "Localização",
+                MapPin,
+                locationOpen,
+                ["/estados", "/cidades"],
+                handleGroup(setLocationOpen),
+              )}
+
+              {locationOpen && !collapsed && (
+                <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
+                  <Link
+                    to="/estados"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/estados"))}
+                  >
+                    Estados
+                  </Link>
+                  <Link
+                    to="/cidades"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/cidades"))}
+                  >
+                    Cidades
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+
+          {canViewSupplies && (
+            <div className="pt-2">
+              {renderGroupButton(
+                "Suprimentos",
+                Boxes,
+                suppliesOpen,
+                [
+                  "/fornecedores",
+                  "/produtos",
+                  "/categorias-produto",
+                  "/subcategorias-produto",
+                  "/servicos",
+                  "/compras",
+                ],
+                handleGroup(setSuppliesOpen),
+              )}
+
+              {suppliesOpen && !collapsed && (
+                <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
+                  <Link
+                    to="/fornecedores"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/fornecedores"))}
+                  >
+                    Fornecedores
+                  </Link>
+                  <Link
+                    to="/produtos"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/produtos"))}
+                  >
+                    Produtos
+                  </Link>
+                  <div className="ml-3 space-y-1 border-l border-slate-800 pl-3">
+                    <Link
+                      to="/categorias-produto"
+                      onClick={onCloseMobile}
+                      className={subLinkClass(isActive("/categorias-produto"))}
+                    >
+                      Categorias
+                    </Link>
+                    <Link
+                      to="/subcategorias-produto"
+                      onClick={onCloseMobile}
+                      className={subLinkClass(isActive("/subcategorias-produto"))}
+                    >
+                      Subcategorias
+                    </Link>
+                  </div>
+                  <Link
+                    to="/servicos"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/servicos"))}
+                  >
+                    Serviços
+                  </Link>
+                  {canManagePurchases && (
+                    <Link
+                      to="/compras"
+                      onClick={onCloseMobile}
+                      className={subLinkClass(isActive("/compras"))}
+                    >
+                      Compras
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="pt-2 space-y-1.5">{allowed(postVehicleItems).map(renderNavItem)}</div>
+
+          {canViewFinancial && (
+            <div className="pt-2">
+              {renderGroupButton(
+                "Financeiro",
+                Wallet,
+                financialOpen,
+                ["/financeiro"],
+                handleGroup(setFinancialOpen),
+              )}
+
+              {financialOpen && !collapsed && (
+                <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
+                  <Link
+                    to="/financeiro"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(
+                      isActive("/financeiro") &&
+                        ![
+                          "/financeiro/categorias",
+                          "/financeiro/tags",
+                          "/financeiro/relatorios",
+                        ].some((path) => location.pathname.startsWith(path)),
+                    )}
+                  >
+                    Lançamentos
+                  </Link>
+                  <Link
+                    to="/financeiro/categorias"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/financeiro/categorias"))}
                   >
                     Categorias
                   </Link>
                   <Link
-                    to="/subcategorias-produto"
+                    to="/financeiro/tags"
                     onClick={onCloseMobile}
-                    className={subLinkClass(isActive("/subcategorias-produto"))}
+                    className={subLinkClass(isActive("/financeiro/tags"))}
                   >
-                    Subcategorias
+                    Tags
+                  </Link>
+                  <Link
+                    to="/financeiro/relatorios"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/financeiro/relatorios"))}
+                  >
+                    Relatórios
                   </Link>
                 </div>
-                <Link
-                  to="/servicos"
-                  onClick={onCloseMobile}
-                  className={subLinkClass(isActive("/servicos"))}
-                >
-                  Serviços
-                </Link>
-                {canManagePurchases && (
-                  <Link
-                    to="/compras"
-                    onClick={onCloseMobile}
-                    className={subLinkClass(isActive("/compras"))}
-                  >
-                    Compras
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="pt-2 space-y-1.5">
-            {postVehicleItems.map(renderNavItem)}
-            {canManageFinancial &&
-              renderNavItem({ path: "/financeiro", name: "Financeiro", icon: Wallet })}
-          </div>
+              )}
+            </div>
+          )}
         </nav>
 
         <div className="mt-8 pt-6 border-t border-white/5 space-y-1">
@@ -344,7 +413,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
 
             {settingsOpen && !collapsed && (
               <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
-                {businessId && (
+                {businessId && canViewBusiness && (
                   <Link
                     to="/configuracoes"
                     onClick={onCloseMobile}

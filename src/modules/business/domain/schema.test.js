@@ -30,15 +30,15 @@ describe("toBusinessPayload", () => {
     expect(payload).not.toHaveProperty("logo")
   })
 
-  it("email nunca é reenviado — campo read-only, back rejeita a chave", () => {
+  it("email vai no payload — o Gerente também pode alterá-lo", () => {
     const payload = toBusinessPayload({ ...base, logo: "" })
-    expect(payload).not.toHaveProperty("email")
+    expect(payload.email).toBe("a@a.com")
   })
 
-  it("email também fica de fora no multipart (com File novo)", () => {
+  it("email também vai no multipart (com File novo)", () => {
     const file = new File(["x"], "logo.png", { type: "image/png" })
     const payload = toBusinessPayload({ ...base, logo: file })
-    expect(payload.get("email")).toBeNull()
+    expect(payload.get("email")).toBe("a@a.com")
   })
 
   it("com File novo, vira FormData com o logo e os campos não-vazios", () => {
@@ -52,5 +52,20 @@ describe("toBusinessPayload", () => {
     // campos vazios são omitidos do multipart
     expect(payload.get("trade_name")).toBeNull()
     expect(payload.get("complement")).toBeNull()
+  })
+
+  it("sem permissão de identidade não manda razão social, CNPJ nem logo", () => {
+    const file = new File(["x"], "logo.png", { type: "image/png" })
+    const payload = toBusinessPayload(
+      { ...base, corporate_name: "Razão", cnpj: "11.222.333/0001-81", logo: file },
+      { canEditIdentity: false },
+    )
+
+    expect(payload).not.toBeInstanceOf(FormData)
+    expect(payload).not.toHaveProperty("corporate_name")
+    expect(payload).not.toHaveProperty("cnpj")
+    expect(payload).not.toHaveProperty("logo")
+    expect(payload.email).toBe(base.email)
+    expect(payload.trade_name).toBe(base.trade_name)
   })
 })

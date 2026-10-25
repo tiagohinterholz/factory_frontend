@@ -33,6 +33,7 @@ export default function VehicleList() {
     refetch,
     remove,
     error,
+    setSearch,
   } = useVehicle()
 
   const columns = [
@@ -60,6 +61,8 @@ export default function VehicleList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por placa, modelo ou dono"
         title="Veículos"
         buttonText="Novo Veículo"
         buttonLink="/veiculos/novo"

@@ -39,6 +39,7 @@ export default function ClientList() {
     refetch,
     remove,
     error,
+    setSearch,
   } = useClient()
 
   const [vehiclesClient, setVehiclesClient] = useState(null)
@@ -60,6 +61,8 @@ export default function ClientList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por nome, CPF/CNPJ, telefone"
         title="Clientes"
         buttonText="Novo Cliente"
         buttonLink="/clientes/novo"
@@ -92,6 +95,8 @@ export default function ClientList() {
               <Car size={16} />
             </button>
             <Link
+              title="Editar cliente"
+              aria-label="Editar cliente"
               to={`/clientes/${item.id}`}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >

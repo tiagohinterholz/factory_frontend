@@ -128,4 +128,50 @@ describe("<Settings>", () => {
 
     await waitFor(() => expect(screen.getAllByRole("checkbox")).toHaveLength(7))
   })
+
+  it("gerente edita contato e endereço, mas razão social, CNPJ e logo ficam travados", async () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        business_id: 1,
+        role: "gerente",
+        permissions: ["businesses.view_business", "businesses.change_business"],
+      }),
+    )
+    renderWithProviders(<Settings />)
+
+    fireEvent.click(await screen.findByRole("button", { name: /editar empreendimento/i }))
+
+    expect(document.querySelector('input[name="corporate_name"]')).toBeDisabled()
+    expect(document.querySelector('input[name="trade_name"]')).toBeEnabled()
+    expect(document.querySelector('input[name="email"]')).toBeEnabled()
+    expect(document.querySelector('input[name="address"]')).toBeEnabled()
+    expect(screen.queryByText("Logo do empreendimento")).not.toBeInTheDocument()
+  })
+
+  it("gerente salva um novo e-mail da empresa", async () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        business_id: 1,
+        role: "gerente",
+        permissions: ["businesses.view_business", "businesses.change_business"],
+      }),
+    )
+    let savedPayload
+    server.use(
+      http.patch(`${API}/configuracoes/`, async ({ request }) => {
+        savedPayload = await request.json()
+        return HttpResponse.json({ ...business, ...savedPayload })
+      }),
+    )
+    renderWithProviders(<Settings />)
+
+    fireEvent.click(await screen.findByRole("button", { name: /editar empreendimento/i }))
+    const emailInput = document.querySelector('input[name="email"]')
+    fireEvent.change(emailInput, { target: { value: "novo@oficina.com" } })
+    fireEvent.click(screen.getByRole("button", { name: /salvar alterações/i }))
+
+    await waitFor(() => expect(savedPayload.email).toBe("novo@oficina.com"))
+  })
 })

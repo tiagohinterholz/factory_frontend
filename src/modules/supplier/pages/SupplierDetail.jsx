@@ -13,6 +13,7 @@ import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
+import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import { SupplierService } from "@/modules/supplier/services/supplier"
 import { CNPJ_MASK, PHONE_MASK } from "@/modules/core/schemas/br-fields"
 import { formatMoney } from "@/modules/core/utils/format"
@@ -33,6 +34,7 @@ export default function SupplierDetail() {
   } = form
 
   const stateId = watch("state_id")
+  const phone = watch("phone")
 
   const { states, loading: loadingStates } = useStateOptions()
   const { citiesByState, loading: loadingCities } = useCityOptionsByState(stateId)
@@ -67,6 +69,7 @@ export default function SupplierDetail() {
             request={() => SupplierService.getSupplierServicesPdf(id)}
             label="Relatório de serviços"
           />
+          <WhatsAppButton phone={phone} label="WhatsApp" />
           <button
             type="button"
             onClick={handleDelete}
@@ -92,7 +95,7 @@ export default function SupplierDetail() {
             <form className="space-y-6" onSubmit={onSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
-                  label="Razão Social"
+                  label="Razão Social *"
                   placeholder="Ex: Fornecedora de Insumos LTDA"
                   error={errors.corporate_name?.message}
                   registration={register("corporate_name")}
@@ -109,13 +112,13 @@ export default function SupplierDetail() {
                 <MaskedField
                   control={control}
                   name="cnpj"
-                  label="CNPJ"
+                  label="CNPJ *"
                   mask={CNPJ_MASK}
                   placeholder="00.000.000/0000-00"
                   error={errors.cnpj?.message}
                 />
                 <FormField
-                  label="E-mail"
+                  label="E-mail *"
                   type="email"
                   placeholder="contato@fornecedor.com"
                   error={errors.email?.message}
@@ -126,7 +129,7 @@ export default function SupplierDetail() {
               <MaskedField
                 control={control}
                 name="phone"
-                label="Telefone"
+                label="Telefone *"
                 mask={PHONE_MASK}
                 placeholder="(00) 00000-0000"
                 error={errors.phone?.message}
@@ -145,13 +148,13 @@ export default function SupplierDetail() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <SelectField
-                  label="Estado"
+                  label="Estado *"
                   options={states}
                   error={errors.state_id?.message}
                   registration={register("state_id", { onChange: () => setValue("city_id", "") })}
                 />
                 <SelectField
-                  label="Cidade"
+                  label="Cidade *"
                   options={citiesByState}
                   error={errors.city_id?.message}
                   registration={register("city_id")}
@@ -161,14 +164,14 @@ export default function SupplierDetail() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
                   <FormField
-                    label="Endereço"
+                    label="Endereço *"
                     placeholder="Rua, Avenida, etc."
                     error={errors.address?.message}
                     registration={register("address")}
                   />
                 </div>
                 <FormField
-                  label="Número"
+                  label="Número *"
                   placeholder="123"
                   error={errors.number?.message}
                   registration={register("number")}
@@ -253,10 +256,26 @@ export default function SupplierDetail() {
                     id: p.id,
                     name: p.name,
                     subtitle: formatMoney(p.unit_price),
+                    stockQuantity: p.stock_quantity,
                   }))}
                   loading={loadingRelated}
                   emptyMessage="Nenhum produto cadastrado para este fornecedor."
                   onAddClick={() => navigate("/produtos/novo", { state: { supplierId: id } })}
+                  addLabel="Adicionar produto"
+                  renderItem={(item) => (
+                    <div
+                      onClick={() => navigate(`/produtos/${item.id}`)}
+                      className="p-3 bg-ground rounded-lg border border-line flex items-center justify-between group cursor-pointer transition-colors hover:bg-surface hover:border-brand/30"
+                    >
+                      <p className="font-medium text-ink text-sm">{item.name}</p>
+                      <div className="text-right">
+                        <p className="text-[12px] text-muted">{item.subtitle}</p>
+                        <p className="text-[11px] text-muted/80">
+                          Estoque: {item.stockQuantity ?? 0}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 />
               ) : (
                 <RelatedDataCard
@@ -270,6 +289,16 @@ export default function SupplierDetail() {
                   loading={loadingRelated}
                   emptyMessage="Nenhum serviço cadastrado para este fornecedor."
                   onAddClick={() => navigate("/servicos/novo", { state: { supplierId: id } })}
+                  addLabel="Adicionar serviço"
+                  renderItem={(item) => (
+                    <div
+                      onClick={() => navigate(`/servicos/${item.id}`)}
+                      className="p-3 bg-ground rounded-lg border border-line flex items-center justify-between group cursor-pointer transition-colors hover:bg-surface hover:border-brand/30"
+                    >
+                      <p className="font-medium text-ink text-sm">{item.name}</p>
+                      <p className="text-[12px] text-muted">{item.subtitle}</p>
+                    </div>
+                  )}
                 />
               )}
             </div>

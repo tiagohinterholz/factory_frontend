@@ -139,20 +139,64 @@ describe("<Dashboard>", () => {
     )
   })
 
-  it("um quadro só com toggle — abre em 'Em Andamento' e mostra os mini-stats", async () => {
+  it("dois quadros separados: Atendimentos abre em 'Em Andamento' e Movimentação em 'A Faturar' (RAD-P1-01)", async () => {
     mockDashboard()
     mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
-    expect(await screen.findByText("Atendimentos e Movimentação")).toBeInTheDocument()
-    expect(screen.getByText("Agendados na semana")).toBeInTheDocument()
-    expect(screen.getByText("A faturar hoje")).toBeInTheDocument()
+    const atendimentos = (await screen.findByRole("heading", { name: "Atendimentos" })).closest(
+      "section",
+    )
+    const movimentacao = screen.getByRole("heading", { name: "Movimentação" }).closest("section")
+    expect(atendimentos).not.toBe(movimentacao)
 
-    // abre em "Em Andamento": só Maria Souza aparece
-    expect(screen.getByText("Maria Souza")).toBeInTheDocument()
-    expect(screen.queryByText("Fernanda Lopes")).not.toBeInTheDocument()
-    expect(screen.queryByText("João Silva")).not.toBeInTheDocument()
-    expect(screen.queryByText("Pedro Alves")).not.toBeInTheDocument()
+    expect(within(atendimentos).getByText("Agendados na semana")).toBeInTheDocument()
+    expect(within(atendimentos).getByText("Maria Souza")).toBeInTheDocument()
+    expect(within(atendimentos).queryByText("Fernanda Lopes")).not.toBeInTheDocument()
+    expect(within(atendimentos).queryByText("João Silva")).not.toBeInTheDocument()
+
+    expect(within(movimentacao).getByText("A faturar hoje")).toBeInTheDocument()
+    expect(within(movimentacao).getByText("João Silva")).toBeInTheDocument()
+    expect(within(movimentacao).queryByText("Pedro Alves")).not.toBeInTheDocument()
+    expect(within(movimentacao).queryByText("Maria Souza")).not.toBeInTheDocument()
+  })
+
+  it("cada quadro filtra só os próprios cards, sem mexer no outro (RAD-P1-01)", async () => {
+    mockDashboard()
+    mockFinancialEntries()
+    renderWithProviders(<Dashboard />)
+
+    const atendimentos = (await screen.findByRole("heading", { name: "Atendimentos" })).closest(
+      "section",
+    )
+    const movimentacao = screen.getByRole("heading", { name: "Movimentação" }).closest("section")
+
+    fireEvent.click(within(movimentacao).getByRole("button", { name: /^faturadas/i }))
+
+    expect(await within(movimentacao).findByText("Pedro Alves")).toBeInTheDocument()
+    expect(within(atendimentos).getByText("Maria Souza")).toBeInTheDocument()
+
+    fireEvent.click(within(atendimentos).getByRole("button", { name: /^aguardando execução/i }))
+
+    expect(await within(atendimentos).findByText("Fernanda Lopes")).toBeInTheDocument()
+    expect(within(movimentacao).getByText("Pedro Alves")).toBeInTheDocument()
+    expect(within(atendimentos).queryByRole("button", { name: /^faturadas/i })).toBeNull()
+    expect(within(movimentacao).queryByRole("button", { name: /^em andamento/i })).toBeNull()
+  })
+
+  it("Financeiro do mês e Resumo ficam abaixo dos dois quadros (RAD-P1-02)", async () => {
+    mockDashboard()
+    mockFinancialEntries()
+    renderWithProviders(<Dashboard />)
+
+    await screen.findByText("Financeiro do mês")
+    const headings = screen
+      .getAllByRole("heading")
+      .map((heading) => heading.textContent)
+      .filter((text) =>
+        ["Atendimentos", "Movimentação", "Financeiro do mês", "Resumo"].includes(text),
+      )
+    expect(headings).toEqual(["Atendimentos", "Movimentação", "Financeiro do mês", "Resumo"])
   })
 
   it("alterna pro 'Aguardando Execução' e mostra só quem tá nesse status", async () => {
@@ -167,13 +211,12 @@ describe("<Dashboard>", () => {
     expect(screen.queryByText("Maria Souza")).not.toBeInTheDocument()
   })
 
-  it("alterna pro 'A Faturar' e mostra só a OS a faturar", async () => {
+  it("Movimentação mostra a OS a faturar com link pra ela", async () => {
     mockDashboard()
     mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
     await screen.findByText("Maria Souza")
-    fireEvent.click(screen.getByRole("button", { name: /^a faturar/i }))
 
     const card = await screen.findByRole("button", { name: /editar agendamento de joão silva/i })
     expect(within(card).getByRole("link", { name: /os #10/i })).toHaveAttribute(
@@ -214,7 +257,7 @@ describe("<Dashboard>", () => {
     mockDashboard()
     renderWithProviders(<Dashboard />)
 
-    await screen.findByText("Atendimentos e Movimentação")
+    await screen.findByRole("heading", { name: "Atendimentos" })
     expect(screen.queryByText("Financeiro do mês")).not.toBeInTheDocument()
     expect(screen.queryByText("R$ 970,00")).not.toBeInTheDocument()
   })
@@ -271,7 +314,7 @@ describe("<Dashboard>", () => {
     mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
-    await screen.findByText("Atendimentos e Movimentação")
+    await screen.findByRole("heading", { name: "Atendimentos" })
     expect(screen.getByText("Resumo")).toBeInTheDocument()
     expect(screen.getByText("15")).toBeInTheDocument()
   })
@@ -281,7 +324,7 @@ describe("<Dashboard>", () => {
     mockFinancialEntries()
     renderWithProviders(<Dashboard />)
 
-    await screen.findByText("Atendimentos e Movimentação")
+    await screen.findByRole("heading", { name: "Atendimentos" })
     expect(screen.queryByText("Agendados na semana")).not.toBeInTheDocument()
   })
 

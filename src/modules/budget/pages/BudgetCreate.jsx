@@ -1,9 +1,8 @@
 import { useLocation } from "react-router-dom"
 import { useBudgetForm } from "@/modules/budget/hooks/useBudgetForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useClientOptions } from "@/modules/core/hooks/options"
-import { useVehicleOptions } from "@/modules/core/hooks/options"
-import SelectField from "@/modules/core/components/SelectField"
+import { ClientLiveSelect } from "@/modules/client"
+import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 
 export default function BudgetCreate() {
@@ -14,32 +13,13 @@ export default function BudgetCreate() {
     appointmentId: location.state?.appointmentId,
   })
   const {
-    register,
     watch,
     setValue,
     formState: { errors, isSubmitting },
   } = form
 
-  const businessId = watch("business_id")
   const clientId = watch("client_id")
-
-  const { client: clients, loading: loadingClients } = useClientOptions()
-  const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
-
-  const clientOptions = clients
-    .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
-    .map((c) => ({ id: c.id, name: c.display_name }))
-  const vehicleOptions = vehicles
-    .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
-    .map((v) => ({ id: v.id, name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})` }))
-
-  if (loadingClients || loadingVehicles) {
-    return (
-      <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  const vehicleId = watch("vehicle_id")
 
   return (
     <div className="p-6 space-y-6">
@@ -52,21 +32,23 @@ export default function BudgetCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            <SelectField
+            <ClientLiveSelect
               label="Cliente"
-              options={clientOptions}
+              value={clientId}
+              onChange={(value) => {
+                if (value === clientId) return
+                setValue("client_id", value)
+                setValue("vehicle_id", "")
+              }}
               error={errors.client_id?.message}
-              registration={register("client_id", {
-                onChange: () => setValue("vehicle_id", ""),
-              })}
             />
-            <SelectField
+            <VehicleLiveSelect
               label="Veículo"
-              options={vehicleOptions}
-              disabled={!clientId}
+              value={vehicleId}
+              onChange={(value) => setValue("vehicle_id", value)}
+              clientId={clientId}
               disabledHint="Selecione o cliente primeiro"
               error={errors.vehicle_id?.message}
-              registration={register("vehicle_id")}
             />
             <p className="text-xs text-muted">
               A validade é definida automaticamente em 30 dias e pode ser ajustada depois, na edição
