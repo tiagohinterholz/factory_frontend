@@ -82,7 +82,7 @@ export const businessDefaults = {
 export const BUSINESS_IDENTITY_FIELDS = ["corporate_name", "cnpj", "logo"]
 
 export function toBusinessPayload(values, { canEditIdentity = true } = {}) {
-  const { logo, email: _email, ...allowed } = values
+  const { logo, ...allowed } = values
   const rest = canEditIdentity
     ? allowed
     : Object.fromEntries(

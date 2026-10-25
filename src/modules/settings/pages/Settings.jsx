@@ -159,7 +159,7 @@ export default function Settings() {
                 label="E-mail"
                 type="email"
                 placeholder="contato@empresa.com"
-                disabled
+                disabled={!editing}
                 error={errors.email?.message}
                 registration={register("email")}
               />
