@@ -6,6 +6,7 @@ const FinancialCategoryCreate = lazy(() => import("./pages/FinancialCategoryCrea
 const FinancialCategoryEdit = lazy(() => import("./pages/FinancialCategoryEdit"))
 const FinancialTagList = lazy(() => import("./pages/FinancialTagList"))
 const FinancialSubcategoryList = lazy(() => import("./pages/FinancialSubcategoryList"))
+const FinancialSubcategoryCreate = lazy(() => import("./pages/FinancialSubcategoryCreate"))
 
 const FinancialCategoryRoutes = (
   <>
@@ -14,6 +15,7 @@ const FinancialCategoryRoutes = (
     <Route path="/financeiro/categorias/:id" element={<FinancialCategoryEdit />} />
     <Route path="/financeiro/tags" element={<FinancialTagList />} />
     <Route path="/subcategorias-financeiro" element={<FinancialSubcategoryList />} />
+    <Route path="/subcategorias-financeiro/novo" element={<FinancialSubcategoryCreate />} />
   </>
 )
 

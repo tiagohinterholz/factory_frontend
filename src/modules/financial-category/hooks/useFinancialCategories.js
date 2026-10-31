@@ -1,9 +1,18 @@
+import { useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { useResourceList } from "@/modules/core/hooks/useResourceList"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
+import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { fetchAllPages } from "@/api/fetch-all-pages"
+import { idOf } from "@/api/dto"
 import { FinancialCategoryService } from "../services/financial-category"
-import { financialCategoryKeys, financialTagKeys, financialSubcategoryKeys } from "../domain"
+import {
+  financialCategoryKeys,
+  financialTagKeys,
+  financialSubcategoryKeys,
+  financialSubcategorySchema,
+  financialSubcategoryDefaults,
+} from "../domain"
 
 export function useFinancialCategories() {
   const list = useResourceList({
@@ -67,6 +76,34 @@ export function useFinancialSubcategories() {
 
   const { items, ...rest } = list
   return { ...rest, subcategories: items, remove: remove.run }
+}
+
+export function useFinancialSubcategoryForm() {
+  return useResourceForm({
+    schema: financialSubcategorySchema,
+    defaultValues: financialSubcategoryDefaults,
+    submit: (values) => FinancialCategoryService.createSubcategory(values),
+    redirectTo: "/subcategorias-financeiro",
+    invalidate: [financialSubcategoryKeys.all],
+    errorFallback: "Erro ao criar subcategoria",
+  })
+}
+
+export function useFinancialSubcategoryEditForm() {
+  const { id } = useParams()
+
+  return useResourceForm({
+    schema: financialSubcategorySchema,
+    defaultValues: financialSubcategoryDefaults,
+    load: async () => {
+      const data = await FinancialCategoryService.getSubcategory(id)
+      return { name: data.name ?? "", category_id: idOf(data.category) }
+    },
+    submit: (values) => FinancialCategoryService.updateSubcategory(id, values),
+    redirectTo: "/subcategorias-financeiro",
+    invalidate: [financialSubcategoryKeys.all],
+    errorFallback: "Erro ao atualizar subcategoria",
+  })
 }
 
 export function useFinancialTagOptions() {
