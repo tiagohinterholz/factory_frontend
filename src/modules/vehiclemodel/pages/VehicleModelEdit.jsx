@@ -1,8 +1,7 @@
 import { useVehicleModelEditForm } from "@/modules/vehiclemodel/hooks/useVehicleModelEditForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useManufacturerOptions } from "@/modules/core/hooks/options"
+import ManufacturerLiveSelect from "@/modules/vehicle/components/ManufacturerLiveSelect"
 import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Layers, Trash2, Edit2 } from "lucide-react"
 
@@ -10,12 +9,14 @@ export default function VehicleModelEdit() {
   const { form, onSubmit, loading, handleDelete } = useVehicleModelEditForm()
   const {
     register,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = form
 
-  const { manufacturers, loading: loadingManufacturers } = useManufacturerOptions()
+  const manufacturerId = watch("manufacturer_id")
 
-  if (loading || loadingManufacturers) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -50,11 +51,11 @@ export default function VehicleModelEdit() {
           </div>
 
           <form className="space-y-6" onSubmit={onSubmit}>
-            <SelectField
+            <ManufacturerLiveSelect
               label="Marca"
-              options={manufacturers}
+              value={manufacturerId}
+              onChange={(value) => setValue("manufacturer_id", value)}
               error={errors.manufacturer_id?.message}
-              registration={register("manufacturer_id")}
             />
 
             <FormField
