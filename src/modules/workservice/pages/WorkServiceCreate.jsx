@@ -1,33 +1,22 @@
-import { useNavigate } from "react-router-dom"
 import { useWorkServiceForm } from "@/modules/workservice/hooks/useWorkServiceForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useSupplierOptions } from "@/modules/core/hooks/options"
+import { SupplierLiveSelect } from "@/modules/supplier"
 import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { Save, Milestone, Plus } from "lucide-react"
+import { Save, Milestone } from "lucide-react"
 
 export default function WorkServiceCreate() {
-  const navigate = useNavigate()
   const { form, onSubmit } = useWorkServiceForm()
   const {
     register,
     control,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = form
 
-  const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
-
-  const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
-
-  if (loadingSuppliers) {
-    return (
-      <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  const supplierId = watch("supplier_id")
 
   return (
     <div className="p-6 space-y-6">
@@ -46,24 +35,12 @@ export default function WorkServiceCreate() {
 
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-end gap-2">
-                <div className="flex-1">
-                  <SelectField
-                    label="Fornecedor"
-                    options={supplierOptions}
-                    error={errors.supplier_id?.message}
-                    registration={register("supplier_id")}
-                  />
-                </div>
-                <button
-                  type="button"
-                  title="Cadastrar novo fornecedor"
-                  onClick={() => navigate("/fornecedores/novo")}
-                  className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-brand hover:bg-brand-subtle transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
+              <SupplierLiveSelect
+                label="Fornecedor"
+                value={supplierId}
+                onChange={(value) => setValue("supplier_id", value)}
+                error={errors.supplier_id?.message}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
