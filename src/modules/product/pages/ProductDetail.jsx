@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { useProductEditForm } from "@/modules/product/hooks/useProductEditForm"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
@@ -15,10 +15,11 @@ import { SupplierLiveSelect } from "@/modules/supplier"
 import { ProductService } from "@/modules/product/services/product"
 import { StockMovementHistory } from "@/modules/purchase"
 import { unitOfMeasureOptions, purchaseRequestMessage } from "@/modules/product/constants/product"
-import { Package, Edit2, Trash2 } from "lucide-react"
+import { Package, Edit2, Trash2, Eye } from "lucide-react"
 
 export default function ProductDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { form, onSubmit, loading, handleDelete } = useProductEditForm()
   const {
     register,
@@ -81,12 +82,25 @@ export default function ProductDetail() {
             </div>
 
             <form className="space-y-6" onSubmit={onSubmit}>
-              <SupplierLiveSelect
-                label="Fornecedor *"
-                value={supplierId}
-                onChange={(value) => setValue("supplier_id", value)}
-                error={errors.supplier_id?.message}
-              />
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <SupplierLiveSelect
+                    label="Fornecedor *"
+                    value={supplierId}
+                    onChange={(value) => setValue("supplier_id", value)}
+                    error={errors.supplier_id?.message}
+                  />
+                </div>
+                <button
+                  type="button"
+                  title="Ver fornecedor vinculado"
+                  disabled={!supplierId}
+                  onClick={() => navigate(`/fornecedores/${supplierId}`)}
+                  className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-muted hover:text-ink hover:bg-ground transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
