@@ -69,6 +69,52 @@ describe("<ProductList>", () => {
     )
   })
 
+  it("coluna Produto mostra 'Nome (Marca)' quando há marca, e só o nome quando não há", async () => {
+    server.use(
+      http.get(`${API}/fornecedores/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 1, name: "Pneu 175/68", brand: "Pirelli" },
+            { id: 2, name: "Sem marca cadastrada", brand: "" },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    renderWithProviders(<ProductList />)
+
+    expect(await screen.findByText("Pneu 175/68 (Pirelli)")).toBeInTheDocument()
+    expect(screen.getByText("Sem marca cadastrada")).toBeInTheDocument()
+  })
+
+  it("coluna 'Categoria / Sub-categoria' mostra o caminho combinado, ou '-' sem subcategoria", async () => {
+    server.use(
+      http.get(`${API}/fornecedores/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            {
+              id: 1,
+              name: "Pneu 175/68",
+              subcategory: { id: 10, name: "Pneu de Carro", category: { id: 1, name: "Pneus" } },
+            },
+            { id: 2, name: "Sem subcategoria", subcategory: null },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    renderWithProviders(<ProductList />)
+
+    expect(await screen.findByText("Pneus / Pneu de Carro")).toBeInTheDocument()
+    const withoutRow = screen.getByText("Sem subcategoria").closest("tr")
+    // colunas: Fornecedor, Produto, Categoria / Sub-categoria, ...
+    expect(within(withoutRow).getAllByRole("cell")[2]).toHaveTextContent("-")
+  })
+
   it("destaca em vermelho o produto abaixo do estoque mínimo", async () => {
     server.use(
       http.get(`${API}/fornecedores/`, () => HttpResponse.json({ results: [], count: 0 })),
