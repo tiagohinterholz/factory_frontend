@@ -11,8 +11,10 @@ export default function ProductItemForm({ products = [], saving = false, onAdd }
 
   const options = products.map((product) => ({
     id: product.id,
-    name: `${product.name} (${formatMoney(product.unit_price)}) · estoque ${product.stock_quantity ?? 0}`,
-    searchText: [product.name, product.reference, product.sku].filter(Boolean).join(" "),
+    name: `${product.brand ? `${product.brand} - ` : ""}${product.name} (${formatMoney(product.unit_price)}) · estoque ${product.stock_quantity ?? 0}`,
+    searchText: [product.brand, product.name, product.reference, product.sku]
+      .filter(Boolean)
+      .join(" "),
   }))
 
   async function handleSubmit(event) {
@@ -23,8 +25,12 @@ export default function ProductItemForm({ products = [], saving = false, onAdd }
       setError("Informe uma quantidade inteira maior que zero.")
       return
     }
-    setError("")
     const product = products.find((item) => String(item.id) === String(productId))
+    if (amount > (product?.stock_quantity ?? 0)) {
+      setError(`Estoque insuficiente — disponível: ${product?.stock_quantity ?? 0}.`)
+      return
+    }
+    setError("")
     const added = await onAdd({
       product_id: productId,
       quantity: amount,

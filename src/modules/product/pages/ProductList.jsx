@@ -63,10 +63,15 @@ export default function ProductList() {
           "-"
         ),
     },
-    { header: "Produto", sortKey: "name", accessor: (item) => item.name },
     {
-      header: "Subcategoria",
-      accessor: (item) => (item.subcategory ? item.subcategory.name : "-"),
+      header: "Produto",
+      sortKey: "name",
+      accessor: (item) => (item.brand ? `${item.name} (${item.brand})` : item.name),
+    },
+    {
+      header: "Categoria / Sub-categoria",
+      accessor: (item) =>
+        item.subcategory ? `${item.subcategory.category.name} / ${item.subcategory.name}` : "-",
     },
     {
       header: "Preço Venda",

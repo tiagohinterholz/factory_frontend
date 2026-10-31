@@ -1,5 +1,5 @@
-import { Link, useParams } from "react-router-dom"
-import { Trash2, ChevronRight, ClipboardList, FileText } from "lucide-react"
+import { Link, useNavigate, useParams } from "react-router-dom"
+import { Trash2, ChevronRight, ClipboardList, FileText, Eye } from "lucide-react"
 import { useVehicleEditForm } from "@/modules/vehicle/hooks/useVehicleEditForm"
 import { useVehicleHistory } from "@/modules/vehicle/hooks/useVehicleHistory"
 import { ClientLiveSelect } from "@/modules/client"
@@ -39,6 +39,7 @@ function HistoryLink({ item, prefix, singular }) {
 
 export default function VehicleEdit() {
   const { id } = useParams()
+  const navigate = useNavigate()
 
   const { form, onSubmit, loading, handleDelete } = useVehicleEditForm()
   const {
@@ -79,12 +80,25 @@ export default function VehicleEdit() {
         <div className="lg:col-span-7">
           <div className="card-premium">
             <form className="space-y-6" onSubmit={onSubmit}>
-              <ClientLiveSelect
-                label="Cliente Proprietário *"
-                value={clientId}
-                onChange={(value) => setValue("client_id", value)}
-                error={errors.client_id?.message}
-              />
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <ClientLiveSelect
+                    label="Cliente Proprietário *"
+                    value={clientId}
+                    onChange={(value) => setValue("client_id", value)}
+                    error={errors.client_id?.message}
+                  />
+                </div>
+                <button
+                  type="button"
+                  title="Ver cliente vinculado"
+                  disabled={!clientId}
+                  onClick={() => navigate(`/clientes/${clientId}`)}
+                  className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-muted hover:text-ink hover:bg-ground transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ManufacturerLiveSelect

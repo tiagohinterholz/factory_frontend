@@ -1,11 +1,18 @@
-import { describe, it, expect } from "vitest"
-import { screen } from "@testing-library/react"
+import { describe, it, expect, vi } from "vitest"
+import { screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { Routes, Route } from "react-router-dom"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import ProductDetail from "./ProductDetail"
+
+const { navigateSpy } = vi.hoisted(() => ({ navigateSpy: vi.fn() }))
+vi.mock("react-router-dom", async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, useNavigate: () => navigateSpy }
+})
 
 function mockProduct({ supplierPhone } = {}) {
   server.use(
@@ -64,6 +71,59 @@ describe("<ProductDetail>", () => {
       .find((el) => el.id?.startsWith("headlessui-combobox-input"))
     expect(combobox).toBeInTheDocument()
     expect(combobox).toHaveDisplayValue("Bosch Ltda")
+  })
+
+  it("botão 'ver fornecedor vinculado' habilita e navega pra /fornecedores/:id", async () => {
+    mockProduct()
+    renderPage()
+
+    await screen.findByText("Fornecedor *")
+    const viewButton = await screen.findByRole("button", { name: "Ver fornecedor vinculado" })
+    await waitFor(() => expect(viewButton).toBeEnabled())
+
+    const user = userEvent.setup()
+    await user.click(viewButton)
+
+    expect(navigateSpy).toHaveBeenCalledWith("/fornecedores/9")
+  })
+
+  it("botão 'ver fornecedor vinculado' fica desabilitado sem fornecedor selecionado", async () => {
+    server.use(
+      http.get(`${API}/produtos/1/`, () =>
+        HttpResponse.json({
+          id: 1,
+          name: "Filtro de óleo",
+          brand: "Bosch",
+          reference: "FO-1",
+          description: "",
+          stock_quantity: 10,
+          unit_price: "50.00",
+          business: 1,
+          supplier: null,
+        }),
+      ),
+      http.get(`${API}/fornecedores/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/compras/movimentos-estoque/`, () =>
+        HttpResponse.json({ results: [], count: 0 }),
+      ),
+    )
+    renderPage()
+
+    const viewButton = await screen.findByRole("button", { name: "Ver fornecedor vinculado" })
+    expect(viewButton).toBeDisabled()
+  })
+
+  it("usa ProductCategoryLiveSelect (combobox com busca) no campo Categoria", async () => {
+    mockProduct()
+    renderPage()
+
+    await screen.findByText("Categoria")
+    const comboboxes = screen
+      .getAllByRole("combobox")
+      .filter((el) => el.id?.startsWith("headlessui-combobox-input"))
+    expect(comboboxes.length).toBeGreaterThanOrEqual(2)
   })
 
   it("mostra o histórico de estoque (kardex) do produto", async () => {

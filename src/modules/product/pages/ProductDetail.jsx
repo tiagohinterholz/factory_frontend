@@ -1,24 +1,24 @@
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { useProductEditForm } from "@/modules/product/hooks/useProductEditForm"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
-import { useProductCategoryOptions } from "@/modules/core/hooks/options"
-import { useProductSubcategoryOptionsByCategory } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import { SupplierLiveSelect } from "@/modules/supplier"
+import { ProductCategoryLiveSelect } from "@/modules/productcategory"
+import { ProductSubcategoryLiveSelect } from "@/modules/productsubcategory"
 import { ProductService } from "@/modules/product/services/product"
 import { StockMovementHistory } from "@/modules/purchase"
 import { unitOfMeasureOptions, purchaseRequestMessage } from "@/modules/product/constants/product"
-import { Package, Edit2, Trash2 } from "lucide-react"
+import { Package, Edit2, Trash2, Eye } from "lucide-react"
 
 export default function ProductDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { form, onSubmit, loading, handleDelete } = useProductEditForm()
   const {
     register,
@@ -30,17 +30,15 @@ export default function ProductDetail() {
 
   const supplierId = watch("supplier_id")
   const categoryId = watch("category_id")
+  const subcategoryId = watch("subcategory_id")
   const productName = watch("name")
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
   const { product: products } = useProductOptions()
-  const { productCategories, loading: loadingCategories } = useProductCategoryOptions()
-  const { subcategoriesByCategory, loading: loadingSubcategories } =
-    useProductSubcategoryOptionsByCategory(categoryId)
 
   const brandOptions = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort()
   const supplierPhone = suppliers.find((s) => String(s.id) === String(supplierId))?.phone
 
-  if (loading || loadingSuppliers || loadingCategories) {
+  if (loading || loadingSuppliers) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -81,12 +79,25 @@ export default function ProductDetail() {
             </div>
 
             <form className="space-y-6" onSubmit={onSubmit}>
-              <SupplierLiveSelect
-                label="Fornecedor *"
-                value={supplierId}
-                onChange={(value) => setValue("supplier_id", value)}
-                error={errors.supplier_id?.message}
-              />
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <SupplierLiveSelect
+                    label="Fornecedor *"
+                    value={supplierId}
+                    onChange={(value) => setValue("supplier_id", value)}
+                    error={errors.supplier_id?.message}
+                  />
+                </div>
+                <button
+                  type="button"
+                  title="Ver fornecedor vinculado"
+                  disabled={!supplierId}
+                  onClick={() => navigate(`/fornecedores/${supplierId}`)}
+                  className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-muted hover:text-ink hover:bg-ground transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
@@ -122,21 +133,21 @@ export default function ProductDetail() {
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <SelectField
+                <ProductCategoryLiveSelect
                   label="Categoria"
-                  options={productCategories}
+                  value={categoryId}
+                  onChange={(value) => {
+                    setValue("category_id", value)
+                    setValue("subcategory_id", "")
+                  }}
                   error={errors.category_id?.message}
-                  registration={register("category_id", {
-                    onChange: () => setValue("subcategory_id", ""),
-                  })}
                 />
-                <SelectField
+                <ProductSubcategoryLiveSelect
                   label="Subcategoria"
-                  options={subcategoriesByCategory}
-                  disabled={!categoryId || loadingSubcategories}
-                  disabledHint="Selecione a categoria primeiro"
+                  value={subcategoryId}
+                  onChange={(value) => setValue("subcategory_id", value)}
+                  categoryId={categoryId}
                   error={errors.subcategory_id?.message}
-                  registration={register("subcategory_id")}
                 />
               </div>
 

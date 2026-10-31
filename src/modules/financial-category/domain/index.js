@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { requiredText } from "@/modules/core/schemas/br-fields"
+import { requiredText, requiredId } from "@/modules/core/schemas/br-fields"
 
 export const financialCategoryKeys = {
   all: ["financial-categories"],
@@ -7,6 +7,22 @@ export const financialCategoryKeys = {
   list: (params) => [...financialCategoryKeys.lists(), params],
   options: () => [...financialCategoryKeys.all, "options"],
   subcategories: (categoryId) => [...financialCategoryKeys.all, "subcategories", categoryId],
+}
+
+export const financialSubcategoryKeys = {
+  all: ["financial-subcategories"],
+  lists: () => [...financialSubcategoryKeys.all, "list"],
+  list: (params) => [...financialSubcategoryKeys.lists(), params],
+}
+
+export const financialSubcategorySchema = z.object({
+  name: requiredText("Informe o nome da subcategoria"),
+  category_id: requiredId("Selecione a categoria"),
+})
+
+export const financialSubcategoryDefaults = {
+  name: "",
+  category_id: "",
 }
 
 export const financialTagKeys = {

@@ -3,13 +3,12 @@ import { useNavigate } from "react-router-dom"
 import { useProductForm } from "@/modules/product/hooks/useProductForm"
 import BackLink from "@/modules/core/components/BackLink"
 import { useProductOptions } from "@/modules/core/hooks/options"
-import { useProductCategoryOptions } from "@/modules/core/hooks/options"
-import { useProductSubcategoryOptionsByCategory } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { SupplierLiveSelect } from "@/modules/supplier"
+import { ProductCategoryLiveSelect } from "@/modules/productcategory"
+import { ProductSubcategoryLiveSelect } from "@/modules/productsubcategory"
 import ProductFinancialEntryModal from "@/modules/product/components/ProductFinancialEntryModal"
 import { unitOfMeasureOptions } from "@/modules/product/constants/product"
 import { Package, Save } from "lucide-react"
@@ -31,12 +30,10 @@ export default function ProductCreate() {
   } = form
 
   const categoryId = watch("category_id")
+  const subcategoryId = watch("subcategory_id")
   const supplierId = watch("supplier_id")
 
   const { product: products } = useProductOptions()
-  const { productCategories, loading: loadingCategories } = useProductCategoryOptions()
-  const { subcategoriesByCategory, loading: loadingSubcategories } =
-    useProductSubcategoryOptionsByCategory(categoryId)
 
   // datalist de "Marca" pré-populado com as marcas já cadastradas em outros
   // produtos — continua texto livre, só facilita reaproveitar o mesmo nome.
@@ -45,14 +42,6 @@ export default function ProductCreate() {
   function finishFlow() {
     setCreatedProduct(null)
     navigate("/produtos")
-  }
-
-  if (loadingCategories) {
-    return (
-      <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
   }
 
   return (
@@ -117,21 +106,21 @@ export default function ProductCreate() {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectField
+              <ProductCategoryLiveSelect
                 label="Categoria"
-                options={productCategories}
+                value={categoryId}
+                onChange={(value) => {
+                  setValue("category_id", value)
+                  setValue("subcategory_id", "")
+                }}
                 error={errors.category_id?.message}
-                registration={register("category_id", {
-                  onChange: () => setValue("subcategory_id", ""),
-                })}
               />
-              <SelectField
+              <ProductSubcategoryLiveSelect
                 label="Subcategoria"
-                options={subcategoriesByCategory}
-                disabled={!categoryId || loadingSubcategories}
-                disabledHint="Selecione a categoria primeiro"
+                value={subcategoryId}
+                onChange={(value) => setValue("subcategory_id", value)}
+                categoryId={categoryId}
                 error={errors.subcategory_id?.message}
-                registration={register("subcategory_id")}
               />
             </div>
 

@@ -1,17 +1,13 @@
-import { useId, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import { useQueryClient } from "@tanstack/react-query"
-import { Edit2, Layers, Plus, Tag, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { Link, useNavigate, useParams } from "react-router-dom"
+import { Edit2, Layers, Tag, Trash2 } from "lucide-react"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
-import { useToast } from "@/modules/core/feedback/toast-context"
-import { parseApiError } from "@/api/parse-api-error"
 import BackLink from "@/modules/core/components/BackLink"
 import FormField from "@/modules/core/components/FormField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { FinancialCategoryService } from "../services/financial-category"
-import { useFinancialSubcategoryOptions } from "../hooks/useFinancialCategories"
 import {
   financialCategoryDefaults,
   financialCategoryKeys,
@@ -21,14 +17,8 @@ import {
 export default function FinancialCategoryEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const toast = useToast()
-  const subcategoryInputId = useId()
   const { canManageFinancialCategories } = usePermissions()
   const [isSystem, setIsSystem] = useState(false)
-  const [newSubcategory, setNewSubcategory] = useState("")
-  const [savingSubcategory, setSavingSubcategory] = useState(false)
-  const { subcategories, loading: loadingSubcategories } = useFinancialSubcategoryOptions(id)
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: financialCategorySchema,
@@ -56,39 +46,11 @@ export default function FinancialCategoryEdit() {
     errorFallback: "Erro ao excluir categoria",
   })
 
-  const removeSubcategory = useResourceAction({
-    mutationFn: (item) => FinancialCategoryService.deleteSubcategory(item.id),
-    confirm: (item) => ({
-      title: "Excluir subcategoria?",
-      message: `A subcategoria "${item.name}" será removida.`,
-      confirmText: "Excluir",
-      danger: true,
-    }),
-    invalidate: [financialCategoryKeys.subcategories(id)],
-    errorFallback: "Erro ao excluir subcategoria",
-  })
-
   const {
     register,
     formState: { errors, isSubmitting },
   } = form
   const readOnly = !canManageFinancialCategories
-
-  async function handleAddSubcategory(event) {
-    event.preventDefault()
-    const name = newSubcategory.trim()
-    if (!name || savingSubcategory) return
-    setSavingSubcategory(true)
-    try {
-      await FinancialCategoryService.createSubcategory({ category_id: id, name, is_active: true })
-      setNewSubcategory("")
-      queryClient.invalidateQueries({ queryKey: financialCategoryKeys.subcategories(id) })
-    } catch (apiError) {
-      toast.error(parseApiError(apiError, "Erro ao adicionar subcategoria").message)
-    } finally {
-      setSavingSubcategory(false)
-    }
-  }
 
   if (loading) {
     return <p className="p-6 text-slate-500 font-medium">Carregando...</p>
@@ -161,55 +123,15 @@ export default function FinancialCategoryEdit() {
             </div>
             <h3 className="font-bold text-slate-800 tracking-tight">Subcategorias</h3>
           </div>
-          {!readOnly && (
-            <form onSubmit={handleAddSubcategory} className="flex items-end gap-2 mb-4">
-              <div className="flex-1">
-                <label htmlFor={subcategoryInputId} className="label-premium">
-                  Nova subcategoria
-                </label>
-                <input
-                  id={subcategoryInputId}
-                  className="input-premium"
-                  value={newSubcategory}
-                  onChange={(event) => setNewSubcategory(event.target.value)}
-                  placeholder="Ex: Energia elétrica"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={savingSubcategory}
-                title="Adicionar subcategoria"
-                aria-label="Adicionar subcategoria"
-                className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover disabled:opacity-50"
-              >
-                <Plus size={20} />
-              </button>
-            </form>
-          )}
-          {loadingSubcategories ? (
-            <p className="text-sm text-slate-400">Carregando...</p>
-          ) : subcategories.length === 0 ? (
-            <p className="text-sm text-slate-400">Nenhuma subcategoria cadastrada.</p>
-          ) : (
-            <ul className="divide-y divide-slate-100">
-              {subcategories.map((subcategory) => (
-                <li key={subcategory.id} className="flex items-center justify-between py-2 text-sm">
-                  <span>{subcategory.name}</span>
-                  {!readOnly && (
-                    <button
-                      type="button"
-                      onClick={() => removeSubcategory.run(subcategory)}
-                      title={`Excluir subcategoria ${subcategory.name}`}
-                      aria-label={`Excluir subcategoria ${subcategory.name}`}
-                      className="text-rose-400 hover:text-danger"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+          <p className="text-sm text-slate-400 mb-4">
+            As subcategorias dessa categoria ficam na listagem padrão de subcategorias financeiras.
+          </p>
+          <Link
+            to="/subcategorias-financeiro"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-brand-fg hover:bg-brand-hover transition-colors"
+          >
+            Ver subcategorias financeiras
+          </Link>
         </div>
       </div>
     </div>

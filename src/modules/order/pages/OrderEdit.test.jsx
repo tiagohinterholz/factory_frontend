@@ -107,6 +107,32 @@ describe("<OrderEdit>", () => {
     expect(screen.queryByRole("link", { name: /whatsapp/i })).not.toBeInTheDocument()
   })
 
+  it("linha de produto mostra o preço unitário além do total da linha", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          order_products: [
+            {
+              id: 1,
+              quantity: 2,
+              unit_price: "25.00",
+              total: "50.00",
+              is_active: true,
+              product: { name: "Peça" },
+            },
+          ],
+        }),
+      ),
+    )
+    renderPage()
+
+    await screen.findByText("Peça (x2)")
+    expect(screen.getByText("R$ 25,00 / un")).toBeInTheDocument()
+    expect(screen.getByText("R$ 50,00")).toBeInTheDocument()
+  })
+
   it("mostra o subtotal de produtos, o de serviços e o total geral do back", async () => {
     mockApi()
     renderPage()

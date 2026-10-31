@@ -292,6 +292,7 @@ export default function BudgetEdit() {
                     {item.product?.name} (x{item.quantity})
                   </span>
                   <div className="flex items-center gap-4">
+                    <span className="text-slate-400">{formatMoney(item.unit_price)} / un</span>
                     <span className="font-bold text-slate-700">{formatMoney(item.total)}</span>
                     {isPending && (
                       <button

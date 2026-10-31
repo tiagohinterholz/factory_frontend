@@ -62,19 +62,9 @@ describe("<FinancialCategoryList>", () => {
 })
 
 describe("<FinancialCategoryEdit>", () => {
-  let createdSubcategory
-
-  function renderEdit(category, subcategories = []) {
-    createdSubcategory = null
+  function renderEdit(category) {
     server.use(
       http.get(`${API}/categorias-financeiro/${category.id}/`, () => HttpResponse.json(category)),
-      http.get(`${API}/categorias-financeiro/${category.id}/subcategorias/`, () =>
-        HttpResponse.json({ results: subcategories, count: subcategories.length }),
-      ),
-      http.post(`${API}/subcategorias-financeiro/`, async ({ request }) => {
-        createdSubcategory = await request.json()
-        return HttpResponse.json({ id: 50, ...createdSubcategory }, { status: 201 })
-      }),
     )
     renderWithProviders(
       <Routes>
@@ -93,19 +83,17 @@ describe("<FinancialCategoryEdit>", () => {
     expect(screen.queryByRole("button", { name: /excluir$/i })).not.toBeInTheDocument()
   })
 
-  it("adiciona subcategoria dentro da categoria", async () => {
+  it("mostra um link pra listagem padrão de subcategorias, sem o widget inline antigo", async () => {
     setUser(ADMIN)
-    renderEdit(CATEGORIES[1], [{ id: 3, name: "Redes sociais" }])
+    renderEdit(CATEGORIES[1])
 
-    expect(await screen.findByText("Redes sociais")).toBeInTheDocument()
-    fireEvent.change(screen.getByLabelText("Nova subcategoria"), {
-      target: { value: "Panfletos" },
-    })
-    fireEvent.click(screen.getByRole("button", { name: "Adicionar subcategoria" }))
-
-    await waitFor(() =>
-      expect(createdSubcategory).toEqual({ category_id: "9", name: "Panfletos", is_active: true }),
+    expect(await screen.findByText("Subcategorias")).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /ver subcategorias financeiras/i })).toHaveAttribute(
+      "href",
+      "/subcategorias-financeiro",
     )
+    expect(screen.queryByLabelText("Nova subcategoria")).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Adicionar subcategoria" })).not.toBeInTheDocument()
   })
 })
 
