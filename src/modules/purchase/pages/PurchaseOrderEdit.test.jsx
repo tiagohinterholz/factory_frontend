@@ -32,9 +32,7 @@ function mockApi(overrides = {}) {
         count: 1,
       }),
     ),
-    http.get(`${API}/fornecedores/9/servicos/`, () =>
-      HttpResponse.json({ results: [], count: 0 }),
-    ),
+    http.get(`${API}/fornecedores/9/servicos/`, () => HttpResponse.json({ results: [], count: 0 })),
   )
 }
 
@@ -80,7 +78,9 @@ describe("<PurchaseOrderEdit> — estado aberto", () => {
     const costInput = await screen.findByPlaceholderText("Digite o(a) custo unit.")
     const form = costInput.closest("form")
     const productSelect = within(form).getByRole("combobox")
-    await waitFor(() => expect(within(productSelect).getByText(/Filtro de óleo/)).toBeInTheDocument())
+    await waitFor(() =>
+      expect(within(productSelect).getByText(/Filtro de óleo/)).toBeInTheDocument(),
+    )
     fireEvent.change(productSelect, { target: { value: "3" } })
     await waitFor(() => expect(costInput).toHaveValue(9.9))
 

@@ -75,7 +75,10 @@ describe("<WorkServiceCreate>", () => {
       "Nova Peças Ltda",
     )
     await user.type(within(dialog).getByPlaceholderText("00.000.000/0000-00"), "11222333000181")
-    await user.type(within(dialog).getByPlaceholderText("contato@fornecedor.com"), "contato@nova.com")
+    await user.type(
+      within(dialog).getByPlaceholderText("contato@fornecedor.com"),
+      "contato@nova.com",
+    )
     await user.type(within(dialog).getByPlaceholderText("(00) 00000-0000"), "11912345678")
     await user.selectOptions(
       within(dialog).getByText("Estado").closest("div").querySelector("select"),

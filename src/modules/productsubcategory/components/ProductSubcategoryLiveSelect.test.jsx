@@ -26,7 +26,9 @@ function mockSubcategories(categoryId, results = []) {
 
 describe("<ProductSubcategoryLiveSelect>", () => {
   it("sem categoryId, fica desabilitado com disabledHint e sem atalho de criar", async () => {
-    renderWithProviders(<ProductSubcategoryLiveSelect label="Subcategoria" value="" onChange={vi.fn()} />)
+    renderWithProviders(
+      <ProductSubcategoryLiveSelect label="Subcategoria" value="" onChange={vi.fn()} />,
+    )
 
     const input = await screen.findByRole("combobox")
     expect(input).toBeDisabled()

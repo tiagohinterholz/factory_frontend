@@ -25,9 +25,7 @@ describe("<FinancialSubcategoryList>", () => {
     mockSubcategories()
     renderWithProviders(<FinancialSubcategoryList />)
 
-    expect(
-      screen.getByRole("heading", { name: /subcategorias financeiras/i }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: /subcategorias financeiras/i })).toBeInTheDocument()
     expect(await screen.findByText("Marketing digital")).toBeInTheDocument()
     expect(screen.getByText("Combustível")).toBeInTheDocument()
   })
@@ -48,7 +46,10 @@ describe("<FinancialSubcategoryList>", () => {
       { id: 90, name: "Marketing digital", category: { id: 3, name: "Marketing" } },
     ])
     server.use(
-      http.delete(`${API}/subcategorias-financeiro/90/`, () => new HttpResponse(null, { status: 204 })),
+      http.delete(
+        `${API}/subcategorias-financeiro/90/`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
     )
     renderWithProviders(<FinancialSubcategoryList />)
 

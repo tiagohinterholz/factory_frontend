@@ -71,7 +71,9 @@ describe("<ProductCategoryLiveSelect>", () => {
     )
     const user = userEvent.setup()
     const onChange = vi.fn()
-    renderWithProviders(<ProductCategoryLiveSelect label="Categoria" value="" onChange={onChange} />)
+    renderWithProviders(
+      <ProductCategoryLiveSelect label="Categoria" value="" onChange={onChange} />,
+    )
 
     const input = await screen.findByRole("combobox")
     await user.click(input)

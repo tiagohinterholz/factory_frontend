@@ -16,7 +16,11 @@ vi.mock("react-router-dom", async (importOriginal) => {
 function mockApi() {
   server.use(
     http.get(`${API}/subcategorias-financeiro/5/`, () =>
-      HttpResponse.json({ id: 5, name: "Marketing digital", category: { id: 1, name: "Marketing" } }),
+      HttpResponse.json({
+        id: 5,
+        name: "Marketing digital",
+        category: { id: 1, name: "Marketing" },
+      }),
     ),
     http.get(`${API}/categorias-financeiro/`, () =>
       HttpResponse.json({
