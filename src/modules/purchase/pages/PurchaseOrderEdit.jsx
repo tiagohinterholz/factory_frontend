@@ -239,6 +239,8 @@ export default function PurchaseOrderEdit() {
                     {open && (
                       <button
                         type="button"
+                        title="Remover item"
+                        aria-label="Remover item"
                         onClick={() => removeItem(item.id)}
                         className="text-rose-400 hover:text-danger"
                       >
