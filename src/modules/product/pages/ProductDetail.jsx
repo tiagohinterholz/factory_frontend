@@ -4,14 +4,13 @@ import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
-import { useProductSubcategoryOptionsByCategory } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import { SupplierLiveSelect } from "@/modules/supplier"
 import { ProductCategoryLiveSelect } from "@/modules/productcategory"
+import { ProductSubcategoryLiveSelect } from "@/modules/productsubcategory"
 import { ProductService } from "@/modules/product/services/product"
 import { StockMovementHistory } from "@/modules/purchase"
 import { unitOfMeasureOptions, purchaseRequestMessage } from "@/modules/product/constants/product"
@@ -31,11 +30,10 @@ export default function ProductDetail() {
 
   const supplierId = watch("supplier_id")
   const categoryId = watch("category_id")
+  const subcategoryId = watch("subcategory_id")
   const productName = watch("name")
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
   const { product: products } = useProductOptions()
-  const { subcategoriesByCategory, loading: loadingSubcategories } =
-    useProductSubcategoryOptionsByCategory(categoryId)
 
   const brandOptions = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort()
   const supplierPhone = suppliers.find((s) => String(s.id) === String(supplierId))?.phone
@@ -144,13 +142,12 @@ export default function ProductDetail() {
                   }}
                   error={errors.category_id?.message}
                 />
-                <SelectField
+                <ProductSubcategoryLiveSelect
                   label="Subcategoria"
-                  options={subcategoriesByCategory}
-                  disabled={!categoryId || loadingSubcategories}
-                  disabledHint="Selecione a categoria primeiro"
+                  value={subcategoryId}
+                  onChange={(value) => setValue("subcategory_id", value)}
+                  categoryId={categoryId}
                   error={errors.subcategory_id?.message}
-                  registration={register("subcategory_id")}
                 />
               </div>
 

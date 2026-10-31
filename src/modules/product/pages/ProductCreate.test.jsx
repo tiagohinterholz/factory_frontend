@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { screen, fireEvent, waitFor } from "@testing-library/react"
+import { screen, fireEvent, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
@@ -52,6 +52,95 @@ describe("<ProductCreate>", () => {
       .getAllByRole("combobox")
       .filter((el) => el.id?.startsWith("headlessui-combobox-input"))
     expect(comboboxes.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it("Subcategoria fica desabilitada até escolher a Categoria", async () => {
+    mockApi()
+    renderWithProviders(<ProductCreate />)
+
+    await screen.findByText("Subcategoria")
+    const subcategoryInput = screen.getByText("Subcategoria").closest("div").querySelector("input")
+    expect(subcategoryInput).toBeDisabled()
+    expect(subcategoryInput).toHaveAttribute("placeholder", "Selecione a categoria primeiro")
+  })
+
+  it("trocar a Categoria limpa a Subcategoria já escolhida", async () => {
+    server.use(
+      http.get(`${API}/fornecedores/`, () =>
+        HttpResponse.json({ results: [{ id: 9, corporate_name: "Bosch Ltda" }], count: 1 }),
+      ),
+      http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/categorias-produto/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 1, name: "Pneus" },
+            { id: 2, name: "Lubrificantes" },
+          ],
+          count: 2,
+        }),
+      ),
+      http.get(`${API}/categorias-produto/1/subcategorias/`, () =>
+        HttpResponse.json({ results: [{ id: 10, name: "Pneu de Carro" }], count: 1 }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderWithProviders(<ProductCreate />)
+
+    const comboboxes = () =>
+      screen.getAllByRole("combobox").filter((el) => el.id?.startsWith("headlessui-combobox-input"))
+
+    await screen.findByText("Categoria")
+    const categoryInput = comboboxes()[1]
+    await user.click(categoryInput)
+    await user.click(await screen.findByRole("option", { name: "Pneus" }))
+
+    const subcategoryInput = comboboxes()[2]
+    await waitFor(() => expect(subcategoryInput).not.toBeDisabled())
+    await user.click(subcategoryInput)
+    await user.click(await screen.findByRole("option", { name: "Pneu de Carro" }))
+    await waitFor(() => expect(subcategoryInput).toHaveValue("Pneu de Carro"))
+
+    await user.click(categoryInput)
+    await user.click(await screen.findByRole("option", { name: "Lubrificantes" }))
+
+    await waitFor(() => expect(subcategoryInput).toHaveValue(""))
+  })
+
+  it("criar subcategoria inline pré-preenche a categoria já escolhida no modal", async () => {
+    server.use(
+      http.get(`${API}/fornecedores/`, () =>
+        HttpResponse.json({ results: [{ id: 9, corporate_name: "Bosch Ltda" }], count: 1 }),
+      ),
+      http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/categorias-produto/`, () =>
+        HttpResponse.json({ results: [{ id: 1, name: "Pneus" }], count: 1 }),
+      ),
+      http.get(`${API}/categorias-produto/1/subcategorias/`, () =>
+        HttpResponse.json({ results: [], count: 0 }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderWithProviders(<ProductCreate />)
+
+    const comboboxes = () =>
+      screen.getAllByRole("combobox").filter((el) => el.id?.startsWith("headlessui-combobox-input"))
+
+    await screen.findByText("Categoria")
+    const categoryInput = comboboxes()[1]
+    await user.click(categoryInput)
+    await user.click(await screen.findByRole("option", { name: "Pneus" }))
+
+    const subcategoryInput = comboboxes()[2]
+    await waitFor(() => expect(subcategoryInput).not.toBeDisabled())
+    await user.click(subcategoryInput)
+    await user.click(await screen.findByRole("option", { name: "Cadastrar nova subcategoria" }))
+
+    const dialog = await screen.findByRole("dialog")
+    await waitFor(() =>
+      expect(
+        within(dialog).getByText("Categoria").closest("div").querySelector("input"),
+      ).toHaveValue("Pneus"),
+    )
   })
 
   it("Unidade de Medida é texto livre com sugestões, não <select> fechado", async () => {
