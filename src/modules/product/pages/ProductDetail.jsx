@@ -4,7 +4,6 @@ import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
-import { useProductCategoryOptions } from "@/modules/core/hooks/options"
 import { useProductSubcategoryOptionsByCategory } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -12,6 +11,7 @@ import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import { SupplierLiveSelect } from "@/modules/supplier"
+import { ProductCategoryLiveSelect } from "@/modules/productcategory"
 import { ProductService } from "@/modules/product/services/product"
 import { StockMovementHistory } from "@/modules/purchase"
 import { unitOfMeasureOptions, purchaseRequestMessage } from "@/modules/product/constants/product"
@@ -34,14 +34,13 @@ export default function ProductDetail() {
   const productName = watch("name")
   const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
   const { product: products } = useProductOptions()
-  const { productCategories, loading: loadingCategories } = useProductCategoryOptions()
   const { subcategoriesByCategory, loading: loadingSubcategories } =
     useProductSubcategoryOptionsByCategory(categoryId)
 
   const brandOptions = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort()
   const supplierPhone = suppliers.find((s) => String(s.id) === String(supplierId))?.phone
 
-  if (loading || loadingSuppliers || loadingCategories) {
+  if (loading || loadingSuppliers) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -136,13 +135,14 @@ export default function ProductDetail() {
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <SelectField
+                <ProductCategoryLiveSelect
                   label="Categoria"
-                  options={productCategories}
+                  value={categoryId}
+                  onChange={(value) => {
+                    setValue("category_id", value)
+                    setValue("subcategory_id", "")
+                  }}
                   error={errors.category_id?.message}
-                  registration={register("category_id", {
-                    onChange: () => setValue("subcategory_id", ""),
-                  })}
                 />
                 <SelectField
                   label="Subcategoria"

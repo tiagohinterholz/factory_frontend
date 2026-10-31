@@ -43,6 +43,17 @@ describe("<ProductCreate>", () => {
     expect(supplierCombobox()).toBeInTheDocument()
   })
 
+  it("usa ProductCategoryLiveSelect (combobox com busca) no campo Categoria", async () => {
+    mockApi()
+    renderWithProviders(<ProductCreate />)
+
+    await screen.findByText("Categoria")
+    const comboboxes = screen
+      .getAllByRole("combobox")
+      .filter((el) => el.id?.startsWith("headlessui-combobox-input"))
+    expect(comboboxes.length).toBeGreaterThanOrEqual(2)
+  })
+
   it("Unidade de Medida é texto livre com sugestões, não <select> fechado", async () => {
     mockApi()
     renderWithProviders(<ProductCreate />)

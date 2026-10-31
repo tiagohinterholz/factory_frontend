@@ -115,6 +115,17 @@ describe("<ProductDetail>", () => {
     expect(viewButton).toBeDisabled()
   })
 
+  it("usa ProductCategoryLiveSelect (combobox com busca) no campo Categoria", async () => {
+    mockProduct()
+    renderPage()
+
+    await screen.findByText("Categoria")
+    const comboboxes = screen
+      .getAllByRole("combobox")
+      .filter((el) => el.id?.startsWith("headlessui-combobox-input"))
+    expect(comboboxes.length).toBeGreaterThanOrEqual(2)
+  })
+
   it("mostra o histórico de estoque (kardex) do produto", async () => {
     mockProduct()
     renderPage()
