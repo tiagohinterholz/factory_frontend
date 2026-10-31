@@ -2,11 +2,10 @@ import { useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { usePurchaseOrderEditForm } from "../hooks/usePurchaseOrderEditForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useProductOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
 import { idOf } from "@/api/dto"
-import { SupplierLiveSelect } from "@/modules/supplier"
+import { SupplierLiveSelect, useSupplierRelations } from "@/modules/supplier"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
@@ -41,10 +40,11 @@ export default function PurchaseOrderEdit() {
     formState: { errors, isSubmitting },
   } = form
 
-  const { product: products } = useProductOptions()
-
   const [itemForm, setItemForm] = useState(purchaseOrderItemDefaults)
   const [savingItem, setSavingItem] = useState(false)
+
+  const supplierId = watch("supplier_id")
+  const { products: supplierProducts } = useSupplierRelations(supplierId)
 
   if (loading) return <div className="p-6 text-center">Carregando...</div>
 
@@ -52,16 +52,25 @@ export default function PurchaseOrderEdit() {
   const statusDate =
     status === "recebido" ? receivedAt : status === "cancelado" ? cancelledAt : null
 
-  const supplierId = watch("supplier_id")
   const supplierLabel = (supplier) => supplier?.corporate_name || `Fornecedor #${idOf(supplier)}`
   const relatedSupplierOption = relatedSupplier && {
     id: idOf(relatedSupplier),
     name: supplierLabel(relatedSupplier),
   }
-  const productOptions = products.map((p) => ({
+
+  const productOptions = supplierProducts.map((p) => ({
     id: p.id,
     name: `${p.name} (estoque: ${p.stock_quantity ?? 0})`,
   }))
+
+  function handleProductChange(productId) {
+    const product = supplierProducts.find((p) => String(p.id) === String(productId))
+    setItemForm((current) => ({
+      ...current,
+      product_id: productId,
+      unit_cost: product ? product.unit_price : "",
+    }))
+  }
 
   async function handleAddItem(event) {
     event.preventDefault()
@@ -181,10 +190,10 @@ export default function PurchaseOrderEdit() {
                   <SelectField
                     label="Produto"
                     value={itemForm.product_id}
-                    onChange={(event) =>
-                      setItemForm((current) => ({ ...current, product_id: event.target.value }))
-                    }
+                    onChange={(event) => handleProductChange(event.target.value)}
                     options={productOptions}
+                    disabled={!supplierId}
+                    disabledHint="Selecione o fornecedor primeiro"
                   />
                 </div>
                 <div className="w-24">
@@ -200,12 +209,11 @@ export default function PurchaseOrderEdit() {
                 <div className="w-32">
                   <FormField
                     label="Custo unit."
+                    readOnly
+                    disabled
                     type="number"
                     step="0.01"
                     value={itemForm.unit_cost}
-                    onChange={(event) =>
-                      setItemForm((current) => ({ ...current, unit_cost: event.target.value }))
-                    }
                   />
                 </div>
                 <button
