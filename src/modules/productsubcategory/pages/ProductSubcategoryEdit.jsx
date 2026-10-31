@@ -1,8 +1,7 @@
 import { useProductSubcategoryEditForm } from "@/modules/productsubcategory/hooks/useProductSubcategoryEditForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useProductCategoryOptions } from "@/modules/core/hooks/options"
+import ProductCategoryLiveSelect from "@/modules/productcategory/components/ProductCategoryLiveSelect"
 import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Layers, Trash2, Edit2 } from "lucide-react"
 
@@ -10,12 +9,14 @@ export default function ProductSubcategoryEdit() {
   const { form, onSubmit, loading, handleDelete } = useProductSubcategoryEditForm()
   const {
     register,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = form
 
-  const { productCategories, loading: loadingCategories } = useProductCategoryOptions()
+  const categoryId = watch("category_id")
 
-  if (loading || loadingCategories) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -52,11 +53,11 @@ export default function ProductSubcategoryEdit() {
           </div>
 
           <form className="space-y-6" onSubmit={onSubmit}>
-            <SelectField
+            <ProductCategoryLiveSelect
               label="Categoria"
-              options={productCategories}
+              value={categoryId}
+              onChange={(value) => setValue("category_id", value)}
               error={errors.category_id?.message}
-              registration={register("category_id")}
             />
 
             <FormField
