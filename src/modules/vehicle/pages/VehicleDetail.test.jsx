@@ -1,11 +1,18 @@
-import { describe, it, expect, beforeEach } from "vitest"
-import { screen } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import { screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { Routes, Route } from "react-router-dom"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import VehicleDetail from "./VehicleDetail"
+
+const { navigateSpy } = vi.hoisted(() => ({ navigateSpy: vi.fn() }))
+vi.mock("react-router-dom", async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, useNavigate: () => navigateSpy }
+})
 
 function mockVehicle() {
   server.use(
@@ -48,22 +55,68 @@ const renderPage = () =>
   )
 
 beforeEach(() => {
+  navigateSpy.mockClear()
   localStorage.setItem("user", JSON.stringify({ email: "a@a.com", business_id: 3, role: "admin" }))
 })
 
 describe("<VehicleDetail>", () => {
-  it("usa LiveSelect (combobox com busca) pra Cliente/Marca/Modelo, não mais botão +/olho", async () => {
+  it("usa LiveSelect (combobox com busca) pra Cliente/Marca/Modelo", async () => {
     mockVehicle()
     renderPage()
 
     await screen.findByText("Cliente Proprietário *")
-    expect(
-      screen.queryByRole("button", { name: /ver \/ editar cliente vinculado/i }),
-    ).not.toBeInTheDocument()
     const comboboxes = screen
       .getAllByRole("combobox")
       .filter((el) => el.id?.startsWith("headlessui-combobox-input"))
     expect(comboboxes).toHaveLength(3)
+  })
+
+  it("botão 'ver cliente vinculado' habilita quando há cliente selecionado e navega pra /clientes/:id", async () => {
+    mockVehicle()
+    renderPage()
+
+    await screen.findByText("Cliente Proprietário *")
+    const viewButton = await screen.findByRole("button", { name: "Ver cliente vinculado" })
+    await waitFor(() => expect(viewButton).toBeEnabled())
+
+    const user = userEvent.setup()
+    await user.click(viewButton)
+
+    expect(navigateSpy).toHaveBeenCalledWith("/clientes/5")
+  })
+
+  it("botão 'ver cliente vinculado' fica desabilitado sem cliente selecionado", async () => {
+    server.use(
+      http.get(`${API}/veiculos/1/`, () =>
+        HttpResponse.json({
+          id: 1,
+          business: 3,
+          client: null,
+          manufacturer: 1,
+          model: 2,
+          year: 2020,
+          year_model: 2020,
+          plate: "ABC-1234",
+          color: "Prata",
+          fuel: "flex",
+          mileage: 1000,
+        }),
+      ),
+      http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/marcas/`, () =>
+        HttpResponse.json({ results: [{ id: 1, name: "VW" }], count: 1 }),
+      ),
+      http.get(`${API}/marcas/1/modelos/`, () =>
+        HttpResponse.json({ results: [{ id: 2, name: "Gol" }], count: 1 }),
+      ),
+      http.get(`${API}/estados/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/ordens/veiculo/1/`, () => HttpResponse.json([])),
+      http.get(`${API}/orcamentos/veiculo/1/`, () => HttpResponse.json([])),
+    )
+    renderPage()
+
+    const viewButton = await screen.findByRole("button", { name: "Ver cliente vinculado" })
+    expect(viewButton).toBeDisabled()
   })
 
   it("marca os campos obrigatórios com *", async () => {
