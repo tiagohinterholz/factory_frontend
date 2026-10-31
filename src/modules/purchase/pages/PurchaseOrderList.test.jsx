@@ -126,6 +126,20 @@ describe("<PurchaseOrderList>", () => {
     cancel.mockRestore()
   })
 
+  it("busca por fornecedor ou nº do pedido manda ?search=", async () => {
+    mockPurchaseOrders()
+    renderWithProviders(<PurchaseOrderList />)
+    await screen.findByText("#7")
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Busca rápida" }), {
+      target: { value: "Bosch" },
+    })
+
+    await waitFor(() => expect(lastPurchaseOrdersUrl.searchParams.get("search")).toBe("Bosch"), {
+      timeout: 1000,
+    })
+  })
+
   it("aplica o filtro de status: 'Filtros' > status > 'Filtrar' manda ?status=", async () => {
     mockPurchaseOrders()
     renderWithProviders(<PurchaseOrderList />)
