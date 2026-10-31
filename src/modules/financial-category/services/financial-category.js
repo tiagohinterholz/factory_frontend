@@ -31,8 +31,23 @@ export const FinancialCategoryService = {
     return response.data
   },
 
+  async getSubcategories(params = {}) {
+    const response = await api.get("/subcategorias-financeiro/", { params })
+    return response.data
+  },
+
+  async getSubcategory(id) {
+    const response = await api.get(`/subcategorias-financeiro/${id}/`)
+    return response.data
+  },
+
   async createSubcategory(payload) {
     const response = await api.post("/subcategorias-financeiro/", payload)
+    return response.data
+  },
+
+  async updateSubcategory(id, payload) {
+    const response = await api.put(`/subcategorias-financeiro/${id}/`, payload)
     return response.data
   },
 
