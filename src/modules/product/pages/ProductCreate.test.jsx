@@ -152,6 +152,21 @@ describe("<ProductCreate>", () => {
     expect(input).toHaveAttribute("list")
   })
 
+  it("datalist de Unidade de Medida renderiza strings legíveis, nunca [object Object]", async () => {
+    mockApi()
+    renderWithProviders(<ProductCreate />)
+
+    await screen.findByText("Unidade de Medida")
+    const input = screen.getByText("Unidade de Medida").closest("div").querySelector("input")
+    const datalist = document.getElementById(input.getAttribute("list"))
+    const values = Array.from(datalist.querySelectorAll("option")).map((option) => option.value)
+
+    expect(values).toEqual(["UN", "LT", "KG", "MT", "CX", "PAR", "CJ"])
+    expect(values.every((value) => typeof value === "string" && value !== "[object Object]")).toBe(
+      true,
+    )
+  })
+
   it("ao salvar com sucesso, abre o modal de saída financeira; ao recusar, navega pra /produtos", async () => {
     mockApi()
     server.use(
