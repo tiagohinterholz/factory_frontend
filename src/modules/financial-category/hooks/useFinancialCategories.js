@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { useResourceList } from "@/modules/core/hooks/useResourceList"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
@@ -91,8 +91,9 @@ export function useFinancialSubcategoryForm() {
 
 export function useFinancialSubcategoryEditForm() {
   const { id } = useParams()
+  const navigate = useNavigate()
 
-  return useResourceForm({
+  const { form, onSubmit, loading } = useResourceForm({
     schema: financialSubcategorySchema,
     defaultValues: financialSubcategoryDefaults,
     load: async () => {
@@ -104,6 +105,21 @@ export function useFinancialSubcategoryEditForm() {
     invalidate: [financialSubcategoryKeys.all],
     errorFallback: "Erro ao atualizar subcategoria",
   })
+
+  const remove = useResourceAction({
+    mutationFn: () => FinancialCategoryService.deleteSubcategory(id),
+    confirm: {
+      title: "Excluir subcategoria?",
+      message: "Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      danger: true,
+    },
+    invalidate: [financialSubcategoryKeys.all],
+    onSuccess: () => navigate("/subcategorias-financeiro"),
+    errorFallback: "Erro ao excluir subcategoria",
+  })
+
+  return { form, onSubmit, loading, handleDelete: remove.run }
 }
 
 export function useFinancialTagOptions() {
