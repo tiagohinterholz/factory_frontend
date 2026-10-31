@@ -1,26 +1,20 @@
+import { useNavigate } from "react-router-dom"
 import { usePurchaseOrderForm } from "../hooks/usePurchaseOrderForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useSupplierOptions } from "@/modules/core/hooks/options"
-import SelectField from "@/modules/core/components/SelectField"
+import { SupplierLiveSelect } from "@/modules/supplier"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { Eye } from "lucide-react"
 
 export default function PurchaseOrderCreate() {
+  const navigate = useNavigate()
   const { form, onSubmit } = usePurchaseOrderForm()
   const {
-    register,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = form
 
-  const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
-  const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
-
-  if (loadingSuppliers) {
-    return (
-      <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  const supplierId = watch("supplier_id")
 
   return (
     <div className="p-6 space-y-6">
@@ -33,12 +27,25 @@ export default function PurchaseOrderCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            <SelectField
-              label="Fornecedor"
-              options={supplierOptions}
-              error={errors.supplier_id?.message}
-              registration={register("supplier_id")}
-            />
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <SupplierLiveSelect
+                  label="Fornecedor"
+                  value={supplierId}
+                  onChange={(value) => setValue("supplier_id", value)}
+                  error={errors.supplier_id?.message}
+                />
+              </div>
+              <button
+                type="button"
+                title="Ver fornecedor vinculado"
+                disabled={!supplierId}
+                onClick={() => navigate(`/fornecedores/${supplierId}`)}
+                className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-muted hover:text-ink hover:bg-ground transition-colors disabled:opacity-40 disabled:pointer-events-none"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </div>
             <p className="text-xs text-muted">
               Os itens (produtos, quantidade, custo) são adicionados na próxima tela.
             </p>

@@ -50,7 +50,21 @@ describe("<PurchaseOrderEdit> — estado aberto", () => {
     renderPage()
 
     expect(await screen.findByText("aberto")).toBeInTheDocument()
-    expect(screen.getByRole("option", { name: "Bosch Ltda", selected: true })).toBeInTheDocument()
+    const supplierInput = screen.getByText("Fornecedor").closest("div").querySelector("input")
+    await waitFor(() => expect(supplierInput).toHaveValue("Bosch Ltda"))
+  })
+
+  it("usa SupplierLiveSelect (combobox com busca) no campo Fornecedor, com botão de ver fornecedor", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("aberto")
+    const viewButton = await screen.findByRole("button", { name: "Ver fornecedor vinculado" })
+    await waitFor(() => expect(viewButton).toBeEnabled())
+    expect(screen.getByText("Fornecedor").closest("div").querySelector("input")).toHaveAttribute(
+      "role",
+      "combobox",
+    )
   })
 
   it("adiciona um item e recarrega o pedido com o item novo", async () => {

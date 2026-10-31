@@ -1,20 +1,22 @@
 import { useState } from "react"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { usePurchaseOrderEditForm } from "../hooks/usePurchaseOrderEditForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useSupplierOptions, useProductOptions } from "@/modules/core/hooks/options"
+import { useProductOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
-import { withSelectedOption, idOf } from "@/api/dto"
+import { idOf } from "@/api/dto"
+import { SupplierLiveSelect } from "@/modules/supplier"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { Plus, Trash2, PackageCheck, XCircle } from "lucide-react"
+import { Plus, Trash2, PackageCheck, XCircle, Eye } from "lucide-react"
 import { formatDateTime, formatMoney } from "@/modules/core/utils/format"
 import { purchaseOrderStatusTone, purchaseOrderIsOpen, purchaseOrderItemDefaults } from "../domain"
 
 export default function PurchaseOrderEdit() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const toast = useToast()
   const {
     form,
@@ -35,27 +37,27 @@ export default function PurchaseOrderEdit() {
   const {
     register,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = form
 
-  const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
   const { product: products } = useProductOptions()
 
   const [itemForm, setItemForm] = useState(purchaseOrderItemDefaults)
   const [savingItem, setSavingItem] = useState(false)
 
-  if (loading || loadingSuppliers) return <div className="p-6 text-center">Carregando...</div>
+  if (loading) return <div className="p-6 text-center">Carregando...</div>
 
   const open = purchaseOrderIsOpen(status)
   const statusDate =
     status === "recebido" ? receivedAt : status === "cancelado" ? cancelledAt : null
 
+  const supplierId = watch("supplier_id")
   const supplierLabel = (supplier) => supplier?.corporate_name || `Fornecedor #${idOf(supplier)}`
-  const supplierOptions = withSelectedOption(
-    suppliers.map((s) => ({ id: s.id, name: s.corporate_name })),
-    watch("supplier_id"),
-    relatedSupplier && { id: idOf(relatedSupplier), name: supplierLabel(relatedSupplier) },
-  )
+  const relatedSupplierOption = relatedSupplier && {
+    id: idOf(relatedSupplier),
+    name: supplierLabel(relatedSupplier),
+  }
   const productOptions = products.map((p) => ({
     id: p.id,
     name: `${p.name} (estoque: ${p.stock_quantity ?? 0})`,
@@ -130,13 +132,27 @@ export default function PurchaseOrderEdit() {
               </p>
             )}
             <form onSubmit={onSubmit} className="space-y-4">
-              <SelectField
-                label="Fornecedor"
-                options={supplierOptions}
-                disabled={!open}
-                error={errors.supplier_id?.message}
-                registration={register("supplier_id")}
-              />
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <SupplierLiveSelect
+                    label="Fornecedor"
+                    value={supplierId}
+                    onChange={(value) => setValue("supplier_id", value)}
+                    disabled={!open}
+                    error={errors.supplier_id?.message}
+                    extraOption={relatedSupplierOption}
+                  />
+                </div>
+                <button
+                  type="button"
+                  title="Ver fornecedor vinculado"
+                  disabled={!supplierId}
+                  onClick={() => navigate(`/fornecedores/${supplierId}`)}
+                  className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-muted hover:text-ink hover:bg-ground transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
               <FormField
                 label="Observações"
                 disabled={!open}
