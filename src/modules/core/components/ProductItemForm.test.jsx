@@ -78,6 +78,44 @@ describe("<ProductItemForm>", () => {
     await waitFor(() => expect(screen.getByLabelText("Qtd")).toHaveValue(1))
   })
 
+  it("recusa quantidade maior que o estoque disponível", async () => {
+    const user = userEvent.setup()
+    const onAdd = vi.fn()
+    renderWithProviders(<ProductItemForm products={PRODUCTS} onAdd={onAdd} />)
+
+    await user.click(screen.getByRole("combobox"))
+    await user.click(await screen.findByRole("option", { name: /pirelli/i }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "3" } })
+    fireEvent.submit(screen.getByRole("button", { name: "Adicionar produto" }).closest("form"))
+
+    expect(onAdd).not.toHaveBeenCalled()
+    expect(screen.getByText(/estoque insuficiente/i)).toBeInTheDocument()
+  })
+
+  it("aceita quantidade exatamente igual ao estoque disponível", async () => {
+    const user = userEvent.setup()
+    const onAdd = vi.fn().mockResolvedValue(true)
+    renderWithProviders(<ProductItemForm products={PRODUCTS} onAdd={onAdd} />)
+
+    await user.click(screen.getByRole("combobox"))
+    await user.click(await screen.findByRole("option", { name: /pirelli/i }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "2" } })
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar produto" }))
+
+    await waitFor(() =>
+      expect(onAdd).toHaveBeenCalledWith({ product_id: "3", quantity: 2, unit_price: "800.00" }),
+    )
+  })
+
+  it("produto com estoque zero continua listado no picker", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<ProductItemForm products={PRODUCTS} onAdd={vi.fn()} />)
+
+    await user.click(screen.getByRole("combobox"))
+
+    expect(await screen.findByRole("option", { name: /filtro de ar/i })).toBeInTheDocument()
+  })
+
   it("recusa quantidade inválida", async () => {
     const user = userEvent.setup()
     const onAdd = vi.fn()
