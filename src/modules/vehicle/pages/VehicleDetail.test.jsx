@@ -69,6 +69,14 @@ describe("<VehicleDetail>", () => {
       .getAllByRole("combobox")
       .filter((el) => el.id?.startsWith("headlessui-combobox-input"))
     expect(comboboxes).toHaveLength(3)
+    // espera os selects/histórico assentarem antes do teste terminar, pra não
+    // deixar query pendente (setTimeout do notifyManager do react-query
+    // disparando depois do ambiente de teste já ter sido desmontado).
+    await waitFor(() => expect(screen.getByDisplayValue("Ana Lima")).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByDisplayValue("VW")).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByDisplayValue("Gol")).toBeInTheDocument())
+    await screen.findByText("Este veículo ainda não tem ordens de serviço.")
+    await screen.findByText("Este veículo ainda não tem orçamentos.")
   })
 
   it("botão 'ver cliente vinculado' habilita quando há cliente selecionado e navega pra /clientes/:id", async () => {
@@ -83,6 +91,11 @@ describe("<VehicleDetail>", () => {
     await user.click(viewButton)
 
     expect(navigateSpy).toHaveBeenCalledWith("/clientes/5")
+
+    await waitFor(() => expect(screen.getByDisplayValue("VW")).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByDisplayValue("Gol")).toBeInTheDocument())
+    await screen.findByText("Este veículo ainda não tem ordens de serviço.")
+    await screen.findByText("Este veículo ainda não tem orçamentos.")
   })
 
   it("botão 'ver cliente vinculado' fica desabilitado sem cliente selecionado", async () => {
@@ -117,6 +130,11 @@ describe("<VehicleDetail>", () => {
 
     const viewButton = await screen.findByRole("button", { name: "Ver cliente vinculado" })
     expect(viewButton).toBeDisabled()
+
+    await waitFor(() => expect(screen.getByDisplayValue("VW")).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByDisplayValue("Gol")).toBeInTheDocument())
+    await screen.findByText("Este veículo ainda não tem ordens de serviço.")
+    await screen.findByText("Este veículo ainda não tem orçamentos.")
   })
 
   it("marca os campos obrigatórios com *", async () => {
