@@ -249,6 +249,28 @@ describe("<BudgetEdit> — subtotais e total", () => {
     expect(screen.getByText("R$ 6.000,00")).toBeInTheDocument()
   })
 
+  it("linha de produto mostra o preço unitário além do total da linha", async () => {
+    mockApi({
+      overrides: {
+        budget_products: [
+          {
+            id: 1,
+            quantity: 2,
+            unit_price: "25.00",
+            total: "50.00",
+            is_active: true,
+            product: { name: "Peça" },
+          },
+        ],
+      },
+    })
+    renderPage()
+
+    await screen.findByText("Peça (x2)")
+    expect(screen.getByText("R$ 25,00 / un")).toBeInTheDocument()
+    expect(screen.getByText("R$ 50,00")).toBeInTheDocument()
+  })
+
   it("não lista item com is_active=false (deletado que o back ainda devolve)", async () => {
     mockApi({
       overrides: {
