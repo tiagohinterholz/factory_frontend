@@ -11,8 +11,10 @@ export default function ProductItemForm({ products = [], saving = false, onAdd }
 
   const options = products.map((product) => ({
     id: product.id,
-    name: `${product.name} (${formatMoney(product.unit_price)}) · estoque ${product.stock_quantity ?? 0}`,
-    searchText: [product.name, product.reference, product.sku].filter(Boolean).join(" "),
+    name: `${product.brand ? `${product.brand} - ` : ""}${product.name} (${formatMoney(product.unit_price)}) · estoque ${product.stock_quantity ?? 0}`,
+    searchText: [product.brand, product.name, product.reference, product.sku]
+      .filter(Boolean)
+      .join(" "),
   }))
 
   async function handleSubmit(event) {

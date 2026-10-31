@@ -7,6 +7,14 @@ import ProductItemForm from "./ProductItemForm"
 const PRODUCTS = [
   { id: 1, name: "Óleo 5W30", reference: "OL-530", unit_price: "45.00", stock_quantity: 12 },
   { id: 2, name: "Filtro de ar", reference: "FLT-889", unit_price: "60.00", stock_quantity: 0 },
+  {
+    id: 3,
+    name: "Pneu 175/68",
+    brand: "Pirelli",
+    reference: "PN-175",
+    unit_price: "800.00",
+    stock_quantity: 2,
+  },
 ]
 
 describe("<ProductItemForm>", () => {
@@ -19,6 +27,39 @@ describe("<ProductItemForm>", () => {
     const options = await screen.findAllByRole("option")
     expect(options).toHaveLength(1)
     expect(options[0]).toHaveTextContent("Filtro de ar (R$ 60,00) · estoque 0")
+  })
+
+  it("produto com marca mostra 'Marca - Nome (preço) · estoque N'", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<ProductItemForm products={PRODUCTS} onAdd={vi.fn()} />)
+
+    await user.click(screen.getByRole("combobox"))
+
+    expect(await screen.findByRole("option", { name: /pirelli/i })).toHaveTextContent(
+      "Pirelli - Pneu 175/68 (R$ 800,00) · estoque 2",
+    )
+  })
+
+  it("produto sem marca mantém o formato antigo, sem prefixo", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<ProductItemForm products={PRODUCTS} onAdd={vi.fn()} />)
+
+    await user.type(screen.getByRole("combobox"), "flt")
+
+    expect(await screen.findByRole("option")).toHaveTextContent(
+      "Filtro de ar (R$ 60,00) · estoque 0",
+    )
+  })
+
+  it("busca pelo nome da marca encontra o produto", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<ProductItemForm products={PRODUCTS} onAdd={vi.fn()} />)
+
+    await user.type(screen.getByRole("combobox"), "pirelli")
+
+    const options = await screen.findAllByRole("option")
+    expect(options).toHaveLength(1)
+    expect(options[0]).toHaveTextContent("Pirelli - Pneu 175/68")
   })
 
   it("adiciona com a quantidade escolhida e limpa o formulário", async () => {
