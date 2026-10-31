@@ -15,6 +15,8 @@ import {
   Sparkles,
   ArrowRight,
   ChevronDown,
+  Wallet,
+  ShoppingCart,
 } from "lucide-react"
 import { PLANS } from "@/modules/signup/domain/plans"
 
@@ -50,8 +52,18 @@ const FEATURES = [
   },
   {
     icon: FileText,
-    title: "NF-e",
-    text: "Emite a nota fiscal direto da OS faturada, com DANFE e XML pra baixar.",
+    title: "NF-e & NFS-e",
+    text: "Emite nota fiscal de produto ou de serviço direto da OS faturada, com DANFE e XML pra baixar.",
+  },
+  {
+    icon: Wallet,
+    title: "Financeiro",
+    text: "Contas a pagar e a receber, categorias e lançamentos — o fluxo de caixa do negócio em um só lugar.",
+  },
+  {
+    icon: ShoppingCart,
+    title: "Compras",
+    text: "Pedidos de compra por fornecedor, com os itens e custos de cada um.",
   },
   {
     icon: BarChart3,
