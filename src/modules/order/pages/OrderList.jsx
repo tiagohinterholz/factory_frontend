@@ -90,17 +90,19 @@ export default function OrderList() {
       accessor: (item) => (item.service_date ? formatDateTime(item.service_date) : "N/A"),
     },
     {
-      header: "Status",
+      header: "Status/Método de pagamento",
       sortKey: "status",
       accessor: (item) => (
-        <div className="flex flex-col items-start gap-1">
+        <div className="flex flex-col items-center gap-1">
           <span
             className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${orderStatusTone(item.status)}`}
           >
             {item.status}
           </span>
-          {item.payment && (
-            <span className="text-[11px] text-muted">{paymentLabel(item.payment)}</span>
+          {paymentLabel(item.payment) && (
+            <span className="px-2 py-1 rounded-full text-xs font-bold uppercase bg-slate-100 text-slate-600">
+              {paymentLabel(item.payment)}
+            </span>
           )}
         </div>
       ),
@@ -112,13 +114,18 @@ export default function OrderList() {
           ["NF-e", fiscalStatusInfo(item.fiscal_note_status)],
           ["NFS-e", fiscalStatusInfo(item.service_fiscal_note_status)],
         ].filter(([, info]) => info)
-        if (notes.length === 0) return <span className="text-xs text-muted">Não gerada</span>
+        if (notes.length === 0)
+          return (
+            <span className="px-2 py-1 rounded-full text-xs font-bold bg-slate-400 text-white">
+              Não gerada
+            </span>
+          )
         return (
           <div className="flex flex-col items-start gap-1">
             {notes.map(([kind, info]) => (
               <span
                 key={kind}
-                className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${info.tone}`}
+                className={`px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${info.tone}`}
               >
                 {kind}: {info.label}
               </span>
@@ -130,7 +137,7 @@ export default function OrderList() {
     {
       header: "Total",
       sortKey: "total",
-      accessor: (item) => formatMoney(item.total),
+      accessor: (item) => <span className="whitespace-nowrap">{formatMoney(item.total)}</span>,
     },
   ]
 
