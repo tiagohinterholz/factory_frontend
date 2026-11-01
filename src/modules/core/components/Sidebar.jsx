@@ -38,12 +38,6 @@ const preVehicleItems = [
 const postVehicleItems = [
   { path: "/orcamentos", name: "Orçamentos", icon: TrendingUp, permission: "canViewBudgets" },
   { path: "/ordens", name: "Ordens de Serviço", icon: ClipboardList, permission: "canViewOrders" },
-  {
-    path: "/notas-fiscais",
-    name: "Notas Fiscais",
-    icon: FileText,
-    permission: "canViewFiscalNotes",
-  },
 ]
 
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
@@ -58,6 +52,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
     canViewSupplies,
     canViewBusiness,
     canViewFinancial,
+    canViewFiscalNotes,
     businessId,
     userId,
   } = permissions
@@ -84,6 +79,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
     ].some((path) => location.pathname.startsWith(path)),
   )
   const [financialOpen, setFinancialOpen] = useState(location.pathname.startsWith("/financeiro"))
+  const [fiscalOpen, setFiscalOpen] = useState(location.pathname.startsWith("/notas-fiscais"))
   const [vehicleOpen, setVehicleOpen] = useState(
     ["/veiculos", "/marcas", "/modelos"].some((path) => location.pathname.startsWith(path)),
   )
@@ -347,6 +343,37 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
           )}
 
           <div className="pt-2 space-y-1.5">{allowed(postVehicleItems).map(renderNavItem)}</div>
+
+          {canViewFiscalNotes && (
+            <div className="pt-2">
+              {renderGroupButton(
+                "Notas Fiscais",
+                FileText,
+                fiscalOpen,
+                ["/notas-fiscais"],
+                handleGroup(setFiscalOpen),
+              )}
+
+              {fiscalOpen && !collapsed && (
+                <div className="ml-9 mt-1.5 space-y-1 border-l border-slate-800 pl-4 py-1">
+                  <Link
+                    to="/notas-fiscais/nfe"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/notas-fiscais/nfe"))}
+                  >
+                    NF-e
+                  </Link>
+                  <Link
+                    to="/notas-fiscais/nfse"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/notas-fiscais/nfse"))}
+                  >
+                    NFS-e
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
 
           {canViewFinancial && (
             <div className="pt-2">

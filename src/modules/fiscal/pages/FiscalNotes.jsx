@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { FileCode2, FileDown } from "lucide-react"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
@@ -7,11 +7,19 @@ import ErrorDetailButton from "@/modules/core/components/ErrorDetailButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { formatDateTime } from "@/modules/core/utils/format"
 import { useFiscalNotes } from "../hooks/useFiscalNotes"
-import { FISCAL_KIND_OPTIONS, FISCAL_STATUS_OPTIONS, fiscalNoteStatusTone } from "../domain"
+import { FISCAL_STATUS_OPTIONS, fiscalNoteStatusTone } from "../domain"
 
 const downloadClass = "p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
 
+const KIND_BY_ROUTE_PARAM = {
+  nfe: { apiKind: "produto", label: "NF-e" },
+  nfse: { apiKind: "servico", label: "NFS-e" },
+}
+
 export default function FiscalNotes() {
+  const { kind: kindParam } = useParams()
+  const { apiKind, label } = KIND_BY_ROUTE_PARAM[kindParam] ?? KIND_BY_ROUTE_PARAM.nfe
+
   const {
     notes,
     loading,
@@ -22,11 +30,10 @@ export default function FiscalNotes() {
     currentPage,
     setCurrentPage,
     totalItems,
-  } = useFiscalNotes()
+  } = useFiscalNotes(apiKind)
   const { client: clients } = useClientOptions()
 
   const filterFields = [
-    { name: "kind", label: "Tipo", type: "select", options: FISCAL_KIND_OPTIONS },
     { name: "status", label: "Status", type: "select", options: FISCAL_STATUS_OPTIONS },
     {
       name: "client_id",
@@ -39,7 +46,6 @@ export default function FiscalNotes() {
   ]
 
   const columns = [
-    { header: "Tipo", accessor: (note) => note.kind_display },
     { header: "Número", accessor: (note) => note.number || "—" },
     {
       header: "OS",
@@ -76,7 +82,7 @@ export default function FiscalNotes() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
-        title="Notas Fiscais"
+        title={`Notas Fiscais — ${label}`}
         actions={<ListFilters fields={filterFields} value={filters} onApply={applyFilters} />}
       />
       <ListTable

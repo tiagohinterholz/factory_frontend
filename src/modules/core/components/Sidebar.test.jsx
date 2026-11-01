@@ -50,11 +50,16 @@ describe("<Sidebar>", () => {
     expect(modeloIndex).toBeLessThan(veiculoIndex)
   })
 
-  it("tem o item Notas Fiscais apontando para /notas-fiscais", () => {
+  it("o grupo Notas Fiscais abre em NF-e e NFS-e, cada um na própria rota", () => {
     renderSidebar()
-    expect(screen.getByRole("link", { name: /notas fiscais/i })).toHaveAttribute(
+
+    expect(screen.queryByRole("link", { name: "NF-e" })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole("button", { name: /^notas fiscais$/i }))
+
+    expect(screen.getByRole("link", { name: "NF-e" })).toHaveAttribute("href", "/notas-fiscais/nfe")
+    expect(screen.getByRole("link", { name: "NFS-e" })).toHaveAttribute(
       "href",
-      "/notas-fiscais",
+      "/notas-fiscais/nfse",
     )
   })
 
@@ -125,14 +130,17 @@ describe("<Sidebar>", () => {
     renderSidebar()
 
     const nav = screen.getByRole("navigation")
-    const navLinks = Array.from(nav.querySelectorAll("a")).map((link) => link.getAttribute("href"))
-    expect(navLinks).toEqual(["/notas-fiscais"])
+    const linkHrefs = () =>
+      Array.from(nav.querySelectorAll("a")).map((link) => link.getAttribute("href"))
+    expect(linkHrefs()).toEqual([])
+
+    fireEvent.click(screen.getByRole("button", { name: /^notas fiscais$/i }))
+    expect(linkHrefs()).toEqual(["/notas-fiscais/nfe", "/notas-fiscais/nfse"])
+
     fireEvent.click(screen.getByRole("button", { name: /^financeiro$/i }))
-    const openedLinks = Array.from(nav.querySelectorAll("a")).map((link) =>
-      link.getAttribute("href"),
-    )
-    expect(openedLinks).toEqual([
-      "/notas-fiscais",
+    expect(linkHrefs()).toEqual([
+      "/notas-fiscais/nfe",
+      "/notas-fiscais/nfse",
       "/financeiro",
       "/financeiro/categorias",
       "/financeiro/tags",
@@ -171,15 +179,10 @@ describe("<Sidebar>", () => {
     )
     renderSidebar()
 
-    for (const name of [
-      "Clientes",
-      "Agendamentos",
-      "Orçamentos",
-      "Ordens de Serviço",
-      "Notas Fiscais",
-    ]) {
+    for (const name of ["Clientes", "Agendamentos", "Orçamentos", "Ordens de Serviço"]) {
       expect(screen.getByRole("link", { name })).toBeInTheDocument()
     }
+    expect(screen.getByRole("button", { name: /^notas fiscais$/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /^veículos$/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /suprimentos/i })).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /^financeiro$/i })).not.toBeInTheDocument()

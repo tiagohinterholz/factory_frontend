@@ -1,52 +1,57 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
+import { Routes, Route } from "react-router-dom"
+import { QueryClient } from "@tanstack/react-query"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import FiscalNotes from "./FiscalNotes"
 
-const NOTES = [
-  {
-    id: "servico-4",
-    note_id: 4,
-    kind: "servico",
-    kind_display: "NFS-e",
-    order_id: 31,
-    client_id: 5,
-    client_name: "Ana Lima",
-    status: "issued",
-    status_display: "Emitida",
-    number: "9",
-    xml_url: "https://focus/nfse.xml",
-    pdf_url: "https://focus/danfse.pdf",
-    error_message: null,
-    created_at: "2026-10-20T10:00:00-03:00",
-  },
-  {
-    id: "produto-2",
-    note_id: 2,
-    kind: "produto",
-    kind_display: "NF-e",
-    order_id: 30,
-    client_id: 6,
-    client_name: "Bruno Souza",
-    status: "failed",
-    status_display: "Falhou",
-    number: null,
-    xml_url: null,
-    pdf_url: null,
-    error_message: "Rejeição 539: duplicidade",
-    created_at: "2026-10-19T10:00:00-03:00",
-  },
-]
+const SERVICO_NOTE = {
+  id: "servico-4",
+  note_id: 4,
+  kind: "servico",
+  kind_display: "NFS-e",
+  order_id: 31,
+  client_id: 5,
+  client_name: "Ana Lima",
+  status: "issued",
+  status_display: "Emitida",
+  number: "9",
+  xml_url: "https://focus/nfse.xml",
+  pdf_url: "https://focus/danfse.pdf",
+  error_message: null,
+  created_at: "2026-10-20T10:00:00-03:00",
+}
+
+const PRODUTO_NOTE = {
+  id: "produto-2",
+  note_id: 2,
+  kind: "produto",
+  kind_display: "NF-e",
+  order_id: 30,
+  client_id: 6,
+  client_name: "Bruno Souza",
+  status: "failed",
+  status_display: "Falhou",
+  number: null,
+  xml_url: null,
+  pdf_url: null,
+  error_message: "Rejeição 539: duplicidade",
+  created_at: "2026-10-19T10:00:00-03:00",
+}
+
+const NOTES_BY_KIND = { produto: [PRODUTO_NOTE], servico: [SERVICO_NOTE] }
 
 let lastUrl
 
-function mockApi(results = NOTES) {
+function mockApi(resultsByKind = NOTES_BY_KIND) {
   server.use(
     http.get(`${API}/notas-fiscais/`, ({ request }) => {
       lastUrl = new URL(request.url)
+      const kind = lastUrl.searchParams.get("kind")
+      const results = resultsByKind[kind] ?? []
       return HttpResponse.json({ results, count: results.length })
     }),
     http.get(`${API}/clientes/`, () =>
@@ -58,6 +63,14 @@ function mockApi(results = NOTES) {
   )
 }
 
+const renderPage = (route, queryClient) =>
+  renderWithProviders(
+    <Routes>
+      <Route path="/notas-fiscais/:kind" element={<FiscalNotes />} />
+    </Routes>,
+    { route, queryClient },
+  )
+
 describe("<FiscalNotes>", () => {
   beforeEach(() => {
     localStorage.setItem(
@@ -66,36 +79,58 @@ describe("<FiscalNotes>", () => {
     )
   })
 
-  it("lista notas de produto e serviço com links pra OS e cliente (OSFIN-P3-02)", async () => {
+  it("/notas-fiscais/nfe pede kind=produto e lista só as NF-e, com links pra OS e cliente", async () => {
     mockApi()
-    renderWithProviders(<FiscalNotes />)
+    renderPage("/notas-fiscais/nfe")
 
-    expect(await screen.findByText("NFS-e")).toBeInTheDocument()
-    expect(screen.getByText("NF-e")).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: "OS #31" })).toHaveAttribute("href", "/ordens/31")
-    expect(screen.getByRole("link", { name: "Ana Lima" })).toHaveAttribute("href", "/clientes/5")
-    expect(screen.getByText("Emitida")).toBeInTheDocument()
-    expect(screen.queryByText(/em construção/i)).not.toBeInTheDocument()
+    expect(await screen.findByText("Notas Fiscais — NF-e")).toBeInTheDocument()
+    expect(await screen.findByRole("link", { name: "OS #30" })).toHaveAttribute(
+      "href",
+      "/ordens/30",
+    )
+    expect(screen.getByRole("link", { name: "Bruno Souza" })).toHaveAttribute("href", "/clientes/6")
+    expect(screen.queryByText("Ana Lima")).not.toBeInTheDocument()
+    await waitFor(() => expect(lastUrl.searchParams.get("kind")).toBe("produto"))
+  })
+
+  it("/notas-fiscais/nfse pede kind=servico e lista só as NFS-e", async () => {
+    mockApi()
+    renderPage("/notas-fiscais/nfse")
+
+    expect(await screen.findByText("Notas Fiscais — NFS-e")).toBeInTheDocument()
+    expect(await screen.findByText("Emitida")).toBeInTheDocument()
+    expect(screen.queryByText("Bruno Souza")).not.toBeInTheDocument()
+    await waitFor(() => expect(lastUrl.searchParams.get("kind")).toBe("servico"))
+  })
+
+  it("NF-e e NFS-e não compartilham cache: trocar de rota troca os dados, não repete a tela anterior", async () => {
+    mockApi()
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+
+    const { unmount } = renderPage("/notas-fiscais/nfe", queryClient)
+    expect(await screen.findByRole("link", { name: "Bruno Souza" })).toBeInTheDocument()
+    unmount()
+
+    renderPage("/notas-fiscais/nfse", queryClient)
+    expect(await screen.findByRole("link", { name: "Ana Lima" })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: "Bruno Souza" })).not.toBeInTheDocument()
   })
 
   it("não mostra o erro cru na listagem, só atrás de uma ação dedicada", async () => {
     mockApi()
-    renderWithProviders(<FiscalNotes />)
-    await screen.findByText("NF-e")
+    renderPage("/notas-fiscais/nfe")
+    await screen.findByText("Falhou")
 
     expect(screen.queryByText("Rejeição 539: duplicidade")).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole("button", { name: "Ver motivo da falha na NF-e" }))
 
     expect(await screen.findByText("Rejeição 539: duplicidade")).toBeInTheDocument()
-    expect(
-      screen.queryByRole("button", { name: "Ver motivo da falha na NFS-e" }),
-    ).not.toBeInTheDocument()
   })
 
   it("oferece baixar PDF e XML só quando a nota tem os arquivos", async () => {
     mockApi()
-    renderWithProviders(<FiscalNotes />)
+    renderPage("/notas-fiscais/nfse")
 
     expect(await screen.findByRole("link", { name: "Baixar PDF da NFS-e" })).toHaveAttribute(
       "href",
@@ -105,35 +140,32 @@ describe("<FiscalNotes>", () => {
       "href",
       "https://focus/nfse.xml",
     )
-    expect(screen.queryByRole("link", { name: "Baixar PDF da NF-e" })).not.toBeInTheDocument()
   })
 
   it("sem nenhuma nota mostra lista vazia, sem erro", async () => {
-    mockApi([])
-    renderWithProviders(<FiscalNotes />)
+    mockApi({ produto: [], servico: [] })
+    renderPage("/notas-fiscais/nfe")
 
     expect(await screen.findByText("Nenhum registro encontrado.")).toBeInTheDocument()
   })
 
-  it("filtra por tipo e status", async () => {
+  it("filtra por status, mantendo o kind fixo da rota", async () => {
     mockApi()
-    renderWithProviders(<FiscalNotes />)
-    await screen.findByText("NFS-e")
+    renderPage("/notas-fiscais/nfse")
+    await screen.findByText("Emitida")
 
     fireEvent.click(screen.getByRole("button", { name: /filtros/i }))
-    fireEvent.click(await screen.findByRole("button", { name: /selecione o\(a\) tipo/i }))
-    fireEvent.click(await screen.findByRole("option", { name: "NFS-e (serviço)" }))
     fireEvent.click(screen.getByRole("button", { name: /selecione o\(a\) status/i }))
     fireEvent.click(await screen.findByRole("option", { name: "Emitida" }))
     fireEvent.click(screen.getByRole("button", { name: "Filtrar" }))
 
-    await waitFor(() => expect(lastUrl.searchParams.get("kind")).toBe("servico"))
-    expect(lastUrl.searchParams.get("status")).toBe("issued")
+    await waitFor(() => expect(lastUrl.searchParams.get("status")).toBe("issued"))
+    expect(lastUrl.searchParams.get("kind")).toBe("servico")
   })
 
   it("nota só com XML mostra o XML e não mostra link de PDF", async () => {
-    mockApi([{ ...NOTES[0], pdf_url: null }])
-    renderWithProviders(<FiscalNotes />)
+    mockApi({ produto: [], servico: [{ ...SERVICO_NOTE, pdf_url: null }] })
+    renderPage("/notas-fiscais/nfse")
 
     expect(await screen.findByRole("link", { name: "Baixar XML da NFS-e" })).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "Baixar PDF da NFS-e" })).not.toBeInTheDocument()
