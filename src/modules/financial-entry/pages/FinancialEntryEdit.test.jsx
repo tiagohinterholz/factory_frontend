@@ -98,6 +98,35 @@ describe("<FinancialEntryEdit>", () => {
     expect(await screen.findByRole("button", { name: /gerar cobrança/i })).toBeInTheDocument()
   })
 
+  it("cobrança que falhou não mostra o erro cru, só atrás de uma ação dedicada", async () => {
+    renderAs(
+      { email: "a@a.com", business_id: 3, role: "admin" },
+      {
+        ...ENTRY,
+        category: "venda_servico",
+        order: { id: 55, client: null, vehicle: null },
+        payments: [
+          {
+            id: 1,
+            method: "PIX",
+            status: "falhou",
+            created_at: "2026-10-30T10:00:00-03:00",
+            error_message: "Gateway rejeitou: chave Pix inválida",
+          },
+        ],
+      },
+    )
+
+    expect(
+      await screen.findByRole("button", { name: "Ver motivo da falha na cobrança" }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText("Gateway rejeitou: chave Pix inválida")).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: "Ver motivo da falha na cobrança" }))
+
+    expect(await screen.findByText("Gateway rejeitou: chave Pix inválida")).toBeInTheDocument()
+  })
+
   it("edita as tags do lançamento e manda no payload", async () => {
     server.use(
       http.get(`${API}/categorias-financeiro/`, () => HttpResponse.json({ results: [], count: 0 })),

@@ -188,4 +188,12 @@ describe("<OrderList> — nota fiscal e pagamento na linha", () => {
 
     expect(await screen.findByText("Cartão 3x")).toBeInTheDocument()
   })
+
+  it("OS sem pagamento não mostra nenhuma tag de método embaixo do status", async () => {
+    mockOrders([{ id: 1, status: "em_andamento", total: "0", payment: null }])
+    renderWithProviders(<OrderList />)
+
+    expect(await screen.findByText("em_andamento")).toBeInTheDocument()
+    expect(screen.queryByText("Não faturado")).not.toBeInTheDocument()
+  })
 })
