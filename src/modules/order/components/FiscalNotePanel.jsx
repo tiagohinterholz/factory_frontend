@@ -1,6 +1,7 @@
 import { FileText, Loader2, ExternalLink, AlertTriangle } from "lucide-react"
 import { useFiscalNote } from "@/modules/order/hooks/useFiscalNote"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
+import ErrorDetailButton from "@/modules/core/components/ErrorDetailButton"
 
 const STATUS_LABEL = {
   pending: "Na fila",
@@ -33,13 +34,18 @@ export default function FiscalNotePanel({ orderId }) {
         </div>
         <h3 className="font-semibold text-ink">Nota Fiscal (NF-e)</h3>
         {note && (
-          <span
-            className={`ml-auto text-[11px] font-bold uppercase px-2 py-0.5 rounded-full ${
-              STATUS_TONE[note.status] || "bg-slate-100 text-slate-600"
-            }`}
-          >
-            {STATUS_LABEL[note.status] || note.status}
-          </span>
+          <div className="ml-auto flex items-center gap-1.5">
+            {note.status === "failed" && (
+              <ErrorDetailButton message={note.error_message || "A emissão falhou."} label="NF-e" />
+            )}
+            <span
+              className={`text-[11px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                STATUS_TONE[note.status] || "bg-slate-100 text-slate-600"
+              }`}
+            >
+              {STATUS_LABEL[note.status] || note.status}
+            </span>
+          </div>
         )}
       </div>
 
@@ -109,7 +115,7 @@ export default function FiscalNotePanel({ orderId }) {
         <div className="space-y-3">
           <div className="flex items-start gap-2 text-sm text-danger">
             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-            <span>{note.error_message || "A emissão falhou."}</span>
+            <span>A emissão falhou. Use o ícone ao lado do status acima para ver o motivo.</span>
           </div>
           {canEmitFiscalNote && (
             <button

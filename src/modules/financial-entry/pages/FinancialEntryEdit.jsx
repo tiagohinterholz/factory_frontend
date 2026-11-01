@@ -11,6 +11,7 @@ import {
   paymentIsActive,
 } from "../domain"
 import BackLink from "@/modules/core/components/BackLink"
+import ErrorDetailButton from "@/modules/core/components/ErrorDetailButton"
 import EntryClassificationFields from "../components/EntryClassificationFields"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -219,9 +220,6 @@ export default function FinancialEntryEdit() {
                     <span className="text-slate-400 ml-2">
                       {formatDateTime(payment.created_at)}
                     </span>
-                    {payment.status === "falhou" && payment.error_message && (
-                      <p className="text-xs text-danger mt-1">{payment.error_message}</p>
-                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     {payment.checkout_url && (
@@ -233,6 +231,9 @@ export default function FinancialEntryEdit() {
                       >
                         Link de pagamento
                       </a>
+                    )}
+                    {payment.status === "falhou" && (
+                      <ErrorDetailButton message={payment.error_message} label="cobrança" />
                     )}
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${paymentStatusTone(payment.status)}`}

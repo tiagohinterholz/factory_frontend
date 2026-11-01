@@ -75,8 +75,22 @@ describe("<FiscalNotes>", () => {
     expect(screen.getByRole("link", { name: "OS #31" })).toHaveAttribute("href", "/ordens/31")
     expect(screen.getByRole("link", { name: "Ana Lima" })).toHaveAttribute("href", "/clientes/5")
     expect(screen.getByText("Emitida")).toBeInTheDocument()
-    expect(screen.getByText("Rejeição 539: duplicidade")).toBeInTheDocument()
     expect(screen.queryByText(/em construção/i)).not.toBeInTheDocument()
+  })
+
+  it("não mostra o erro cru na listagem, só atrás de uma ação dedicada", async () => {
+    mockApi()
+    renderWithProviders(<FiscalNotes />)
+    await screen.findByText("NF-e")
+
+    expect(screen.queryByText("Rejeição 539: duplicidade")).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: "Ver motivo da falha na NF-e" }))
+
+    expect(await screen.findByText("Rejeição 539: duplicidade")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Ver motivo da falha na NFS-e" }),
+    ).not.toBeInTheDocument()
   })
 
   it("oferece baixar PDF e XML só quando a nota tem os arquivos", async () => {

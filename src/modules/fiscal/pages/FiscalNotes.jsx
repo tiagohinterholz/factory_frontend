@@ -3,6 +3,7 @@ import { FileCode2, FileDown } from "lucide-react"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
+import ErrorDetailButton from "@/modules/core/components/ErrorDetailButton"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { formatDateTime } from "@/modules/core/utils/format"
 import { useFiscalNotes } from "../hooks/useFiscalNotes"
@@ -62,16 +63,11 @@ export default function FiscalNotes() {
     {
       header: "Status",
       accessor: (note) => (
-        <div className="flex flex-col items-start gap-1">
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${fiscalNoteStatusTone(note.status)}`}
-          >
-            {note.status_display}
-          </span>
-          {note.status === "failed" && note.error_message && (
-            <span className="max-w-xs text-[11px] text-danger">{note.error_message}</span>
-          )}
-        </div>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${fiscalNoteStatusTone(note.status)}`}
+        >
+          {note.status_display}
+        </span>
       ),
     },
     { header: "Solicitada em", accessor: (note) => formatDateTime(note.created_at) },
@@ -95,6 +91,9 @@ export default function FiscalNotes() {
         totalItems={totalItems}
         renderActions={(note) => (
           <div className="flex items-center justify-end gap-1">
+            {note.status === "failed" && (
+              <ErrorDetailButton message={note.error_message} label={note.kind_display} />
+            )}
             {note.pdf_url && (
               <a
                 href={note.pdf_url}
