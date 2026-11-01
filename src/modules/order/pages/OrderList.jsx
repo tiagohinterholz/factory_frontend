@@ -116,7 +116,7 @@ export default function OrderList() {
         ].filter(([, info]) => info)
         if (notes.length === 0)
           return (
-            <span className="px-2 py-1 rounded-full text-xs font-bold bg-slate-400 text-white">
+            <span className="px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap bg-slate-400 text-white">
               Não gerada
             </span>
           )
