@@ -4,11 +4,6 @@ export const fiscalNoteKeys = {
   list: (params) => [...fiscalNoteKeys.lists(), params],
 }
 
-export const FISCAL_KIND_OPTIONS = [
-  { id: "produto", name: "NF-e (produto)" },
-  { id: "servico", name: "NFS-e (serviço)" },
-]
-
 export const FISCAL_STATUS_OPTIONS = [
   { id: "issued", name: "Emitida" },
   { id: "processing", name: "Processando" },
