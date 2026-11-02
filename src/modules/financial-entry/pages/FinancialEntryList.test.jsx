@@ -36,10 +36,26 @@ describe("<FinancialEntryList>", () => {
     expect(screen.getByRole("link", { name: /novo lançamento/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Marcar como pago" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Cancelar lançamento" })).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: "Ver/editar lançamento" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Editar lançamento" })).toHaveAttribute(
       "href",
       "/financeiro/7",
     )
+  })
+
+  it("lançamento já pago mostra o olho de visualizar, não o lápis, mesmo pra admin", async () => {
+    server.use(
+      http.get(`${API}/financeiro/`, () =>
+        HttpResponse.json({ results: [{ ...ENTRY, status: "pago" }], count: 1 }),
+      ),
+    )
+    setUser({ email: "a@a.com", business_id: 3, role: "admin" })
+    renderWithProviders(<FinancialEntryList />)
+
+    expect(await screen.findByRole("link", { name: "Ver lançamento" })).toHaveAttribute(
+      "href",
+      "/financeiro/7",
+    )
+    expect(screen.queryByRole("link", { name: "Editar lançamento" })).not.toBeInTheDocument()
   })
 
   it("mostra a forma de pagamento do lançamento já pago na listagem", async () => {
@@ -88,7 +104,7 @@ describe("<FinancialEntryList>", () => {
     expect(screen.queryByRole("link", { name: /novo lançamento/i })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "Marcar como pago" })).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "Cancelar lançamento" })).not.toBeInTheDocument()
-    expect(screen.queryByRole("link", { name: "Ver/editar lançamento" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: "Editar lançamento" })).not.toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Ver lançamento" })).toHaveAttribute(
       "href",
       "/financeiro/7",

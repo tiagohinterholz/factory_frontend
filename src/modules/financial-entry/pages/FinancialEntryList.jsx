@@ -183,14 +183,19 @@ export default function FinancialEntryList() {
                 <XCircle size={16} />
               </button>
             )}
-            <Link
-              to={`/financeiro/${item.id}`}
-              title={canChangeFinancialEntry ? "Ver/editar lançamento" : "Ver lançamento"}
-              aria-label={canChangeFinancialEntry ? "Ver/editar lançamento" : "Ver lançamento"}
-              className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
-            >
-              {canChangeFinancialEntry ? <Edit2 size={16} /> : <Eye size={16} />}
-            </Link>
+            {(() => {
+              const canEditThisEntry = canChangeFinancialEntry && financialEntryCanAct(item.status)
+              return (
+                <Link
+                  to={`/financeiro/${item.id}`}
+                  title={canEditThisEntry ? "Editar lançamento" : "Ver lançamento"}
+                  aria-label={canEditThisEntry ? "Editar lançamento" : "Ver lançamento"}
+                  className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
+                >
+                  {canEditThisEntry ? <Edit2 size={16} /> : <Eye size={16} />}
+                </Link>
+              )
+            })()}
           </div>
         )}
       />
