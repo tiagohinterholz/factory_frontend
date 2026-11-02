@@ -20,18 +20,6 @@ export function useFinancialEntry() {
     emptyFilters: EMPTY_FILTERS,
   })
 
-  const markPaid = useResourceAction({
-    mutationFn: (item) => FinancialEntryService.markFinancialEntryPaid(item.id),
-    confirm: (item) => ({
-      title: "Marcar como pago?",
-      message: `O lançamento #${item.id} será marcado como pago hoje.`,
-      confirmText: "Marcar como pago",
-    }),
-    invalidate: [financialEntryKeys.all, dashboardKeys.all],
-    success: (item) => `Lançamento #${item.id} marcado como pago.`,
-    errorFallback: "Erro ao marcar o lançamento como pago.",
-  })
-
   const cancel = useResourceAction({
     mutationFn: (item) => FinancialEntryService.cancelFinancialEntry(item.id),
     confirm: (item) => ({
@@ -48,7 +36,6 @@ export function useFinancialEntry() {
   return {
     ...rest,
     entries: items,
-    markPaid: markPaid.run,
     cancel: cancel.run,
   }
 }

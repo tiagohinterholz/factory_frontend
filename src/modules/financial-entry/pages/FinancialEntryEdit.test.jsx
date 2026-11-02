@@ -18,7 +18,6 @@ const ENTRY = {
   status: "pendente",
   order: null,
   supplier: null,
-  payments: [],
 }
 
 function renderAs(user, entry = ENTRY) {
@@ -69,62 +68,44 @@ describe("<FinancialEntryEdit>", () => {
     expect(screen.queryByRole("button", { name: /marcar como pago/i })).not.toBeInTheDocument()
   })
 
-  it("sem permissão de cobrança não mostra Gerar cobrança em receita de OS", async () => {
-    const orderEntry = {
-      ...ENTRY,
-      category: "venda_servico",
-      order: { id: 55, client: null, vehicle: null },
-    }
-    renderAs(
-      {
-        email: "f@a.com",
-        business_id: 3,
-        role: "financeiro",
-        permissions: ["financial.view_financialentry", "financial.change_financialentry"],
-      },
-      orderEntry,
-    )
+  it("marcar como pago abre o diálogo pedindo forma de pagamento", async () => {
+    renderAs({ email: "a@a.com", business_id: 3, role: "admin" })
 
-    expect(await screen.findByText("Cobrança")).toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: /gerar cobrança/i })).not.toBeInTheDocument()
-  })
-
-  it("com permissão de cobrança mostra Gerar cobrança em receita de OS", async () => {
-    renderAs(
-      { email: "a@a.com", business_id: 3, role: "admin" },
-      { ...ENTRY, category: "venda_servico", order: { id: 55, client: null, vehicle: null } },
-    )
-
-    expect(await screen.findByRole("button", { name: /gerar cobrança/i })).toBeInTheDocument()
-  })
-
-  it("cobrança que falhou não mostra o erro cru, só atrás de uma ação dedicada", async () => {
-    renderAs(
-      { email: "a@a.com", business_id: 3, role: "admin" },
-      {
-        ...ENTRY,
-        category: "venda_servico",
-        order: { id: 55, client: null, vehicle: null },
-        payments: [
-          {
-            id: 1,
-            method: "PIX",
-            status: "falhou",
-            created_at: "2026-10-30T10:00:00-03:00",
-            error_message: "Gateway rejeitou: chave Pix inválida",
-          },
-        ],
-      },
-    )
+    fireEvent.click(await screen.findByRole("button", { name: /marcar como pago/i }))
 
     expect(
-      await screen.findByRole("button", { name: "Ver motivo da falha na cobrança" }),
+      await screen.findByRole("heading", { name: "Marcar lançamento #7 como pago" }),
     ).toBeInTheDocument()
-    expect(screen.queryByText("Gateway rejeitou: chave Pix inválida")).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/forma de pagamento/i)).toBeInTheDocument()
+  })
 
-    fireEvent.click(screen.getByRole("button", { name: "Ver motivo da falha na cobrança" }))
+  it("confirma o pagamento em pix sem pedir parcelas", async () => {
+    const markPaid = vi
+      .spyOn(FinancialEntryService, "markFinancialEntryPaid")
+      .mockResolvedValue({ ...ENTRY, status: "pago" })
+    renderAs({ email: "a@a.com", business_id: 3, role: "admin" })
 
-    expect(await screen.findByText("Gateway rejeitou: chave Pix inválida")).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole("button", { name: /marcar como pago/i }))
+    fireEvent.change(await screen.findByLabelText(/forma de pagamento/i), {
+      target: { value: "pix" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar pagamento" }))
+
+    await waitFor(() => expect(markPaid).toHaveBeenCalledWith("7", { paymentMethod: "pix" }))
+    markPaid.mockRestore()
+  })
+
+  it("cartão exige parcelas antes de liberar a confirmação", async () => {
+    renderAs({ email: "a@a.com", business_id: 3, role: "admin" })
+
+    fireEvent.click(await screen.findByRole("button", { name: /marcar como pago/i }))
+    fireEvent.change(await screen.findByLabelText(/forma de pagamento/i), {
+      target: { value: "cartao" },
+    })
+
+    expect(screen.getByLabelText(/parcelas/i)).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText(/parcelas/i), { target: { value: "0" } })
+    expect(screen.getByRole("button", { name: "Confirmar pagamento" })).toBeDisabled()
   })
 
   it("edita as tags do lançamento e manda no payload", async () => {

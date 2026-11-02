@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest"
-import { screen } from "@testing-library/react"
+import { describe, it, expect, beforeEach, vi } from "vitest"
+import { screen, fireEvent, waitFor } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import FinancialEntryList from "./FinancialEntryList"
+import { FinancialEntryService } from "../services/financial-entry"
 
 const ENTRY = {
   id: 7,
@@ -39,6 +40,23 @@ describe("<FinancialEntryList>", () => {
       "href",
       "/financeiro/7",
     )
+  })
+
+  it("marcar como pago na listagem abre o diálogo e manda a forma de pagamento", async () => {
+    const markPaid = vi
+      .spyOn(FinancialEntryService, "markFinancialEntryPaid")
+      .mockResolvedValue({ ...ENTRY, status: "pago" })
+    setUser({ email: "a@a.com", business_id: 3, role: "admin" })
+    renderWithProviders(<FinancialEntryList />)
+
+    fireEvent.click(await screen.findByRole("button", { name: "Marcar como pago" }))
+    fireEvent.change(await screen.findByLabelText(/forma de pagamento/i), {
+      target: { value: "dinheiro" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar pagamento" }))
+
+    await waitFor(() => expect(markPaid).toHaveBeenCalledWith(7, { paymentMethod: "dinheiro" }))
+    markPaid.mockRestore()
   })
 
   it("contador só visualiza: sem criar, marcar pago, cancelar nem editar", async () => {

@@ -1,7 +1,9 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import { CheckCircle, Edit2, Eye, XCircle } from "lucide-react"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { useFinancialEntry } from "../hooks/useFinancialEntry"
+import MarkEntryPaidDialog from "../components/MarkEntryPaidDialog"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
@@ -36,7 +38,6 @@ export default function FinancialEntryList() {
     totalItems,
     refetch,
     error,
-    markPaid,
     cancel,
     setSearch,
   } = useFinancialEntry()
@@ -46,6 +47,7 @@ export default function FinancialEntryList() {
     canMarkFinancialEntryPaid,
     canCancelFinancialEntry,
   } = usePermissions()
+  const [markingPaid, setMarkingPaid] = useState(null)
 
   const filterFields = [
     { name: "entry_type", label: "Tipo", type: "select", options: FINANCIAL_ENTRY_TYPE_OPTIONS },
@@ -154,7 +156,7 @@ export default function FinancialEntryList() {
             {financialEntryCanAct(item.status) && canMarkFinancialEntryPaid && (
               <button
                 type="button"
-                onClick={() => markPaid(item)}
+                onClick={() => setMarkingPaid(item)}
                 title="Marcar como pago"
                 aria-label="Marcar como pago"
                 className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
@@ -184,6 +186,7 @@ export default function FinancialEntryList() {
           </div>
         )}
       />
+      <MarkEntryPaidDialog entry={markingPaid} onClose={() => setMarkingPaid(null)} />
     </div>
   )
 }
