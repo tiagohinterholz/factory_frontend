@@ -1,7 +1,9 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import { CheckCircle, Edit2, Eye, XCircle } from "lucide-react"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { useFinancialEntry } from "../hooks/useFinancialEntry"
+import MarkEntryPaidDialog from "../components/MarkEntryPaidDialog"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
@@ -15,6 +17,7 @@ import {
   financialEntryTypeLabel,
   financialEntryCategoryLabel,
 } from "../domain"
+import { paymentLabel } from "@/modules/order/domain"
 
 const STATUS_OPTIONS = [
   { id: "pendente", name: "Pendente" },
@@ -36,7 +39,6 @@ export default function FinancialEntryList() {
     totalItems,
     refetch,
     error,
-    markPaid,
     cancel,
     setSearch,
   } = useFinancialEntry()
@@ -46,6 +48,7 @@ export default function FinancialEntryList() {
     canMarkFinancialEntryPaid,
     canCancelFinancialEntry,
   } = usePermissions()
+  const [markingPaid, setMarkingPaid] = useState(null)
 
   const filterFields = [
     { name: "entry_type", label: "Tipo", type: "select", options: FINANCIAL_ENTRY_TYPE_OPTIONS },
@@ -108,11 +111,18 @@ export default function FinancialEntryList() {
       header: "Status",
       sortKey: "status",
       accessor: (item) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${financialEntryStatusTone(item.status)}`}
-        >
-          {item.status}
-        </span>
+        <div className="flex flex-col items-center gap-1">
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${financialEntryStatusTone(item.status)}`}
+          >
+            {item.status}
+          </span>
+          {paymentLabel(item) && (
+            <span className="px-2 py-1 rounded-full text-xs font-bold uppercase bg-slate-100 text-slate-600">
+              {paymentLabel(item)}
+            </span>
+          )}
+        </div>
       ),
     },
     {
@@ -154,7 +164,7 @@ export default function FinancialEntryList() {
             {financialEntryCanAct(item.status) && canMarkFinancialEntryPaid && (
               <button
                 type="button"
-                onClick={() => markPaid(item)}
+                onClick={() => setMarkingPaid(item)}
                 title="Marcar como pago"
                 aria-label="Marcar como pago"
                 className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
@@ -173,17 +183,23 @@ export default function FinancialEntryList() {
                 <XCircle size={16} />
               </button>
             )}
-            <Link
-              to={`/financeiro/${item.id}`}
-              title={canChangeFinancialEntry ? "Ver/editar lançamento" : "Ver lançamento"}
-              aria-label={canChangeFinancialEntry ? "Ver/editar lançamento" : "Ver lançamento"}
-              className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
-            >
-              {canChangeFinancialEntry ? <Edit2 size={16} /> : <Eye size={16} />}
-            </Link>
+            {(() => {
+              const canEditThisEntry = canChangeFinancialEntry && financialEntryCanAct(item.status)
+              return (
+                <Link
+                  to={`/financeiro/${item.id}`}
+                  title={canEditThisEntry ? "Editar lançamento" : "Ver lançamento"}
+                  aria-label={canEditThisEntry ? "Editar lançamento" : "Ver lançamento"}
+                  className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
+                >
+                  {canEditThisEntry ? <Edit2 size={16} /> : <Eye size={16} />}
+                </Link>
+              )
+            })()}
           </div>
         )}
       />
+      <MarkEntryPaidDialog entry={markingPaid} onClose={() => setMarkingPaid(null)} />
     </div>
   )
 }

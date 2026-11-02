@@ -18,7 +18,6 @@ const ENTRY = {
   status: "pendente",
   order: null,
   supplier: null,
-  payments: [],
 }
 
 function renderAs(user, entry = ENTRY) {
@@ -69,62 +68,109 @@ describe("<FinancialEntryEdit>", () => {
     expect(screen.queryByRole("button", { name: /marcar como pago/i })).not.toBeInTheDocument()
   })
 
-  it("sem permissão de cobrança não mostra Gerar cobrança em receita de OS", async () => {
-    const orderEntry = {
-      ...ENTRY,
-      category: "venda_servico",
-      order: { id: 55, client: null, vehicle: null },
-    }
-    renderAs(
-      {
-        email: "f@a.com",
-        business_id: 3,
-        role: "financeiro",
-        permissions: ["financial.view_financialentry", "financial.change_financialentry"],
-      },
-      orderEntry,
-    )
+  it("marcar como pago abre o diálogo pedindo forma de pagamento", async () => {
+    renderAs({ email: "a@a.com", business_id: 3, role: "admin" })
 
-    expect(await screen.findByText("Cobrança")).toBeInTheDocument()
-    expect(screen.queryByRole("button", { name: /gerar cobrança/i })).not.toBeInTheDocument()
+    fireEvent.click(await screen.findByRole("button", { name: /marcar como pago/i }))
+
+    expect(
+      await screen.findByRole("heading", { name: "Marcar lançamento #7 como pago" }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText(/forma de pagamento/i)).toBeInTheDocument()
   })
 
-  it("com permissão de cobrança mostra Gerar cobrança em receita de OS", async () => {
-    renderAs(
-      { email: "a@a.com", business_id: 3, role: "admin" },
-      { ...ENTRY, category: "venda_servico", order: { id: 55, client: null, vehicle: null } },
-    )
+  it("confirma o pagamento em pix sem pedir parcelas", async () => {
+    const markPaid = vi
+      .spyOn(FinancialEntryService, "markFinancialEntryPaid")
+      .mockResolvedValue({ ...ENTRY, status: "pago" })
+    renderAs({ email: "a@a.com", business_id: 3, role: "admin" })
 
-    expect(await screen.findByRole("button", { name: /gerar cobrança/i })).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole("button", { name: /marcar como pago/i }))
+    fireEvent.change(await screen.findByLabelText(/forma de pagamento/i), {
+      target: { value: "pix" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar pagamento" }))
+
+    await waitFor(() => expect(markPaid).toHaveBeenCalledWith("7", { paymentMethod: "pix" }))
+    markPaid.mockRestore()
   })
 
-  it("cobrança que falhou não mostra o erro cru, só atrás de uma ação dedicada", async () => {
+  it("cartão exige parcelas antes de liberar a confirmação", async () => {
+    renderAs({ email: "a@a.com", business_id: 3, role: "admin" })
+
+    fireEvent.click(await screen.findByRole("button", { name: /marcar como pago/i }))
+    fireEvent.change(await screen.findByLabelText(/forma de pagamento/i), {
+      target: { value: "cartao" },
+    })
+
+    expect(screen.getByLabelText(/parcelas/i)).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText(/parcelas/i), { target: { value: "0" } })
+    expect(screen.getByRole("button", { name: "Confirmar pagamento" })).toBeDisabled()
+  })
+
+  it("mostra a forma de pagamento e as parcelas do lançamento já pago", async () => {
     renderAs(
       { email: "a@a.com", business_id: 3, role: "admin" },
       {
         ...ENTRY,
-        category: "venda_servico",
-        order: { id: 55, client: null, vehicle: null },
-        payments: [
-          {
-            id: 1,
-            method: "PIX",
-            status: "falhou",
-            created_at: "2026-10-30T10:00:00-03:00",
-            error_message: "Gateway rejeitou: chave Pix inválida",
-          },
-        ],
+        status: "pago",
+        payment_date: "2026-10-30",
+        payment_method: "cartao",
+        installments: 3,
       },
     )
 
-    expect(
-      await screen.findByRole("button", { name: "Ver motivo da falha na cobrança" }),
-    ).toBeInTheDocument()
-    expect(screen.queryByText("Gateway rejeitou: chave Pix inválida")).not.toBeInTheDocument()
+    expect(await screen.findByText(/pago em 30\/10\/2026/i)).toBeInTheDocument()
+    expect(screen.getByText("Forma de pagamento")).toBeInTheDocument()
+    expect(screen.getByText("Cartão")).toBeInTheDocument()
+    expect(screen.getByText("Parcelas")).toBeInTheDocument()
+    expect(screen.getByText("3x")).toBeInTheDocument()
+  })
 
-    fireEvent.click(screen.getByRole("button", { name: "Ver motivo da falha na cobrança" }))
+  it("não mostra o campo de parcelas quando a forma de pagamento não é cartão", async () => {
+    renderAs(
+      { email: "a@a.com", business_id: 3, role: "admin" },
+      {
+        ...ENTRY,
+        status: "pago",
+        payment_date: "2026-10-30",
+        payment_method: "pix",
+        installments: null,
+      },
+    )
 
-    expect(await screen.findByText("Gateway rejeitou: chave Pix inválida")).toBeInTheDocument()
+    expect(await screen.findByText("Forma de pagamento")).toBeInTheDocument()
+    expect(screen.getByText("Pix")).toBeInTheDocument()
+    expect(screen.queryByText("Parcelas")).not.toBeInTheDocument()
+  })
+
+  it("não mostra o campo de tags num lançamento travado e sem nenhuma", async () => {
+    renderAs(
+      {
+        email: "c@a.com",
+        business_id: 3,
+        role: "contador",
+        permissions: ["financial.view_financialentry"],
+      },
+      { ...ENTRY, status: "pago", payment_date: "2026-10-30" },
+    )
+
+    await screen.findByRole("heading", { name: "Lançamento" })
+    expect(screen.queryByLabelText("Tags")).not.toBeInTheDocument()
+  })
+
+  it("mostra o campo de tags num lançamento travado que já tem alguma", async () => {
+    renderAs(
+      {
+        email: "c@a.com",
+        business_id: 3,
+        role: "contador",
+        permissions: ["financial.view_financialentry"],
+      },
+      { ...ENTRY, status: "pago", payment_date: "2026-10-30", tags: ["Fixo"] },
+    )
+
+    expect(await screen.findByText("Fixo")).toBeInTheDocument()
   })
 
   it("edita as tags do lançamento e manda no payload", async () => {

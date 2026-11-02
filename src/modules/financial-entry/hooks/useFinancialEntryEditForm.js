@@ -36,10 +36,11 @@ export function useFinancialEntryEditForm() {
     entryType: "",
     status: "",
     paymentDate: null,
+    paymentMethod: null,
+    installments: null,
     cancelledAt: null,
     order: null,
     supplier: null,
-    payments: [],
     financialCategory: null,
   })
 
@@ -49,10 +50,11 @@ export function useFinancialEntryEditForm() {
       entryType: data.entry_type ?? "",
       status: data.status ?? "",
       paymentDate: data.payment_date ?? null,
+      paymentMethod: data.payment_method ?? null,
+      installments: data.installments ?? null,
       cancelledAt: data.cancelled_at ?? null,
       order: data.order ?? null,
       supplier: data.supplier ?? null,
-      payments: data.payments ?? [],
       financialCategory: data.financial_category ?? null,
     })
     return data
@@ -82,19 +84,6 @@ export function useFinancialEntryEditForm() {
     errorFallback: "Erro ao atualizar o lançamento",
   })
 
-  const markPaid = useResourceAction({
-    mutationFn: () => FinancialEntryService.markFinancialEntryPaid(id),
-    confirm: {
-      title: "Marcar como pago?",
-      message: "O lançamento será marcado como pago hoje.",
-      confirmText: "Marcar como pago",
-    },
-    invalidate: [financialEntryKeys.all, dashboardKeys.all],
-    success: "Lançamento marcado como pago.",
-    onSuccess: () => fetchMeta(),
-    errorFallback: "Erro ao marcar o lançamento como pago.",
-  })
-
   const cancel = useResourceAction({
     mutationFn: () => FinancialEntryService.cancelFinancialEntry(id),
     confirm: {
@@ -108,33 +97,22 @@ export function useFinancialEntryEditForm() {
     errorFallback: "Erro ao cancelar o lançamento.",
   })
 
-  // gerar cobrança é uma ação de gateway de verdade — não some se der
-  // errado, então não tem "confirm" bloqueante, mas também não é reversível
-  // com um clique (o back bloqueia gerar outra enquanto essa não resolver).
-  const generateCharge = useResourceAction({
-    mutationFn: (method) => FinancialEntryService.generateCharge(id, method),
-    invalidate: [financialEntryKeys.all],
-    success: "Cobrança solicitada — acompanhe o status abaixo.",
-    onSuccess: () => fetchMeta(),
-    errorFallback: "Erro ao gerar a cobrança.",
-  })
-
   return {
     form,
     onSubmit,
     loading,
+    entryId: id,
     entryType: meta.entryType,
     status: meta.status,
     paymentDate: meta.paymentDate,
+    paymentMethod: meta.paymentMethod,
+    installments: meta.installments,
     cancelledAt: meta.cancelledAt,
     relatedOrder: meta.order,
     relatedSupplier: meta.supplier,
-    payments: meta.payments,
     financialCategory: meta.financialCategory,
     isAutomatic,
-    handleMarkPaid: markPaid.run,
     handleCancel: cancel.run,
-    handleGenerateCharge: generateCharge.run,
-    generatingCharge: generateCharge.pending,
+    refetchMeta: fetchMeta,
   }
 }
