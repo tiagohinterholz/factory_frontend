@@ -108,6 +108,21 @@ describe("<FinancialEntryEdit>", () => {
     expect(screen.getByRole("button", { name: "Confirmar pagamento" })).toBeDisabled()
   })
 
+  it("mostra a forma de pagamento e as parcelas do lançamento já pago", async () => {
+    renderAs(
+      { email: "a@a.com", business_id: 3, role: "admin" },
+      {
+        ...ENTRY,
+        status: "pago",
+        payment_date: "2026-10-30",
+        payment_method: "cartao",
+        installments: 3,
+      },
+    )
+
+    expect(await screen.findByText(/pago em 30\/10\/2026 via cartão 3x/i)).toBeInTheDocument()
+  })
+
   it("edita as tags do lançamento e manda no payload", async () => {
     server.use(
       http.get(`${API}/categorias-financeiro/`, () => HttpResponse.json({ results: [], count: 0 })),

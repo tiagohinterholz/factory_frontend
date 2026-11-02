@@ -17,6 +17,7 @@ import {
   financialEntryTypeLabel,
   financialEntryCategoryLabel,
 } from "../domain"
+import { paymentLabel } from "@/modules/order/domain"
 
 const STATUS_OPTIONS = [
   { id: "pendente", name: "Pendente" },
@@ -110,11 +111,18 @@ export default function FinancialEntryList() {
       header: "Status",
       sortKey: "status",
       accessor: (item) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${financialEntryStatusTone(item.status)}`}
-        >
-          {item.status}
-        </span>
+        <div className="flex flex-col items-center gap-1">
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${financialEntryStatusTone(item.status)}`}
+          >
+            {item.status}
+          </span>
+          {paymentLabel(item) && (
+            <span className="px-2 py-1 rounded-full text-xs font-bold uppercase bg-slate-100 text-slate-600">
+              {paymentLabel(item)}
+            </span>
+          )}
+        </div>
       ),
     },
     {

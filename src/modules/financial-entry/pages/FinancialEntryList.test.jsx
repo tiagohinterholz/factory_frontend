@@ -42,6 +42,22 @@ describe("<FinancialEntryList>", () => {
     )
   })
 
+  it("mostra a forma de pagamento do lançamento já pago na listagem", async () => {
+    server.use(
+      http.get(`${API}/financeiro/`, () =>
+        HttpResponse.json({
+          results: [{ ...ENTRY, status: "pago", payment_method: "pix" }],
+          count: 1,
+        }),
+      ),
+    )
+    setUser({ email: "a@a.com", business_id: 3, role: "admin" })
+    renderWithProviders(<FinancialEntryList />)
+
+    expect(await screen.findByText("Aluguel do galpão")).toBeInTheDocument()
+    expect(screen.getByText("Pix")).toBeInTheDocument()
+  })
+
   it("marcar como pago na listagem abre o diálogo e manda a forma de pagamento", async () => {
     const markPaid = vi
       .spyOn(FinancialEntryService, "markFinancialEntryPaid")

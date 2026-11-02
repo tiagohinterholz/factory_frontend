@@ -6,6 +6,7 @@ import {
   financialEntryTypeLabel,
   financialEntryCategoryLabel,
 } from "../domain"
+import { paymentLabel } from "@/modules/order/domain"
 import BackLink from "@/modules/core/components/BackLink"
 import EntryClassificationFields from "../components/EntryClassificationFields"
 import MarkEntryPaidDialog from "../components/MarkEntryPaidDialog"
@@ -25,6 +26,8 @@ export default function FinancialEntryEdit() {
     entryType,
     status,
     paymentDate,
+    paymentMethod,
+    installments,
     cancelledAt,
     relatedOrder,
     isAutomatic,
@@ -89,7 +92,10 @@ export default function FinancialEntryEdit() {
 
         {paymentDate && (
           <p className="text-[13px] text-slate-500 -mt-2 mb-4">
-            Pago em {formatDate(paymentDate)}.
+            Pago em {formatDate(paymentDate)}
+            {paymentLabel({ payment_method: paymentMethod, installments }) &&
+              ` via ${paymentLabel({ payment_method: paymentMethod, installments })}`}
+            .
           </p>
         )}
         {cancelledAt && (
