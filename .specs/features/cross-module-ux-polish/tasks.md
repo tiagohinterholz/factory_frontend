@@ -18,36 +18,36 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 
 > Generated from codebase sampling. Guidelines found: none (no `AGENTS.md`/`CLAUDE.md`/testing section in `README.md` for either repo) — strong defaults applied, floored by existing test depth sampled below.
 
-| Code Layer | Required Test Type | Coverage Expectation | Location Pattern | Run Command |
-| --- | --- | --- | --- | --- |
-| Frontend: new `*LiveSelect` wrapper component (`ProductCategoryLiveSelect`, `ProductSubcategoryLiveSelect`) | unit | Mirrors `ManufacturerLiveSelect.test.jsx`/`ModelLiveSelect.test.jsx` depth: renders options, fires `onChange`, opens create modal, disabled-until-parent-chosen state where applicable | `src/modules/**/components/*LiveSelect.test.jsx` | `npm test` |
-| Frontend: form page swapping a field to LiveSelect/adding a button (VehicleModelCreate/Edit, Vehicle edit, Product create/edit, WorkService create, PurchaseOrder create/edit) | unit | 1:1 to the story's own ACs — field renders as the new component, pre-fill on edit still works, button disabled/enabled/navigates correctly | `src/modules/**/pages/*.test.jsx` | `npm test` |
-| Frontend: listing/display logic (ProductList columns, ProductItemForm option labels, budget/order line rendering) | unit | All branches named in the story's ACs (brand present/absent, subcategory present/absent, qty boundary values) | `src/modules/**/pages/*.test.jsx`, `src/modules/core/components/*.test.jsx` | `npm test` |
-| Frontend: global structural test for icon-only buttons | unit (structural, repo-wide) | Already enforces title/aria-label on every icon-only button/link in `src/modules/**/*.jsx` — no new test needed, existing `icon-tooltips.test.js` just needs to keep passing | `src/test/icon-tooltips.test.js` | `npm test` |
-| Frontend: new standalone Financial Subcategory pages (Create/Edit/List) | unit | Mirrors `ProductSubcategoryCreate.test.jsx`/`Edit`/`List` depth (if present) or, if the Product subcategory module has no dedicated tests today, same depth as `FinancialCategoryCreate.test.jsx`/`Edit` (sampled at Task 12's start) | `src/modules/financial-subcategory/pages/*.test.jsx` | `npm test` |
-| Backend: `PurchaseOrderRepository.get_filtered` `search` param | unit/integration (pytest, DB-backed) | Key query paths: numeric id match, name icontains match, empty search no-op — mirrors existing `test_repository.py` style | `apps/purchases/tests/test_repository.py` | `HOST_DB=localhost PORT_DB=5433 pytest apps/purchases -q` |
-| Backend: `PurchaseOrderListView.get` `search` query param wiring | integration (pytest, APIClient) | Happy path (digits → id match, text → name match) + no-param unaffected, mirrors `test_views.py` | `apps/purchases/tests/test_views.py` | `HOST_DB=localhost PORT_DB=5433 pytest apps/purchases -q` |
+| Code Layer                                                                                                                                                                     | Required Test Type                   | Coverage Expectation                                                                                                                                                                                                                  | Location Pattern                                                            | Run Command                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Frontend: new `*LiveSelect` wrapper component (`ProductCategoryLiveSelect`, `ProductSubcategoryLiveSelect`)                                                                    | unit                                 | Mirrors `ManufacturerLiveSelect.test.jsx`/`ModelLiveSelect.test.jsx` depth: renders options, fires `onChange`, opens create modal, disabled-until-parent-chosen state where applicable                                                | `src/modules/**/components/*LiveSelect.test.jsx`                            | `npm test`                                                |
+| Frontend: form page swapping a field to LiveSelect/adding a button (VehicleModelCreate/Edit, Vehicle edit, Product create/edit, WorkService create, PurchaseOrder create/edit) | unit                                 | 1:1 to the story's own ACs — field renders as the new component, pre-fill on edit still works, button disabled/enabled/navigates correctly                                                                                            | `src/modules/**/pages/*.test.jsx`                                           | `npm test`                                                |
+| Frontend: listing/display logic (ProductList columns, ProductItemForm option labels, budget/order line rendering)                                                              | unit                                 | All branches named in the story's ACs (brand present/absent, subcategory present/absent, qty boundary values)                                                                                                                         | `src/modules/**/pages/*.test.jsx`, `src/modules/core/components/*.test.jsx` | `npm test`                                                |
+| Frontend: global structural test for icon-only buttons                                                                                                                         | unit (structural, repo-wide)         | Already enforces title/aria-label on every icon-only button/link in `src/modules/**/*.jsx` — no new test needed, existing `icon-tooltips.test.js` just needs to keep passing                                                          | `src/test/icon-tooltips.test.js`                                            | `npm test`                                                |
+| Frontend: new standalone Financial Subcategory pages (Create/Edit/List)                                                                                                        | unit                                 | Mirrors `ProductSubcategoryCreate.test.jsx`/`Edit`/`List` depth (if present) or, if the Product subcategory module has no dedicated tests today, same depth as `FinancialCategoryCreate.test.jsx`/`Edit` (sampled at Task 12's start) | `src/modules/financial-subcategory/pages/*.test.jsx`                        | `npm test`                                                |
+| Backend: `PurchaseOrderRepository.get_filtered` `search` param                                                                                                                 | unit/integration (pytest, DB-backed) | Key query paths: numeric id match, name icontains match, empty search no-op — mirrors existing `test_repository.py` style                                                                                                             | `apps/purchases/tests/test_repository.py`                                   | `HOST_DB=localhost PORT_DB=5433 pytest apps/purchases -q` |
+| Backend: `PurchaseOrderListView.get` `search` query param wiring                                                                                                               | integration (pytest, APIClient)      | Happy path (digits → id match, text → name match) + no-param unaffected, mirrors `test_views.py`                                                                                                                                      | `apps/purchases/tests/test_views.py`                                        | `HOST_DB=localhost PORT_DB=5433 pytest apps/purchases -q` |
 
 ## Parallelism Assessment
 
 > Generated from codebase — confirm before Execute.
 
-| Test Type | Parallel-Safe? | Isolation Model | Evidence |
-| --- | --- | --- | --- |
-| Frontend Vitest (all) | Yes | Vitest's default worker-pool isolation per file; no shared backing store — components render against mocked hooks/query clients per test file | Sampled `ManufacturerLiveSelect.test.jsx`, `PurchaseOrderEdit.test.jsx`: each mocks its own hooks module-locally, no shared DB/global fixture |
-| Backend pytest (purchases) | No | Shared Postgres test DB per `test_repository.py`/`test_views.py` — Django's test-DB transaction wrapping is per-test but the suite as sampled runs sequentially against one DB connection, consistent with how the rest of `apps/` is run in this project (`pytest apps -q`, no `-n auto` seen in CI/local commands used earlier this session) | Prior sessions in this project always ran `pytest apps -q` single-process against `localhost:5433` |
+| Test Type                  | Parallel-Safe? | Isolation Model                                                                                                                                                                                                                                                                                                                                | Evidence                                                                                                                                      |
+| -------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend Vitest (all)      | Yes            | Vitest's default worker-pool isolation per file; no shared backing store — components render against mocked hooks/query clients per test file                                                                                                                                                                                                  | Sampled `ManufacturerLiveSelect.test.jsx`, `PurchaseOrderEdit.test.jsx`: each mocks its own hooks module-locally, no shared DB/global fixture |
+| Backend pytest (purchases) | No             | Shared Postgres test DB per `test_repository.py`/`test_views.py` — Django's test-DB transaction wrapping is per-test but the suite as sampled runs sequentially against one DB connection, consistent with how the rest of `apps/` is run in this project (`pytest apps -q`, no `-n auto` seen in CI/local commands used earlier this session) | Prior sessions in this project always ran `pytest apps -q` single-process against `localhost:5433`                                            |
 
 ## Gate Check Commands
 
 > Generated from codebase — confirm before Execute.
 
-| Gate Level | When to Use | Command |
-| --- | --- | --- |
-| Quick (frontend) | After any single frontend task | `npm test -- <path-to-test-file>` |
-| Full (frontend) | After a phase completes | `npm run lint && npm run format:check && npm test` |
-| Quick (backend) | After the UXP-14 backend task | `HOST_DB=localhost PORT_DB=5433 pytest apps/purchases -q` |
-| Full (backend) | After the UXP-14 phase completes | `HOST_DB=localhost PORT_DB=5433 pytest apps -q && flake8 apps --max-line-length=79 --count && isort apps --check-only` |
-| Build | After the final phase (whole feature) | `npm run build` (frontend) — backend has no separate build step |
+| Gate Level       | When to Use                           | Command                                                                                                                |
+| ---------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Quick (frontend) | After any single frontend task        | `npm test -- <path-to-test-file>`                                                                                      |
+| Full (frontend)  | After a phase completes               | `npm run lint && npm run format:check && npm test`                                                                     |
+| Quick (backend)  | After the UXP-14 backend task         | `HOST_DB=localhost PORT_DB=5433 pytest apps/purchases -q`                                                              |
+| Full (backend)   | After the UXP-14 phase completes      | `HOST_DB=localhost PORT_DB=5433 pytest apps -q && flake8 apps --max-line-length=79 --count && isort apps --check-only` |
+| Build            | After the final phase (whole feature) | `npm run build` (frontend) — backend has no separate build step                                                        |
 
 ---
 
@@ -105,10 +105,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-02
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Component renders `LiveSelect` wired to `useProductCategoryOptions()`, with `onCreateNew` opening the modal
 - [ ] Modal posts a name-only create, calls `onChange(String(created.id))` on success
 - [ ] Gate check passes: `npm test -- src/modules/productcategory/components/ProductCategoryLiveSelect.test.jsx`
@@ -127,10 +129,12 @@ T19 → T20 → T21 → T22
 **Reuses**: T1's `ProductCategoryLiveSelect`
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Both pages render `ProductCategoryLiveSelect` instead of `SelectField` for "Categoria"
 - [ ] Edit page pre-selects the existing category correctly
 - [ ] Inline "cadastrar novo" creates and selects a category without navigating away
@@ -153,10 +157,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-01
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Both pages render `ManufacturerLiveSelect` for "Marca"
 - [ ] Edit page pre-selects the existing manufacturer correctly
 - [ ] Inline "cadastrar novo" creates and selects a manufacturer without navigating away
@@ -179,10 +185,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-06
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Button renders beside "Cliente Proprietário", disabled when `clientId` is empty
 - [ ] Clicking it navigates to `/clientes/${clientId}`
 - [ ] Button has `title`/`aria-label` (keeps `icon-tooltips.test.js` green)
@@ -205,10 +213,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-07
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Button renders beside "Fornecedor", disabled when empty, navigates to `/fornecedores/:id`
 - [ ] Has `title`/`aria-label`
 - [ ] Gate check passes: `npm test -- src/modules/product/pages/ProductDetail.test.jsx src/test/icon-tooltips.test.js`
@@ -230,10 +240,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-03 (AC2-4)
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Component disabled with hint text when `categoryId` is empty
 - [ ] Options refresh when `categoryId` changes
 - [ ] Inline create modal accepts a pre-filled `categoryId`
@@ -254,10 +266,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-03 (AC1)
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Both pages render `ProductCategoryLiveSelect` for "Categoria"
 - [ ] Gate check passes: `npm test -- src/modules/product/pages`
 - [ ] Test count: existing + 1 new assertion pass
@@ -276,10 +290,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-03 (AC2, AC3, AC4)
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] "Subcategoria" disabled until "Categoria" has a value
 - [ ] Changing category clears a now-invalid subcategory selection (Edge Case in spec)
 - [ ] Inline create on subcategory pre-fills the already-chosen category
@@ -302,10 +318,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-17
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Datalist renders plain unit-name strings, no `[object Object]`
 - [ ] "Marca"'s datalist (the reference pattern) is unaffected
 - [ ] Gate check passes: `npm test -- src/modules/product`
@@ -327,10 +345,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-08, UXP-09
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Column header reads "Categoria / Sub-categoria"; cell shows combined path, falls back to "-" if no subcategory
 - [ ] "Produto" column shows "{name} ({brand})" when brand present, plain "{name}" when absent
 - [ ] Gate check passes: `npm test -- src/modules/product/pages/ProductList.test.jsx`
@@ -352,10 +372,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-04
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Both pages render `SupplierLiveSelect` for "Fornecedor"
 - [ ] The old Plus button and its `navigate("/fornecedores/novo")` handler are gone from `WorkServiceCreate.jsx`
 - [ ] Inline "cadastrar novo fornecedor" works without losing other form field values (verify via a test that fills another field first, then creates a supplier inline, then asserts the other field's value survived)
@@ -378,10 +400,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-05
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Both pages render `SupplierLiveSelect`; Edit keeps the existing disabled-when-not-"aberto" rule
 - [ ] Eye button present on both, disabled when no supplier chosen, navigates to `/fornecedores/:id`
 - [ ] Gate check passes: `npm test -- src/modules/purchase/pages/PurchaseOrderCreate.test.jsx src/modules/purchase/pages/PurchaseOrderEdit.test.jsx src/test/icon-tooltips.test.js`
@@ -403,10 +427,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-13
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Item picker disabled with hint when no supplier chosen
 - [ ] Item picker only lists the selected supplier's products
 - [ ] "Custo unit." auto-fills on product pick, is not editable (`readOnly`/`disabled` input), and updates when the picked product changes
@@ -429,10 +455,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-15
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Button has `title`/`aria-label`
 - [ ] Gate check passes: `npm test -- src/test/icon-tooltips.test.js` (this is the actual enforcement — the structural test now passes for this file without a carve-out)
 - [ ] Test count: `icon-tooltips.test.js` passes with no missing entries
@@ -448,17 +476,20 @@ T19 → T20 → T21 → T22
 
 **What**: Add a "Buscar por fornecedor ou nº do pedido" text field to `filterFields`, wired to a new `search` query param; add the matching backend support.
 **Where**:
-  - Frontend: `src/modules/purchase/pages/PurchaseOrderList.jsx`
-  - Backend: `apps/purchases/views/purchase_order_view.py` (`PurchaseOrderListView.get`), `apps/purchases/repositories/purchase_order_repository.py` (`get_filtered`)
-**Depends on**: None (independent of T12-T14; grouped in this phase for module-adjacency)
-**Reuses**: existing `ListFilters`/`applyFilters` pattern on the frontend; existing `get_filtered(business_id, status, supplier_id)` signature on the backend (adds one param, doesn't replace it)
-**Requirement**: UXP-14
+
+- Frontend: `src/modules/purchase/pages/PurchaseOrderList.jsx`
+- Backend: `apps/purchases/views/purchase_order_view.py` (`PurchaseOrderListView.get`), `apps/purchases/repositories/purchase_order_repository.py` (`get_filtered`)
+  **Depends on**: None (independent of T12-T14; grouped in this phase for module-adjacency)
+  **Reuses**: existing `ListFilters`/`applyFilters` pattern on the frontend; existing `get_filtered(business_id, status, supplier_id)` signature on the backend (adds one param, doesn't replace it)
+  **Requirement**: UXP-14
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Backend: `get_filtered` accepts `search=None`; when all-digits, filters `id=int(search)`; otherwise filters `supplier__corporate_name__icontains=search`; `None`/empty leaves the queryset untouched
 - [ ] Backend: `PurchaseOrderListView.get` reads `params.get("search")` and forwards it
 - [ ] Frontend: new filter field sends `search` as a query param via the existing `applyFilters`/`getPurchaseOrders(params)` flow
@@ -482,10 +513,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-10
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Label format matches spec example exactly: `"Pirelli - Pneu 175/68 (R$ 800,00) · estoque 2"` when branded, unchanged format when not
 - [ ] Searching by brand text matches the option
 - [ ] Gate check passes: `npm test -- src/modules/core/components/ProductItemForm.test.jsx`
@@ -507,10 +540,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-16
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Quantity above `stock_quantity` is rejected with a clear message; exactly `stock_quantity` succeeds; `0`/negative/non-integer still rejected as before
 - [ ] Zero-stock products remain visible in the picker (not filtered out)
 - [ ] Gate check passes: `npm test -- src/modules/core/components/ProductItemForm.test.jsx`
@@ -532,10 +567,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-11
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Both pages' line rows show unit price AND `item.total`, even when quantity is 1
 - [ ] Gate check passes: `npm test -- src/modules/order/pages/OrderEdit.test.jsx src/modules/budget/pages/BudgetEdit.test.jsx`
 - [ ] Test count: existing + 2 new assertions (one per page) pass
@@ -556,10 +593,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-12 (AC1)
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Page lists every subcategory with its category name and a link to the category
 - [ ] Delete action works and refetches the list
 - [ ] New route is reachable (e.g. `/subcategorias-financeiro`)
@@ -580,10 +619,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-12 (AC2)
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Form renders `FinancialCategoryLiveSelect` for "Categoria" + a name field
 - [ ] Submitting calls the existing create endpoint and redirects to the new list (T19)
 - [ ] Gate check passes: `npm test -- src/modules/financial-category/pages/FinancialSubcategoryCreate.test.jsx`
@@ -603,10 +644,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-12 (AC3)
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Form pre-fills name + category correctly
 - [ ] Rename and category re-point both save correctly via the existing PUT endpoint
 - [ ] Gate check passes: `npm test -- src/modules/financial-category/pages/FinancialSubcategoryEdit.test.jsx`
@@ -628,10 +671,12 @@ T19 → T20 → T21 → T22
 **Requirement**: UXP-12 (AC5)
 
 **Tools**:
+
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
+
 - [ ] Inline create widget and delete-only list are gone from this page
 - [ ] A link to the standalone subcategory list/create is present instead
 - [ ] Gate check passes: `npm test -- src/modules/financial-category`
@@ -671,6 +716,7 @@ Phase 6 (Financial subcategory — Sequential):
 ```
 
 **Parallelism constraint:** A task marked `[P]` must have ALL of these:
+
 - No unfinished dependencies
 - Required test type is parallel-safe (per the **Parallelism Assessment** above — all frontend tests are)
 - No shared mutable state with other `[P]` tasks in the same phase
@@ -683,30 +729,30 @@ Phase 6 (Financial subcategory — Sequential):
 
 ## Task Granularity Check
 
-| Task | Scope | Status |
-| --- | --- | --- |
-| T1: Create ProductCategoryLiveSelect + modal | 2 files, 1 concept (category live-select) | ✅ Granular |
-| T2: Swap ProductSubcategory categoria field | 2 files, 1 field swap | ✅ Granular |
-| T3: Swap VehicleModel marca field | 2 files, 1 field swap, zero new code | ✅ Granular |
-| T4: Vehicle ver-cliente button | 1 file, 1 button | ✅ Granular |
-| T5: Product ver-fornecedor button | 1 file, 1 button | ✅ Granular |
-| T6: Create ProductSubcategoryLiveSelect + modal | 2 files, 1 concept | ✅ Granular |
-| T7: Product categoria field swap | 2 files, 1 field | ✅ Granular |
-| T8: Product subcategoria field swap + clear-on-change | 2 files, 1 field + its one coupled behavior | ✅ Granular |
-| T9: Unidade de medida datalist bugfix | 2-3 files, 1 bug | ✅ Granular |
-| T10: Product list 2 columns | 1 file, 2 closely-related display changes in the same table | ⚠️ OK — cohesive (same file, same "what does this row show" concern) |
-| T11: WorkService fornecedor swap + button removal | 2 files, 1 field + its 1 directly-coupled removal (button exists only because LiveSelect didn't) | ⚠️ OK — cohesive, removal is a direct consequence of the swap |
-| T12: PurchaseOrder fornecedor swap + view button | 2 files, 1 field + 1 button, same pattern as T4/T5 | ⚠️ OK — cohesive, mirrors a single established combo |
-| T13: PurchaseOrder item filter + cost auto-fill | 1 file, 2 coupled behaviors (filter drives what auto-fill reads from) | ⚠️ OK — cohesive, genuinely coupled (cost auto-fill only makes sense once filtering exists) |
-| T14: PurchaseOrder remove-item title | 1 file, 1 attribute | ✅ Granular |
-| T15: PurchaseOrder search (frontend + backend) | 3 files, 1 concept across 2 layers | ⚠️ OK — cohesive, a single filter feature necessarily spans view+repo+UI |
-| T16: ProductItemForm brand label | 1 file, 1 concept | ✅ Granular |
-| T17: ProductItemForm stock bound | 1 file, 1 validation rule | ✅ Granular |
-| T18: Order/Budget unit price display | 2 files, 1 concept applied twice (same component family) | ⚠️ OK — cohesive, identical change in two consuming pages |
-| T19: Financial subcategory list page | 1-2 files, 1 page | ✅ Granular |
-| T20: Financial subcategory create page | 1 file, 1 page | ✅ Granular |
-| T21: Financial subcategory edit page | 1 file, 1 page | ✅ Granular |
-| T22: Remove old inline widget | 1 file, 1 removal + 1 link | ✅ Granular |
+| Task                                                  | Scope                                                                                            | Status                                                                                      |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| T1: Create ProductCategoryLiveSelect + modal          | 2 files, 1 concept (category live-select)                                                        | ✅ Granular                                                                                 |
+| T2: Swap ProductSubcategory categoria field           | 2 files, 1 field swap                                                                            | ✅ Granular                                                                                 |
+| T3: Swap VehicleModel marca field                     | 2 files, 1 field swap, zero new code                                                             | ✅ Granular                                                                                 |
+| T4: Vehicle ver-cliente button                        | 1 file, 1 button                                                                                 | ✅ Granular                                                                                 |
+| T5: Product ver-fornecedor button                     | 1 file, 1 button                                                                                 | ✅ Granular                                                                                 |
+| T6: Create ProductSubcategoryLiveSelect + modal       | 2 files, 1 concept                                                                               | ✅ Granular                                                                                 |
+| T7: Product categoria field swap                      | 2 files, 1 field                                                                                 | ✅ Granular                                                                                 |
+| T8: Product subcategoria field swap + clear-on-change | 2 files, 1 field + its one coupled behavior                                                      | ✅ Granular                                                                                 |
+| T9: Unidade de medida datalist bugfix                 | 2-3 files, 1 bug                                                                                 | ✅ Granular                                                                                 |
+| T10: Product list 2 columns                           | 1 file, 2 closely-related display changes in the same table                                      | ⚠️ OK — cohesive (same file, same "what does this row show" concern)                        |
+| T11: WorkService fornecedor swap + button removal     | 2 files, 1 field + its 1 directly-coupled removal (button exists only because LiveSelect didn't) | ⚠️ OK — cohesive, removal is a direct consequence of the swap                               |
+| T12: PurchaseOrder fornecedor swap + view button      | 2 files, 1 field + 1 button, same pattern as T4/T5                                               | ⚠️ OK — cohesive, mirrors a single established combo                                        |
+| T13: PurchaseOrder item filter + cost auto-fill       | 1 file, 2 coupled behaviors (filter drives what auto-fill reads from)                            | ⚠️ OK — cohesive, genuinely coupled (cost auto-fill only makes sense once filtering exists) |
+| T14: PurchaseOrder remove-item title                  | 1 file, 1 attribute                                                                              | ✅ Granular                                                                                 |
+| T15: PurchaseOrder search (frontend + backend)        | 3 files, 1 concept across 2 layers                                                               | ⚠️ OK — cohesive, a single filter feature necessarily spans view+repo+UI                    |
+| T16: ProductItemForm brand label                      | 1 file, 1 concept                                                                                | ✅ Granular                                                                                 |
+| T17: ProductItemForm stock bound                      | 1 file, 1 validation rule                                                                        | ✅ Granular                                                                                 |
+| T18: Order/Budget unit price display                  | 2 files, 1 concept applied twice (same component family)                                         | ⚠️ OK — cohesive, identical change in two consuming pages                                   |
+| T19: Financial subcategory list page                  | 1-2 files, 1 page                                                                                | ✅ Granular                                                                                 |
+| T20: Financial subcategory create page                | 1 file, 1 page                                                                                   | ✅ Granular                                                                                 |
+| T21: Financial subcategory edit page                  | 1 file, 1 page                                                                                   | ✅ Granular                                                                                 |
+| T22: Remove old inline widget                         | 1 file, 1 removal + 1 link                                                                       | ✅ Granular                                                                                 |
 
 No ❌ — every ⚠️ is a single cohesive concern spanning at most 2-3 files, not a "build the whole feature" task.
 
@@ -714,30 +760,30 @@ No ❌ — every ⚠️ is a single cohesive concern spanning at most 2-3 files,
 
 ## Diagram-Definition Cross-Check
 
-| Task | Depends On (task body) | Diagram Shows | Status |
-| --- | --- | --- | --- |
-| T1 | None | None | ✅ Match |
-| T2 | T1 | T1 → T2 | ✅ Match |
-| T3 | None | None (own Phase 1) | ✅ Match |
-| T4 | None | None (own Phase 1) | ✅ Match |
-| T5 | None | parallel, no arrow needed | ✅ Match |
-| T6 | T1 (+T2 same files) | T2 → T6 | ✅ Match |
-| T7 | T6 | T6 → T7 | ✅ Match |
-| T8 | T6, T7 | T7 → T8 | ✅ Match |
-| T9 | None | T6 →[P] T9 (phase-adjacency only) | ✅ Match |
-| T10 | T6 (file-adjacency only) | T6 →[P] T10 | ✅ Match |
-| T11 | None | standalone Phase 3 | ✅ Match |
-| T12 | None | standalone start of Phase 4 | ✅ Match |
-| T13 | T12 | T12 → T13 | ✅ Match |
-| T14 | T13 | T13 → T14 | ✅ Match |
-| T15 | None | [P], independent of T12-T14 | ✅ Match |
-| T16 | None | standalone start of Phase 5 | ✅ Match |
-| T17 | T16 | T16 → T17 | ✅ Match |
-| T18 | T16, T17 | T17 → T18 | ✅ Match |
-| T19 | None | standalone start of Phase 6 | ✅ Match |
-| T20 | T19 | T19 → T20 | ✅ Match |
-| T21 | T19, T20 | T20 → T21 | ✅ Match |
-| T22 | T19, T20, T21 | T21 → T22 | ✅ Match |
+| Task | Depends On (task body)   | Diagram Shows                     | Status   |
+| ---- | ------------------------ | --------------------------------- | -------- |
+| T1   | None                     | None                              | ✅ Match |
+| T2   | T1                       | T1 → T2                           | ✅ Match |
+| T3   | None                     | None (own Phase 1)                | ✅ Match |
+| T4   | None                     | None (own Phase 1)                | ✅ Match |
+| T5   | None                     | parallel, no arrow needed         | ✅ Match |
+| T6   | T1 (+T2 same files)      | T2 → T6                           | ✅ Match |
+| T7   | T6                       | T6 → T7                           | ✅ Match |
+| T8   | T6, T7                   | T7 → T8                           | ✅ Match |
+| T9   | None                     | T6 →[P] T9 (phase-adjacency only) | ✅ Match |
+| T10  | T6 (file-adjacency only) | T6 →[P] T10                       | ✅ Match |
+| T11  | None                     | standalone Phase 3                | ✅ Match |
+| T12  | None                     | standalone start of Phase 4       | ✅ Match |
+| T13  | T12                      | T12 → T13                         | ✅ Match |
+| T14  | T13                      | T13 → T14                         | ✅ Match |
+| T15  | None                     | [P], independent of T12-T14       | ✅ Match |
+| T16  | None                     | standalone start of Phase 5       | ✅ Match |
+| T17  | T16                      | T16 → T17                         | ✅ Match |
+| T18  | T16, T17                 | T17 → T18                         | ✅ Match |
+| T19  | None                     | standalone start of Phase 6       | ✅ Match |
+| T20  | T19                      | T19 → T20                         | ✅ Match |
+| T21  | T19, T20                 | T20 → T21                         | ✅ Match |
+| T22  | T19, T20, T21            | T21 → T22                         | ✅ Match |
 
 All ✅ — no mismatches.
 
@@ -745,30 +791,30 @@ All ✅ — no mismatches.
 
 ## Test Co-location Validation
 
-| Task | Code Layer Created/Modified | Matrix Requires | Task Says | Status |
-| --- | --- | --- | --- | --- |
-| T1 | New LiveSelect wrapper component | unit | unit | ✅ OK |
-| T2 | Form page field swap | unit | unit | ✅ OK |
-| T3 | Form page field swap | unit | unit | ✅ OK |
-| T4 | Form page button | unit | unit | ✅ OK |
-| T5 | Form page button | unit | unit | ✅ OK |
-| T6 | New LiveSelect wrapper component | unit | unit | ✅ OK |
-| T7 | Form page field swap | unit | unit | ✅ OK |
-| T8 | Form page field swap | unit | unit | ✅ OK |
-| T9 | Form page bugfix | unit | unit | ✅ OK |
-| T10 | Listing/display logic | unit | unit | ✅ OK |
-| T11 | Form page field swap + removal | unit | unit | ✅ OK |
-| T12 | Form page field swap + button | unit | unit | ✅ OK |
-| T13 | Form page logic (filter + auto-fill) | unit | unit | ✅ OK |
-| T14 | Icon-only button attribute | unit (structural, pre-existing) | unit | ✅ OK |
-| T15 | Repository + view (backend) + filter field (frontend) | unit/integration (backend), unit (frontend) | unit/integration (backend), unit (frontend) | ✅ OK |
-| T16 | Listing/display logic (shared component) | unit | unit | ✅ OK |
-| T17 | Domain validation logic (shared component) | unit | unit | ✅ OK |
-| T18 | Listing/display logic | unit | unit | ✅ OK |
-| T19 | New page | unit | unit | ✅ OK |
-| T20 | New page | unit | unit | ✅ OK |
-| T21 | New page | unit | unit | ✅ OK |
-| T22 | Page removal + link | unit | unit | ✅ OK |
+| Task | Code Layer Created/Modified                           | Matrix Requires                             | Task Says                                   | Status |
+| ---- | ----------------------------------------------------- | ------------------------------------------- | ------------------------------------------- | ------ |
+| T1   | New LiveSelect wrapper component                      | unit                                        | unit                                        | ✅ OK  |
+| T2   | Form page field swap                                  | unit                                        | unit                                        | ✅ OK  |
+| T3   | Form page field swap                                  | unit                                        | unit                                        | ✅ OK  |
+| T4   | Form page button                                      | unit                                        | unit                                        | ✅ OK  |
+| T5   | Form page button                                      | unit                                        | unit                                        | ✅ OK  |
+| T6   | New LiveSelect wrapper component                      | unit                                        | unit                                        | ✅ OK  |
+| T7   | Form page field swap                                  | unit                                        | unit                                        | ✅ OK  |
+| T8   | Form page field swap                                  | unit                                        | unit                                        | ✅ OK  |
+| T9   | Form page bugfix                                      | unit                                        | unit                                        | ✅ OK  |
+| T10  | Listing/display logic                                 | unit                                        | unit                                        | ✅ OK  |
+| T11  | Form page field swap + removal                        | unit                                        | unit                                        | ✅ OK  |
+| T12  | Form page field swap + button                         | unit                                        | unit                                        | ✅ OK  |
+| T13  | Form page logic (filter + auto-fill)                  | unit                                        | unit                                        | ✅ OK  |
+| T14  | Icon-only button attribute                            | unit (structural, pre-existing)             | unit                                        | ✅ OK  |
+| T15  | Repository + view (backend) + filter field (frontend) | unit/integration (backend), unit (frontend) | unit/integration (backend), unit (frontend) | ✅ OK  |
+| T16  | Listing/display logic (shared component)              | unit                                        | unit                                        | ✅ OK  |
+| T17  | Domain validation logic (shared component)            | unit                                        | unit                                        | ✅ OK  |
+| T18  | Listing/display logic                                 | unit                                        | unit                                        | ✅ OK  |
+| T19  | New page                                              | unit                                        | unit                                        | ✅ OK  |
+| T20  | New page                                              | unit                                        | unit                                        | ✅ OK  |
+| T21  | New page                                              | unit                                        | unit                                        | ✅ OK  |
+| T22  | Page removal + link                                   | unit                                        | unit                                        | ✅ OK  |
 
 All ✅ — no violations. No task defers its tests to a later task.
 

@@ -16,29 +16,29 @@ Codebase research (done before writing this spec) found that **3 of the original
 
 ## Out of Scope
 
-| Feature | Reason |
-| --- | --- |
-| Service NF-e panel mirroring the product NF panel on the Order detail page (original item 17) | Already built and wired — `ServiceFiscalNotePanel.jsx` is structurally identical to `FiscalNotePanel.jsx` and already renders conditionally on `OrderEdit.jsx`. |
-| Fiscal notes list: filter by client/OS + print/download XML/PDF (original item 18) | Already built — `FiscalNotes.jsx` already has Tipo/Status/Cliente/date-range filters and PDF/XML download actions with proper `title`s. |
-| Financial entry tags: "select live" to add a new tag (original item 20) | `TagInput.jsx` already lets you type any name and press Enter/comma to add it as a new tag, with `<datalist>` autocomplete from existing tags — functionally the same capability (add-new-inline), just a chips widget instead of a `LiveSelect` dropdown. Replacing a working, more specialized widget with a generic one would be a regression, not a fix. |
-| Any new backend model, permission, or migration | Everything needed already exists server-side except one query param (see UXP-14) — this is overwhelmingly a frontend feature. |
-| Reservation/allocation of stock across open Budgets/Orders | Confirmed with user: stock caps use the product's live `stock_quantity` only, not stock minus other open documents — the system has no reservation concept today and this feature doesn't add one. |
-| Changing a Purchase Order's `fornecedor` after items were already added | Narrow edge case, not part of the original request; existing items are left as-is if it happens (see Edge Cases). |
+| Feature                                                                                       | Reason                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Service NF-e panel mirroring the product NF panel on the Order detail page (original item 17) | Already built and wired — `ServiceFiscalNotePanel.jsx` is structurally identical to `FiscalNotePanel.jsx` and already renders conditionally on `OrderEdit.jsx`.                                                                                                                                                                                              |
+| Fiscal notes list: filter by client/OS + print/download XML/PDF (original item 18)            | Already built — `FiscalNotes.jsx` already has Tipo/Status/Cliente/date-range filters and PDF/XML download actions with proper `title`s.                                                                                                                                                                                                                      |
+| Financial entry tags: "select live" to add a new tag (original item 20)                       | `TagInput.jsx` already lets you type any name and press Enter/comma to add it as a new tag, with `<datalist>` autocomplete from existing tags — functionally the same capability (add-new-inline), just a chips widget instead of a `LiveSelect` dropdown. Replacing a working, more specialized widget with a generic one would be a regression, not a fix. |
+| Any new backend model, permission, or migration                                               | Everything needed already exists server-side except one query param (see UXP-14) — this is overwhelmingly a frontend feature.                                                                                                                                                                                                                                |
+| Reservation/allocation of stock across open Budgets/Orders                                    | Confirmed with user: stock caps use the product's live `stock_quantity` only, not stock minus other open documents — the system has no reservation concept today and this feature doesn't add one.                                                                                                                                                           |
+| Changing a Purchase Order's `fornecedor` after items were already added                       | Narrow edge case, not part of the original request; existing items are left as-is if it happens (see Edge Cases).                                                                                                                                                                                                                                            |
 
 ---
 
 ## Assumptions & Open Questions
 
-| Assumption / decision | Chosen default | Rationale | Confirmed? |
-| --- | --- | --- | --- |
-| "View linked entity" button behavior | Navigates to `/fornecedores/:id` or `/clientes/:id` in the same tab, leaving the current form (same as the existing Services→Fornecedor button) | User confirmed: consistency with the one precedent that already exists beats a new interaction pattern. | y |
-| Purchase order "custo unit." auto-fill source | `product.unit_price` (sale price) | User confirmed — no separate cost-price field exists on Product. | y |
-| Budget/Order quantity cap basis | Raw `product.stock_quantity`, no cross-document reservation | User confirmed — matches the system's current no-reservation behavior. | y |
-| Financial subcategory module scope | Full standalone Create/Edit/List pages mirroring `productsubcategory`'s module exactly (own routes, list with parent-category link, rename support) | User confirmed. Verified this needs **zero new backend work** — `FinancialEntrySubcategoryListView`/`DetailView` already expose list-all (with search on `name`/`category__name`), get-by-id, update and delete; only `FinancialEntryCategoryLiveSelect` (already built) needs reuse in the new subcategory forms. | y |
-| Purchase order list "busca por fornecedor ou id" — matching rule | A single `search` query param: exact match if the typed text is all digits (treated as the PO's own `id`), otherwise `supplier__corporate_name__icontains` | `PurchaseOrderListView.get()` today only accepts `status`/`supplier_id` (exact FK), no free-text search — this is the one real backend touch in the feature (`apps/purchases/views/purchase_order_view.py`, `apps/purchases/repositories/purchase_order_repository.py` in `factory_project`). Rule chosen to match how "busca" fields behave elsewhere in the app (id-or-name heuristic). | n — reasonable default, not separately asked since it's a small, low-risk mechanical choice |
-| Changing Purchase Order `fornecedor` after items exist | Allowed; existing line items are left untouched (the item picker simply re-filters for *new* adds going forward) | Not part of the original 20 items; retroactively clearing/validating existing lines is a bigger behavior change than asked for. Logged as an assumption per the Out-of-Scope table rather than silently dropped. | n — declined gray area, default chosen to avoid scope creep |
-| Out-of-stock product visibility in the Budget/Order picker | Stays visible in the picker (so the user can see it exists / is tracked), but adding it shows the existing inline error pattern (`setError("...")`) if the typed quantity exceeds available stock, same as today's "quantidade inválida" error | Hiding it entirely would make an existing product look deleted; the picker already surfaces stock count in the option label, so an explicit error on over-quantity is more informative than hiding the row. | n — reasonable default |
-| Product's `unidade de medida` item (original item 6) | Not a select→datalist conversion (already done) — scoped down to just fixing the `unitOfMeasureOptions` object-vs-string mismatch against `FormField`'s `datalist` prop | Code research showed the field already uses the exact datalist pattern requested; the only real defect is a latent type mismatch worth fixing while touching this file. | y (scope correction confirmed by nature of the finding, not a judgment call) |
+| Assumption / decision                                            | Chosen default                                                                                                                                                                                                                                 | Rationale                                                                                                                                                                                                                                                                                                                                                                                 | Confirmed?                                                                                  |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| "View linked entity" button behavior                             | Navigates to `/fornecedores/:id` or `/clientes/:id` in the same tab, leaving the current form (same as the existing Services→Fornecedor button)                                                                                                | User confirmed: consistency with the one precedent that already exists beats a new interaction pattern.                                                                                                                                                                                                                                                                                   | y                                                                                           |
+| Purchase order "custo unit." auto-fill source                    | `product.unit_price` (sale price)                                                                                                                                                                                                              | User confirmed — no separate cost-price field exists on Product.                                                                                                                                                                                                                                                                                                                          | y                                                                                           |
+| Budget/Order quantity cap basis                                  | Raw `product.stock_quantity`, no cross-document reservation                                                                                                                                                                                    | User confirmed — matches the system's current no-reservation behavior.                                                                                                                                                                                                                                                                                                                    | y                                                                                           |
+| Financial subcategory module scope                               | Full standalone Create/Edit/List pages mirroring `productsubcategory`'s module exactly (own routes, list with parent-category link, rename support)                                                                                            | User confirmed. Verified this needs **zero new backend work** — `FinancialEntrySubcategoryListView`/`DetailView` already expose list-all (with search on `name`/`category__name`), get-by-id, update and delete; only `FinancialEntryCategoryLiveSelect` (already built) needs reuse in the new subcategory forms.                                                                        | y                                                                                           |
+| Purchase order list "busca por fornecedor ou id" — matching rule | A single `search` query param: exact match if the typed text is all digits (treated as the PO's own `id`), otherwise `supplier__corporate_name__icontains`                                                                                     | `PurchaseOrderListView.get()` today only accepts `status`/`supplier_id` (exact FK), no free-text search — this is the one real backend touch in the feature (`apps/purchases/views/purchase_order_view.py`, `apps/purchases/repositories/purchase_order_repository.py` in `factory_project`). Rule chosen to match how "busca" fields behave elsewhere in the app (id-or-name heuristic). | n — reasonable default, not separately asked since it's a small, low-risk mechanical choice |
+| Changing Purchase Order `fornecedor` after items exist           | Allowed; existing line items are left untouched (the item picker simply re-filters for _new_ adds going forward)                                                                                                                               | Not part of the original 20 items; retroactively clearing/validating existing lines is a bigger behavior change than asked for. Logged as an assumption per the Out-of-Scope table rather than silently dropped.                                                                                                                                                                          | n — declined gray area, default chosen to avoid scope creep                                 |
+| Out-of-stock product visibility in the Budget/Order picker       | Stays visible in the picker (so the user can see it exists / is tracked), but adding it shows the existing inline error pattern (`setError("...")`) if the typed quantity exceeds available stock, same as today's "quantidade inválida" error | Hiding it entirely would make an existing product look deleted; the picker already surfaces stock count in the option label, so an explicit error on over-quantity is more informative than hiding the row.                                                                                                                                                                               | n — reasonable default                                                                      |
+| Product's `unidade de medida` item (original item 6)             | Not a select→datalist conversion (already done) — scoped down to just fixing the `unitOfMeasureOptions` object-vs-string mismatch against `FormField`'s `datalist` prop                                                                        | Code research showed the field already uses the exact datalist pattern requested; the only real defect is a latent type mismatch worth fixing while touching this file.                                                                                                                                                                                                                   | y (scope correction confirmed by nature of the finding, not a judgment call)                |
 
 **Open questions:** none — all resolved or logged above.
 
@@ -55,6 +55,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **Why P1**: `ManufacturerLiveSelect` already exists and is already proven on the Vehicle form — this is strictly wiring, zero new code beyond the swap.
 
 **Acceptance Criteria**:
+
 1. WHEN the user opens VehicleModel create or edit THEN the "Marca" field SHALL render as `ManufacturerLiveSelect` instead of `SelectField`.
 2. WHEN the user picks "Cadastrar novo" inside it THEN the system SHALL open `ManufacturerQuickCreateModal` and, on success, select the newly created manufacturer.
 3. WHEN editing an existing VehicleModel THEN its current manufacturer SHALL appear pre-selected, identical to today's behavior.
@@ -70,6 +71,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **Why P1**: Same proven pattern; the only new code is a thin `ProductCategoryLiveSelect` wrapper (mirrors `ManufacturerLiveSelect` exactly) plus its quick-create modal.
 
 **Acceptance Criteria**:
+
 1. WHEN the user opens ProductSubcategory create or edit THEN "Categoria" SHALL render as a new `ProductCategoryLiveSelect` component.
 2. WHEN no matching category exists THEN the user SHALL be able to create one inline via a `ProductCategoryQuickCreateModal` (name-only form, same shape as `ManufacturerQuickCreateModal`).
 3. WHEN a category is created inline THEN it SHALL be immediately selected in the field.
@@ -85,6 +87,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **Why P1**: Reuses `ProductCategoryLiveSelect` from UXP-02 plus one new `ProductSubcategoryLiveSelect` (filtered by the chosen category, mirrors `ModelLiveSelect`'s "disabled until manufacturer chosen" pattern).
 
 **Acceptance Criteria**:
+
 1. WHEN the user opens Product create or edit THEN "Categoria" SHALL render as `ProductCategoryLiveSelect`.
 2. WHEN "Categoria" has no value THEN "Subcategoria" (`ProductSubcategoryLiveSelect`) SHALL render disabled with hint text, same convention as `ModelLiveSelect` when no manufacturer is chosen.
 3. WHEN "Categoria" changes to a different category THEN "Subcategoria"'s options SHALL refresh to that category's subcategories, and SHALL clear its current value if it no longer belongs to the new category.
@@ -101,6 +104,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **Why P1**: Direct value: today's "+" button on WorkServiceCreate navigates away and loses form state — LiveSelect's inline create modal fixes that outright.
 
 **Acceptance Criteria**:
+
 1. WHEN the user opens WorkService create or edit THEN "Fornecedor" SHALL render as `SupplierLiveSelect` instead of `SelectField`.
 2. WHEN the user picks "Cadastrar novo fornecedor" inside it THEN the system SHALL open `SupplierQuickCreateModal` without leaving the service form or losing any already-typed field.
 3. WHEN WorkServiceCreate renders THEN the standalone "Cadastrar novo fornecedor" button that navigates to `/fornecedores/novo` SHALL no longer be present (redundant with LiveSelect's own inline create).
@@ -116,6 +120,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **Why P1**: Same proven swap; also unblocks UXP-13 (item filtering needs a reliably-selected supplier id, which LiveSelect's controlled value already gives for free).
 
 **Acceptance Criteria**:
+
 1. WHEN the user opens PurchaseOrderCreate THEN "Fornecedor" SHALL render as `SupplierLiveSelect`.
 2. WHEN the user opens PurchaseOrderEdit (the item-adding screen) and the order is still "aberto" THEN "Fornecedor" SHALL also render as `SupplierLiveSelect`; when not "aberto" it SHALL remain disabled exactly as today.
 3. WHEN the order is "aberto" THEN a "ver fornecedor" Eye-icon button SHALL sit beside the field, disabled when no supplier is chosen, navigating to `/fornecedores/:id` — same markup/behavior as `WorkServiceDetail.jsx`'s existing button (per the confirmed assumption).
@@ -131,6 +136,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **User Story**: As a user editing a vehicle, I want a button next to "Cliente Proprietário" to jump to that client's record, same as Services already offers for its Fornecedor.
 
 **Acceptance Criteria**:
+
 1. WHEN the user opens Vehicle edit (`VehicleDetail.jsx`) THEN an Eye-icon button SHALL appear beside the `ClientLiveSelect` "Cliente Proprietário" field.
 2. WHEN no client is selected THEN the button SHALL be disabled.
 3. WHEN clicked with a client selected THEN the system SHALL navigate to `/clientes/:id`.
@@ -144,6 +150,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **User Story**: As a user editing a product, I want the same "ver fornecedor" affordance Services already has.
 
 **Acceptance Criteria**:
+
 1. WHEN the user opens Product edit (`ProductDetail.jsx`) THEN an Eye-icon button SHALL appear beside the `SupplierLiveSelect` "Fornecedor" field, disabled when empty, navigating to `/fornecedores/:id` when clicked — identical markup/behavior to `WorkServiceDetail.jsx`.
 
 **Independent Test**: Open an existing product, click "ver fornecedor", land on that supplier's page.
@@ -155,6 +162,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **User Story**: As a user scanning the product list, I want to see the full category path, not just the subcategory name floating with no context.
 
 **Acceptance Criteria**:
+
 1. WHEN the product list renders THEN the column currently showing only `item.subcategory.name` SHALL show `"{category.name} / {subcategory.name}"` (falling back to `"-"` only if the product has no subcategory at all, same as today).
 2. WHEN the column header renders THEN its title SHALL change from "Subcategoria" to "Categoria / Sub-categoria".
 
@@ -167,6 +175,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **User Story**: As a user scanning the product list, I want to see the brand next to the product name without opening each row.
 
 **Acceptance Criteria**:
+
 1. WHEN the product list renders a product with a non-empty `brand` THEN the "Produto" column SHALL show `"{name} ({brand})"`.
 2. WHEN `brand` is empty/null THEN the column SHALL show just `{name}`, unchanged from today.
 
@@ -179,6 +188,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **User Story**: As a user adding a product to a budget/OS, I want to see its brand in the picker so I can tell apart near-identical items (e.g. two tire brands), matching the example given: "Pirelli - Pneu 175/68 (R$ 800,00) - estoque: 2".
 
 **Acceptance Criteria**:
+
 1. WHEN `ProductItemForm` builds its option labels THEN a product with a non-empty `brand` SHALL render as `"{brand} - {name} ({price}) · estoque {qty}"`.
 2. WHEN `brand` is empty THEN the label SHALL keep today's `"{name} ({price}) · estoque {qty}"` format.
 3. WHEN the user searches the picker by brand name THEN it SHALL match (the existing `searchText` field, which already includes name/reference/sku, SHALL also include `brand`).
@@ -192,6 +202,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **User Story**: As a user reviewing a budget/OS's product lines, I want to see both the per-unit price and the line's total, not just the total.
 
 **Acceptance Criteria**:
+
 1. WHEN a product line renders in `OrderEdit.jsx` or `BudgetEdit.jsx` THEN it SHALL show the per-unit price (`product.unit_price` or the line's own stored unit price, whichever the line item persists) alongside the existing quantity and the already-multiplied `item.total`.
 2. WHEN the quantity is 1 THEN unit price and total SHALL both be visible even though they're numerically equal (no suppression logic).
 
@@ -206,6 +217,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **Why P2**: Pure UX parity fix; zero new backend work since every needed endpoint already exists (`FinancialEntrySubcategoryListView`/`DetailView`).
 
 **Acceptance Criteria**:
+
 1. WHEN the user navigates to a new standalone subcategory list route THEN the system SHALL list every financial subcategory with its parent category name and a link back to that category — mirroring `ProductSubcategoryList.jsx` exactly.
 2. WHEN the user opens a standalone "create subcategory" page THEN "Categoria" SHALL render as the already-existing `FinancialCategoryLiveSelect`, and saving SHALL call the existing `POST /subcategorias-financeiro/`.
 3. WHEN the user opens a standalone "edit subcategory" page THEN the form SHALL load via the existing `GET /subcategorias-financeiro/:id/`, allow renaming and re-pointing the category, and save via the existing `PUT /subcategorias-financeiro/:id/`.
@@ -223,6 +235,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **User Story**: As a user adding items to a purchase order, I want to only see what the selected supplier actually sells, and I don't want to mistype the cost when the system already knows the price.
 
 **Acceptance Criteria**:
+
 1. WHEN a supplier is selected on PurchaseOrderEdit THEN the product picker SHALL only list products whose `supplier_id` matches the selected supplier (reusing `useSupplierRelations`/`getProductBySupplier`, not the unfiltered `useProductOptions()`).
 2. WHEN no supplier is selected yet THEN the item picker SHALL be disabled with a hint, same convention as other supplier-gated fields in this feature.
 3. WHEN a product is picked from the filtered list THEN "Custo unit." SHALL auto-populate with that product's `unit_price` and SHALL become read-only (per the confirmed assumption) — not editable free text.
@@ -237,6 +250,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **User Story**: As a user looking for a specific purchase order, I want one search box that works whether I remember the order number or the supplier's name.
 
 **Acceptance Criteria**:
+
 1. WHEN the user types a purely numeric value into the new search field THEN the list SHALL filter to the purchase order whose `id` matches exactly.
 2. WHEN the user types a non-numeric value THEN the list SHALL filter to purchase orders whose supplier's `corporate_name` contains it (case-insensitive).
 3. WHEN the search field is empty THEN the list SHALL behave exactly as today (existing status/supplier filters unaffected).
@@ -251,6 +265,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **User Story**: As a keyboard/screen-reader user, I want every icon-only button in this screen to be labeled, not just the ones in the list view.
 
 **Acceptance Criteria**:
+
 1. WHEN the item-list remove (Trash2) button renders in `PurchaseOrderEdit.jsx` THEN it SHALL have `title="Remover item"` and a matching `aria-label`.
 
 **Independent Test**: Hover the remove-item button, confirm a tooltip appears.
@@ -262,6 +277,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **User Story**: As a user adding a product to a budget/OS, I don't want to be able to commit more units than physically exist in stock, or a negative/zero quantity.
 
 **Acceptance Criteria**:
+
 1. WHEN the user sets a quantity for a selected product THEN the system SHALL reject (via the existing inline error pattern, not a native HTML `min`/`max` alone) any value `< 1` or `> product.stock_quantity`.
 2. WHEN `product.stock_quantity` is `0` THEN the product SHALL remain visible in the picker (per the confirmed assumption) but any attempt to add it SHALL show the error.
 3. WHEN the existing generic "quantidade inteira maior que zero" check already in `ProductItemForm.jsx` runs THEN the new upper-bound check SHALL be additive to it, not a replacement — both conditions enforced together.
@@ -277,6 +293,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 **Why P3**: Pure bugfix uncovered during research, not a new feature; low risk, small diff.
 
 **Acceptance Criteria**:
+
 1. WHEN `unitOfMeasureOptions` (currently an array of `{id, name}` objects) is passed into `FormField`'s `datalist` prop (which expects plain strings per `FormField.jsx`) THEN the values SHALL be normalized to plain strings before being passed, so suggestions render correctly in the datalist dropdown.
 
 **Independent Test**: Open Product create, click into "Unidade de Medida", confirm the suggestion dropdown shows readable unit names (not `[object Object]` or blank entries).
@@ -287,7 +304,7 @@ Codebase research (done before writing this spec) found that **3 of the original
 
 - WHEN a `LiveSelect`'s inline "Cadastrar novo" modal is cancelled THEN the field SHALL keep its previous value, unchanged (existing `LiveSelect` behavior, not new — called out because every new wrapper in this feature must preserve it).
 - WHEN a ProductSubcategory's parent category is changed on the Product form (UXP-03) after a subcategory was already chosen THEN the subcategory value SHALL clear if it doesn't belong to the new category (see UXP-03 AC3) — it SHALL NOT silently keep a mismatched subcategory selected.
-- WHEN a PurchaseOrder's fornecedor is changed after items already exist (UXP-05/UXP-13) THEN existing line items SHALL be left untouched; only the item picker's filter for *new* adds changes (see Out of Scope / Assumptions).
+- WHEN a PurchaseOrder's fornecedor is changed after items already exist (UXP-05/UXP-13) THEN existing line items SHALL be left untouched; only the item picker's filter for _new_ adds changes (see Out of Scope / Assumptions).
 - WHEN a Budget/Order line item being edited already holds a quantity at the current stock ceiling THEN re-saving the same quantity SHALL succeed (the bound in UXP-16 is `> stock_quantity`, not `>=`, so the exact stock amount is always a valid value).
 - WHEN the Purchase Order search (UXP-14) receives a value that's both all-digits and happens to also be a substring of some supplier's name (unlikely but possible, e.g. a supplier literally named "77 Peças") THEN the numeric-id branch SHALL take precedence (the rule is "if all digits → id match", not "try both").
 
@@ -295,25 +312,25 @@ Codebase research (done before writing this spec) found that **3 of the original
 
 ## Requirement Traceability
 
-| Requirement ID | Story | Phase | Status |
-| --- | --- | --- | --- |
-| UXP-01 | P1: VehicleModel Marca LiveSelect | Tasks | Pending |
-| UXP-02 | P1: ProductSubcategory Categoria LiveSelect | Tasks | Pending |
-| UXP-03 | P1: Product Categoria/Subcategoria LiveSelect | Tasks | Pending |
-| UXP-04 | P1: WorkService Fornecedor LiveSelect | Tasks | Pending |
-| UXP-05 | P1: PurchaseOrder Fornecedor LiveSelect | Tasks | Pending |
-| UXP-06 | P2: Vehicle ver cliente button | Tasks | Pending |
-| UXP-07 | P2: Product ver fornecedor button | Tasks | Pending |
-| UXP-08 | P2: Product list Categoria/Sub-categoria | Tasks | Pending |
-| UXP-09 | P2: Product list Nome (Marca) | Tasks | Pending |
-| UXP-10 | P2: Budget/Order picker shows brand | Tasks | Pending |
-| UXP-11 | P2: Budget/Order line unit price + total | Tasks | Pending |
-| UXP-12 | P2: Financial subcategory CRUD module | Tasks | Pending |
-| UXP-13 | P3: PurchaseOrder supplier-filtered items + auto cost | Tasks | Pending |
-| UXP-14 | P3: PurchaseOrder search by fornecedor/id | Tasks | Pending |
-| UXP-15 | P3: PurchaseOrder remove-item title | Tasks | Pending |
-| UXP-16 | P3: Budget/Order stock-based qty bounds | Tasks | Pending |
-| UXP-17 | P3: Unidade de medida datalist bugfix | Tasks | Pending |
+| Requirement ID | Story                                                 | Phase | Status  |
+| -------------- | ----------------------------------------------------- | ----- | ------- |
+| UXP-01         | P1: VehicleModel Marca LiveSelect                     | Tasks | Pending |
+| UXP-02         | P1: ProductSubcategory Categoria LiveSelect           | Tasks | Pending |
+| UXP-03         | P1: Product Categoria/Subcategoria LiveSelect         | Tasks | Pending |
+| UXP-04         | P1: WorkService Fornecedor LiveSelect                 | Tasks | Pending |
+| UXP-05         | P1: PurchaseOrder Fornecedor LiveSelect               | Tasks | Pending |
+| UXP-06         | P2: Vehicle ver cliente button                        | Tasks | Pending |
+| UXP-07         | P2: Product ver fornecedor button                     | Tasks | Pending |
+| UXP-08         | P2: Product list Categoria/Sub-categoria              | Tasks | Pending |
+| UXP-09         | P2: Product list Nome (Marca)                         | Tasks | Pending |
+| UXP-10         | P2: Budget/Order picker shows brand                   | Tasks | Pending |
+| UXP-11         | P2: Budget/Order line unit price + total              | Tasks | Pending |
+| UXP-12         | P2: Financial subcategory CRUD module                 | Tasks | Pending |
+| UXP-13         | P3: PurchaseOrder supplier-filtered items + auto cost | Tasks | Pending |
+| UXP-14         | P3: PurchaseOrder search by fornecedor/id             | Tasks | Pending |
+| UXP-15         | P3: PurchaseOrder remove-item title                   | Tasks | Pending |
+| UXP-16         | P3: Budget/Order stock-based qty bounds               | Tasks | Pending |
+| UXP-17         | P3: Unidade de medida datalist bugfix                 | Tasks | Pending |
 
 **Coverage:** 17 total, 17 mapped, 0 unmapped
 
