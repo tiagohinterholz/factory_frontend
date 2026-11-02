@@ -24,6 +24,8 @@ export default function EntryClassificationFields({
   const categoryId = watch("financial_category_id")
   const { subcategories } = useFinancialSubcategoryOptions(categoryId)
   const { tags } = useFinancialTagOptions()
+  const tagsValue = watch("tags") ?? []
+  const showTags = !tagsLocked || tagsValue.length > 0
 
   return (
     <>
@@ -47,18 +49,20 @@ export default function EntryClassificationFields({
           />
         </div>
       )}
-      <Controller
-        control={control}
-        name="tags"
-        render={({ field }) => (
-          <TagInput
-            value={field.value ?? []}
-            onChange={field.onChange}
-            suggestions={tags.map((tag) => tag.name)}
-            disabled={tagsLocked}
-          />
-        )}
-      />
+      {showTags && (
+        <Controller
+          control={control}
+          name="tags"
+          render={({ field }) => (
+            <TagInput
+              value={field.value ?? []}
+              onChange={field.onChange}
+              suggestions={tags.map((tag) => tag.name)}
+              disabled={tagsLocked}
+            />
+          )}
+        />
+      )}
     </>
   )
 }

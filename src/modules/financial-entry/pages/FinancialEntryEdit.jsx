@@ -6,7 +6,7 @@ import {
   financialEntryTypeLabel,
   financialEntryCategoryLabel,
 } from "../domain"
-import { paymentLabel } from "@/modules/order/domain"
+import { PAYMENT_METHOD_OPTIONS } from "@/modules/order/domain"
 import BackLink from "@/modules/core/components/BackLink"
 import EntryClassificationFields from "../components/EntryClassificationFields"
 import MarkEntryPaidDialog from "../components/MarkEntryPaidDialog"
@@ -49,6 +49,8 @@ export default function FinancialEntryEdit() {
   const actionable = financialEntryCanAct(status)
   const locked = !actionable || !canChangeFinancialEntry
   const fieldsLocked = locked || isAutomatic
+  const paymentMethodName =
+    PAYMENT_METHOD_OPTIONS.find((option) => option.id === paymentMethod)?.name ?? paymentMethod
 
   return (
     <div className="p-6 space-y-6">
@@ -92,10 +94,7 @@ export default function FinancialEntryEdit() {
 
         {paymentDate && (
           <p className="text-[13px] text-slate-500 -mt-2 mb-4">
-            Pago em {formatDate(paymentDate)}
-            {paymentLabel({ payment_method: paymentMethod, installments }) &&
-              ` via ${paymentLabel({ payment_method: paymentMethod, installments })}`}
-            .
+            Pago em {formatDate(paymentDate)}.
           </p>
         )}
         {cancelledAt && (
@@ -126,6 +125,22 @@ export default function FinancialEntryEdit() {
                   <p className="input-premium bg-ground text-muted cursor-not-allowed">
                     {financialCategory?.name ??
                       financialEntryCategoryLabel(form.getValues("category"))}
+                  </p>
+                </div>
+              )}
+              {paymentMethod && (
+                <div className="flex flex-col">
+                  <span className="label-premium">Forma de pagamento</span>
+                  <p className="input-premium bg-ground text-muted cursor-not-allowed">
+                    {paymentMethodName}
+                  </p>
+                </div>
+              )}
+              {installments && (
+                <div className="flex flex-col">
+                  <span className="label-premium">Parcelas</span>
+                  <p className="input-premium bg-ground text-muted cursor-not-allowed">
+                    {installments}x
                   </p>
                 </div>
               )}

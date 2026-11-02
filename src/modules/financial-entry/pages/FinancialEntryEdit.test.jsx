@@ -120,7 +120,57 @@ describe("<FinancialEntryEdit>", () => {
       },
     )
 
-    expect(await screen.findByText(/pago em 30\/10\/2026 via cartão 3x/i)).toBeInTheDocument()
+    expect(await screen.findByText(/pago em 30\/10\/2026/i)).toBeInTheDocument()
+    expect(screen.getByText("Forma de pagamento")).toBeInTheDocument()
+    expect(screen.getByText("Cartão")).toBeInTheDocument()
+    expect(screen.getByText("Parcelas")).toBeInTheDocument()
+    expect(screen.getByText("3x")).toBeInTheDocument()
+  })
+
+  it("não mostra o campo de parcelas quando a forma de pagamento não é cartão", async () => {
+    renderAs(
+      { email: "a@a.com", business_id: 3, role: "admin" },
+      {
+        ...ENTRY,
+        status: "pago",
+        payment_date: "2026-10-30",
+        payment_method: "pix",
+        installments: null,
+      },
+    )
+
+    expect(await screen.findByText("Forma de pagamento")).toBeInTheDocument()
+    expect(screen.getByText("Pix")).toBeInTheDocument()
+    expect(screen.queryByText("Parcelas")).not.toBeInTheDocument()
+  })
+
+  it("não mostra o campo de tags num lançamento travado e sem nenhuma", async () => {
+    renderAs(
+      {
+        email: "c@a.com",
+        business_id: 3,
+        role: "contador",
+        permissions: ["financial.view_financialentry"],
+      },
+      { ...ENTRY, status: "pago", payment_date: "2026-10-30" },
+    )
+
+    await screen.findByRole("heading", { name: "Lançamento" })
+    expect(screen.queryByLabelText("Tags")).not.toBeInTheDocument()
+  })
+
+  it("mostra o campo de tags num lançamento travado que já tem alguma", async () => {
+    renderAs(
+      {
+        email: "c@a.com",
+        business_id: 3,
+        role: "contador",
+        permissions: ["financial.view_financialentry"],
+      },
+      { ...ENTRY, status: "pago", payment_date: "2026-10-30", tags: ["Fixo"] },
+    )
+
+    expect(await screen.findByText("Fixo")).toBeInTheDocument()
   })
 
   it("edita as tags do lançamento e manda no payload", async () => {
