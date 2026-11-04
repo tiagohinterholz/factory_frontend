@@ -2,7 +2,7 @@ import { FileText, Loader2, ExternalLink, AlertTriangle } from "lucide-react"
 import { useServiceFiscalNote } from "@/modules/order/hooks/useServiceFiscalNote"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import ErrorDetailButton from "@/modules/core/components/ErrorDetailButton"
-import ServiceFiscalNoteDocuments from "@/modules/order/components/ServiceFiscalNoteDocuments"
+import FiscalNoteDocuments from "@/modules/order/components/FiscalNoteDocuments"
 
 const STATUS_LABEL = {
   pending: "Na fila",
@@ -94,7 +94,9 @@ export default function ServiceFiscalNotePanel({ orderId }) {
             </p>
           )}
           <div className="flex gap-2 pt-1">
-            {note.has_xml && <ServiceFiscalNoteDocuments orderId={orderId} number={note.number} />}
+            {note.has_xml && (
+              <FiscalNoteDocuments kind="service" orderId={orderId} number={note.number} />
+            )}
             {!note.has_xml && note.danfe_url && (
               <a
                 href={note.danfe_url}

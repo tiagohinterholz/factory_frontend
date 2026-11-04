@@ -44,4 +44,53 @@ describe("<FiscalNotePanel>", () => {
       screen.queryByRole("button", { name: "Ver motivo da falha na NF-e" }),
     ).not.toBeInTheDocument()
   })
+
+  it("nota emitida com XML guardado: oferece DANFE e XML pela rota autenticada", () => {
+    useFiscalNote.mockReturnValue({
+      note: {
+        status: "issued",
+        number: "15",
+        access_key: "43261107181156000165550010000000151958695471",
+        has_xml: true,
+        danfe_url: "https://exemplo.test/danfe.pdf",
+        xml_url: "https://exemplo.test/nota.xml",
+      },
+      loading: false,
+      emit: vi.fn(),
+      emitting: false,
+    })
+
+    renderWithProviders(<FiscalNotePanel orderId="1" />)
+
+    expect(screen.getByRole("button", { name: "DANFE" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /xml/i })).toBeInTheDocument()
+    expect(screen.queryByRole("link")).not.toBeInTheDocument()
+  })
+
+  it("nota antiga sem XML guardado: mantém os links externos", () => {
+    useFiscalNote.mockReturnValue({
+      note: {
+        status: "issued",
+        number: "9",
+        has_xml: false,
+        danfe_url: "https://exemplo.test/danfe.pdf",
+        xml_url: "https://exemplo.test/nota.xml",
+      },
+      loading: false,
+      emit: vi.fn(),
+      emitting: false,
+    })
+
+    renderWithProviders(<FiscalNotePanel orderId="1" />)
+
+    expect(screen.getByRole("link", { name: /danfe/i })).toHaveAttribute(
+      "href",
+      "https://exemplo.test/danfe.pdf",
+    )
+    expect(screen.getByRole("link", { name: /xml/i })).toHaveAttribute(
+      "href",
+      "https://exemplo.test/nota.xml",
+    )
+    expect(screen.queryByRole("button", { name: "DANFE" })).not.toBeInTheDocument()
+  })
 })
