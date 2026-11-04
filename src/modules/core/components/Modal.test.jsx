@@ -49,4 +49,23 @@ describe("<Modal>", () => {
     fireEvent.click(screen.getByText("dentro"))
     expect(onClose).not.toHaveBeenCalled()
   })
+
+  it("enviar um formulário dentro do modal não envia o formulário de fora", () => {
+    const outerSubmit = vi.fn((event) => event.preventDefault())
+    const innerSubmit = vi.fn((event) => event.preventDefault())
+    render(
+      <form onSubmit={outerSubmit}>
+        <Modal open onClose={vi.fn()} title="T">
+          <form onSubmit={innerSubmit}>
+            <button type="submit">Salvar</button>
+          </form>
+        </Modal>
+      </form>,
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar" }))
+
+    expect(innerSubmit).toHaveBeenCalledTimes(1)
+    expect(outerSubmit).not.toHaveBeenCalled()
+  })
 })
