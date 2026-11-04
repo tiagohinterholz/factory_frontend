@@ -58,6 +58,20 @@ export const OrderService = {
     return response.data
   },
 
+  async getFiscalNoteDanfe(id) {
+    const response = await api.get(`/ordens/${id}/nota-fiscal/danfe/`, {
+      responseType: "blob",
+    })
+    return response.data
+  },
+
+  async getFiscalNoteXml(id) {
+    const response = await api.get(`/ordens/${id}/nota-fiscal/xml/`, {
+      responseType: "blob",
+    })
+    return response.data
+  },
+
   // NFS-e da ordem. GET dá 404 quando nunca foi solicitada.
   async getServiceFiscalNote(id) {
     const response = await api.get(`/ordens/${id}/nota-fiscal-servico/`)

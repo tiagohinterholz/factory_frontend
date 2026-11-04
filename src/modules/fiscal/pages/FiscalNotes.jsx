@@ -4,7 +4,7 @@ import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
 import ErrorDetailButton from "@/modules/core/components/ErrorDetailButton"
-import { ServiceFiscalNoteDocuments } from "@/modules/order"
+import { FiscalNoteDocuments } from "@/modules/order"
 import { useClientOptions } from "@/modules/core/hooks/options"
 import { formatDateTime } from "@/modules/core/utils/format"
 import { useFiscalNotes } from "../hooks/useFiscalNotes"
@@ -102,7 +102,8 @@ export default function FiscalNotes() {
               <ErrorDetailButton message={note.error_message} label={note.kind_display} />
             )}
             {note.has_xml && (
-              <ServiceFiscalNoteDocuments
+              <FiscalNoteDocuments
+                kind={note.kind === "produto" ? "product" : "service"}
                 orderId={note.order_id}
                 number={note.number}
                 variant="icon"

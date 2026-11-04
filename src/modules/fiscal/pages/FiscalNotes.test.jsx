@@ -170,4 +170,34 @@ describe("<FiscalNotes>", () => {
     expect(await screen.findByRole("link", { name: "Baixar XML da NFS-e" })).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "Baixar PDF da NFS-e" })).not.toBeInTheDocument()
   })
+
+  it("NF-e com XML guardado oferece DANFE e XML da NF-e, sem links externos", async () => {
+    mockApi({
+      produto: [
+        {
+          ...PRODUTO_NOTE,
+          status: "issued",
+          status_display: "Emitida",
+          number: "15",
+          has_xml: true,
+          error_message: null,
+        },
+      ],
+      servico: [],
+    })
+    renderPage("/notas-fiscais/nfe")
+
+    expect(await screen.findByRole("button", { name: "Abrir DANFE" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Baixar XML da NF-e" })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /baixar/i })).not.toBeInTheDocument()
+  })
+
+  it("NFS-e com XML guardado oferece DANFSe e XML da NFS-e", async () => {
+    mockApi({ produto: [], servico: [{ ...SERVICO_NOTE, has_xml: true }] })
+    renderPage("/notas-fiscais/nfse")
+
+    expect(await screen.findByRole("button", { name: "Abrir DANFSe" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Baixar XML da NFS-e" })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: /baixar/i })).not.toBeInTheDocument()
+  })
 })

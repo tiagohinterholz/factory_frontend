@@ -10,15 +10,33 @@ const labeledClass =
 const iconClass =
   "p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors disabled:pointer-events-none disabled:opacity-60"
 
-export default function ServiceFiscalNoteDocuments({ orderId, number, variant = "labeled" }) {
+const KINDS = {
+  product: {
+    document: "DANFE",
+    note: "NF-e",
+    filePrefix: "nfe",
+    fetchPdf: (orderId) => OrderService.getFiscalNoteDanfe(orderId),
+    fetchXml: (orderId) => OrderService.getFiscalNoteXml(orderId),
+  },
+  service: {
+    document: "DANFSe",
+    note: "NFS-e",
+    filePrefix: "nfse",
+    fetchPdf: (orderId) => OrderService.getServiceFiscalNoteDanfse(orderId),
+    fetchXml: (orderId) => OrderService.getServiceFiscalNoteXml(orderId),
+  },
+}
+
+export default function FiscalNoteDocuments({ kind, orderId, number, variant = "labeled" }) {
   const toast = useToast()
   const [busy, setBusy] = useState(null)
+  const config = KINDS[kind]
 
-  async function run(kind, action, errorMessage) {
+  async function run(action, task, errorMessage) {
     if (busy) return
-    setBusy(kind)
+    setBusy(action)
     try {
-      await action()
+      await task()
     } catch (error) {
       console.error(error)
       toast.error(errorMessage)
@@ -27,43 +45,43 @@ export default function ServiceFiscalNoteDocuments({ orderId, number, variant = 
     }
   }
 
-  const openDanfse = () =>
+  const openPdf = () =>
     run(
-      "danfse",
-      async () => openPdfBlob(await OrderService.getServiceFiscalNoteDanfse(orderId)),
-      "Não foi possível gerar o DANFSe.",
+      "pdf",
+      async () => openPdfBlob(await config.fetchPdf(orderId)),
+      `Não foi possível gerar o ${config.document}.`,
     )
 
   const downloadXml = () =>
     run(
       "xml",
       async () =>
-        downloadBlob(await OrderService.getServiceFiscalNoteXml(orderId), `nfse_${number}.xml`),
-      "Não foi possível baixar o XML da NFS-e.",
+        downloadBlob(await config.fetchXml(orderId), `${config.filePrefix}_${number}.xml`),
+      `Não foi possível baixar o XML da ${config.note}.`,
     )
 
-  const icon = (kind, Icon, size) =>
-    busy === kind ? <Loader2 size={size} className="animate-spin" /> : <Icon size={size} />
+  const icon = (action, Icon, size) =>
+    busy === action ? <Loader2 size={size} className="animate-spin" /> : <Icon size={size} />
 
   if (variant === "icon") {
     return (
       <>
         <button
           type="button"
-          onClick={openDanfse}
+          onClick={openPdf}
           disabled={Boolean(busy)}
-          title="Abrir DANFSe"
-          aria-label="Abrir DANFSe"
+          title={`Abrir ${config.document}`}
+          aria-label={`Abrir ${config.document}`}
           className={iconClass}
         >
-          {icon("danfse", FileDown, 16)}
+          {icon("pdf", FileDown, 16)}
         </button>
         <button
           type="button"
           onClick={downloadXml}
           disabled={Boolean(busy)}
-          title="Baixar XML da NFS-e"
-          aria-label="Baixar XML da NFS-e"
+          title={`Baixar XML da ${config.note}`}
+          aria-label={`Baixar XML da ${config.note}`}
           className={iconClass}
         >
           {icon("xml", FileCode2, 16)}
@@ -74,8 +92,8 @@ export default function ServiceFiscalNoteDocuments({ orderId, number, variant = 
 
   return (
     <>
-      <button type="button" onClick={openDanfse} disabled={Boolean(busy)} className={labeledClass}>
-        {icon("danfse", FileDown, 14)} DANFSe
+      <button type="button" onClick={openPdf} disabled={Boolean(busy)} className={labeledClass}>
+        {icon("pdf", FileDown, 14)} {config.document}
       </button>
       <button type="button" onClick={downloadXml} disabled={Boolean(busy)} className={labeledClass}>
         {icon("xml", FileCode2, 14)} XML
