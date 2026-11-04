@@ -3,3 +3,4 @@
 // internos. A regra `no-restricted-imports` no eslint.config.js força isso.
 export { OrderService } from "./services/order"
 export { useFinishOrder } from "./hooks/useFinishOrder"
+export { default as ServiceFiscalNoteDocuments } from "./components/ServiceFiscalNoteDocuments"

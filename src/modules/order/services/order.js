@@ -64,6 +64,20 @@ export const OrderService = {
     return response.data
   },
 
+  async getServiceFiscalNoteDanfse(id) {
+    const response = await api.get(`/ordens/${id}/nota-fiscal-servico/danfse/`, {
+      responseType: "blob",
+    })
+    return response.data
+  },
+
+  async getServiceFiscalNoteXml(id) {
+    const response = await api.get(`/ordens/${id}/nota-fiscal-servico/xml/`, {
+      responseType: "blob",
+    })
+    return response.data
+  },
+
   async requestServiceFiscalNote(id) {
     const response = await api.post(`/ordens/${id}/nota-fiscal-servico/`)
     return response.data
