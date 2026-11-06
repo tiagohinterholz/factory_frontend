@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar"
 import Topbar from "../components/Topbar"
 import { ErrorBoundary } from "@/modules/core/components/ErrorBoundary"
 import PageLoader from "@/modules/core/components/PageLoader"
+import { CertificateExpiryBanner } from "@/modules/business"
 
 const COLLAPSED_KEY = "sidebar:collapsed"
 
@@ -50,6 +51,7 @@ export default function DashboardLayout({ children }) {
 
         <main className="p-4 sm:p-8 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-700">
           <div className="max-w-[1400px] mx-auto">
+            <CertificateExpiryBanner />
             <ErrorBoundary key={location.pathname}>
               <Suspense fallback={<PageLoader />}>{children || <Outlet />}</Suspense>
             </ErrorBoundary>
