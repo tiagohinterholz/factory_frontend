@@ -209,7 +209,7 @@ describe("<OrderEdit>", () => {
     expect(vehicleSelect).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) data e hora do serviço")).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) observações")).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled()
   })
 
   it("em andamento: campos gerais e botão de salvar continuam editáveis", async () => {
@@ -219,7 +219,68 @@ describe("<OrderEdit>", () => {
     await screen.findByText("Orçamento de origem")
     const [clientSelect] = screen.getAllByRole("combobox")
     expect(clientSelect).toBeEnabled()
-    expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeEnabled()
+    expect(screen.getByPlaceholderText("Digite o(a) observações")).toBeEnabled()
+  })
+
+  it("Salvar OS fica desabilitado até mexer em algo e volta a desabilitar depois de salvar", async () => {
+    mockApi()
+    const update = vi.spyOn(OrderService, "updateOrder").mockResolvedValue(order)
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const save = screen.getByRole("button", { name: "Salvar OS" })
+    expect(save).toBeDisabled()
+
+    const notes = screen.getByPlaceholderText("Digite o(a) observações")
+    fireEvent.change(notes, { target: { value: "Cliente pediu revisão" } })
+    expect(save).toBeEnabled()
+
+    fireEvent.change(notes, { target: { value: "" } })
+    expect(save).toBeDisabled()
+
+    fireEvent.change(notes, { target: { value: "Cliente pediu revisão" } })
+    fireEvent.click(save)
+
+    await waitFor(() => expect(update).toHaveBeenCalled())
+    await waitFor(() => expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled())
+    update.mockRestore()
+  })
+
+  it("trocar o veículo habilita o Salvar OS", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/veiculos/`, () =>
+        HttpResponse.json({
+          results: [
+            {
+              id: 9,
+              client: 5,
+              manufacturer: { id: 12, name: "VW" },
+              model: { id: 55, name: "Gol" },
+              plate: "ABC1D23",
+            },
+            {
+              id: 10,
+              client: 5,
+              manufacturer: { id: 12, name: "VW" },
+              model: { id: 56, name: "Polo" },
+              plate: "XYZ9K87",
+            },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled()
+    const [, vehicleInput] = screen.getAllByRole("combobox")
+    await user.click(vehicleInput)
+    await user.click(await screen.findByRole("option", { name: /Polo/ }))
+
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeEnabled()
   })
 
   it("mantém o client_id/vehicle_id no submit mesmo quando o cache de opções não traz o registro vinculado", async () => {
@@ -232,7 +293,10 @@ describe("<OrderEdit>", () => {
     renderPage()
 
     await screen.findByText("Orçamento de origem")
-    fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+    fireEvent.change(screen.getByPlaceholderText("Digite o(a) observações"), {
+      target: { value: "Cliente pediu revisão" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
 
     await waitFor(() =>
       expect(update).toHaveBeenCalledWith(
@@ -482,7 +546,7 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
     await user.click(clientInput)
     await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
 
-    fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
 
     expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
     expect(update).not.toHaveBeenCalled()
@@ -502,7 +566,10 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
       )
 
       await screen.findByText("Orçamento de origem")
-      fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+      fireEvent.change(screen.getByPlaceholderText("Digite o(a) observações"), {
+        target: { value: "Cliente pediu revisão" },
+      })
+      fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
 
       await waitFor(() => expect(update).toHaveBeenCalled())
       expect(screen.queryByRole("heading", { name: "Lista de OS" })).not.toBeInTheDocument()

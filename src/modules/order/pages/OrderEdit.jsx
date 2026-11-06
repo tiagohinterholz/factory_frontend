@@ -67,7 +67,7 @@ export default function OrderEdit() {
     register,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = form
 
   const clientId = watch("client_id")
@@ -224,8 +224,8 @@ export default function OrderEdit() {
                 value={clientId}
                 onChange={(value) => {
                   if (value === clientId) return
-                  setValue("client_id", value)
-                  setValue("vehicle_id", "")
+                  setValue("client_id", value, { shouldDirty: true })
+                  setValue("vehicle_id", "", { shouldDirty: true })
                 }}
                 disabled={locked}
                 error={errors.client_id?.message}
@@ -234,7 +234,7 @@ export default function OrderEdit() {
               <VehicleLiveSelect
                 label="Veículo"
                 value={vehicleId}
-                onChange={(value) => setValue("vehicle_id", value)}
+                onChange={(value) => setValue("vehicle_id", value, { shouldDirty: true })}
                 clientId={clientId}
                 disabled={locked}
                 disabledHint="Selecione o cliente primeiro"
@@ -262,8 +262,8 @@ export default function OrderEdit() {
                 error={errors.notes?.message}
                 registration={register("notes")}
               />
-              <PrimaryButton type="submit" disabled={isSubmitting || locked}>
-                Atualizar OS
+              <PrimaryButton type="submit" disabled={isSubmitting || locked || !isDirty}>
+                Salvar OS
               </PrimaryButton>
             </form>
           </div>

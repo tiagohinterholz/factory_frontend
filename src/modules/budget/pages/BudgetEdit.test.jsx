@@ -97,7 +97,10 @@ describe("<BudgetEdit> — live-select de cliente/veículo", () => {
     await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
     await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
 
-    fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+    fireEvent.change(screen.getByPlaceholderText("Digite o(a) validade"), {
+      target: { value: "2026-12-20T10:00" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar orçamento" }))
 
     await waitFor(() =>
       expect(update).toHaveBeenCalledWith(
@@ -149,7 +152,7 @@ describe("<BudgetEdit> — live-select de cliente/veículo", () => {
     await user.click(clientInput)
     await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
 
-    fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+    fireEvent.click(screen.getByRole("button", { name: "Salvar orçamento" }))
 
     expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
     expect(update).not.toHaveBeenCalled()
@@ -220,7 +223,7 @@ describe("<BudgetEdit> — campos travados fora de pendente", () => {
     expect(clientSelect).toBeDisabled()
     expect(vehicleSelect).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) validade")).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Salvar Alterações" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Salvar orçamento" })).toBeDisabled()
   })
 
   it("pendente: campos gerais e botão de salvar continuam editáveis", async () => {
@@ -230,7 +233,29 @@ describe("<BudgetEdit> — campos travados fora de pendente", () => {
     await screen.findByText("pendente")
     const [clientSelect] = screen.getAllByRole("combobox")
     expect(clientSelect).toBeEnabled()
-    expect(screen.getByRole("button", { name: "Salvar Alterações" })).toBeEnabled()
+    expect(screen.getByPlaceholderText("Digite o(a) validade")).toBeEnabled()
+  })
+
+  it("Salvar orçamento fica desabilitado até mexer em algo e volta a desabilitar depois de salvar", async () => {
+    mockApi()
+    const update = vi.spyOn(BudgetService, "updateBudget").mockResolvedValue(budget)
+    renderPage()
+
+    await screen.findByText("pendente")
+    const save = screen.getByRole("button", { name: "Salvar orçamento" })
+    expect(save).toBeDisabled()
+
+    fireEvent.change(screen.getByPlaceholderText("Digite o(a) validade"), {
+      target: { value: "2026-12-20T10:00" },
+    })
+    expect(save).toBeEnabled()
+    fireEvent.click(save)
+
+    await waitFor(() => expect(update).toHaveBeenCalled())
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Salvar orçamento" })).toBeDisabled(),
+    )
+    update.mockRestore()
   })
 })
 
@@ -371,7 +396,10 @@ describe("<BudgetEdit> — aprovar com data opcional", () => {
       renderPage()
 
       await screen.findByText("pendente")
-      fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+      fireEvent.change(screen.getByPlaceholderText("Digite o(a) validade"), {
+        target: { value: "2026-12-20T10:00" },
+      })
+      fireEvent.click(screen.getByRole("button", { name: "Salvar orçamento" }))
 
       await waitFor(() => expect(update).toHaveBeenCalled())
       expect(navigateSpy).not.toHaveBeenCalledWith("/orcamentos")
