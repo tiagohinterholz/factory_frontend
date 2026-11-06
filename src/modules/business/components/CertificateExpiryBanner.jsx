@@ -33,7 +33,10 @@ export default function CertificateExpiryBanner() {
     >
       <TriangleAlert className="w-5 h-5 shrink-0" />
       <p className="flex-1 text-sm font-medium">{message}</p>
-      <Link to="/configuracoes" className="text-sm font-bold underline underline-offset-2">
+      <Link
+        to="/configuracoes/certificado"
+        className="text-sm font-bold underline underline-offset-2"
+      >
         Atualizar certificado
       </Link>
     </div>

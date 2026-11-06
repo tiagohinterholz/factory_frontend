@@ -3,7 +3,6 @@ import {
   useBusinessHours,
   useBusinessLogo,
   BusinessHoursPanel,
-  CertificatePanel,
 } from "@/modules/business"
 import { TAX_REGIME_OPTIONS } from "@/modules/business/domain"
 import { usePermissions } from "@/modules/auth/hooks/usePermissions"
@@ -278,10 +277,6 @@ export default function Settings() {
               savingWeekday={savingWeekday}
               onSave={updateHour}
             />
-          </div>
-
-          <div className="mt-10 pt-8 border-t border-slate-50">
-            <CertificatePanel canManage={canManageBusiness} />
           </div>
         </div>
       </div>

@@ -69,7 +69,7 @@ describe("<CertificateExpiryBanner>", () => {
     ).toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Atualizar certificado" })).toHaveAttribute(
       "href",
-      "/configuracoes",
+      "/configuracoes/certificado",
     )
   })
 
@@ -89,7 +89,7 @@ describe("<CertificateExpiryBanner>", () => {
     ).toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Atualizar certificado" })).toHaveAttribute(
       "href",
-      "/configuracoes",
+      "/configuracoes/certificado",
     )
   })
 

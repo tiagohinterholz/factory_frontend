@@ -63,7 +63,7 @@ describe("<Sidebar>", () => {
     )
   })
 
-  it("Configurações virou grupo com Gestão, Licenças e Usuários — sem label Empreendimentos", () => {
+  it("Configurações é um grupo com Gestão, Licenças, Certificado digital e Usuários, nessa ordem", () => {
     renderSidebar()
 
     expect(screen.queryByRole("button", { name: /empreendimentos/i })).not.toBeInTheDocument()
@@ -78,7 +78,19 @@ describe("<Sidebar>", () => {
       "href",
       "/configuracoes/licenca",
     )
+    expect(screen.getByRole("link", { name: "Certificado digital" })).toHaveAttribute(
+      "href",
+      "/configuracoes/certificado",
+    )
     expect(screen.getByRole("link", { name: "Usuários" })).toHaveAttribute("href", "/usuarios")
+    const settingsLinks = ["Gestão", "Licenças", "Certificado digital", "Usuários"].map((name) =>
+      screen.getByRole("link", { name }),
+    )
+    settingsLinks.slice(1).forEach((link, index) => {
+      expect(
+        settingsLinks[index].compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy()
+    })
   })
 
   it("superusuário (sem business_id) não tem Gestão própria e usa /licencas em Licenças", () => {
@@ -89,6 +101,7 @@ describe("<Sidebar>", () => {
 
     expect(screen.queryByRole("link", { name: "Gestão" })).not.toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Licenças" })).toHaveAttribute("href", "/licencas")
+    expect(screen.queryByRole("link", { name: "Certificado digital" })).not.toBeInTheDocument()
   })
 
   it("atendente não gerencia usuários, mas edita o próprio (Usuário, singular)", () => {
