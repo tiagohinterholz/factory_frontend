@@ -124,19 +124,19 @@ function FilterPopover({ type, onSubmit, onClose }) {
           onClick={() => onSubmit(filters)}
           className="btn-primary !px-3 !py-1.5 !text-[13px]"
         >
-          Gerar relatório
+          Gerar
         </button>
       </div>
     </div>
   )
 }
 
-export default function ExportReportButton({ type, label = "Exportar PDF" }) {
+export default function ExportReportButton({ type, label }) {
   const { canExportReports } = usePermissions()
   const { exportReport, isExporting } = useReportExport()
   const [open, setOpen] = useState(false)
 
-  // Fecha no próprio botão, no X, no "Gerar relatório" e no Esc.
+  // Fecha no próprio botão, no X, no "Gerar" e no Esc.
   useEffect(() => {
     if (!open) return undefined
     const onKey = (event) => {

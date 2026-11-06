@@ -212,7 +212,10 @@ export default function OrderEdit() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <RecordPdfButton request={() => OrderService.getOrderPdf(id)} />
+          <RecordPdfButton
+            request={() => OrderService.getOrderPdf(id)}
+            label="Gerar ordem de serviço"
+          />
           <WhatsAppButton phone={relatedClient?.phone} label="WhatsApp" />
           {orderCanFinish(status) && (
             <button

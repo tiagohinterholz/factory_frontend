@@ -820,3 +820,15 @@ describe("<OrderEdit> — editar item já lançado", () => {
     ).not.toBeInTheDocument()
   })
 })
+
+describe("<OrderEdit> — PDF", () => {
+  it("o botão de PDF diz que gera a ordem de serviço", async () => {
+    mockApi()
+    renderPage()
+
+    expect(
+      await screen.findByRole("button", { name: "Gerar ordem de serviço" }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /exportar pdf/i })).not.toBeInTheDocument()
+  })
+})

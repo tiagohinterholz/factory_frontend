@@ -64,7 +64,7 @@ describe("<OrderList> — ações da linha", () => {
     renderWithProviders(<OrderList />)
     await screen.findByText("#10")
 
-    expect(screen.getByRole("button", { name: /gerar pdf da os/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Gerar ordem de serviço" })).toBeInTheDocument()
   })
 
   it("'Faturar OS' só aparece na OS 'a faturar' e dispara o faturamento", async () => {
@@ -146,11 +146,11 @@ describe("<OrderList> — filtros", () => {
       expect(screen.getByRole("button", { name: "Excluir OS" })).toBeInTheDocument()
     })
 
-    it("botão em massa se chama Gerar Relatórios (OSFIN-P1-04)", async () => {
+    it("botão em massa se chama Gerar relatório (OSFIN-P1-04)", async () => {
       mockOrders()
       renderWithProviders(<OrderList />)
 
-      expect(await screen.findByRole("button", { name: /gerar relatórios/i })).toBeInTheDocument()
+      expect(await screen.findByRole("button", { name: "Gerar relatório" })).toBeInTheDocument()
       expect(screen.queryByRole("button", { name: /exportar pdf/i })).not.toBeInTheDocument()
     })
   })

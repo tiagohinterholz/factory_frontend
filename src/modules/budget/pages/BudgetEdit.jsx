@@ -219,7 +219,7 @@ export default function BudgetEdit() {
             label="Informar cliente"
             message={`Olá${relatedClient?.first_name ? `, ${relatedClient.first_name}` : ""}! Seu orçamento #${id} está ${status} no valor de ${formatMoney(total)}.`}
           />
-          <RecordPdfButton request={() => BudgetService.getBudgetPdf(id)} />
+          <RecordPdfButton request={() => BudgetService.getBudgetPdf(id)} label="Gerar orçamento" />
           {canDuplicate && (
             <button
               type="button"

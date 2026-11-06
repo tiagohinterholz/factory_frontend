@@ -57,7 +57,7 @@ describe("<ClientList>", () => {
     renderWithProviders(<ClientList />)
     await screen.findByText("Ana Lima")
 
-    fireEvent.click(screen.getByRole("button", { name: /baixar pdf do cliente/i }))
+    fireEvent.click(screen.getByRole("button", { name: "Gerar ficha do cliente" }))
 
     await waitFor(() => expect(getPdf).toHaveBeenCalledWith(1))
     await waitFor(() => expect(openPdfBlob).toHaveBeenCalledWith(blob))

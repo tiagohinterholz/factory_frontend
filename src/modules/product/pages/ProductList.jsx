@@ -119,7 +119,7 @@ export default function ProductList() {
         actions={
           <div className="flex items-center gap-2">
             <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
-            <ExportReportButton type="stock" />
+            <ExportReportButton type="stock" label="Gerar relatório de estoque" />
           </div>
         }
       />
@@ -143,7 +143,7 @@ export default function ProductList() {
             />
             <PdfIconButton
               request={() => ProductService.getProductPdf(item.id)}
-              title="Baixar PDF do produto"
+              title="Gerar ficha do produto"
             />
             <Link
               title="Editar produto"

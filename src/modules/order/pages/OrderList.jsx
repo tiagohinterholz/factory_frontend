@@ -152,7 +152,7 @@ export default function OrderList() {
         actions={
           <div className="flex items-center gap-2">
             <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
-            <ExportReportButton type="orders" label="Gerar Relatórios" />
+            <ExportReportButton type="orders" label="Gerar relatório" />
           </div>
         }
       />
@@ -171,7 +171,7 @@ export default function OrderList() {
           <div className="flex items-center justify-end gap-1">
             <PdfIconButton
               request={() => OrderService.getOrderPdf(item.id)}
-              title="Gerar PDF da OS"
+              title="Gerar ordem de serviço"
             />
             {orderCanFinish(item.status) && (
               <button

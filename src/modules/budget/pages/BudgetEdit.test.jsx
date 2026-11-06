@@ -456,3 +456,13 @@ describe("<BudgetEdit> — editar item já lançado", () => {
     expect(await screen.findByText(/120,00/)).toBeInTheDocument()
   })
 })
+
+describe("<BudgetEdit> — PDF", () => {
+  it("o botão de PDF diz que gera o orçamento", async () => {
+    mockApi()
+    renderPage()
+
+    expect(await screen.findByRole("button", { name: "Gerar orçamento" })).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /exportar pdf/i })).not.toBeInTheDocument()
+  })
+})

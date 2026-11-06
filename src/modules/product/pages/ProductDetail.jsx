@@ -57,7 +57,10 @@ export default function ProductDetail() {
           <p className="text-slate-400 font-medium text-sm">Gestão técnica de estoque</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <RecordPdfButton request={() => ProductService.getProductPdf(id)} label="Exportar PDF" />
+          <RecordPdfButton
+            request={() => ProductService.getProductPdf(id)}
+            label="Gerar ficha do produto"
+          />
           <button
             onClick={handleDelete}
             className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"

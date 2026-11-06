@@ -10,7 +10,7 @@ describe("<RecordPdfButton>", () => {
   it("usa o label passado e abre o blob que o request devolver", async () => {
     const blob = new Blob(["pdf"], { type: "application/pdf" })
     const request = vi.fn().mockResolvedValue(blob)
-    renderWithProviders(<RecordPdfButton request={request} label="Relatório de produtos" />)
+    renderWithProviders(<RecordPdfButton request={request} label="Gerar relatório de produtos" />)
 
     fireEvent.click(screen.getByRole("button", { name: /relatório de produtos/i }))
 
@@ -20,9 +20,9 @@ describe("<RecordPdfButton>", () => {
 
   it("mostra erro no toast quando o request falha", async () => {
     const request = vi.fn().mockRejectedValue(new Error("boom"))
-    renderWithProviders(<RecordPdfButton request={request} />)
+    renderWithProviders(<RecordPdfButton request={request} label="Gerar ordem de serviço" />)
 
-    fireEvent.click(screen.getByRole("button", { name: /exportar pdf/i }))
+    fireEvent.click(screen.getByRole("button", { name: "Gerar ordem de serviço" }))
 
     expect(await screen.findByText(/não foi possível gerar o pdf/i)).toBeInTheDocument()
   })
