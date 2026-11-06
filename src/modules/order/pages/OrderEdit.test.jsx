@@ -593,3 +593,51 @@ describe("<OrderEdit> — serviço personalizado", () => {
     create.mockRestore()
   })
 })
+
+describe("<OrderEdit> — estoque exibido acompanha os itens lançados", () => {
+  it("depois de adicionar um produto, o picker mostra o estoque já baixado", async () => {
+    mockApi()
+    let stock = 11
+    let orderProducts = []
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, order_products: orderProducts }),
+      ),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 40, name: "Sensor de oxigênio", unit_price: "120.00", stock_quantity: stock },
+          ],
+          count: 1,
+        }),
+      ),
+      http.post(`${API}/ordens/1/produtos/`, async ({ request }) => {
+        const body = await request.json()
+        stock -= body.quantity
+        orderProducts = [
+          {
+            id: 300,
+            product: { id: 40, name: "Sensor de oxigênio" },
+            quantity: body.quantity,
+            unit_price: "120.00",
+            total: String(120 * body.quantity),
+            is_active: true,
+          },
+        ]
+        return HttpResponse.json(orderProducts[0], { status: 201 })
+      }),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    const picker = (await screen.findAllByRole("combobox")).at(-2)
+    await user.click(picker)
+    await user.click(await screen.findByRole("option", { name: /estoque 11/ }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "1" } })
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar produto" }))
+
+    await screen.findByText(/Sensor de oxigênio \(x1\)/)
+    await user.type((await screen.findAllByRole("combobox")).at(-2), "Sensor")
+    expect(await screen.findByRole("option", { name: /estoque 10/ })).toBeInTheDocument()
+  })
+})

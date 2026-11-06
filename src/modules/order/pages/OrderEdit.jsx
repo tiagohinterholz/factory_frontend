@@ -31,6 +31,7 @@ import {
   orderCanInvoice,
   orderIsBilled,
 } from "@/modules/order/domain"
+import { productKeys } from "@/modules/product/domain"
 import { CheckCircle2, Plus, Trash2, Wallet } from "lucide-react"
 
 export default function OrderEdit() {
@@ -83,6 +84,7 @@ export default function OrderEdit() {
   // staleTime (o `refresh()` só recarrega o state local desta tela).
   function invalidateOrderCaches() {
     queryClient.invalidateQueries({ queryKey: orderKeys.all })
+    queryClient.invalidateQueries({ queryKey: productKeys.all })
   }
 
   async function handleAddProduct(payload) {
