@@ -708,3 +708,115 @@ describe("<OrderEdit> — estoque exibido acompanha os itens lançados", () => {
     expect(await screen.findByRole("option", { name: /estoque 10/ })).toBeInTheDocument()
   })
 })
+
+describe("<OrderEdit> — editar item já lançado", () => {
+  it("altera quantidade e preço de um produto na própria linha", async () => {
+    mockApi()
+    let line = {
+      id: 300,
+      product: { id: 40, name: "Sensor de oxigênio" },
+      quantity: 2,
+      unit_price: "120.00",
+      total: "240.00",
+      is_active: true,
+    }
+    let patched = null
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json({ ...order, order_products: [line] })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 40, name: "Sensor de oxigênio", unit_price: "120.00", stock_quantity: 9 },
+          ],
+          count: 1,
+        }),
+      ),
+      http.patch(`${API}/ordens/1/produtos/300/`, async ({ request }) => {
+        patched = await request.json()
+        line = {
+          ...line,
+          quantity: patched.quantity,
+          unit_price: patched.unit_price,
+          total: (patched.quantity * Number(patched.unit_price)).toFixed(2),
+        }
+        return HttpResponse.json(line)
+      }),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Editar Sensor de oxigênio" }))
+    fireEvent.change(screen.getAllByLabelText("Qtd").at(-1), { target: { value: "3" } })
+    fireEvent.change(screen.getByLabelText("Preço unitário (R$)"), { target: { value: "100" } })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar item" }))
+
+    expect(await screen.findByText("Sensor de oxigênio (x3)")).toBeInTheDocument()
+    expect(patched).toEqual({ quantity: 3, unit_price: "100.00" })
+  })
+
+  it("o estoque disponível da linha soma o que ela já reservou", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          order_products: [
+            {
+              id: 300,
+              product: { id: 40, name: "Sensor de oxigênio" },
+              quantity: 2,
+              unit_price: "120.00",
+              total: "240.00",
+              is_active: true,
+            },
+          ],
+        }),
+      ),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 40, name: "Sensor de oxigênio", unit_price: "120.00", stock_quantity: 9 },
+          ],
+          count: 1,
+        }),
+      ),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Editar Sensor de oxigênio" }))
+    fireEvent.change(screen.getAllByLabelText("Qtd").at(-1), { target: { value: "11" } })
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getAllByLabelText("Qtd").at(-1), { target: { value: "13" } })
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Estoque disponível para esta linha: 11 — vão faltar 2 un.",
+    )
+  })
+
+  it("OS a faturar não deixa editar a linha", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "a faturar",
+          order_products: [
+            {
+              id: 300,
+              product: { id: 40, name: "Sensor de oxigênio" },
+              quantity: 2,
+              unit_price: "120.00",
+              total: "240.00",
+              is_active: true,
+            },
+          ],
+        }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Sensor de oxigênio (x2)")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Editar Sensor de oxigênio" }),
+    ).not.toBeInTheDocument()
+  })
+})

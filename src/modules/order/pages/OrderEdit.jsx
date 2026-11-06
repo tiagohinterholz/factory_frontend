@@ -22,6 +22,7 @@ import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import ServiceItemForm from "@/modules/core/components/ServiceItemForm"
 import ProductItemForm from "@/modules/core/components/ProductItemForm"
+import EditableItemLine from "@/modules/core/components/EditableItemLine"
 import {
   paymentLabel,
   orderKeys,
@@ -77,6 +78,12 @@ export default function OrderEdit() {
   const { workservice: allServices } = useWorkServiceOptions()
 
   const [savingItem, setSavingItem] = useState(false)
+
+  function stockForLine(item) {
+    const product = allProducts.find((option) => String(option.id) === String(idOf(item.product)))
+    if (!product) return undefined
+    return (product.stock_quantity ?? 0) + Number(item.quantity)
+  }
   const [invoiceOpen, setInvoiceOpen] = useState(false)
 
   // Invalida orderKeys.all (lista/detalhe/histórico) sempre que um item muda
@@ -116,6 +123,32 @@ export default function OrderEdit() {
       return false
     } finally {
       setSavingItem(false)
+    }
+  }
+
+  async function handleUpdateProduct(itemId, payload) {
+    try {
+      await OrderService.orderProductUpdate(id, payload, itemId)
+      refresh()
+      invalidateOrderCaches()
+      return true
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar o produto").message)
+      return false
+    }
+  }
+
+  async function handleUpdateService(itemId, payload) {
+    try {
+      await OrderService.orderServiceUpdate(id, payload, itemId)
+      refresh()
+      invalidateOrderCaches()
+      return true
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar o serviço").message)
+      return false
     }
   }
 
@@ -305,24 +338,17 @@ export default function OrderEdit() {
 
             <div className="divide-y divide-slate-100">
               {products.map((item) => (
-                <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span>
-                    {item.product?.name} (x{item.quantity})
-                  </span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-slate-400">{formatMoney(item.unit_price)} / un</span>
-                    <span className="font-bold text-slate-700">{formatMoney(item.total)}</span>
-                    {canEditItems && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteProduct(item.id)}
-                        className="text-rose-400 hover:text-danger"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <EditableItemLine
+                  key={item.id}
+                  itemName={item.product?.name ?? "Produto"}
+                  quantity={item.quantity}
+                  unitPrice={item.unit_price}
+                  total={item.total}
+                  editable={canEditItems}
+                  availableStock={stockForLine(item)}
+                  onSave={(payload) => handleUpdateProduct(item.id, payload)}
+                  onDelete={() => handleDeleteProduct(item.id)}
+                />
               ))}
               {products.length === 0 && (
                 <p className="text-slate-400 py-4 text-center">Nenhum produto adicionado.</p>
@@ -350,28 +376,21 @@ export default function OrderEdit() {
 
             <div className="divide-y divide-slate-100">
               {services.map((item) => (
-                <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span className="flex items-center gap-2">
-                    {item.name ?? item.service?.name}
-                    {!item.service && (
+                <EditableItemLine
+                  key={item.id}
+                  itemName={item.name ?? item.service?.name ?? "Serviço"}
+                  badge={
+                    !item.service && (
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500">
                         Personalizado
                       </span>
-                    )}
-                  </span>
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">{formatMoney(item.unit_price)}</span>
-                    {canEditItems && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteService(item.id)}
-                        className="text-rose-400 hover:text-danger"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                    )
+                  }
+                  unitPrice={item.unit_price}
+                  editable={canEditItems}
+                  onSave={(payload) => handleUpdateService(item.id, payload)}
+                  onDelete={() => handleDeleteService(item.id)}
+                />
               ))}
               {services.length === 0 && (
                 <p className="text-slate-400 py-4 text-center">Nenhum serviço adicionado.</p>

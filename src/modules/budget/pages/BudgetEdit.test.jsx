@@ -424,3 +424,35 @@ describe("<BudgetEdit> — aprovar com data opcional", () => {
     })
   })
 })
+
+describe("<BudgetEdit> — editar item já lançado", () => {
+  it("dá desconto num serviço mudando o valor na própria linha", async () => {
+    let service = {
+      id: 70,
+      service: { id: 3, name: "Alinhamento" },
+      name: "Alinhamento",
+      unit_price: "150.00",
+      is_active: true,
+    }
+    let patched = null
+    mockApi()
+    server.use(
+      http.get(`${API}/orcamentos/1/`, () =>
+        HttpResponse.json({ ...budget, budget_services: [service] }),
+      ),
+      http.patch(`${API}/orcamentos/1/servicos/70/`, async ({ request }) => {
+        patched = await request.json()
+        service = { ...service, unit_price: patched.unit_price }
+        return HttpResponse.json(service, { status: 202 })
+      }),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Editar Alinhamento" }))
+    fireEvent.change(screen.getByLabelText("Valor (R$)"), { target: { value: "120,00" } })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar item" }))
+
+    await waitFor(() => expect(patched).toEqual({ unit_price: "120.00" }))
+    expect(await screen.findByText(/120,00/)).toBeInTheDocument()
+  })
+})
