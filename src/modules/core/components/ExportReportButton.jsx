@@ -77,7 +77,11 @@ function FilterPopover({ type, onSubmit, onClose }) {
   const setValue = (key) => (next) => setFilters((current) => ({ ...current, [key]: next }))
 
   return (
-    <div className="fixed inset-x-3 top-24 z-40 max-h-[70vh] overflow-y-auto rounded-xl border border-line bg-surface shadow-pop p-4 space-y-3 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 sm:max-h-none sm:overflow-visible">
+    <div
+      role="dialog"
+      aria-label="Filtros do relatório"
+      className="fixed inset-x-3 top-24 z-40 max-h-[70vh] overflow-y-auto rounded-xl border border-line bg-surface shadow-pop p-4 space-y-3 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72 sm:max-h-none sm:overflow-visible"
+    >
       <div className="flex items-center justify-between">
         <p className="text-[13px] font-medium text-ink">Filtros (todos opcionais)</p>
         <button
@@ -124,7 +128,7 @@ function FilterPopover({ type, onSubmit, onClose }) {
           onClick={() => onSubmit(filters)}
           className="btn-primary !px-3 !py-1.5 !text-[13px]"
         >
-          Gerar
+          Gerar relatório
         </button>
       </div>
     </div>
@@ -136,7 +140,7 @@ export default function ExportReportButton({ type, label }) {
   const { exportReport, isExporting } = useReportExport()
   const [open, setOpen] = useState(false)
 
-  // Fecha no próprio botão, no X, no "Gerar" e no Esc.
+  // Fecha no próprio botão, no X, no "Gerar relatório" e no Esc.
   useEffect(() => {
     if (!open) return undefined
     const onKey = (event) => {
