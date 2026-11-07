@@ -41,7 +41,7 @@ describe("useOrderForm", () => {
     })
 
     expect(create).toHaveBeenCalled()
-    expect(navigateSpy).toHaveBeenCalledWith("/ordens/12")
+    expect(navigateSpy).toHaveBeenCalledWith("/ordens/12", { replace: true })
     create.mockRestore()
   })
 
@@ -58,7 +58,7 @@ describe("useOrderForm", () => {
     })
 
     expect(link).toHaveBeenCalledWith(4, { order_id: 12 })
-    expect(navigateSpy).toHaveBeenCalledWith("/ordens/12")
+    expect(navigateSpy).toHaveBeenCalledWith("/ordens/12", { replace: true })
     create.mockRestore()
     link.mockRestore()
   })

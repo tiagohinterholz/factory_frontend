@@ -10,6 +10,9 @@ export const CPF_MASK = "___.___.___-__"
 export const CNPJ_MASK = "__.___.___/____-__"
 export const PHONE_MASK = "(__) _____-____"
 
+export const PLATE_MASK_REPLACEMENT = { L: /[A-Za-z]/, N: /[0-9]/, A: /[A-Za-z0-9]/ }
+export const PLATE_MASK = "LLL-NANN"
+
 export const cpfField = z.string().regex(CPF_RE, "CPF inválido. Formato: 000.000.000-00")
 export const cnpjField = z.string().regex(CNPJ_RE, "CNPJ inválido. Formato: 00.000.000/0000-00")
 export const phoneField = z.string().regex(PHONE_RE, "Telefone inválido. Formato: (00) 00000-0000")

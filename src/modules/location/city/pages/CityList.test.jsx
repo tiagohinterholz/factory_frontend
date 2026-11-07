@@ -43,4 +43,29 @@ describe("<CityList>", () => {
 
     expect(await screen.findByText(/não foi possível carregar/i)).toBeInTheDocument()
   })
+
+  it("superusuário cria, edita e exclui cidades", async () => {
+    localStorage.setItem("user", JSON.stringify({ email: "root@a.com", role: "superuser" }))
+    mockCities()
+    renderWithProviders(<CityList />)
+
+    await screen.findByText("Curitiba")
+    expect(screen.getByRole("link", { name: /nova cidade/i })).toBeInTheDocument()
+    expect(screen.getAllByRole("link", { name: "Editar" })).toHaveLength(2)
+    expect(screen.getAllByRole("button", { name: "Excluir" })).toHaveLength(2)
+  })
+
+  it("admin da oficina só visualiza cidades", async () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({ email: "a@a.com", business_id: 3, role: "admin" }),
+    )
+    mockCities()
+    renderWithProviders(<CityList />)
+
+    await screen.findByText("Curitiba")
+    expect(screen.queryByRole("link", { name: /nova cidade/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Excluir" })).not.toBeInTheDocument()
+    expect(screen.getAllByRole("link", { name: "Ver" })).toHaveLength(2)
+  })
 })

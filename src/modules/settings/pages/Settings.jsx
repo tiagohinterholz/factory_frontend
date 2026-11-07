@@ -26,8 +26,9 @@ const FORM_ID = "business-edit-form"
 // Empreendimento" libera o form inteiro de uma vez (bloco único, não campo
 // a campo).
 export default function Settings() {
-  const { canManageBusiness } = usePermissions()
+  const { canManageBusiness, canEditBusinessIdentity } = usePermissions()
   const { form, onSubmit, loading, editing, startEdit, cancelEdit } = useBusinessEditForm()
+  const identityLocked = !editing || !canEditBusinessIdentity
   const {
     register,
     control,
@@ -100,7 +101,7 @@ export default function Settings() {
               <h3 className="font-bold text-slate-800 tracking-tight">Dados Organizacionais</h3>
             </div>
 
-            {editing ? (
+            {editing && canEditBusinessIdentity ? (
               <LogoUploadField
                 label="Logo do empreendimento"
                 value={watch("logo")}
@@ -134,7 +135,7 @@ export default function Settings() {
               <FormField
                 label="Razão Social"
                 placeholder="Ex: Empresa de Serviços LTDA"
-                disabled={!editing}
+                disabled={identityLocked}
                 error={errors.corporate_name?.message}
                 registration={register("corporate_name")}
               />
@@ -151,14 +152,14 @@ export default function Settings() {
                 label="CNPJ"
                 mask={CNPJ_MASK}
                 placeholder="00.000.000/0000-00"
-                disabled={!editing}
+                disabled={identityLocked}
                 error={errors.cnpj?.message}
               />
               <FormField
                 label="E-mail"
                 type="email"
                 placeholder="contato@empresa.com"
-                disabled
+                disabled={!editing}
                 error={errors.email?.message}
                 registration={register("email")}
               />

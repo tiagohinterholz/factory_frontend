@@ -27,6 +27,7 @@ export default function Modal({ open, onClose, title, footer, children, maxWidth
         aria-label={title}
         className={`flex max-h-[85vh] w-full flex-col rounded-2xl bg-white shadow-xl ${maxWidth}`}
         onClick={(event) => event.stopPropagation()}
+        onSubmit={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-4">
           <h3 className="font-bold text-slate-800">{title}</h3>

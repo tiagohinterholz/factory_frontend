@@ -1,9 +1,11 @@
 import { useStates } from "@/modules/location/state/hooks/useState"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ListTable from "@/modules/core/components/ListTable"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 export default function StateList() {
   const { states, loading, currentPage, setCurrentPage, totalItems, refetch, error } = useStates()
+  const { isSuperUser } = usePermissions()
 
   const columns = [
     { header: "Sigla", accessor: (item) => item.abbreviation },
@@ -19,6 +21,7 @@ export default function StateList() {
         columns={columns}
         data={states}
         editLinkPrefix="/estados"
+        readOnly={!isSuperUser}
         loading={loading}
         error={error}
         onRetry={refetch}

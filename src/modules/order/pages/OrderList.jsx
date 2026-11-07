@@ -1,10 +1,19 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
-import { CheckCircle2, Edit2, Receipt, Trash2 } from "lucide-react"
+import { CheckCircle2, Edit2, Eye, Receipt, Trash2 } from "lucide-react"
 import { useOrder } from "../hooks/useOrder"
 import { OrderService } from "../services/order"
-import { orderStatusTone, orderCanFinish, orderCanInvoice } from "@/modules/order/domain"
+import {
+  orderStatusTone,
+  orderCanFinish,
+  orderCanInvoice,
+  orderIsLocked,
+  paymentLabel,
+  fiscalStatusInfo,
+} from "@/modules/order/domain"
 import ListHeader from "@/modules/core/components/ListHeader"
 import ExportReportButton from "@/modules/core/components/ExportReportButton"
+import InvoiceOrderDialog from "@/modules/order/components/InvoiceOrderDialog"
 import ListTable from "@/modules/core/components/ListTable"
 import ListFilters from "@/modules/core/components/ListFilters"
 import PdfIconButton from "@/modules/core/components/PdfIconButton"
@@ -26,11 +35,12 @@ export default function OrderList() {
     refetch,
     remove,
     finish,
-    invoice,
     error,
+    setSearch,
   } = useOrder()
 
   const { client: clients } = useClientOptions()
+  const [invoiceTarget, setInvoiceTarget] = useState(null)
 
   const filterFields = [
     { name: "status", label: "Status", type: "select", options: REPORT_STATUS_OPTIONS.orders },
@@ -40,6 +50,7 @@ export default function OrderList() {
       type: "select",
       options: clients.map((c) => ({ id: c.id, name: c.display_name })),
     },
+    { name: "plate", label: "Placa", type: "text" },
     { name: "date_from", label: "Serviço a partir de", type: "date" },
     { name: "date_to", label: "Serviço até", type: "date" },
   ]
@@ -63,11 +74,15 @@ export default function OrderList() {
       accessor: (item) =>
         item.vehicle?.id != null ? (
           <Link to={`/veiculos/${item.vehicle.id}`} className="text-brand hover:underline">
-            {item.vehicle.model} {item.vehicle.plate}
+            {item.vehicle.model}
           </Link>
         ) : (
           item.vehicle_name || ""
         ),
+    },
+    {
+      header: "Placa",
+      accessor: (item) => item.vehicle?.plate || "",
     },
     {
       header: "Data/Hora Serviço",
@@ -75,33 +90,69 @@ export default function OrderList() {
       accessor: (item) => (item.service_date ? formatDateTime(item.service_date) : "N/A"),
     },
     {
-      header: "Status",
+      header: "Status/Método de pagamento",
       sortKey: "status",
       accessor: (item) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${orderStatusTone(item.status)}`}
-        >
-          {item.status}
-        </span>
+        <div className="flex flex-col items-center gap-1">
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${orderStatusTone(item.status)}`}
+          >
+            {item.status}
+          </span>
+          {paymentLabel(item.payment) && (
+            <span className="px-2 py-1 rounded-full text-xs font-bold uppercase bg-slate-100 text-slate-600">
+              {paymentLabel(item.payment)}
+            </span>
+          )}
+        </div>
       ),
+    },
+    {
+      header: "Nota fiscal",
+      accessor: (item) => {
+        const notes = [
+          ["NF-e", fiscalStatusInfo(item.fiscal_note_status)],
+          ["NFS-e", fiscalStatusInfo(item.service_fiscal_note_status)],
+        ].filter(([, info]) => info)
+        if (notes.length === 0)
+          return (
+            <span className="px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap bg-slate-400 text-white">
+              Não gerada
+            </span>
+          )
+        return (
+          <div className="flex flex-col items-start gap-1">
+            {notes.map(([kind, info]) => (
+              <span
+                key={kind}
+                className={`px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${info.tone}`}
+              >
+                {kind}: {info.label}
+              </span>
+            ))}
+          </div>
+        )
+      },
     },
     {
       header: "Total",
       sortKey: "total",
-      accessor: (item) => formatMoney(item.total),
+      accessor: (item) => <span className="whitespace-nowrap">{formatMoney(item.total)}</span>,
     },
   ]
 
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por cliente ou placa"
         title="Ordens de Serviço"
         buttonText="Nova OS"
         buttonLink="/ordens/novo"
         actions={
           <div className="flex items-center gap-2">
             <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
-            <ExportReportButton type="orders" />
+            <ExportReportButton type="orders" label="Gerar relatório" />
           </div>
         }
       />
@@ -120,7 +171,7 @@ export default function OrderList() {
           <div className="flex items-center justify-end gap-1">
             <PdfIconButton
               request={() => OrderService.getOrderPdf(item.id)}
-              title="Gerar PDF da OS"
+              title="Gerar ordem de serviço"
             />
             {orderCanFinish(item.status) && (
               <button
@@ -135,8 +186,9 @@ export default function OrderList() {
             {orderCanInvoice(item.status) && (
               <button
                 type="button"
-                onClick={() => invoice(item)}
+                onClick={() => setInvoiceTarget(item)}
                 title="Faturar OS"
+                aria-label="Faturar OS"
                 className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
               >
                 <Receipt size={16} />
@@ -144,13 +196,17 @@ export default function OrderList() {
             )}
             <Link
               to={`/ordens/${item.id}`}
+              title={orderIsLocked(item.status) ? "Ver OS" : "Editar OS"}
+              aria-label={orderIsLocked(item.status) ? "Ver OS" : "Editar OS"}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >
-              <Edit2 size={16} />
+              {orderIsLocked(item.status) ? <Eye size={16} /> : <Edit2 size={16} />}
             </Link>
             <button
               type="button"
               onClick={() => remove(item)}
+              title="Excluir OS"
+              aria-label="Excluir OS"
               className="p-1.5 text-danger hover:bg-danger-subtle rounded transition-colors"
             >
               <Trash2 size={16} />
@@ -158,6 +214,7 @@ export default function OrderList() {
           </div>
         )}
       />
+      <InvoiceOrderDialog order={invoiceTarget} onClose={() => setInvoiceTarget(null)} />
     </div>
   )
 }

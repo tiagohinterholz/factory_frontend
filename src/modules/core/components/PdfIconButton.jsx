@@ -6,7 +6,7 @@ import { openPdfBlob } from "@/api/open-pdf"
 // Ícone compacto de "baixar PDF", pra caber na linha de ações de uma tabela
 // (RecordPdfButton é grande demais pra isso). Mesmo comportamento: `request`
 // é uma função async que devolve o Blob.
-export default function PdfIconButton({ request, title = "Baixar PDF" }) {
+export default function PdfIconButton({ request, title }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
 
@@ -28,6 +28,7 @@ export default function PdfIconButton({ request, title = "Baixar PDF" }) {
     <button
       type="button"
       title={title}
+      aria-label={title}
       onClick={handleClick}
       disabled={busy}
       className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors disabled:pointer-events-none disabled:opacity-60"

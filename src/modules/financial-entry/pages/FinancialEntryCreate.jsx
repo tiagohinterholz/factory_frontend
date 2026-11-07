@@ -1,5 +1,6 @@
 import { useFinancialEntryForm } from "../hooks/useFinancialEntryForm"
-import { FINANCIAL_ENTRY_TYPE_OPTIONS, FINANCIAL_ENTRY_CATEGORY_OPTIONS } from "../domain"
+import { FINANCIAL_ENTRY_TYPE_OPTIONS } from "../domain"
+import EntryClassificationFields from "../components/EntryClassificationFields"
 import BackLink from "@/modules/core/components/BackLink"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
@@ -21,7 +22,7 @@ export default function FinancialEntryCreate() {
         <BackLink to="/financeiro" />
         <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Novo Lançamento</h1>
         <p className="text-slate-400 font-medium text-sm mb-8">
-          Despesa ou receita sem origem automática — aluguel, folha de pagamento ou outro.
+          Despesa ou receita sem origem automática, com categoria e tags.
         </p>
 
         <div className="card-premium">
@@ -33,20 +34,14 @@ export default function FinancialEntryCreate() {
           </div>
 
           <form className="space-y-6" onSubmit={onSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectField
-                label="Tipo"
-                options={FINANCIAL_ENTRY_TYPE_OPTIONS}
-                error={errors.entry_type?.message}
-                registration={register("entry_type")}
-              />
-              <SelectField
-                label="Categoria"
-                options={FINANCIAL_ENTRY_CATEGORY_OPTIONS}
-                error={errors.category?.message}
-                registration={register("category")}
-              />
-            </div>
+            <SelectField
+              label="Tipo *"
+              options={FINANCIAL_ENTRY_TYPE_OPTIONS}
+              error={errors.entry_type?.message}
+              registration={register("entry_type")}
+            />
+
+            <EntryClassificationFields form={form} />
 
             <FormField
               label="Descrição"

@@ -23,6 +23,7 @@ import ManufacturerRoutes from "@/modules/manufacturer/routes"
 import VehicleModelRoutes from "@/modules/vehiclemodel/routes"
 import ProductRoutes from "@/modules/product/routes"
 import ProductCategoryRoutes from "@/modules/productcategory/routes"
+import FinancialCategoryRoutes from "@/modules/financial-category/routes"
 import ProductSubcategoryRoutes from "@/modules/productsubcategory/routes"
 import WorkServiceRoutes from "@/modules/workservice/routes"
 import AppointmentRoutes from "@/modules/appointment/routes"
@@ -75,6 +76,7 @@ export default function App() {
                       {BudgetRoutes}
                       {OrderRoutes}
                       {PurchaseRoutes}
+                      {FinancialCategoryRoutes}
                       {FinancialEntryRoutes}
                       {FiscalRoutes}
                       {SettingsRoutes}

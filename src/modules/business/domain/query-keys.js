@@ -3,4 +3,5 @@
 // PATCH.
 export const businessKeys = {
   all: ["businesses"],
+  certificate: ["businesses", "certificate"],
 }

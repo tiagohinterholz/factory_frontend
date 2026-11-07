@@ -8,6 +8,7 @@ export const ROLE_LABELS = {
   mecanico: "Mecânico",
   gerente: "Gerente",
   financeiro: "Financeiro",
+  contador: "Contador",
 }
 
 // Opções compartilhadas entre criar e editar usuário:
@@ -31,6 +32,7 @@ export function useUserFormOptions({ currentRole } = {}) {
         { id: "mecanico", name: "Mecânico" },
         { id: "gerente", name: "Gerente" },
         { id: "financeiro", name: "Financeiro" },
+        { id: "contador", name: "Contador" },
       ]
     : []
 

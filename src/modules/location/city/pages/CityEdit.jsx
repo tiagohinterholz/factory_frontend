@@ -4,10 +4,12 @@ import { useStateOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { Milestone, Trash2, Edit2 } from "lucide-react"
 
 export default function CityEdit() {
   const { form, onSubmit, loading, handleDelete } = useCityEditForm()
+  const { isSuperUser } = usePermissions()
   const {
     register,
     formState: { errors, isSubmitting },
@@ -30,16 +32,20 @@ export default function CityEdit() {
         <BackLink to="/cidades" />
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Editar Cidade</h1>
+            <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">
+              {isSuperUser ? "Editar Cidade" : "Cidade"}
+            </h1>
             <p className="text-slate-400 font-medium text-sm">Gestão de municípios</p>
           </div>
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
-          >
-            <Trash2 className="w-4 h-4" />
-            Excluir
-          </button>
+          {isSuperUser && (
+            <button
+              onClick={handleDelete}
+              className="flex items-center gap-2 px-4 py-2 text-danger hover:bg-danger-subtle rounded-xl transition duration-300 font-bold text-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              Excluir
+            </button>
+          )}
         </div>
 
         <div className="card-premium">
@@ -54,6 +60,7 @@ export default function CityEdit() {
             <FormField
               label="Nome da Cidade"
               placeholder="Ex: São Paulo"
+              disabled={!isSuperUser}
               error={errors.name?.message}
               registration={register("name")}
             />
@@ -61,15 +68,18 @@ export default function CityEdit() {
             <SelectField
               label="Estado"
               options={stateOptions}
+              disabled={!isSuperUser}
               error={errors.state_id?.message}
               registration={register("state_id")}
             />
 
-            <div className="pt-4">
-              <PrimaryButton type="submit" icon={Edit2} disabled={isSubmitting}>
-                Salvar Alterações
-              </PrimaryButton>
-            </div>
+            {isSuperUser && (
+              <div className="pt-4">
+                <PrimaryButton type="submit" icon={Edit2} disabled={isSubmitting}>
+                  Salvar Alterações
+                </PrimaryButton>
+              </div>
+            )}
           </form>
         </div>
       </div>

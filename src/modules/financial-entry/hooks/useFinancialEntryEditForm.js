@@ -2,7 +2,7 @@ import { useState, useCallback } from "react"
 import { useParams } from "react-router-dom"
 import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
-import { toDateInput } from "@/api/dto"
+import { idOf, toDateInput } from "@/api/dto"
 import { FinancialEntryService } from "@/modules/financial-entry/services/financial-entry"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 import {
@@ -18,6 +18,9 @@ import {
 function toFinancialEntryForm(data) {
   return {
     category: data.category ?? "",
+    financial_category_id: idOf(data.financial_category) || "",
+    financial_subcategory_id: idOf(data.financial_subcategory) || "",
+    tags: data.tags ?? [],
     description: data.description ?? "",
     amount: data.amount ?? "",
     due_date: toDateInput(data.due_date),
@@ -33,10 +36,12 @@ export function useFinancialEntryEditForm() {
     entryType: "",
     status: "",
     paymentDate: null,
+    paymentMethod: null,
+    installments: null,
     cancelledAt: null,
     order: null,
     supplier: null,
-    payments: [],
+    financialCategory: null,
   })
 
   const fetchMeta = useCallback(async () => {
@@ -45,10 +50,12 @@ export function useFinancialEntryEditForm() {
       entryType: data.entry_type ?? "",
       status: data.status ?? "",
       paymentDate: data.payment_date ?? null,
+      paymentMethod: data.payment_method ?? null,
+      installments: data.installments ?? null,
       cancelledAt: data.cancelled_at ?? null,
       order: data.order ?? null,
       supplier: data.supplier ?? null,
-      payments: data.payments ?? [],
+      financialCategory: data.financial_category ?? null,
     })
     return data
   }, [id])
@@ -59,6 +66,9 @@ export function useFinancialEntryEditForm() {
     schema: financialEntryEditSchema,
     defaultValues: {
       category: "",
+      financial_category_id: "",
+      financial_subcategory_id: "",
+      tags: [],
       description: "",
       amount: "",
       due_date: "",
@@ -74,19 +84,6 @@ export function useFinancialEntryEditForm() {
     errorFallback: "Erro ao atualizar o lançamento",
   })
 
-  const markPaid = useResourceAction({
-    mutationFn: () => FinancialEntryService.markFinancialEntryPaid(id),
-    confirm: {
-      title: "Marcar como pago?",
-      message: "O lançamento será marcado como pago hoje.",
-      confirmText: "Marcar como pago",
-    },
-    invalidate: [financialEntryKeys.all, dashboardKeys.all],
-    success: "Lançamento marcado como pago.",
-    onSuccess: () => fetchMeta(),
-    errorFallback: "Erro ao marcar o lançamento como pago.",
-  })
-
   const cancel = useResourceAction({
     mutationFn: () => FinancialEntryService.cancelFinancialEntry(id),
     confirm: {
@@ -100,32 +97,22 @@ export function useFinancialEntryEditForm() {
     errorFallback: "Erro ao cancelar o lançamento.",
   })
 
-  // gerar cobrança é uma ação de gateway de verdade — não some se der
-  // errado, então não tem "confirm" bloqueante, mas também não é reversível
-  // com um clique (o back bloqueia gerar outra enquanto essa não resolver).
-  const generateCharge = useResourceAction({
-    mutationFn: (method) => FinancialEntryService.generateCharge(id, method),
-    invalidate: [financialEntryKeys.all],
-    success: "Cobrança solicitada — acompanhe o status abaixo.",
-    onSuccess: () => fetchMeta(),
-    errorFallback: "Erro ao gerar a cobrança.",
-  })
-
   return {
     form,
     onSubmit,
     loading,
+    entryId: id,
     entryType: meta.entryType,
     status: meta.status,
     paymentDate: meta.paymentDate,
+    paymentMethod: meta.paymentMethod,
+    installments: meta.installments,
     cancelledAt: meta.cancelledAt,
     relatedOrder: meta.order,
     relatedSupplier: meta.supplier,
-    payments: meta.payments,
+    financialCategory: meta.financialCategory,
     isAutomatic,
-    handleMarkPaid: markPaid.run,
     handleCancel: cancel.run,
-    handleGenerateCharge: generateCharge.run,
-    generatingCharge: generateCharge.pending,
+    refetchMeta: fetchMeta,
   }
 }

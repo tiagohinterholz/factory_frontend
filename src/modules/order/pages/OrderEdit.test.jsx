@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest"
 import { screen, fireEvent, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { Routes, Route } from "react-router-dom"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
@@ -106,6 +107,32 @@ describe("<OrderEdit>", () => {
     expect(screen.queryByRole("link", { name: /whatsapp/i })).not.toBeInTheDocument()
   })
 
+  it("linha de produto mostra o preço unitário além do total da linha", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          order_products: [
+            {
+              id: 1,
+              quantity: 2,
+              unit_price: "25.00",
+              total: "50.00",
+              is_active: true,
+              product: { name: "Peça" },
+            },
+          ],
+        }),
+      ),
+    )
+    renderPage()
+
+    await screen.findByText("Peça (x2)")
+    expect(screen.getByText("R$ 25,00 / un")).toBeInTheDocument()
+    expect(screen.getByText("R$ 50,00")).toBeInTheDocument()
+  })
+
   it("mostra o subtotal de produtos, o de serviços e o total geral do back", async () => {
     mockApi()
     renderPage()
@@ -182,7 +209,7 @@ describe("<OrderEdit>", () => {
     expect(vehicleSelect).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) data e hora do serviço")).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) observações")).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled()
   })
 
   it("em andamento: campos gerais e botão de salvar continuam editáveis", async () => {
@@ -192,26 +219,162 @@ describe("<OrderEdit>", () => {
     await screen.findByText("Orçamento de origem")
     const [clientSelect] = screen.getAllByRole("combobox")
     expect(clientSelect).toBeEnabled()
-    expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeEnabled()
+    expect(screen.getByPlaceholderText("Digite o(a) observações")).toBeEnabled()
   })
 
-  it("mantém o cliente/veículo vinculados no select quando o cache de opções não os tem", async () => {
-    // cache de opções defasado: as listas não trazem o cliente 5 nem o veículo 9
+  it("Salvar OS fica desabilitado até mexer em algo e volta a desabilitar depois de salvar", async () => {
+    mockApi()
+    const update = vi.spyOn(OrderService, "updateOrder").mockResolvedValue(order)
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const save = screen.getByRole("button", { name: "Salvar OS" })
+    expect(save).toBeDisabled()
+
+    const notes = screen.getByPlaceholderText("Digite o(a) observações")
+    fireEvent.change(notes, { target: { value: "Cliente pediu revisão" } })
+    expect(save).toBeEnabled()
+
+    fireEvent.change(notes, { target: { value: "" } })
+    expect(save).toBeDisabled()
+
+    fireEvent.change(notes, { target: { value: "Cliente pediu revisão" } })
+    fireEvent.click(save)
+
+    await waitFor(() => expect(update).toHaveBeenCalled())
+    await waitFor(() => expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled())
+    update.mockRestore()
+  })
+
+  it("trocar o veículo habilita o Salvar OS", async () => {
+    mockApi()
     server.use(
-      http.get(`${API}/ordens/1/`, () => HttpResponse.json(order)),
+      http.get(`${API}/veiculos/`, () =>
+        HttpResponse.json({
+          results: [
+            {
+              id: 9,
+              client: 5,
+              manufacturer: { id: 12, name: "VW" },
+              model: { id: 55, name: "Gol" },
+              plate: "ABC1D23",
+            },
+            {
+              id: 10,
+              client: 5,
+              manufacturer: { id: 12, name: "VW" },
+              model: { id: 56, name: "Polo" },
+              plate: "XYZ9K87",
+            },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled()
+    const [, vehicleInput] = screen.getAllByRole("combobox")
+    await user.click(vehicleInput)
+    await user.click(await screen.findByRole("option", { name: /Polo/ }))
+
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeEnabled()
+  })
+
+  it("mantém o client_id/vehicle_id no submit mesmo quando o cache de opções não traz o registro vinculado", async () => {
+    mockApi()
+    server.use(
       http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
       http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
-      http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
-      http.get(`${API}/servicos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    )
+    const update = vi.spyOn(OrderService, "updateOrder").mockResolvedValue(order)
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    fireEvent.change(screen.getByPlaceholderText("Digite o(a) observações"), {
+      target: { value: "Cliente pediu revisão" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
+
+    await waitFor(() =>
+      expect(update).toHaveBeenCalledWith(
+        "1",
+        expect.objectContaining({ client_id: "5", vehicle_id: "9" }),
+      ),
+    )
+    update.mockRestore()
+  })
+
+  it("faturado com produto e serviço ativos: mostra os dois cartões de nota fiscal", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "faturado",
+          order_products: [
+            { id: 1, quantity: 1, total: "10.00", is_active: true, product: { name: "Peça" } },
+          ],
+          order_services: [
+            { id: 1, unit_price: "50.00", is_active: true, service: { name: "Troca de óleo" } },
+          ],
+        }),
+      ),
+      http.get(`${API}/ordens/1/nota-fiscal/`, () => HttpResponse.json(null, { status: 404 })),
+      http.get(`${API}/ordens/1/nota-fiscal-servico/`, () =>
+        HttpResponse.json(null, { status: 404 }),
+      ),
     )
     renderPage()
 
-    await waitFor(() =>
-      expect(screen.getByRole("option", { name: "Ana Lima", selected: true })).toBeInTheDocument(),
+    expect(await screen.findByText("Nota Fiscal (NF-e)")).toBeInTheDocument()
+    expect(screen.getByText("Nota de Serviço (NFS-e)")).toBeInTheDocument()
+  })
+
+  it("faturado só com produto ativo: mostra só o cartão de nota fiscal de produto", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "faturado",
+          order_products: [
+            { id: 1, quantity: 1, total: "10.00", is_active: true, product: { name: "Peça" } },
+          ],
+          order_services: [],
+        }),
+      ),
+      http.get(`${API}/ordens/1/nota-fiscal/`, () => HttpResponse.json(null, { status: 404 })),
     )
-    expect(
-      screen.getByRole("option", { name: "VW Gol (ABC1D23)", selected: true }),
-    ).toBeInTheDocument()
+    renderPage()
+
+    expect(await screen.findByText("Nota Fiscal (NF-e)")).toBeInTheDocument()
+    expect(screen.queryByText("Nota de Serviço (NFS-e)")).not.toBeInTheDocument()
+  })
+
+  it("faturado só com serviço ativo: mostra só o cartão de nota fiscal de serviço", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "faturado",
+          order_products: [],
+          order_services: [
+            { id: 1, unit_price: "50.00", is_active: true, service: { name: "Troca de óleo" } },
+          ],
+        }),
+      ),
+      http.get(`${API}/ordens/1/nota-fiscal-servico/`, () =>
+        HttpResponse.json(null, { status: 404 }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Nota de Serviço (NFS-e)")).toBeInTheDocument()
+    expect(screen.queryByText("Nota Fiscal (NF-e)")).not.toBeInTheDocument()
   })
 
   it("não lista item com is_active=false (deletado que o back ainda devolve)", async () => {
@@ -252,7 +415,7 @@ describe("<OrderEdit> — finalizar serviço e trava de itens", () => {
     renderPage()
 
     expect(await screen.findByRole("button", { name: /finalizar serviço/i })).toBeInTheDocument()
-    expect(screen.getByText("Selecionar Produto")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Adicionar produto" })).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "Faturar OS" })).not.toBeInTheDocument()
   })
 
@@ -278,8 +441,475 @@ describe("<OrderEdit> — finalizar serviço e trava de itens", () => {
     renderPage()
 
     expect(await screen.findByText(/Itens travados/i)).toBeInTheDocument()
-    expect(screen.queryByText("Selecionar Produto")).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Adicionar produto" })).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Faturar OS" })).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /finalizar serviço/i })).not.toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — live-select de cliente/veículo", () => {
+  it("mostra o cliente e o veículo já vinculados nos campos de busca", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
+  })
+
+  it("cliente/veículo vinculados mas desativados (fora da lista de opções) continuam visíveis no campo", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/veiculos/`, () => HttpResponse.json({ results: [], count: 0 })),
+    )
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
+  })
+
+  it("trocar o cliente selecionado limpa o veículo já escolhido", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    expect(vehicleInput).toHaveValue("")
+  })
+
+  it("reselecionar o MESMO cliente não limpa o veículo já escolhido", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput, vehicleInput] = screen.getAllByRole("combobox")
+    await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
+
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Ana Lima" }))
+
+    expect(vehicleInput).toHaveValue("VW Gol")
+  })
+
+  it("trocar o cliente realmente limpa o vehicle_id do form, não só o texto exibido", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/clientes/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 5, display_name: "Ana Lima", business: 2 },
+            { id: 6, display_name: "Bruno Souza", business: 2 },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const update = vi.spyOn(OrderService, "updateOrder")
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const [clientInput] = screen.getAllByRole("combobox")
+    await user.click(clientInput)
+    await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
+
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
+
+    expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
+    expect(update).not.toHaveBeenCalled()
+    update.mockRestore()
+  })
+
+  describe("<OrderEdit> — fica na tela ao salvar", () => {
+    it("salvar não volta pra listagem (OSFIN-P1-01)", async () => {
+      mockApi()
+      const update = vi.spyOn(OrderService, "updateOrder").mockResolvedValue(order)
+      renderWithProviders(
+        <Routes>
+          <Route path="/ordens/:id" element={<OrderEdit />} />
+          <Route path="/ordens" element={<h1>Lista de OS</h1>} />
+        </Routes>,
+        { route: "/ordens/1" },
+      )
+
+      await screen.findByText("Orçamento de origem")
+      fireEvent.change(screen.getByPlaceholderText("Digite o(a) observações"), {
+        target: { value: "Cliente pediu revisão" },
+      })
+      fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
+
+      await waitFor(() => expect(update).toHaveBeenCalled())
+      expect(screen.queryByRole("heading", { name: "Lista de OS" })).not.toBeInTheDocument()
+      update.mockRestore()
+    })
+  })
+})
+
+describe("<OrderEdit> — faturamento", () => {
+  it("OS faturada mostra como foi paga (OSFIN-P2-06)", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "faturado",
+          billing_date: "2026-09-10",
+          payment: { payment_method: "pix", payment_method_display: "Pix", installments: null },
+        }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Pago: Pix")).toBeInTheDocument()
+  })
+
+  it("'Faturar OS' abre o pedido de forma de pagamento", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json({ ...order, status: "a faturar" })),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Faturar OS" }))
+
+    expect(await screen.findByRole("dialog", { name: "Faturar OS #1" })).toBeInTheDocument()
+    expect(screen.getByLabelText(/forma de pagamento/i)).toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — serviço personalizado", () => {
+  it("lista o item personalizado pelo nome com a marca 'Personalizado'", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          order_services: [
+            {
+              id: 3,
+              service: null,
+              custom_name: "Solda no escapamento",
+              name: "Solda no escapamento",
+              unit_price: "80.00",
+              is_active: true,
+            },
+          ],
+        }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Solda no escapamento")).toBeInTheDocument()
+    expect(screen.getByText("Personalizado")).toBeInTheDocument()
+  })
+
+  it("adicionar personalizado chama a API com nome e valor", async () => {
+    const user = userEvent.setup()
+    mockApi()
+    const create = vi.spyOn(OrderService, "orderServiceCreate").mockResolvedValue({})
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const serviceCombobox = screen.getAllByRole("combobox").at(-1)
+    await user.click(serviceCombobox)
+    await user.click(await screen.findByRole("option", { name: "Serviço personalizado" }))
+    await user.type(screen.getByLabelText(/nome do serviço/i), "Revisão elétrica")
+    await user.type(screen.getByLabelText(/valor \(r\$\)/i), "90")
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar serviço" }))
+
+    await waitFor(() =>
+      expect(create).toHaveBeenCalledWith("1", {
+        custom_name: "Revisão elétrica",
+        unit_price: "90.00",
+        order_id: "1",
+      }),
+    )
+    create.mockRestore()
+  })
+})
+
+describe("<OrderEdit> — estoque exibido acompanha os itens lançados", () => {
+  it("depois de adicionar um produto, o picker mostra o estoque já baixado", async () => {
+    mockApi()
+    let stock = 11
+    let orderProducts = []
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, order_products: orderProducts }),
+      ),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 40, name: "Sensor de oxigênio", unit_price: "120.00", stock_quantity: stock },
+          ],
+          count: 1,
+        }),
+      ),
+      http.post(`${API}/ordens/1/produtos/`, async ({ request }) => {
+        const body = await request.json()
+        stock -= body.quantity
+        orderProducts = [
+          {
+            id: 300,
+            product: { id: 40, name: "Sensor de oxigênio" },
+            quantity: body.quantity,
+            unit_price: "120.00",
+            total: String(120 * body.quantity),
+            is_active: true,
+          },
+        ]
+        return HttpResponse.json(orderProducts[0], { status: 201 })
+      }),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    const picker = (await screen.findAllByRole("combobox")).at(-2)
+    await user.click(picker)
+    await user.click(await screen.findByRole("option", { name: /estoque 11/ }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "1" } })
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar produto" }))
+
+    await screen.findByText(/Sensor de oxigênio \(x1\)/)
+    await user.type((await screen.findAllByRole("combobox")).at(-2), "Sensor")
+    expect(await screen.findByRole("option", { name: /estoque 10/ })).toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — editar item já lançado", () => {
+  it("altera quantidade e preço de um produto na própria linha", async () => {
+    mockApi()
+    let line = {
+      id: 300,
+      product: { id: 40, name: "Sensor de oxigênio" },
+      quantity: 2,
+      unit_price: "120.00",
+      total: "240.00",
+      is_active: true,
+    }
+    let patched = null
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json({ ...order, order_products: [line] })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 40, name: "Sensor de oxigênio", unit_price: "120.00", stock_quantity: 9 },
+          ],
+          count: 1,
+        }),
+      ),
+      http.patch(`${API}/ordens/1/produtos/300/`, async ({ request }) => {
+        patched = await request.json()
+        line = {
+          ...line,
+          quantity: patched.quantity,
+          unit_price: patched.unit_price,
+          total: (patched.quantity * Number(patched.unit_price)).toFixed(2),
+        }
+        return HttpResponse.json(line)
+      }),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Editar Sensor de oxigênio" }))
+    fireEvent.change(screen.getAllByLabelText("Qtd").at(-1), { target: { value: "3" } })
+    fireEvent.change(screen.getByLabelText("Preço unitário (R$)"), { target: { value: "100" } })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar item" }))
+
+    expect(await screen.findByText("Sensor de oxigênio (x3)")).toBeInTheDocument()
+    expect(patched).toEqual({ quantity: 3, unit_price: "100.00" })
+  })
+
+  it("o estoque disponível da linha soma o que ela já reservou", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          order_products: [
+            {
+              id: 300,
+              product: { id: 40, name: "Sensor de oxigênio" },
+              quantity: 2,
+              unit_price: "120.00",
+              total: "240.00",
+              is_active: true,
+            },
+          ],
+        }),
+      ),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 40, name: "Sensor de oxigênio", unit_price: "120.00", stock_quantity: 9 },
+          ],
+          count: 1,
+        }),
+      ),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Editar Sensor de oxigênio" }))
+    fireEvent.change(screen.getAllByLabelText("Qtd").at(-1), { target: { value: "11" } })
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getAllByLabelText("Qtd").at(-1), { target: { value: "13" } })
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Estoque disponível para esta linha: 11 — vão faltar 2 un.",
+    )
+  })
+
+  it("OS a faturar não deixa editar a linha", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "a faturar",
+          order_products: [
+            {
+              id: 300,
+              product: { id: 40, name: "Sensor de oxigênio" },
+              quantity: 2,
+              unit_price: "120.00",
+              total: "240.00",
+              is_active: true,
+            },
+          ],
+        }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Sensor de oxigênio (x2)")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Editar Sensor de oxigênio" }),
+    ).not.toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — PDF", () => {
+  it("o botão de PDF diz que gera a ordem de serviço", async () => {
+    mockApi()
+    renderPage()
+
+    expect(
+      await screen.findByRole("button", { name: "Gerar ordem de serviço" }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /exportar pdf/i })).not.toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — alerta de compra nas observações", () => {
+  function mockShortage() {
+    let notes = "Cliente aguarda"
+    let saved = null
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json({ ...order, notes })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [{ id: 40, name: "Sensor", unit_price: "120.00", stock_quantity: 0 }],
+          count: 1,
+        }),
+      ),
+      http.post(`${API}/ordens/1/produtos/`, () => {
+        notes = `${notes}\n[COMPRAR PEÇA] Falta 1 un de: Sensor`
+        return HttpResponse.json({ id: 300 }, { status: 201 })
+      }),
+      http.patch(`${API}/ordens/1/`, async ({ request }) => {
+        saved = await request.json()
+        notes = saved.notes
+        return HttpResponse.json({ ...order, notes })
+      }),
+    )
+    return { saved: () => saved }
+  }
+
+  async function addOneSensor(user) {
+    const picker = (await screen.findAllByRole("combobox")).at(-2)
+    await user.click(picker)
+    await user.click(await screen.findByRole("option", { name: /Sensor/ }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "1" } })
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar produto" }))
+  }
+
+  it("mostra o alerta que o servidor anotou e não apaga ao salvar", async () => {
+    const api = mockShortage()
+    const user = userEvent.setup()
+    renderPage()
+    const notesField = await screen.findByPlaceholderText("Digite o(a) observações")
+    await waitFor(() => expect(notesField).toHaveValue("Cliente aguarda"))
+
+    await addOneSensor(user)
+
+    await waitFor(() =>
+      expect(notesField).toHaveValue("Cliente aguarda\n[COMPRAR PEÇA] Falta 1 un de: Sensor"),
+    )
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled()
+
+    fireEvent.change(notesField, {
+      target: { value: `${notesField.value}\nTrocar óleo também` },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
+
+    await waitFor(() => expect(api.saved()).not.toBeNull())
+    expect(api.saved().notes).toContain("[COMPRAR PEÇA] Falta 1 un de: Sensor")
+  })
+
+  it("se as observações já estavam sendo editadas, o alerta entra no fim sem perder o texto", async () => {
+    const api = mockShortage()
+    const user = userEvent.setup()
+    renderPage()
+    const notesField = await screen.findByPlaceholderText("Digite o(a) observações")
+    await waitFor(() => expect(notesField).toHaveValue("Cliente aguarda"))
+    fireEvent.change(notesField, { target: { value: "Cliente aguarda - trocar óleo" } })
+
+    await addOneSensor(user)
+
+    await waitFor(() =>
+      expect(notesField).toHaveValue(
+        "Cliente aguarda - trocar óleo\n[COMPRAR PEÇA] Falta 1 un de: Sensor",
+      ),
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
+
+    await waitFor(() => expect(api.saved()).not.toBeNull())
+    expect(api.saved().notes).toBe(
+      "Cliente aguarda - trocar óleo\n[COMPRAR PEÇA] Falta 1 un de: Sensor",
+    )
   })
 })

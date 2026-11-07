@@ -1,42 +1,43 @@
 import { useState } from "react"
 import { useFinancialEntryEditForm } from "../hooks/useFinancialEntryEditForm"
 import {
-  FINANCIAL_ENTRY_CATEGORY_OPTIONS,
-  PAYMENT_METHOD_OPTIONS,
   financialEntryStatusTone,
   financialEntryCanAct,
   financialEntryTypeLabel,
   financialEntryCategoryLabel,
-  paymentMethodLabel,
-  paymentStatusTone,
-  paymentIsActive,
 } from "../domain"
+import { PAYMENT_METHOD_OPTIONS } from "@/modules/order/domain"
 import BackLink from "@/modules/core/components/BackLink"
+import EntryClassificationFields from "../components/EntryClassificationFields"
+import MarkEntryPaidDialog from "../components/MarkEntryPaidDialog"
 import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { formatDate, formatDateTime } from "@/modules/core/utils/format"
-import { CheckCircle, CreditCard, Wallet, XCircle } from "lucide-react"
+import { CheckCircle, Wallet, XCircle } from "lucide-react"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 export default function FinancialEntryEdit() {
   const {
     form,
     onSubmit,
     loading,
+    entryId,
     entryType,
     status,
     paymentDate,
+    paymentMethod,
+    installments,
     cancelledAt,
     relatedOrder,
-    payments,
     isAutomatic,
-    handleMarkPaid,
+    financialCategory,
     handleCancel,
-    handleGenerateCharge,
-    generatingCharge,
+    refetchMeta,
   } = useFinancialEntryEditForm()
-  const [chargeMethod, setChargeMethod] = useState("PIX")
+  const [markingPaid, setMarkingPaid] = useState(false)
+  const { canChangeFinancialEntry, canMarkFinancialEntryPaid, canCancelFinancialEntry } =
+    usePermissions()
   const {
     register,
     control,
@@ -45,11 +46,11 @@ export default function FinancialEntryEdit() {
 
   if (loading) return <div className="p-6 text-center">Carregando...</div>
 
-  // travado (pago/cancelado): nunca edita, só exibe. Automático (nasceu de
-  // faturamento/compra): só o vencimento é editável — o resto reflete o
-  // evento real, mesma trava que o back aplica.
-  const locked = !financialEntryCanAct(status)
+  const actionable = financialEntryCanAct(status)
+  const locked = !actionable || !canChangeFinancialEntry
   const fieldsLocked = locked || isAutomatic
+  const paymentMethodName =
+    PAYMENT_METHOD_OPTIONS.find((option) => option.id === paymentMethod)?.name ?? paymentMethod
 
   return (
     <div className="p-6 space-y-6">
@@ -57,7 +58,9 @@ export default function FinancialEntryEdit() {
         <BackLink to="/financeiro" />
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start mb-4">
           <div>
-            <h1 className="text-xl font-semibold text-ink tracking-tight">Editar Lançamento</h1>
+            <h1 className="text-xl font-semibold text-ink tracking-tight">
+              {canChangeFinancialEntry ? "Editar Lançamento" : "Lançamento"}
+            </h1>
             <div className="flex items-center gap-3 mt-1 text-sm uppercase font-bold tracking-wider">
               <p className="text-slate-400">{financialEntryTypeLabel(entryType)}</p>
               <span className={`px-2 py-0.5 rounded-md ${financialEntryStatusTone(status)}`}>
@@ -65,22 +68,26 @@ export default function FinancialEntryEdit() {
               </span>
             </div>
           </div>
-          {financialEntryCanAct(status) && (
+          {actionable && (canMarkFinancialEntryPaid || canCancelFinancialEntry) && (
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={handleMarkPaid}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold text-sm shadow-sm transition-all"
-              >
-                <CheckCircle size={18} /> Marcar como pago
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-sm shadow-sm transition-all"
-              >
-                <XCircle size={18} /> Cancelar
-              </button>
+              {canMarkFinancialEntryPaid && (
+                <button
+                  type="button"
+                  onClick={() => setMarkingPaid(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold text-sm shadow-sm transition-all"
+                >
+                  <CheckCircle size={18} /> Marcar como pago
+                </button>
+              )}
+              {canCancelFinancialEntry && (
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-sm shadow-sm transition-all"
+                >
+                  <XCircle size={18} /> Cancelar
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -112,24 +119,30 @@ export default function FinancialEntryEdit() {
 
           <form className="space-y-6" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {isAutomatic ? (
-                // categoria automática (ex.: venda_servico) não existe na
-                // lista de categorias manuais do <select> — mostrar como
-                // texto fixo em vez de um <select> sem opção correspondente.
+              {fieldsLocked && (
                 <div className="flex flex-col">
                   <span className="label-premium">Categoria</span>
                   <p className="input-premium bg-ground text-muted cursor-not-allowed">
-                    {financialEntryCategoryLabel(form.getValues("category"))}
+                    {financialCategory?.name ??
+                      financialEntryCategoryLabel(form.getValues("category"))}
                   </p>
                 </div>
-              ) : (
-                <SelectField
-                  label="Categoria"
-                  options={FINANCIAL_ENTRY_CATEGORY_OPTIONS}
-                  disabled={fieldsLocked}
-                  error={errors.category?.message}
-                  registration={register("category")}
-                />
+              )}
+              {paymentMethod && (
+                <div className="flex flex-col">
+                  <span className="label-premium">Forma de pagamento</span>
+                  <p className="input-premium bg-ground text-muted cursor-not-allowed">
+                    {paymentMethodName}
+                  </p>
+                </div>
+              )}
+              {installments && (
+                <div className="flex flex-col">
+                  <span className="label-premium">Parcelas</span>
+                  <p className="input-premium bg-ground text-muted cursor-not-allowed">
+                    {installments}x
+                  </p>
+                </div>
               )}
               <MoneyField
                 control={control}
@@ -145,6 +158,13 @@ export default function FinancialEntryEdit() {
               disabled={fieldsLocked}
               error={errors.description?.message}
               registration={register("description")}
+            />
+
+            <EntryClassificationFields
+              form={form}
+              categoryLocked={fieldsLocked}
+              tagsLocked={locked}
+              extraCategory={financialCategory}
             />
 
             <FormField
@@ -164,82 +184,14 @@ export default function FinancialEntryEdit() {
             )}
           </form>
         </div>
-
-        {/* cobrança via gateway: só faz sentido pra receita vinculada a uma
-            OS — mesma regra que o back aplica em payment_service. */}
-        {entryType === "a_receber" && relatedOrder && (
-          <div className="card-premium mt-6">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
-              <div className="w-10 h-10 bg-brand-subtle rounded-lg flex items-center justify-center text-brand border border-line">
-                <CreditCard className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-slate-800 tracking-tight">Cobrança</h3>
-            </div>
-
-            {!locked && !payments.some((payment) => paymentIsActive(payment.status)) && (
-              <div className="flex flex-wrap items-end gap-4 mb-6 bg-slate-50 p-4 rounded-xl">
-                <div className="flex-1 min-w-[180px]">
-                  <SelectField
-                    label="Forma de pagamento"
-                    options={PAYMENT_METHOD_OPTIONS}
-                    value={chargeMethod}
-                    onChange={(event) => setChargeMethod(event.target.value)}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleGenerateCharge(chargeMethod)}
-                  disabled={generatingCharge}
-                  className="px-4 py-3 bg-brand text-white rounded-xl hover:bg-brand-hover font-bold text-sm shadow-sm transition-all disabled:opacity-50"
-                >
-                  Gerar cobrança
-                </button>
-              </div>
-            )}
-
-            <div className="divide-y divide-slate-100">
-              {payments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="py-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-sm"
-                >
-                  <div>
-                    <span className="font-medium text-slate-700">
-                      {paymentMethodLabel(payment.method)}
-                    </span>
-                    <span className="text-slate-400 ml-2">
-                      {formatDateTime(payment.created_at)}
-                    </span>
-                    {payment.status === "falhou" && payment.error_message && (
-                      <p className="text-xs text-danger mt-1">{payment.error_message}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {payment.checkout_url && (
-                      <a
-                        href={payment.checkout_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-brand hover:underline text-xs font-bold"
-                      >
-                        Link de pagamento
-                      </a>
-                    )}
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${paymentStatusTone(payment.status)}`}
-                    >
-                      {payment.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {payments.length === 0 && (
-                <p className="text-slate-400 py-4 text-center">Nenhuma cobrança gerada ainda.</p>
-              )}
-            </div>
-          </div>
-        )}
       </div>
+      {canMarkFinancialEntryPaid && (
+        <MarkEntryPaidDialog
+          entry={markingPaid ? { id: entryId } : null}
+          onClose={() => setMarkingPaid(false)}
+          onMarked={() => refetchMeta()}
+        />
+      )}
     </div>
   )
 }

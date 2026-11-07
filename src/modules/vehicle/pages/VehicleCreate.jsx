@@ -1,11 +1,11 @@
-import { useLocation, useNavigate } from "react-router-dom"
-import { Plus } from "lucide-react"
+import { useLocation } from "react-router-dom"
 import { useVehicleForm } from "@/modules/vehicle/hooks/useVehicleForm"
-import { useClientOptions } from "@/modules/core/hooks/options"
-import { useManufacturerOptions } from "@/modules/core/hooks/options"
-import { useModelOptionsByManufacturer } from "@/modules/core/hooks/options"
+import { ClientLiveSelect } from "@/modules/client"
+import ManufacturerLiveSelect from "@/modules/vehicle/components/ManufacturerLiveSelect"
+import ModelLiveSelect from "@/modules/vehicle/components/ModelLiveSelect"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import BackLink from "@/modules/core/components/BackLink"
 import {
@@ -14,35 +14,28 @@ import {
   modelYearOptions,
   VEHICLE_COLOR_OPTIONS,
 } from "../constants/vehicle"
+import { PLATE_MASK, PLATE_MASK_REPLACEMENT } from "@/modules/core/schemas/br-fields"
 import { Save } from "lucide-react"
 
 export default function VehicleCreate() {
   const location = useLocation()
-  const navigate = useNavigate()
-  const { form, onSubmit } = useVehicleForm({ clientId: location.state?.clientId })
+  const clientId = location.state?.clientId
+
+  const { form, onSubmit } = useVehicleForm({
+    clientId,
+    redirectTo: clientId ? `/clientes/${clientId}` : (result) => `/veiculos/${result.id}`,
+  })
   const {
     register,
+    control,
     watch,
     setValue,
     formState: { errors, isSubmitting },
   } = form
 
+  const selectedClientId = watch("client_id")
   const manufacturerId = watch("manufacturer_id")
-
-  const { client: clients, loading: loadingClients } = useClientOptions()
-  const { manufacturers, loading: loadingManufacturers } = useManufacturerOptions()
-  const { modelsByManufacturer, loading: loadingModels } =
-    useModelOptionsByManufacturer(manufacturerId)
-
-  const clientOptions = clients.map((c) => ({ id: c.id, name: c.display_name }))
-
-  if (loadingClients || loadingManufacturers || (manufacturerId && loadingModels)) {
-    return (
-      <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  const modelId = watch("model_id")
 
   return (
     <div className="p-6 space-y-6">
@@ -55,53 +48,41 @@ export default function VehicleCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <SelectField
-                  label="Cliente Proprietário"
-                  options={clientOptions}
-                  error={errors.client_id?.message}
-                  registration={register("client_id")}
-                />
-              </div>
-              <button
-                type="button"
-                title="Cadastrar novo cliente"
-                onClick={() => navigate("/clientes/novo")}
-                className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-brand hover:bg-brand-subtle transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
+            <ClientLiveSelect
+              label="Cliente Proprietário *"
+              value={selectedClientId}
+              onChange={(value) => setValue("client_id", value)}
+              error={errors.client_id?.message}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectField
-                label="Marca"
-                options={manufacturers}
+              <ManufacturerLiveSelect
+                label="Marca *"
+                value={manufacturerId}
+                onChange={(value) => {
+                  setValue("manufacturer_id", value)
+                  setValue("model_id", "")
+                }}
                 error={errors.manufacturer_id?.message}
-                registration={register("manufacturer_id", {
-                  onChange: () => setValue("model_id", ""),
-                })}
               />
-              <SelectField
-                label="Modelo"
-                options={modelsByManufacturer}
-                disabled={!manufacturerId}
-                disabledHint="Selecione a marca primeiro"
+              <ModelLiveSelect
+                label="Modelo *"
+                value={modelId}
+                onChange={(value) => setValue("model_id", value)}
+                manufacturerId={manufacturerId}
                 error={errors.model_id?.message}
-                registration={register("model_id")}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SelectField
-                label="Ano de Fabricação"
+                label="Ano de Fabricação *"
                 options={manufactureYearOptions}
                 error={errors.year?.message}
                 registration={register("year")}
               />
               <SelectField
-                label="Ano do Modelo"
+                label="Ano do Modelo *"
                 options={modelYearOptions}
                 error={errors.year_model?.message}
                 registration={register("year_model")}
@@ -109,13 +90,15 @@ export default function VehicleCreate() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Placa"
+              <MaskedField
+                control={control}
+                name="plate"
+                label="Placa *"
+                mask={PLATE_MASK}
+                replacement={PLATE_MASK_REPLACEMENT}
+                uppercase
                 placeholder="ABC-1234"
                 error={errors.plate?.message}
-                registration={register("plate", {
-                  onChange: (event) => setValue("plate", event.target.value.toUpperCase()),
-                })}
               />
               <FormField
                 label="Cor"
@@ -128,7 +111,7 @@ export default function VehicleCreate() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SelectField
-                label="Combustível"
+                label="Combustível *"
                 options={fuelOptions}
                 error={errors.fuel?.message}
                 registration={register("fuel")}

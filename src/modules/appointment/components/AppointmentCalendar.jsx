@@ -8,14 +8,107 @@ import {
   Car,
   Phone,
   ClipboardList,
+  FileText,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { appointmentWhen } from "@/modules/appointment/domain"
 
-// Nome do cliente + placa/telefone do veículo — client/vehicle vêm sempre
-// aninhados (ClientFlatSerializer/VehicleFlatSerializer), nunca id cru.
 function clientName(appointment) {
-  return appointment.client?.first_name || "Cliente"
+  const client = appointment.client
+  if (!client) return "Cliente"
+  return (
+    client.display_name ||
+    `${client.first_name ?? ""} ${client.last_name ?? ""}`.trim() ||
+    "Cliente"
+  )
+}
+
+function vehicleName(appointment) {
+  const vehicle = appointment.vehicle
+  if (!vehicle) return ""
+  return `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""}`.trim()
+}
+
+const shortcutClass =
+  "inline-flex items-center gap-0.5 rounded border border-line px-1 py-0.5 text-[9px] font-semibold text-brand hover:bg-brand-subtle transition-colors"
+
+const relatedLinkClass =
+  "flex items-center gap-1 truncate text-[9px] font-semibold text-brand hover:underline"
+
+function CalendarAppointmentCard({ appointment }) {
+  const orderId = appointment.order?.id ?? null
+  const budgetId = appointment.budget?.id ?? null
+  const clientId = appointment.client?.id ?? null
+  const vehicleId = appointment.vehicle?.id ?? null
+  const canCreateLinked = clientId != null && vehicleId != null
+  const prefill = { clientId, vehicleId, appointmentId: appointment.id }
+  const name = clientName(appointment)
+  const vehicle = vehicleName(appointment)
+
+  return (
+    <div
+      data-appointment-card
+      className="flex flex-col gap-0.5 overflow-hidden rounded-lg border-l-4 border-brand bg-surface p-2 shadow-card transition-all hover:border-brand-hover hover:shadow-pop"
+    >
+      <Link
+        to={`/agendamentos/${appointment.id}`}
+        aria-label={`Abrir agendamento de ${name}`}
+        className="flex flex-col gap-0.5 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+      >
+        <span className="flex items-center gap-1 truncate text-[10px] font-black uppercase text-brand">
+          <User size={10} className="shrink-0" />
+          <span className="truncate">{name}</span>
+        </span>
+        <span className="flex items-center gap-1 truncate text-[9px] font-bold text-muted">
+          <Clock size={10} className="shrink-0" />
+          {appointmentWhen(appointment.date, appointment.time)}
+        </span>
+        {(vehicle || appointment.vehicle?.plate) && (
+          <span className="flex items-center gap-1 truncate text-[9px] text-muted">
+            <Car size={10} className="shrink-0" />
+            <span className="truncate">
+              {[vehicle, appointment.vehicle?.plate].filter(Boolean).join(" · ")}
+            </span>
+          </span>
+        )}
+        {appointment.client?.phone && (
+          <span className="flex items-center gap-1 truncate text-[9px] text-muted">
+            <Phone size={10} className="shrink-0" />
+            <span className="truncate">{appointment.client.phone}</span>
+          </span>
+        )}
+      </Link>
+      <div className="flex flex-wrap items-center gap-1 pt-0.5">
+        {orderId != null ? (
+          <Link to={`/ordens/${orderId}`} className={relatedLinkClass}>
+            <ClipboardList size={10} className="shrink-0" />
+            OS #{orderId}
+          </Link>
+        ) : (
+          canCreateLinked && (
+            <Link to="/ordens/novo" state={prefill} className={shortcutClass}>
+              <Plus size={10} />
+              Criar OS
+            </Link>
+          )
+        )}
+        {budgetId != null ? (
+          <Link to={`/orcamentos/${budgetId}`} className={relatedLinkClass}>
+            <FileText size={10} className="shrink-0" />
+            Orçamento #{budgetId}
+          </Link>
+        ) : (
+          orderId == null &&
+          canCreateLinked && (
+            <Link to="/orcamentos/novo" state={prefill} className={shortcutClass}>
+              <Plus size={10} />
+              Criar Orçamento
+            </Link>
+          )
+        )}
+      </div>
+    </div>
+  )
 }
 
 export default function AppointmentCalendar({ appointments, loading }) {
@@ -35,7 +128,7 @@ export default function AppointmentCalendar({ appointments, loading }) {
     })
   }, [currentDate])
 
-  const hours = Array.from({ length: 14 }).map((_, i) => i + 7) // 7h até 20h
+  const hours = Array.from({ length: 14 }).map((_, i) => i + 7)
 
   const nextWeek = () => {
     const next = new Date(currentDate)
@@ -79,12 +172,13 @@ export default function AppointmentCalendar({ appointments, loading }) {
 
   return (
     <div className="bg-surface rounded-3xl border border-line overflow-hidden shadow-card">
-      {/* Header */}
       <div className="p-6 border-b border-line flex flex-col md:flex-row md:items-center justify-between gap-4 bg-ground/60">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-bold text-ink capitalize">{formatMonth(currentDate)}</h2>
           <div className="flex bg-surface rounded-xl border border-line p-1 shadow-sm">
             <button
+              title="Semana anterior"
+              aria-label="Semana anterior"
               onClick={prevWeek}
               className="p-1.5 hover:bg-ground rounded-lg text-muted hover:text-ink transition-colors"
             >
@@ -97,6 +191,8 @@ export default function AppointmentCalendar({ appointments, loading }) {
               Hoje
             </button>
             <button
+              title="Próxima semana"
+              aria-label="Próxima semana"
               onClick={nextWeek}
               className="p-1.5 hover:bg-ground rounded-lg text-muted hover:text-ink transition-colors"
             >
@@ -111,7 +207,6 @@ export default function AppointmentCalendar({ appointments, loading }) {
         </Link>
       </div>
 
-      {/* Grid */}
       <div className="relative overflow-x-auto">
         {loading && (
           <div className="absolute inset-0 bg-surface/60 backdrop-blur-[1px] z-50 flex items-center justify-center">
@@ -122,7 +217,6 @@ export default function AppointmentCalendar({ appointments, loading }) {
           </div>
         )}
         <div className="min-w-[800px]">
-          {/* Days labels */}
           <div className="grid grid-cols-8 border-b border-line bg-surface">
             <div className="p-4 border-r border-line/60"></div>
             {weekDays.map((date, i) => (
@@ -147,7 +241,6 @@ export default function AppointmentCalendar({ appointments, loading }) {
             ))}
           </div>
 
-          {/* Time Slots */}
           <div className="relative h-[700px] overflow-y-auto">
             {hours.map((hour) => (
               <div
@@ -162,44 +255,11 @@ export default function AppointmentCalendar({ appointments, loading }) {
                     key={i}
                     className={`flex flex-col gap-1 border-r border-line/60 p-1 last:border-r-0 group-hover:bg-ground/60 transition-colors ${isToday(date) ? "bg-brand-subtle/20" : ""}`}
                   >
-                    {/* Agendamentos deste dia e hora — empilhados (não sobrepostos:
-                        duas marcações no mesmo horário cabem as duas, a linha cresce) */}
                     {getAppointmentsForDay(date)
                       .filter((app) => parseInt(app.time.split(":")[0]) === hour)
                       .sort((a, b) => a.time.localeCompare(b.time))
                       .map((app) => (
-                        <Link
-                          key={app.id}
-                          to={`/agendamentos/${app.id}`}
-                          className="flex flex-col gap-0.5 overflow-hidden rounded-lg border-l-4 border-brand bg-surface p-2 shadow-card transition-all hover:border-brand-hover hover:shadow-pop"
-                        >
-                          <p className="flex items-center gap-1 truncate text-[10px] font-black uppercase text-brand">
-                            <User size={10} className="shrink-0" />
-                            <span className="truncate">{clientName(app)}</span>
-                          </p>
-                          <p className="flex items-center gap-1 truncate text-[9px] font-bold text-muted">
-                            <Clock size={10} className="shrink-0" />
-                            {appointmentWhen(app.date, app.time)}
-                          </p>
-                          {app.vehicle?.plate && (
-                            <p className="flex items-center gap-1 truncate text-[9px] text-muted">
-                              <Car size={10} className="shrink-0" />
-                              <span className="truncate">{app.vehicle.plate}</span>
-                            </p>
-                          )}
-                          {app.client?.phone && (
-                            <p className="flex items-center gap-1 truncate text-[9px] text-muted">
-                              <Phone size={10} className="shrink-0" />
-                              <span className="truncate">{app.client.phone}</span>
-                            </p>
-                          )}
-                          {app.order?.id != null && (
-                            <p className="flex items-center gap-1 truncate text-[9px] font-semibold text-brand">
-                              <ClipboardList size={10} className="shrink-0" />
-                              OS #{app.order.id}
-                            </p>
-                          )}
-                        </Link>
+                        <CalendarAppointmentCard key={app.id} appointment={app} />
                       ))}
                   </div>
                 ))}

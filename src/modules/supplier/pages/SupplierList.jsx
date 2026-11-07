@@ -22,6 +22,7 @@ export default function SupplierList() {
     refetch,
     remove,
     error,
+    setSearch,
   } = useSupplier()
 
   const columns = [
@@ -33,6 +34,8 @@ export default function SupplierList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por nome, CNPJ ou telefone"
         title="Fornecedores"
         buttonText="Novo Fornecedor"
         buttonLink="/fornecedores/novo"

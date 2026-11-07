@@ -1,20 +1,21 @@
 import { useState } from "react"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { usePurchaseOrderEditForm } from "../hooks/usePurchaseOrderEditForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useSupplierOptions, useProductOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
-import { withSelectedOption, idOf } from "@/api/dto"
+import { idOf } from "@/api/dto"
+import { SupplierLiveSelect, useSupplierRelations } from "@/modules/supplier"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { Plus, Trash2, PackageCheck, XCircle } from "lucide-react"
+import { Plus, Trash2, PackageCheck, XCircle, Eye } from "lucide-react"
 import { formatDateTime, formatMoney } from "@/modules/core/utils/format"
 import { purchaseOrderStatusTone, purchaseOrderIsOpen, purchaseOrderItemDefaults } from "../domain"
 
 export default function PurchaseOrderEdit() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const toast = useToast()
   const {
     form,
@@ -35,31 +36,41 @@ export default function PurchaseOrderEdit() {
   const {
     register,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = form
-
-  const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
-  const { product: products } = useProductOptions()
 
   const [itemForm, setItemForm] = useState(purchaseOrderItemDefaults)
   const [savingItem, setSavingItem] = useState(false)
 
-  if (loading || loadingSuppliers) return <div className="p-6 text-center">Carregando...</div>
+  const supplierId = watch("supplier_id")
+  const { products: supplierProducts } = useSupplierRelations(supplierId)
+
+  if (loading) return <div className="p-6 text-center">Carregando...</div>
 
   const open = purchaseOrderIsOpen(status)
   const statusDate =
     status === "recebido" ? receivedAt : status === "cancelado" ? cancelledAt : null
 
   const supplierLabel = (supplier) => supplier?.corporate_name || `Fornecedor #${idOf(supplier)}`
-  const supplierOptions = withSelectedOption(
-    suppliers.map((s) => ({ id: s.id, name: s.corporate_name })),
-    watch("supplier_id"),
-    relatedSupplier && { id: idOf(relatedSupplier), name: supplierLabel(relatedSupplier) },
-  )
-  const productOptions = products.map((p) => ({
+  const relatedSupplierOption = relatedSupplier && {
+    id: idOf(relatedSupplier),
+    name: supplierLabel(relatedSupplier),
+  }
+
+  const productOptions = supplierProducts.map((p) => ({
     id: p.id,
     name: `${p.name} (estoque: ${p.stock_quantity ?? 0})`,
   }))
+
+  function handleProductChange(productId) {
+    const product = supplierProducts.find((p) => String(p.id) === String(productId))
+    setItemForm((current) => ({
+      ...current,
+      product_id: productId,
+      unit_cost: product ? product.unit_price : "",
+    }))
+  }
 
   async function handleAddItem(event) {
     event.preventDefault()
@@ -130,13 +141,27 @@ export default function PurchaseOrderEdit() {
               </p>
             )}
             <form onSubmit={onSubmit} className="space-y-4">
-              <SelectField
-                label="Fornecedor"
-                options={supplierOptions}
-                disabled={!open}
-                error={errors.supplier_id?.message}
-                registration={register("supplier_id")}
-              />
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <SupplierLiveSelect
+                    label="Fornecedor"
+                    value={supplierId}
+                    onChange={(value) => setValue("supplier_id", value)}
+                    disabled={!open}
+                    error={errors.supplier_id?.message}
+                    extraOption={relatedSupplierOption}
+                  />
+                </div>
+                <button
+                  type="button"
+                  title="Ver fornecedor vinculado"
+                  disabled={!supplierId}
+                  onClick={() => navigate(`/fornecedores/${supplierId}`)}
+                  className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-muted hover:text-ink hover:bg-ground transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+              </div>
               <FormField
                 label="Observações"
                 disabled={!open}
@@ -165,10 +190,10 @@ export default function PurchaseOrderEdit() {
                   <SelectField
                     label="Produto"
                     value={itemForm.product_id}
-                    onChange={(event) =>
-                      setItemForm((current) => ({ ...current, product_id: event.target.value }))
-                    }
+                    onChange={(event) => handleProductChange(event.target.value)}
                     options={productOptions}
+                    disabled={!supplierId}
+                    disabledHint="Selecione o fornecedor primeiro"
                   />
                 </div>
                 <div className="w-24">
@@ -184,15 +209,16 @@ export default function PurchaseOrderEdit() {
                 <div className="w-32">
                   <FormField
                     label="Custo unit."
+                    readOnly
+                    disabled
                     type="number"
                     step="0.01"
                     value={itemForm.unit_cost}
-                    onChange={(event) =>
-                      setItemForm((current) => ({ ...current, unit_cost: event.target.value }))
-                    }
                   />
                 </div>
                 <button
+                  title="Adicionar item"
+                  aria-label="Adicionar item"
                   type="submit"
                   disabled={savingItem}
                   className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover transition-colors disabled:opacity-50"
@@ -213,6 +239,8 @@ export default function PurchaseOrderEdit() {
                     {open && (
                       <button
                         type="button"
+                        title="Remover item"
+                        aria-label="Remover item"
                         onClick={() => removeItem(item.id)}
                         className="text-rose-400 hover:text-danger"
                       >

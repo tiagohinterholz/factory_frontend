@@ -16,6 +16,7 @@ import { normalizeList } from "@/api/normalize-list"
 // `applyFilters` vêm undefined quando não há `emptyFilters`.
 export function useResourceList({ keyFactory, fetchPage, emptyFilters }) {
   const [currentPage, setCurrentPage] = useState(1)
+  const [search, setSearchState] = useState("")
   const hasFilters = Boolean(emptyFilters)
 
   const filtersState = useListFilters(emptyFilters ?? {}, () => setCurrentPage(1))
@@ -24,7 +25,9 @@ export function useResourceList({ keyFactory, fetchPage, emptyFilters }) {
   const filters = hasFilters ? filtersState.filters : undefined
   const filterParams = hasFilters ? filtersState.params : {}
 
-  const listParams = hasFilters ? { page: currentPage, filters, ordering } : { page: currentPage }
+  const trimmedSearch = search.trim()
+  const baseParams = hasFilters ? { page: currentPage, filters, ordering } : { page: currentPage }
+  const listParams = trimmedSearch ? { ...baseParams, search: trimmedSearch } : baseParams
 
   const query = useQuery({
     queryKey: keyFactory.list(listParams),
@@ -33,6 +36,7 @@ export function useResourceList({ keyFactory, fetchPage, emptyFilters }) {
         page: currentPage,
         ...filterParams,
         ...(ordering ? { ordering } : {}),
+        ...(trimmedSearch ? { search: trimmedSearch } : {}),
       }),
     placeholderData: keepPreviousData,
     select: normalizeList,
@@ -50,5 +54,10 @@ export function useResourceList({ keyFactory, fetchPage, emptyFilters }) {
     toggleSort,
     currentPage,
     setCurrentPage,
+    search,
+    setSearch: (next) => {
+      setSearchState(next)
+      setCurrentPage(1)
+    },
   }
 }

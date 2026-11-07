@@ -2,9 +2,8 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useWorkServiceEditForm } from "@/modules/workservice/hooks/useWorkServiceEditForm"
 import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
-import { useSupplierOptions } from "@/modules/core/hooks/options"
+import { SupplierLiveSelect } from "@/modules/supplier"
 import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
@@ -18,15 +17,13 @@ export default function WorkServiceDetail() {
     register,
     control,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = form
 
   const supplierId = watch("supplier_id")
-  const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
 
-  const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
-
-  if (loading || loadingSuppliers) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -48,7 +45,7 @@ export default function WorkServiceDetail() {
           <div className="flex flex-wrap items-center gap-2">
             <RecordPdfButton
               request={() => WorkServiceService.getWorkServicePdf(id)}
-              label="Exportar PDF"
+              label="Gerar ficha do serviço"
             />
             <button
               onClick={handleDelete}
@@ -72,11 +69,11 @@ export default function WorkServiceDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <SelectField
+                  <SupplierLiveSelect
                     label="Fornecedor"
-                    options={supplierOptions}
+                    value={supplierId}
+                    onChange={(value) => setValue("supplier_id", value)}
                     error={errors.supplier_id?.message}
-                    registration={register("supplier_id")}
                   />
                 </div>
                 <button
@@ -103,12 +100,18 @@ export default function WorkServiceDetail() {
               registration={register("description")}
             />
 
-            <div className="max-w-xs">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-xl">
               <MoneyField
                 control={control}
                 name="unit_price"
                 label="Preço do Serviço (Mão de Obra)"
                 error={errors.unit_price?.message}
+              />
+              <MoneyField
+                control={control}
+                name="cost_price"
+                label="Preço de Custo (opcional)"
+                error={errors.cost_price?.message}
               />
             </div>
 

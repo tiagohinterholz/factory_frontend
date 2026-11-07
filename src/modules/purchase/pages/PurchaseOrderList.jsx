@@ -29,6 +29,7 @@ export default function PurchaseOrderList() {
     receive,
     cancel,
     error,
+    setSearch,
   } = usePurchaseOrder()
 
   const { supplier: suppliers } = useSupplierOptions()
@@ -82,6 +83,8 @@ export default function PurchaseOrderList() {
   return (
     <div className="p-6 space-y-4">
       <ListHeader
+        onSearch={setSearch}
+        searchPlaceholder="Buscar por fornecedor ou nº do pedido"
         title="Compras"
         buttonText="Novo Pedido de Compra"
         buttonLink="/compras/novo"
@@ -127,6 +130,8 @@ export default function PurchaseOrderList() {
               </>
             )}
             <Link
+              title="Editar pedido de compra"
+              aria-label="Editar pedido de compra"
               to={`/compras/${item.id}`}
               className="p-1.5 text-brand hover:bg-brand-subtle rounded transition-colors"
             >

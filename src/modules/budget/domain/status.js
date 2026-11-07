@@ -19,6 +19,9 @@ export const budgetStatusTone = (status) =>
 
 export const budgetIsPending = (status) => status === BUDGET_STATUS.PENDING
 
+export const budgetIsLocked = (status) =>
+  status === BUDGET_STATUS.APPROVED || status === BUDGET_STATUS.CANCELLED
+
 export const budgetCanDuplicate = (status) =>
   status === BUDGET_STATUS.CANCELLED || status === BUDGET_STATUS.EXPIRED
 

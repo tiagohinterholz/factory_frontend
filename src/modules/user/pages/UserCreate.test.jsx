@@ -55,4 +55,10 @@ describe("<UserCreate>", () => {
       "new-password",
     )
   })
+
+  it("Contador aparece como opção de papel ao cadastrar usuário (RAD-P3-03)", async () => {
+    renderWithProviders(<UserCreate />)
+
+    expect(await screen.findByRole("option", { name: "Contador" })).toHaveValue("contador")
+  })
 })

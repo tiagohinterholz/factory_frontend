@@ -19,4 +19,14 @@ describe("whatsappLink", () => {
     expect(whatsappLink(undefined)).toBeNull()
     expect(whatsappLink("")).toBeNull()
   })
+
+  it("com message, anexa ?text= codificado (CVSP-P3-02/03)", () => {
+    expect(whatsappLink("(41) 91266-2552", "Olá! Pedido de compra.")).toBe(
+      "https://wa.me/5541912662552?text=Ol%C3%A1!%20Pedido%20de%20compra.",
+    )
+  })
+
+  it("sem message, não acrescenta ?text= (comportamento de hoje, sem mudança)", () => {
+    expect(whatsappLink("(41) 91266-2552")).toBe("https://wa.me/5541912662552")
+  })
 })

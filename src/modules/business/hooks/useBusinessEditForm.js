@@ -4,6 +4,7 @@ import { idOf } from "@/api/dto"
 import { BusinessService } from "@/modules/business/services/business"
 import { businessSchema, businessDefaults, toBusinessPayload, businessKeys } from "../domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 
 function toBusinessForm(data) {
   return {
@@ -22,9 +23,6 @@ function toBusinessForm(data) {
     postal_code: data.postal_code ?? "",
     phone: data.phone ?? "",
     email: data.email ?? "",
-    // write-only: nunca vem no GET. O preview do logo atual vem de outro
-    // lugar (useBusinessLogo, binário separado) — este campo só carrega
-    // quando o usuário escolhe um arquivo novo pra trocar.
     logo: "",
   }
 }
@@ -37,12 +35,16 @@ function toBusinessForm(data) {
 // volta pro modo visualização, sem navegar pra outra página.
 export function useBusinessEditForm() {
   const [editing, setEditing] = useState(false)
+  const { canEditBusinessIdentity } = usePermissions()
 
   const { form, onSubmit, loading } = useResourceForm({
     schema: businessSchema,
     defaultValues: businessDefaults,
     load: async () => toBusinessForm(await BusinessService.getSelf()),
-    submit: (values) => BusinessService.updateSelf(toBusinessPayload(values)),
+    submit: (values) =>
+      BusinessService.updateSelf(
+        toBusinessPayload(values, { canEditIdentity: canEditBusinessIdentity }),
+      ),
     invalidate: [businessKeys.all, dashboardKeys.all],
     onSuccess: () => setEditing(false),
     errorFallback: "Erro ao atualizar empreendimento",

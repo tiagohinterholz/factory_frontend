@@ -3,7 +3,7 @@ import { useResourceForm } from "@/modules/core/hooks/useResourceForm"
 import { useResourceAction } from "@/modules/core/hooks/useResourceAction"
 import { idOf } from "@/api/dto"
 import { WorkServiceService } from "@/modules/workservice/services/workservice"
-import { serviceSchema, serviceDefaults, workServiceKeys } from "../domain"
+import { serviceSchema, serviceDefaults, toServicePayload, workServiceKeys } from "../domain"
 import { dashboardKeys } from "@/modules/dashboard/domain"
 
 function toServiceForm(data) {
@@ -13,6 +13,7 @@ function toServiceForm(data) {
     name: data.name ?? "",
     description: data.description ?? "",
     unit_price: data.unit_price ?? "",
+    cost_price: data.cost_price ?? "",
   }
 }
 
@@ -24,7 +25,7 @@ export function useWorkServiceEditForm() {
     schema: serviceSchema,
     defaultValues: serviceDefaults,
     load: async () => toServiceForm(await WorkServiceService.getWorkServiceById(id)),
-    submit: (values) => WorkServiceService.updateWorkService(id, values),
+    submit: (values) => WorkServiceService.updateWorkService(id, toServicePayload(values)),
     redirectTo: "/servicos",
     invalidate: [workServiceKeys.all, dashboardKeys.all],
     errorFallback: "Erro ao atualizar serviço",

@@ -1,12 +1,13 @@
-import { Link, useParams, useNavigate } from "react-router-dom"
-import { Edit, Trash2, Eye, ChevronRight, ClipboardList, FileText } from "lucide-react"
+import { Link, useNavigate, useParams } from "react-router-dom"
+import { Trash2, ChevronRight, ClipboardList, FileText, Eye } from "lucide-react"
 import { useVehicleEditForm } from "@/modules/vehicle/hooks/useVehicleEditForm"
 import { useVehicleHistory } from "@/modules/vehicle/hooks/useVehicleHistory"
-import { useClientOptions } from "@/modules/core/hooks/options"
-import { useManufacturerOptions } from "@/modules/core/hooks/options"
-import { useModelOptionsByManufacturer } from "@/modules/core/hooks/options"
+import { ClientLiveSelect } from "@/modules/client"
+import ManufacturerLiveSelect from "@/modules/vehicle/components/ManufacturerLiveSelect"
+import ModelLiveSelect from "@/modules/vehicle/components/ModelLiveSelect"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import MaskedField from "@/modules/core/components/MaskedField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import BackLink from "@/modules/core/components/BackLink"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
@@ -16,6 +17,8 @@ import {
   modelYearOptions,
   VEHICLE_COLOR_OPTIONS,
 } from "../constants/vehicle"
+import { PLATE_MASK, PLATE_MASK_REPLACEMENT } from "@/modules/core/schemas/br-fields"
+import { Edit } from "lucide-react"
 
 function HistoryLink({ item, prefix, singular }) {
   return (
@@ -41,6 +44,7 @@ export default function VehicleEdit() {
   const { form, onSubmit, loading, handleDelete } = useVehicleEditForm()
   const {
     register,
+    control,
     watch,
     setValue,
     formState: { errors, isSubmitting },
@@ -48,17 +52,11 @@ export default function VehicleEdit() {
 
   const clientId = watch("client_id")
   const manufacturerId = watch("manufacturer_id")
+  const modelId = watch("model_id")
 
-  const { client: clients, loading: loadingClients } = useClientOptions()
-  const { manufacturers, loading: loadingManufacturers } = useManufacturerOptions()
-  const { modelsByManufacturer, loading: loadingModels } =
-    useModelOptionsByManufacturer(manufacturerId)
   const { orders, budgets, loading: loadingHistory } = useVehicleHistory(id)
 
-  const clientOptions = clients.map((c) => ({ id: c.id, name: c.display_name }))
-
-  if (loading || loadingClients || loadingManufacturers || (manufacturerId && loadingModels))
-    return <p className="p-6">Carregando...</p>
+  if (loading) return <p className="p-6">Carregando...</p>
 
   return (
     <div className="p-6 space-y-6">
@@ -84,16 +82,16 @@ export default function VehicleEdit() {
             <form className="space-y-6" onSubmit={onSubmit}>
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <SelectField
-                    label="Cliente Proprietário"
-                    options={clientOptions}
+                  <ClientLiveSelect
+                    label="Cliente Proprietário *"
+                    value={clientId}
+                    onChange={(value) => setValue("client_id", value)}
                     error={errors.client_id?.message}
-                    registration={register("client_id")}
                   />
                 </div>
                 <button
                   type="button"
-                  title="Ver / editar cliente vinculado"
+                  title="Ver cliente vinculado"
                   disabled={!clientId}
                   onClick={() => navigate(`/clientes/${clientId}`)}
                   className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-muted hover:text-ink hover:bg-ground transition-colors disabled:opacity-40 disabled:pointer-events-none"
@@ -103,33 +101,33 @@ export default function VehicleEdit() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <SelectField
-                  label="Marca"
-                  options={manufacturers}
+                <ManufacturerLiveSelect
+                  label="Marca *"
+                  value={manufacturerId}
+                  onChange={(value) => {
+                    setValue("manufacturer_id", value)
+                    setValue("model_id", "")
+                  }}
                   error={errors.manufacturer_id?.message}
-                  registration={register("manufacturer_id", {
-                    onChange: () => setValue("model_id", ""),
-                  })}
                 />
-                <SelectField
-                  label="Modelo"
-                  options={modelsByManufacturer}
-                  disabled={!manufacturerId}
-                  disabledHint="Selecione a marca primeiro"
+                <ModelLiveSelect
+                  label="Modelo *"
+                  value={modelId}
+                  onChange={(value) => setValue("model_id", value)}
+                  manufacturerId={manufacturerId}
                   error={errors.model_id?.message}
-                  registration={register("model_id")}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <SelectField
-                  label="Ano de Fabricação"
+                  label="Ano de Fabricação *"
                   options={manufactureYearOptions}
                   error={errors.year?.message}
                   registration={register("year")}
                 />
                 <SelectField
-                  label="Ano do Modelo"
+                  label="Ano do Modelo *"
                   options={modelYearOptions}
                   error={errors.year_model?.message}
                   registration={register("year_model")}
@@ -137,12 +135,14 @@ export default function VehicleEdit() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  label="Placa"
+                <MaskedField
+                  control={control}
+                  name="plate"
+                  label="Placa *"
+                  mask={PLATE_MASK}
+                  replacement={PLATE_MASK_REPLACEMENT}
+                  uppercase
                   error={errors.plate?.message}
-                  registration={register("plate", {
-                    onChange: (event) => setValue("plate", event.target.value.toUpperCase()),
-                  })}
                 />
                 <FormField
                   label="Cor"
@@ -154,7 +154,7 @@ export default function VehicleEdit() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <SelectField
-                  label="Combustível"
+                  label="Combustível *"
                   options={fuelOptions}
                   error={errors.fuel?.message}
                   registration={register("fuel")}

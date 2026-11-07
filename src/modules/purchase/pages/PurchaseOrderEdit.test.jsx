@@ -26,12 +26,13 @@ function mockApi(overrides = {}) {
     http.get(`${API}/fornecedores/`, () =>
       HttpResponse.json({ results: [{ id: 9, corporate_name: "Bosch Ltda" }], count: 1 }),
     ),
-    http.get(`${API}/produtos/`, () =>
+    http.get(`${API}/fornecedores/9/produtos/`, () =>
       HttpResponse.json({
-        results: [{ id: 3, name: "Filtro de óleo", stock_quantity: 5 }],
+        results: [{ id: 3, name: "Filtro de óleo", stock_quantity: 5, unit_price: "9.90" }],
         count: 1,
       }),
     ),
+    http.get(`${API}/fornecedores/9/servicos/`, () => HttpResponse.json({ results: [], count: 0 })),
   )
 }
 
@@ -50,7 +51,21 @@ describe("<PurchaseOrderEdit> — estado aberto", () => {
     renderPage()
 
     expect(await screen.findByText("aberto")).toBeInTheDocument()
-    expect(screen.getByRole("option", { name: "Bosch Ltda", selected: true })).toBeInTheDocument()
+    const supplierInput = screen.getByText("Fornecedor").closest("div").querySelector("input")
+    await waitFor(() => expect(supplierInput).toHaveValue("Bosch Ltda"))
+  })
+
+  it("usa SupplierLiveSelect (combobox com busca) no campo Fornecedor, com botão de ver fornecedor", async () => {
+    mockApi()
+    renderPage()
+
+    await screen.findByText("aberto")
+    const viewButton = await screen.findByRole("button", { name: "Ver fornecedor vinculado" })
+    await waitFor(() => expect(viewButton).toBeEnabled())
+    expect(screen.getByText("Fornecedor").closest("div").querySelector("input")).toHaveAttribute(
+      "role",
+      "combobox",
+    )
   })
 
   it("adiciona um item e recarrega o pedido com o item novo", async () => {
@@ -62,8 +77,12 @@ describe("<PurchaseOrderEdit> — estado aberto", () => {
 
     const costInput = await screen.findByPlaceholderText("Digite o(a) custo unit.")
     const form = costInput.closest("form")
-    fireEvent.change(within(form).getByRole("combobox"), { target: { value: "3" } })
-    fireEvent.change(costInput, { target: { value: "9.90" } })
+    const productSelect = within(form).getByRole("combobox")
+    await waitFor(() =>
+      expect(within(productSelect).getByText(/Filtro de óleo/)).toBeInTheDocument(),
+    )
+    fireEvent.change(productSelect, { target: { value: "3" } })
+    await waitFor(() => expect(costInput).toHaveValue(9.9))
 
     mockApi({
       items: [{ id: 5, product: { name: "Filtro de óleo" }, quantity: 1, total: "9.90" }],
@@ -79,6 +98,34 @@ describe("<PurchaseOrderEdit> — estado aberto", () => {
     )
     expect(await screen.findByText("Filtro de óleo (x1)")).toBeInTheDocument()
     createItem.mockRestore()
+  })
+
+  it("item picker só lista os produtos do fornecedor selecionado, com custo unit. travado", async () => {
+    mockApi()
+    renderPage()
+
+    const costInput = await screen.findByPlaceholderText("Digite o(a) custo unit.")
+    expect(costInput).toBeDisabled()
+    expect(costInput).toHaveAttribute("readonly")
+
+    const form = costInput.closest("form")
+    const productSelect = within(form).getByRole("combobox")
+    expect(productSelect).not.toBeDisabled()
+    await waitFor(() =>
+      expect(within(productSelect).getByText(/Filtro de óleo/)).toBeInTheDocument(),
+    )
+  })
+
+  it("item picker fica desabilitado, com hint, quando não há fornecedor selecionado", async () => {
+    mockApi({ supplier: null })
+    renderPage()
+
+    const costInput = await screen.findByPlaceholderText("Digite o(a) custo unit.")
+    const form = costInput.closest("form")
+    const productSelect = within(form).getByRole("combobox")
+
+    expect(productSelect).toBeDisabled()
+    expect(productSelect).toHaveTextContent("Selecione o fornecedor primeiro")
   })
 
   it("remove um item pelo botão da linha", async () => {

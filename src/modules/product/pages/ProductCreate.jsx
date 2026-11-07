@@ -1,20 +1,26 @@
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useProductForm } from "@/modules/product/hooks/useProductForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useSupplierOptions } from "@/modules/core/hooks/options"
 import { useProductOptions } from "@/modules/core/hooks/options"
-import { useProductCategoryOptions } from "@/modules/core/hooks/options"
-import { useProductSubcategoryOptionsByCategory } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
-import SelectField from "@/modules/core/components/SelectField"
 import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import { SupplierLiveSelect } from "@/modules/supplier"
+import { ProductCategoryLiveSelect } from "@/modules/productcategory"
+import { ProductSubcategoryLiveSelect } from "@/modules/productsubcategory"
+import ProductFinancialEntryModal from "@/modules/product/components/ProductFinancialEntryModal"
 import { unitOfMeasureOptions } from "@/modules/product/constants/product"
-import { Package, Save, Plus } from "lucide-react"
+import { Package, Save } from "lucide-react"
 
 export default function ProductCreate() {
   const navigate = useNavigate()
-  const { form, onSubmit } = useProductForm()
+  const [createdProduct, setCreatedProduct] = useState(null)
+
+  const { form, onSubmit } = useProductForm({
+    redirectTo: null,
+    onSuccess: (product) => setCreatedProduct(product),
+  })
   const {
     register,
     control,
@@ -24,24 +30,18 @@ export default function ProductCreate() {
   } = form
 
   const categoryId = watch("category_id")
+  const subcategoryId = watch("subcategory_id")
+  const supplierId = watch("supplier_id")
 
-  const { supplier: suppliers, loading: loadingSuppliers } = useSupplierOptions()
   const { product: products } = useProductOptions()
-  const { productCategories, loading: loadingCategories } = useProductCategoryOptions()
-  const { subcategoriesByCategory, loading: loadingSubcategories } =
-    useProductSubcategoryOptionsByCategory(categoryId)
 
-  const supplierOptions = suppliers.map((s) => ({ id: s.id, name: s.corporate_name }))
   // datalist de "Marca" pré-populado com as marcas já cadastradas em outros
   // produtos — continua texto livre, só facilita reaproveitar o mesmo nome.
   const brandOptions = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort()
 
-  if (loadingSuppliers || loadingCategories) {
-    return (
-      <div className="flex items-center justify-center h-[400px]">
-        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
+  function finishFlow() {
+    setCreatedProduct(null)
+    navigate("/produtos")
   }
 
   return (
@@ -60,26 +60,12 @@ export default function ProductCreate() {
           </div>
 
           <form className="space-y-6" onSubmit={onSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-end gap-2">
-                <div className="flex-1">
-                  <SelectField
-                    label="Fornecedor"
-                    options={supplierOptions}
-                    error={errors.supplier_id?.message}
-                    registration={register("supplier_id")}
-                  />
-                </div>
-                <button
-                  type="button"
-                  title="Cadastrar novo fornecedor"
-                  onClick={() => navigate("/fornecedores/novo")}
-                  className="h-[46px] w-[46px] shrink-0 grid place-items-center rounded-xl border border-line text-brand hover:bg-brand-subtle transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            <SupplierLiveSelect
+              label="Fornecedor *"
+              value={supplierId}
+              onChange={(value) => setValue("supplier_id", value)}
+              error={errors.supplier_id?.message}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
@@ -120,21 +106,21 @@ export default function ProductCreate() {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectField
+              <ProductCategoryLiveSelect
                 label="Categoria"
-                options={productCategories}
+                value={categoryId}
+                onChange={(value) => {
+                  setValue("category_id", value)
+                  setValue("subcategory_id", "")
+                }}
                 error={errors.category_id?.message}
-                registration={register("category_id", {
-                  onChange: () => setValue("subcategory_id", ""),
-                })}
               />
-              <SelectField
+              <ProductSubcategoryLiveSelect
                 label="Subcategoria"
-                options={subcategoriesByCategory}
-                disabled={!categoryId || loadingSubcategories}
-                disabledHint="Selecione a categoria primeiro"
+                value={subcategoryId}
+                onChange={(value) => setValue("subcategory_id", value)}
+                categoryId={categoryId}
                 error={errors.subcategory_id?.message}
-                registration={register("subcategory_id")}
               />
             </div>
 
@@ -145,9 +131,10 @@ export default function ProductCreate() {
                 error={errors.stock_quantity?.message}
                 registration={register("stock_quantity")}
               />
-              <SelectField
+              <FormField
                 label="Unidade de Medida"
-                options={unitOfMeasureOptions}
+                placeholder="UN"
+                datalist={unitOfMeasureOptions}
                 error={errors.unit_of_measure?.message}
                 registration={register("unit_of_measure")}
               />
@@ -192,6 +179,12 @@ export default function ProductCreate() {
           </form>
         </div>
       </div>
+
+      <ProductFinancialEntryModal
+        open={Boolean(createdProduct)}
+        product={createdProduct}
+        onClose={finishFlow}
+      />
     </div>
   )
 }

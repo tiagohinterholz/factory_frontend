@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { Plus } from "lucide-react"
+import ListSearch from "@/modules/core/components/ListSearch"
 
 export default function ListHeader({
   title,
@@ -7,6 +8,8 @@ export default function ListHeader({
   buttonText,
   buttonLink,
   actions,
+  onSearch,
+  searchPlaceholder,
 }) {
   const hasButton = buttonText && buttonLink
 
@@ -17,8 +20,9 @@ export default function ListHeader({
         <p className="text-[13px] text-muted mt-0.5">{subtitle}</p>
       </div>
 
-      {(actions || hasButton) && (
+      {(actions || hasButton || onSearch) && (
         <div className="flex flex-wrap items-center gap-2">
+          {onSearch && <ListSearch onChange={onSearch} placeholder={searchPlaceholder} />}
           {actions}
           {hasButton && (
             <Link to={buttonLink} className="btn-primary">

@@ -4,6 +4,7 @@ import BackLink from "@/modules/core/components/BackLink"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import RelatedDataCard from "@/modules/core/components/RelatedDataCard"
 import { useStateEditForm } from "@/modules/location/state/hooks/useStateEditForm"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import { useCityOptionsByState } from "@/modules/core/hooks/options"
 
 import { MapPin, Globe, Edit2, Milestone } from "lucide-react"
@@ -13,6 +14,7 @@ export default function StateEdit() {
   const navigate = useNavigate()
 
   const { form, onSubmit, loading } = useStateEditForm()
+  const { isSuperUser } = usePermissions()
   const {
     register,
     formState: { isSubmitting },
@@ -33,7 +35,9 @@ export default function StateEdit() {
       <BackLink to="/estados" />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">Editar Estado</h1>
+          <h1 className="text-xl font-semibold text-ink tracking-tight mb-2">
+            {isSuperUser ? "Editar Estado" : "Estado"}
+          </h1>
           <p className="text-slate-400 font-medium text-sm">Gestão de divisões territoriais</p>
         </div>
       </div>
@@ -71,17 +75,25 @@ export default function StateEdit() {
               <label className="flex items-center gap-3 text-sm font-medium text-ink">
                 <input
                   type="checkbox"
+                  disabled={!isSuperUser}
                   className="w-4 h-4 rounded border-line text-brand focus:ring-brand"
                   {...register("is_active")}
                 />
                 Estado ativo
               </label>
 
-              <div className="pt-4 flex justify-end">
-                <PrimaryButton type="submit" icon={Edit2} fullWidth={false} disabled={isSubmitting}>
-                  Salvar Alterações
-                </PrimaryButton>
-              </div>
+              {isSuperUser && (
+                <div className="pt-4 flex justify-end">
+                  <PrimaryButton
+                    type="submit"
+                    icon={Edit2}
+                    fullWidth={false}
+                    disabled={isSubmitting}
+                  >
+                    Salvar Alterações
+                  </PrimaryButton>
+                </div>
+              )}
             </form>
           </div>
         </div>

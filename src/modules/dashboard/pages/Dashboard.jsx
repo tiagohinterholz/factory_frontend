@@ -37,8 +37,6 @@ function CardList({ items, emptyText, cardKey }) {
   )
 }
 
-// Um quadro só cobrindo os 4 status do fluxo — Aguardando, Em Andamento, A
-// Faturar e Faturadas — cada um como uma posição própria do toggle.
 const FLOW_AWAITING = "awaiting"
 const FLOW_IN_PROGRESS = "in_progress"
 const FLOW_TO_BILL = "to_bill"
@@ -47,7 +45,8 @@ const FLOW_BILLED = "billed"
 export default function Dashboard() {
   const { loading, error, data, refetch } = useDashboard()
   const { canManageFinancial } = usePermissions()
-  const [flowFilter, setFlowFilter] = useState(FLOW_IN_PROGRESS)
+  const [appointmentFilter, setAppointmentFilter] = useState(FLOW_IN_PROGRESS)
+  const [movementFilter, setMovementFilter] = useState(FLOW_TO_BILL)
 
   if (loading) {
     return <div className="p-10 text-center text-muted">Carregando dashboard...</div>
@@ -65,9 +64,6 @@ export default function Dashboard() {
   }
 
   const activity = data.activity ?? {}
-  // "Atendimentos" (aguardando/em andamento) e "Movimentação" (a faturar/
-  // faturado) já vêm separados em chaves distintas — o back que filtra, o
-  // front só exibe cada lista no quadro certo.
   const serviceCards = data.appointments?.scheduled_this_week ?? []
   const totalScheduledThisWeek = data.appointments?.total_scheduled_this_week
   const movementCards = data.movements?.bills_this_week ?? []
@@ -89,28 +85,28 @@ export default function Dashboard() {
     (item) => appointmentStatusLabel(item) === ORDER_STATUS.BILLED,
   )
 
-  const flowOptions = [
+  const appointmentOptions = [
     { id: FLOW_AWAITING, label: "Aguardando Execução", count: awaitingCards.length },
     { id: FLOW_IN_PROGRESS, label: "Em Andamento", count: inProgressCards.length },
+  ]
+  const movementOptions = [
     { id: FLOW_TO_BILL, label: "A Faturar", count: toBillCards.length },
     { id: FLOW_BILLED, label: "Faturadas", count: billedCards.length },
   ]
-  const FLOW_CARDS = {
+  const APPOINTMENT_CARDS = {
     [FLOW_AWAITING]: awaitingCards,
     [FLOW_IN_PROGRESS]: inProgressCards,
+  }
+  const MOVEMENT_CARDS = {
     [FLOW_TO_BILL]: toBillCards,
     [FLOW_BILLED]: billedCards,
   }
-  const FLOW_EMPTY_TEXT = {
+  const EMPTY_TEXT = {
     [FLOW_AWAITING]: "Nenhum atendimento aguardando execução.",
     [FLOW_IN_PROGRESS]: "Nenhum atendimento em andamento.",
     [FLOW_TO_BILL]: "Nenhuma OS a faturar.",
     [FLOW_BILLED]: "Nenhuma OS faturada ainda.",
   }
-  const flowCards = FLOW_CARDS[flowFilter]
-  const flowEmptyText = FLOW_EMPTY_TEXT[flowFilter]
-  const totalFlowCards =
-    awaitingCards.length + inProgressCards.length + toBillCards.length + billedCards.length
 
   const summaryStats = [
     { title: "Clientes", value: summary.clients ?? 0, icon: Users },
@@ -125,45 +121,75 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <Quadro
-        title="Atendimentos e Movimentação"
-        subtitle={`${totalFlowCards} agendamentos no total — filtra por status`}
-        aside={
-          <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
-            {totalScheduledThisWeek != null && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Quadro
+          title="Atendimentos"
+          subtitle={`${awaitingCards.length + inProgressCards.length} agendamentos na semana`}
+          aside={
+            totalScheduledThisWeek != null && (
               <MiniStat
                 tone="ok"
                 icon={CalendarDays}
                 label="Agendados na semana"
                 value={totalScheduledThisWeek}
               />
-            )}
-            <MiniStat
-              tone="warn"
-              icon={Hourglass}
-              label="A faturar hoje"
-              value={activity.orders_to_bill_today ?? 0}
-            />
-            <MiniStat
-              tone="danger"
-              icon={ClipboardList}
-              label="A faturar"
-              value={activity.orders_to_bill ?? 0}
-            />
-            <MiniStat
-              tone="ok"
-              icon={ClipboardCheck}
-              label="Faturadas"
-              value={activity.orders_billed ?? 0}
+            )
+          }
+        >
+          <StatusToggle
+            options={appointmentOptions}
+            value={appointmentFilter}
+            onChange={setAppointmentFilter}
+          />
+          <div className="mt-3">
+            <CardList
+              items={APPOINTMENT_CARDS[appointmentFilter]}
+              emptyText={EMPTY_TEXT[appointmentFilter]}
+              cardKey={cardKey}
             />
           </div>
-        }
-      >
-        <StatusToggle options={flowOptions} value={flowFilter} onChange={setFlowFilter} />
-        <div className="mt-3">
-          <CardList items={flowCards} emptyText={flowEmptyText} cardKey={cardKey} />
-        </div>
-      </Quadro>
+        </Quadro>
+
+        <Quadro
+          title="Movimentação"
+          subtitle={`${toBillCards.length + billedCards.length} ordens de serviço na semana`}
+          aside={
+            <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
+              <MiniStat
+                tone="warn"
+                icon={Hourglass}
+                label="A faturar hoje"
+                value={activity.orders_to_bill_today ?? 0}
+              />
+              <MiniStat
+                tone="danger"
+                icon={ClipboardList}
+                label="A faturar"
+                value={activity.orders_to_bill ?? 0}
+              />
+              <MiniStat
+                tone="ok"
+                icon={ClipboardCheck}
+                label="Faturadas"
+                value={activity.orders_billed ?? 0}
+              />
+            </div>
+          }
+        >
+          <StatusToggle
+            options={movementOptions}
+            value={movementFilter}
+            onChange={setMovementFilter}
+          />
+          <div className="mt-3">
+            <CardList
+              items={MOVEMENT_CARDS[movementFilter]}
+              emptyText={EMPTY_TEXT[movementFilter]}
+              cardKey={cardKey}
+            />
+          </div>
+        </Quadro>
+      </div>
 
       {canManageFinancial && financial && (
         <FinancialMonthCard breakdown={financial.entries_by_status} />

@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { useAppointmentEditForm } from "@/modules/appointment/hooks/useAppointmentEditForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useClientOptions } from "@/modules/core/hooks/options"
-import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useOrderOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import { ClientLiveSelect } from "@/modules/client"
+import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import { idOf, withSelectedOption } from "@/api/dto"
@@ -20,12 +20,23 @@ import {
   Car,
   ClipboardList,
   FileText,
+  Plus,
 } from "lucide-react"
 
-// Card de vínculo — linka pra tela da entidade relacionada (mesmo tipo de
-// atalho que a OS e o orçamento já têm entre si). `to` ausente = sem vínculo
-// ainda (ex.: agendamento sem OS/orçamento) e o card vira só informativo.
-function ReferenceCard({ icon: Icon, label, title, subtitle, to }) {
+function CreateLink({ to, state, children }) {
+  return (
+    <Link
+      to={to}
+      state={state}
+      className="inline-flex items-center gap-1 text-[12px] font-semibold text-brand border border-line rounded-md px-2 py-1 hover:bg-brand-subtle transition-colors shrink-0"
+    >
+      <Plus className="w-3.5 h-3.5" />
+      {children}
+    </Link>
+  )
+}
+
+function ReferenceCard({ icon: Icon, label, title, subtitle, to, action }) {
   const content = (
     <>
       <div className="w-10 h-10 rounded-lg bg-ground flex items-center justify-center text-brand border border-line shrink-0">
@@ -43,6 +54,7 @@ function ReferenceCard({ icon: Icon, label, title, subtitle, to }) {
     return (
       <div className="flex items-center gap-3 p-4 rounded-xl border border-dashed border-line bg-ground/50">
         {content}
+        {action}
       </div>
     )
   }
@@ -59,6 +71,7 @@ function ReferenceCard({ icon: Icon, label, title, subtitle, to }) {
 }
 
 export default function AppointmentDetail() {
+  const { id: appointmentId } = useParams()
   const {
     form,
     onSubmit,
@@ -77,12 +90,9 @@ export default function AppointmentDetail() {
     formState: { errors, isSubmitting },
   } = form
 
-  const businessId = watch("business_id")
   const clientId = watch("client_id")
   const vehicleId = watch("vehicle_id")
 
-  const { client: clients, loading: loadingClients } = useClientOptions()
-  const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { orders, loading: loadingOrders } = useOrderOptions()
 
   // rótulo da <option> de fallback a partir do registro cru do detalhe (ora
@@ -97,35 +107,17 @@ export default function AppointmentDetail() {
     return `OS ${idOf(order)}${plate ? ` - ${plate}` : ""}`
   }
 
-  // as listas de opção vêm de um cache com staleTime alto ou de um filtro em
-  // cascata; o registro já vinculado ao agendamento tem que aparecer no select
+  const extraClientOption = relatedClient && {
+    id: idOf(relatedClient),
+    name: clientLabel(relatedClient),
+  }
+  const extraVehicleOption = relatedVehicle && {
+    id: idOf(relatedVehicle),
+    name: vehicleLabel(relatedVehicle),
+  }
+
   // mesmo assim (senão salvar apagaria a FK). withSelectedOption injeta só
   // quando o valor selecionado é o próprio registro do detalhe.
-  const clientOptions = withSelectedOption(
-    clients
-      .filter((c) => {
-        const bizId = c.business?.id || c.business
-        return !businessId || String(bizId) === String(businessId)
-      })
-      .map((c) => ({ id: c.id, name: c.display_name })),
-    clientId,
-    relatedClient && { id: idOf(relatedClient), name: clientLabel(relatedClient) },
-  )
-
-  const vehicleOptions = withSelectedOption(
-    vehicles
-      .filter((v) => {
-        const ownerId = v.client?.id || v.client
-        return !clientId || String(ownerId) === String(clientId)
-      })
-      .map((v) => ({
-        id: v.id,
-        name: `${v.manufacturer?.name || ""} ${v.model?.name || ""} ${v.year || ""}`.trim(),
-      })),
-    vehicleId,
-    relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
-  )
-
   const orderOptions = withSelectedOption(
     orders
       .filter((o) => {
@@ -137,11 +129,18 @@ export default function AppointmentDetail() {
     linkedOrder && { id: idOf(linkedOrder), name: orderLabel(linkedOrder) },
   )
 
+  const prefill = {
+    clientId: relatedClient ? idOf(relatedClient) : null,
+    vehicleId: relatedVehicle ? idOf(relatedVehicle) : null,
+    appointmentId,
+  }
+  const canCreateLinked = Boolean(relatedClient && relatedVehicle)
+
   function resetChildren(...names) {
     names.forEach((name) => setValue(name, ""))
   }
 
-  if (loading || loadingClients || loadingVehicles || loadingOrders)
+  if (loading || loadingOrders)
     return <p className="p-6 text-slate-500 font-medium">Carregando...</p>
 
   return (
@@ -181,24 +180,29 @@ export default function AppointmentDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7 card-premium">
             <form className="space-y-6" onSubmit={onSubmit}>
-              <SelectField
+              <ClientLiveSelect
                 label="Cliente Proprietário"
-                options={clientOptions}
+                value={clientId}
+                onChange={(value) => {
+                  if (value === clientId) return
+                  setValue("client_id", value)
+                  resetChildren("vehicle_id", "order_id")
+                }}
                 error={errors.client_id?.message}
-                registration={register("client_id", {
-                  onChange: () => resetChildren("vehicle_id", "order_id"),
-                })}
+                extraOption={extraClientOption}
               />
 
-              <SelectField
+              <VehicleLiveSelect
                 label="Veículo"
-                options={vehicleOptions}
-                disabled={!clientId}
+                value={vehicleId}
+                onChange={(value) => {
+                  setValue("vehicle_id", value)
+                  resetChildren("order_id")
+                }}
+                clientId={clientId}
                 disabledHint="Selecione o cliente primeiro"
                 error={errors.vehicle_id?.message}
-                registration={register("vehicle_id", {
-                  onChange: () => resetChildren("order_id"),
-                })}
+                extraOption={extraVehicleOption}
               />
 
               <SelectField
@@ -263,6 +267,14 @@ export default function AppointmentDetail() {
               title={linkedOrder ? `OS #${idOf(linkedOrder)}` : "Sem OS vinculada"}
               subtitle={linkedOrder?.status}
               to={linkedOrder && `/ordens/${idOf(linkedOrder)}`}
+              action={
+                !linkedOrder &&
+                canCreateLinked && (
+                  <CreateLink to="/ordens/novo" state={prefill}>
+                    Criar OS
+                  </CreateLink>
+                )
+              }
             />
             <ReferenceCard
               icon={FileText}
@@ -270,6 +282,15 @@ export default function AppointmentDetail() {
               title={linkedBudget ? `Orçamento #${idOf(linkedBudget)}` : "Sem orçamento vinculado"}
               subtitle={linkedBudget?.status}
               to={linkedBudget && `/orcamentos/${idOf(linkedBudget)}`}
+              action={
+                !linkedBudget &&
+                !linkedOrder &&
+                canCreateLinked && (
+                  <CreateLink to="/orcamentos/novo" state={prefill}>
+                    Criar Orçamento
+                  </CreateLink>
+                )
+              }
             />
           </div>
         </div>

@@ -40,4 +40,17 @@ export const BusinessService = {
     const response = await api.patch(`/configuracoes/horarios/${weekday}/`, payload)
     return response.data
   },
+
+  async getCertificate() {
+    const response = await api.get("/configuracoes/certificado/")
+    return response.data
+  },
+
+  async uploadCertificate(file, password) {
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("password", password)
+    const response = await api.post("/configuracoes/certificado/", formData)
+    return response.data
+  },
 }

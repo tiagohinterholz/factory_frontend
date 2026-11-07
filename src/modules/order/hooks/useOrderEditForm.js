@@ -25,6 +25,17 @@ function toOrderForm(data) {
   }
 }
 
+function syncServerNotes(form, serverNotes) {
+  const previous = form.formState.defaultValues?.notes ?? ""
+  if (serverNotes === previous) return
+  const current = form.getValues("notes") ?? ""
+  form.resetField("notes", { defaultValue: serverNotes })
+  if (current === previous) return
+  const previousLines = new Set(previous.split("\n"))
+  const added = serverNotes.split("\n").filter((line) => line && !previousLines.has(line))
+  form.setValue("notes", [current, ...added].filter(Boolean).join("\n"), { shouldDirty: true })
+}
+
 export function useOrderEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -40,6 +51,7 @@ export function useOrderEditForm() {
     productsTotal: "",
     servicesTotal: "",
     billingDate: null,
+    payment: null,
     budgetId: "",
     client: null,
     vehicle: null,
@@ -66,6 +78,7 @@ export function useOrderEditForm() {
       productsTotal: data.products_total ?? "0.00",
       servicesTotal: data.services_total ?? "0.00",
       billingDate: data.billing_date ?? null,
+      payment: data.payment ?? null,
       budgetId: idOf(data.budget),
       // registros crus do detalhe: garantem a <option> do select mesmo com o
       // cache de opções velho ou cortado por filtro em cascata
@@ -81,10 +94,16 @@ export function useOrderEditForm() {
     defaultValues: orderDefaults,
     load: async () => toOrderForm(await fetchMeta()),
     submit: (values) => OrderService.updateOrder(id, toOrderPayload(values)),
-    redirectTo: "/ordens",
+    onSuccess: () => fetchMeta(),
     invalidate: ORDER_WIDE,
     errorFallback: "Erro ao atualizar a ordem de serviço",
   })
+
+  const refresh = useCallback(async () => {
+    const data = await fetchMeta()
+    syncServerNotes(form, data.notes ?? "")
+    return data
+  }, [fetchMeta, form])
 
   const remove = useResourceAction({
     mutationFn: () => OrderService.deleteOrder(id),
@@ -114,18 +133,6 @@ export function useOrderEditForm() {
     errorFallback: "Erro ao finalizar o serviço",
   })
 
-  const invoice = useResourceAction({
-    mutationFn: () => OrderService.invoiceOrder(id),
-    confirm: {
-      title: "Faturar ordem de serviço?",
-      message: "Esta ação não pode ser desfeita.",
-      confirmText: "Faturar",
-    },
-    invalidate: [orderKeys.all, dashboardKeys.all],
-    onSuccess: () => fetchMeta(),
-    errorFallback: "Erro ao faturar a ordem de serviço",
-  })
-
   return {
     form,
     onSubmit,
@@ -137,13 +144,13 @@ export function useOrderEditForm() {
     productsTotal: meta.productsTotal,
     servicesTotal: meta.servicesTotal,
     billingDate: meta.billingDate,
+    payment: meta.payment,
     budgetId: meta.budgetId,
     relatedClient: meta.client,
     relatedVehicle: meta.vehicle,
     financialEntryId: meta.financialEntryId,
-    refresh: fetchMeta,
+    refresh,
     handleDelete: remove.run,
     handleFinish: finish.run,
-    handleInvoice: invoice.run,
   }
 }

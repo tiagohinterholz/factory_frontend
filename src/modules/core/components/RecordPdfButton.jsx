@@ -5,7 +5,7 @@ import { openPdfBlob } from "@/api/open-pdf"
 
 // Botão de "exportar este registro em PDF". `request` é uma função async que
 // devolve o Blob (ex.: () => OrderService.getOrderPdf(id)).
-export default function RecordPdfButton({ request, label = "Exportar PDF" }) {
+export default function RecordPdfButton({ request, label }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
 

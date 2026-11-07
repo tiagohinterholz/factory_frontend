@@ -1,10 +1,10 @@
 import { useAppointmentForm } from "@/modules/appointment/hooks/useAppointmentForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useClientOptions } from "@/modules/core/hooks/options"
-import { useVehicleOptions } from "@/modules/core/hooks/options"
 import { useOrderOptions } from "@/modules/core/hooks/options"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import { ClientLiveSelect } from "@/modules/client"
+import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import { Save } from "lucide-react"
 
@@ -17,30 +17,10 @@ export default function AppointmentCreate() {
     formState: { errors, isSubmitting },
   } = form
 
-  const businessId = watch("business_id")
   const clientId = watch("client_id")
   const vehicleId = watch("vehicle_id")
 
-  const { client: clients, loading: loadingClients } = useClientOptions()
-  const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { orders, loading: loadingOrders } = useOrderOptions()
-
-  const clientOptions = clients
-    .filter((c) => {
-      const bizId = c.business?.id || c.business
-      return !businessId || String(bizId) === String(businessId)
-    })
-    .map((c) => ({ id: c.id, name: c.display_name }))
-
-  const vehicleOptions = vehicles
-    .filter((v) => {
-      const ownerId = v.client?.id || v.client
-      return !clientId || String(ownerId) === String(clientId)
-    })
-    .map((v) => ({
-      id: v.id,
-      name: `${v.manufacturer?.name || ""} ${v.model?.name || ""} ${v.year || ""}`.trim(),
-    }))
 
   const orderOptions = orders
     .filter((o) => {
@@ -53,7 +33,7 @@ export default function AppointmentCreate() {
     names.forEach((name) => setValue(name, ""))
   }
 
-  if (loadingClients || loadingVehicles || loadingOrders) {
+  if (loadingOrders) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
@@ -72,24 +52,27 @@ export default function AppointmentCreate() {
 
         <div className="card-premium">
           <form className="space-y-6" onSubmit={onSubmit}>
-            <SelectField
+            <ClientLiveSelect
               label="Cliente Proprietário"
-              options={clientOptions}
+              value={clientId}
+              onChange={(value) => {
+                if (value === clientId) return
+                setValue("client_id", value)
+                resetChildren("vehicle_id", "order_id")
+              }}
               error={errors.client_id?.message}
-              registration={register("client_id", {
-                onChange: () => resetChildren("vehicle_id", "order_id"),
-              })}
             />
 
-            <SelectField
+            <VehicleLiveSelect
               label="Veículo"
-              options={vehicleOptions}
-              disabled={!clientId}
+              value={vehicleId}
+              onChange={(value) => {
+                setValue("vehicle_id", value)
+                resetChildren("order_id")
+              }}
+              clientId={clientId}
               disabledHint="Selecione o cliente primeiro"
               error={errors.vehicle_id?.message}
-              registration={register("vehicle_id", {
-                onChange: () => resetChildren("order_id"),
-              })}
             />
 
             <SelectField

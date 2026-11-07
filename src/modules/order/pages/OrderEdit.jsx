@@ -7,18 +7,24 @@ import BackLink from "@/modules/core/components/BackLink"
 import RecordPdfButton from "@/modules/core/components/RecordPdfButton"
 import WhatsAppButton from "@/modules/core/components/WhatsAppButton"
 import FiscalNotePanel from "@/modules/order/components/FiscalNotePanel"
-import { useClientOptions } from "@/modules/core/hooks/options"
-import { useVehicleOptions } from "@/modules/core/hooks/options"
+import InvoiceOrderDialog from "@/modules/order/components/InvoiceOrderDialog"
+import ServiceFiscalNotePanel from "@/modules/order/components/ServiceFiscalNotePanel"
 import { useProductOptions } from "@/modules/core/hooks/options"
 import { useWorkServiceOptions } from "@/modules/core/hooks/options"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
-import { idOf, withSelectedOption } from "@/api/dto"
+import { idOf } from "@/api/dto"
 import { formatMoney, formatDate } from "@/modules/core/utils/format"
 import FormField from "@/modules/core/components/FormField"
 import SelectField from "@/modules/core/components/SelectField"
+import { ClientLiveSelect } from "@/modules/client"
+import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
+import ServiceItemForm from "@/modules/core/components/ServiceItemForm"
+import ProductItemForm from "@/modules/core/components/ProductItemForm"
+import EditableItemLine from "@/modules/core/components/EditableItemLine"
 import {
+  paymentLabel,
   orderKeys,
   orderStatusTone,
   orderCanEditItems,
@@ -26,6 +32,7 @@ import {
   orderCanInvoice,
   orderIsBilled,
 } from "@/modules/order/domain"
+import { productKeys } from "@/modules/product/domain"
 import { CheckCircle2, Plus, Trash2, Wallet } from "lucide-react"
 
 export default function OrderEdit() {
@@ -43,13 +50,13 @@ export default function OrderEdit() {
     productsTotal,
     servicesTotal,
     billingDate,
+    payment,
     budgetId,
     relatedClient,
     relatedVehicle,
     financialEntryId,
     handleDelete,
     handleFinish,
-    handleInvoice,
     refresh,
   } = useOrderEditForm()
 
@@ -61,72 +68,87 @@ export default function OrderEdit() {
     register,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = form
 
-  const businessId = watch("business_id")
   const clientId = watch("client_id")
+  const vehicleId = watch("vehicle_id")
 
-  const { client: clients, loading: loadingClients } = useClientOptions()
-  const { vehicle: vehicles, loading: loadingVehicles } = useVehicleOptions()
   const { product: allProducts } = useProductOptions()
   const { workservice: allServices } = useWorkServiceOptions()
 
-  const [selectedProduct, setSelectedProduct] = useState("")
-  const [quantity, setQuantity] = useState(1)
-  const [selectedService, setSelectedService] = useState("")
   const [savingItem, setSavingItem] = useState(false)
+
+  function stockForLine(item) {
+    const product = allProducts.find((option) => String(option.id) === String(idOf(item.product)))
+    if (!product) return undefined
+    return (product.stock_quantity ?? 0) + Number(item.quantity)
+  }
+  const [invoiceOpen, setInvoiceOpen] = useState(false)
 
   // Invalida orderKeys.all (lista/detalhe/histórico) sempre que um item muda
   // — sem isso, a listagem de OS fica com o total desatualizado por até o
   // staleTime (o `refresh()` só recarrega o state local desta tela).
   function invalidateOrderCaches() {
     queryClient.invalidateQueries({ queryKey: orderKeys.all })
+    queryClient.invalidateQueries({ queryKey: productKeys.all })
   }
 
-  async function handleAddProduct(event) {
-    event.preventDefault()
-    if (!selectedProduct || savingItem) return
-    const product = allProducts.find((item) => String(item.id) === String(selectedProduct))
+  async function handleAddProduct(payload) {
     setSavingItem(true)
     try {
-      await OrderService.orderProductCreate(id, {
-        product_id: selectedProduct,
-        order_id: id,
-        quantity,
-        unit_price: product?.unit_price,
-      })
-      setSelectedProduct("")
-      setQuantity(1)
+      await OrderService.orderProductCreate(id, { ...payload, order_id: id })
       refresh()
       invalidateOrderCaches()
+      return true
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao adicionar produto").message)
+      return false
     } finally {
       setSavingItem(false)
     }
   }
 
-  async function handleAddService(event) {
-    event.preventDefault()
-    if (!selectedService || savingItem) return
-    const service = allServices.find((item) => String(item.id) === String(selectedService))
+  async function handleAddService(payload) {
     setSavingItem(true)
     try {
-      await OrderService.orderServiceCreate(id, {
-        service_id: selectedService,
-        order_id: id,
-        unit_price: service?.unit_price,
-      })
-      setSelectedService("")
+      await OrderService.orderServiceCreate(id, { ...payload, order_id: id })
       refresh()
       invalidateOrderCaches()
+      return true
     } catch (error) {
       console.error(error)
       toast.error(parseApiError(error, "Erro ao adicionar serviço").message)
+      return false
     } finally {
       setSavingItem(false)
+    }
+  }
+
+  async function handleUpdateProduct(itemId, payload) {
+    try {
+      await OrderService.orderProductUpdate(id, payload, itemId)
+      refresh()
+      invalidateOrderCaches()
+      return true
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar o produto").message)
+      return false
+    }
+  }
+
+  async function handleUpdateService(itemId, payload) {
+    try {
+      await OrderService.orderServiceUpdate(id, payload, itemId)
+      refresh()
+      invalidateOrderCaches()
+      return true
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar o serviço").message)
+      return false
     }
   }
 
@@ -152,34 +174,21 @@ export default function OrderEdit() {
     }
   }
 
-  // espera as listas de opção antes de montar os <select> — senão o form.reset
-  // roda antes das <option> existirem e o campo fica vazio (BUG-1).
-  if (loading || loadingClients || loadingVehicles)
-    return <div className="p-6 text-center">Carregando...</div>
+  if (loading) return <div className="p-6 text-center">Carregando...</div>
 
-  // o cliente/veículo já vinculados à OS têm que aparecer no select mesmo que o
-  // cache de opções esteja velho ou o filtro em cascata os corte — senão salvar
-  // apagaria a FK. Fallback montado do payload de detalhe (relatedClient/Vehicle).
   const clientLabel = (client) => client?.display_name || `Cliente #${idOf(client)}`
   const vehicleLabel = (vehicle) =>
     vehicle?.manufacturer || vehicle?.model
-      ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""} (${vehicle.plate ?? ""})`
+      ? `${vehicle.manufacturer ?? ""} ${vehicle.model ?? ""}`.trim()
       : `Veículo #${idOf(vehicle)}`
-
-  const clientOptions = withSelectedOption(
-    clients
-      .filter((c) => !businessId || String(c.business?.id || c.business) === String(businessId))
-      .map((c) => ({ id: c.id, name: c.display_name })),
-    clientId,
-    relatedClient && { id: idOf(relatedClient), name: clientLabel(relatedClient) },
-  )
-  const vehicleOptions = withSelectedOption(
-    vehicles
-      .filter((v) => !clientId || String(v.client?.id || v.client) === String(clientId))
-      .map((v) => ({ id: v.id, name: `${v.manufacturer?.name} ${v.model?.name} (${v.plate})` })),
-    watch("vehicle_id"),
-    relatedVehicle && { id: idOf(relatedVehicle), name: vehicleLabel(relatedVehicle) },
-  )
+  const extraClientOption = relatedClient && {
+    id: idOf(relatedClient),
+    name: clientLabel(relatedClient),
+  }
+  const extraVehicleOption = relatedVehicle && {
+    id: idOf(relatedVehicle),
+    name: vehicleLabel(relatedVehicle),
+  }
 
   return (
     <div className="p-6 space-y-8">
@@ -195,10 +204,18 @@ export default function OrderEdit() {
                 Faturado em {formatDate(billingDate)}
               </span>
             )}
+            {payment && (
+              <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-medium normal-case tracking-normal">
+                Pago: {paymentLabel(payment)}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <RecordPdfButton request={() => OrderService.getOrderPdf(id)} />
+          <RecordPdfButton
+            request={() => OrderService.getOrderPdf(id)}
+            label="Gerar ordem de serviço"
+          />
           <WhatsAppButton phone={relatedClient?.phone} label="WhatsApp" />
           {orderCanFinish(status) && (
             <button
@@ -212,7 +229,7 @@ export default function OrderEdit() {
           {orderCanInvoice(status) && (
             <button
               type="button"
-              onClick={handleInvoice}
+              onClick={() => setInvoiceOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold text-sm shadow-sm transition-all"
             >
               Faturar OS
@@ -238,22 +255,27 @@ export default function OrderEdit() {
               </p>
             )}
             <form onSubmit={onSubmit} className="space-y-4">
-              <SelectField
+              <ClientLiveSelect
                 label="Cliente"
-                options={clientOptions}
+                value={clientId}
+                onChange={(value) => {
+                  if (value === clientId) return
+                  setValue("client_id", value, { shouldDirty: true })
+                  setValue("vehicle_id", "", { shouldDirty: true })
+                }}
                 disabled={locked}
                 error={errors.client_id?.message}
-                registration={register("client_id", {
-                  onChange: () => setValue("vehicle_id", ""),
-                })}
+                extraOption={extraClientOption}
               />
-              <SelectField
+              <VehicleLiveSelect
                 label="Veículo"
-                options={vehicleOptions}
-                disabled={locked || !clientId}
-                disabledHint={locked ? undefined : "Selecione o cliente primeiro"}
+                value={vehicleId}
+                onChange={(value) => setValue("vehicle_id", value, { shouldDirty: true })}
+                clientId={clientId}
+                disabled={locked}
+                disabledHint="Selecione o cliente primeiro"
                 error={errors.vehicle_id?.message}
-                registration={register("vehicle_id")}
+                extraOption={extraVehicleOption}
               />
               {budgetId && (
                 <div className="flex flex-col">
@@ -272,17 +294,22 @@ export default function OrderEdit() {
               />
               <FormField
                 label="Observações"
+                multiline
                 disabled={locked}
                 error={errors.notes?.message}
                 registration={register("notes")}
               />
-              <PrimaryButton type="submit" disabled={isSubmitting || locked}>
-                Atualizar OS
+              <PrimaryButton type="submit" disabled={isSubmitting || locked || !isDirty}>
+                Salvar OS
               </PrimaryButton>
             </form>
           </div>
 
-          {orderIsBilled(status) && <FiscalNotePanel orderId={id} />}
+          {/* cada cartão só aparece se a OS faturada tiver pelo menos um item
+          ativo do tipo correspondente — produto e serviço são rastreados
+          (e emitidos) independentemente um do outro */}
+          {orderIsBilled(status) && products.length > 0 && <FiscalNotePanel orderId={id} />}
+          {orderIsBilled(status) && services.length > 0 && <ServiceFiscalNotePanel orderId={id} />}
 
           {financialEntryId && (
             <Link
@@ -306,58 +333,26 @@ export default function OrderEdit() {
             </h2>
 
             {canEditItems && (
-              <form
-                onSubmit={handleAddProduct}
-                className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
-              >
-                <div className="flex-1 min-w-[200px]">
-                  <SelectField
-                    label="Selecionar Produto"
-                    value={selectedProduct}
-                    onChange={(event) => setSelectedProduct(event.target.value)}
-                    options={allProducts.map((p) => ({
-                      id: p.id,
-                      name: `${p.name} (${formatMoney(p.unit_price)})`,
-                    }))}
-                  />
-                </div>
-                <div className="w-24">
-                  <FormField
-                    label="Qtd"
-                    type="number"
-                    value={quantity}
-                    onChange={(event) => setQuantity(event.target.value)}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={savingItem}
-                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover disabled:opacity-50"
-                >
-                  <Plus size={24} />
-                </button>
-              </form>
+              <ProductItemForm
+                products={allProducts}
+                saving={savingItem}
+                onAdd={handleAddProduct}
+              />
             )}
 
             <div className="divide-y divide-slate-100">
               {products.map((item) => (
-                <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span>
-                    {item.product?.name} (x{item.quantity})
-                  </span>
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">{formatMoney(item.total)}</span>
-                    {canEditItems && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteProduct(item.id)}
-                        className="text-rose-400 hover:text-danger"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <EditableItemLine
+                  key={item.id}
+                  itemName={item.product?.name ?? "Produto"}
+                  quantity={item.quantity}
+                  unitPrice={item.unit_price}
+                  total={item.total}
+                  editable={canEditItems}
+                  availableStock={stockForLine(item)}
+                  onSave={(payload) => handleUpdateProduct(item.id, payload)}
+                  onDelete={() => handleDeleteProduct(item.id)}
+                />
               ))}
               {products.length === 0 && (
                 <p className="text-slate-400 py-4 text-center">Nenhum produto adicionado.</p>
@@ -376,48 +371,30 @@ export default function OrderEdit() {
             </h2>
 
             {canEditItems && (
-              <form
-                onSubmit={handleAddService}
-                className="flex flex-wrap gap-4 items-end mb-8 bg-slate-50 p-4 rounded-xl"
-              >
-                <div className="flex-1 min-w-[200px]">
-                  <SelectField
-                    label="Selecionar Serviço"
-                    value={selectedService}
-                    onChange={(event) => setSelectedService(event.target.value)}
-                    options={allServices.map((s) => ({
-                      id: s.id,
-                      name: `${s.name} (${formatMoney(s.unit_price)})`,
-                    }))}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={savingItem}
-                  className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover disabled:opacity-50"
-                >
-                  <Plus size={24} />
-                </button>
-              </form>
+              <ServiceItemForm
+                services={allServices}
+                saving={savingItem}
+                onAdd={handleAddService}
+              />
             )}
 
             <div className="divide-y divide-slate-100">
               {services.map((item) => (
-                <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span>{item.service?.name}</span>
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">{formatMoney(item.unit_price)}</span>
-                    {canEditItems && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteService(item.id)}
-                        className="text-rose-400 hover:text-danger"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <EditableItemLine
+                  key={item.id}
+                  itemName={item.name ?? item.service?.name ?? "Serviço"}
+                  badge={
+                    !item.service && (
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500">
+                        Personalizado
+                      </span>
+                    )
+                  }
+                  unitPrice={item.unit_price}
+                  editable={canEditItems}
+                  onSave={(payload) => handleUpdateService(item.id, payload)}
+                  onDelete={() => handleDeleteService(item.id)}
+                />
               ))}
               {services.length === 0 && (
                 <p className="text-slate-400 py-4 text-center">Nenhum serviço adicionado.</p>
@@ -436,6 +413,11 @@ export default function OrderEdit() {
           </div>
         </div>
       </div>
+      <InvoiceOrderDialog
+        order={invoiceOpen ? { id, total } : null}
+        onClose={() => setInvoiceOpen(false)}
+        onInvoiced={() => refresh()}
+      />
     </div>
   )
 }

@@ -32,8 +32,13 @@ export const OrderService = {
     return response.data
   },
 
-  async invoiceOrder(id) {
-    const response = await api.post(`/ordens/${id}/faturar/`)
+  async invoiceOrder(id, payment) {
+    const response = await api.post(`/ordens/${id}/faturar/`, payment)
+    return response.data
+  },
+
+  async registerExternalServicePayable(id) {
+    const response = await api.post(`/ordens/${id}/registrar-saida-servico-externo/`)
     return response.data
   },
 
@@ -50,6 +55,45 @@ export const OrderService = {
 
   async requestFiscalNote(id) {
     const response = await api.post(`/ordens/${id}/nota-fiscal/`)
+    return response.data
+  },
+
+  async getFiscalNoteDanfe(id) {
+    const response = await api.get(`/ordens/${id}/nota-fiscal/danfe/`, {
+      responseType: "blob",
+    })
+    return response.data
+  },
+
+  async getFiscalNoteXml(id) {
+    const response = await api.get(`/ordens/${id}/nota-fiscal/xml/`, {
+      responseType: "blob",
+    })
+    return response.data
+  },
+
+  // NFS-e da ordem. GET dá 404 quando nunca foi solicitada.
+  async getServiceFiscalNote(id) {
+    const response = await api.get(`/ordens/${id}/nota-fiscal-servico/`)
+    return response.data
+  },
+
+  async getServiceFiscalNoteDanfse(id) {
+    const response = await api.get(`/ordens/${id}/nota-fiscal-servico/danfse/`, {
+      responseType: "blob",
+    })
+    return response.data
+  },
+
+  async getServiceFiscalNoteXml(id) {
+    const response = await api.get(`/ordens/${id}/nota-fiscal-servico/xml/`, {
+      responseType: "blob",
+    })
+    return response.data
+  },
+
+  async requestServiceFiscalNote(id) {
+    const response = await api.post(`/ordens/${id}/nota-fiscal-servico/`)
     return response.data
   },
 

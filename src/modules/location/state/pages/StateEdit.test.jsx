@@ -52,6 +52,7 @@ describe("<StateEdit>", () => {
   })
 
   it("salva só is_active via PATCH", async () => {
+    localStorage.setItem("user", JSON.stringify({ email: "root@a.com", role: "superuser" }))
     let body
     mockState()
     server.use(
@@ -67,5 +68,18 @@ describe("<StateEdit>", () => {
     fireEvent.click(screen.getByRole("button", { name: /salvar alterações/i }))
 
     await waitFor(() => expect(body).toEqual({ is_active: false }))
+  })
+
+  it("admin da oficina só visualiza: sem salvar e com o ativo travado", async () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({ email: "a@a.com", business_id: 3, role: "admin" }),
+    )
+    mockState()
+    renderPage()
+
+    expect(await screen.findByRole("heading", { name: "Estado" })).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /salvar/i })).not.toBeInTheDocument()
+    expect(screen.getByRole("checkbox")).toBeDisabled()
   })
 })

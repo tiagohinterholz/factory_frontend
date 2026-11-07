@@ -40,7 +40,7 @@ describe("useBudgetForm", () => {
     })
 
     expect(create).toHaveBeenCalled()
-    expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/7")
+    expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/7", { replace: true })
     create.mockRestore()
   })
 
@@ -57,7 +57,7 @@ describe("useBudgetForm", () => {
     })
 
     expect(link).toHaveBeenCalledWith(4, { budget_id: 7 })
-    expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/7")
+    expect(navigateSpy).toHaveBeenCalledWith("/orcamentos/7", { replace: true })
     create.mockRestore()
     link.mockRestore()
   })

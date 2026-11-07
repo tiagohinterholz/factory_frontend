@@ -5,8 +5,8 @@ import { whatsappLink } from "@/modules/core/utils/whatsapp"
 // um ícone compacto (ações de linha de tabela); com `label`, um botão com
 // texto (cabeçalho de tela, ao lado de "Excluir"/"Finalizar" etc). Não
 // renderiza nada sem telefone válido — quem usa não precisa checar antes.
-export default function WhatsAppButton({ phone, label, className = "" }) {
-  const link = whatsappLink(phone)
+export default function WhatsAppButton({ phone, label, message, className = "" }) {
+  const link = whatsappLink(phone, message)
   if (!link) return null
 
   const baseClassName = label

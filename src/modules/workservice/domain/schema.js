@@ -8,6 +8,10 @@ export const serviceSchema = z.object({
   name: z.string().trim().min(1, "Informe o nome"),
   description: z.string().trim().min(1, "Informe a descrição"),
   unit_price: z.coerce.number().min(0, "Preço inválido"),
+  cost_price: z.preprocess(
+    (value) => (value === "" || value === null ? undefined : value),
+    z.coerce.number().min(0, "Preço inválido").optional(),
+  ),
 })
 
 export const serviceDefaults = {
@@ -16,4 +20,9 @@ export const serviceDefaults = {
   name: "",
   description: "",
   unit_price: "",
+  cost_price: "",
+}
+
+export function toServicePayload(values) {
+  return { ...values, cost_price: values.cost_price ?? null }
 }
