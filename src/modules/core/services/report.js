@@ -16,7 +16,7 @@ function cleanFilters(raw = {}) {
 
 // Exportação de relatórios — assíncrona no backend (Celery):
 // POST cria o job (202, status "pending"); GET faz o polling até "done"
-// (com `file_url`, agora .pdf) ou "failed" (com `error_message`).
+// (com `file_url`) ou "failed" (com `error_message`); o PDF vem de `download`.
 // Tipos: "orders", "budgets" e "cashflow" aceitam filtros no corpo; "stock" não.
 export const ReportService = {
   async requestExport(type, filters) {
@@ -26,6 +26,11 @@ export const ReportService = {
 
   async getStatus(id) {
     const { data } = await api.get(`/relatorios/${id}/`)
+    return data
+  },
+
+  async download(id) {
+    const { data } = await api.get(`/relatorios/${id}/arquivo/`, { responseType: "blob" })
     return data
   },
 }

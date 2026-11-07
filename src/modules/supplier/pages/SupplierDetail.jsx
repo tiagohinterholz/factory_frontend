@@ -63,11 +63,11 @@ export default function SupplierDetail() {
         <div className="flex flex-wrap items-center gap-2">
           <RecordPdfButton
             request={() => SupplierService.getSupplierProductsPdf(id)}
-            label="Relatório de produtos"
+            label="Gerar relatório de produtos"
           />
           <RecordPdfButton
             request={() => SupplierService.getSupplierServicesPdf(id)}
-            label="Relatório de serviços"
+            label="Gerar relatório de serviços"
           />
           <WhatsAppButton phone={phone} label="WhatsApp" />
           <button

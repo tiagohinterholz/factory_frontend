@@ -86,7 +86,7 @@ export default function WorkServiceList() {
           <div className="flex items-center justify-end gap-1">
             <PdfIconButton
               request={() => WorkServiceService.getWorkServicePdf(item.id)}
-              title="Baixar PDF do serviço"
+              title="Gerar ficha do serviço"
             />
             <Link
               title="Editar serviço"

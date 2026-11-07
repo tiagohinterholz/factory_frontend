@@ -461,6 +461,15 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                     Licenças
                   </Link>
                 )}
+                {businessId && canViewBusiness && (
+                  <Link
+                    to="/configuracoes/certificado"
+                    onClick={onCloseMobile}
+                    className={subLinkClass(isActive("/configuracoes/certificado"))}
+                  >
+                    Certificado digital
+                  </Link>
+                )}
                 {canManageUsers && businessId && (
                   <Link
                     to="/usuarios"

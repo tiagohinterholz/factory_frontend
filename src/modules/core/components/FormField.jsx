@@ -14,6 +14,8 @@ export default function FormField({
   onChange,
   registration,
   datalist,
+  multiline = false,
+  rows = 4,
   ...rest
 }) {
   const inputProps = registration ?? { value, onChange }
@@ -24,16 +26,28 @@ export default function FormField({
       <label className="label-premium group-focus-within:text-brand transition-colors">
         {label}
       </label>
-      <input
-        type={type}
-        className={`input-premium ${
-          error ? "border-danger focus:border-danger focus:ring-danger/15" : ""
-        }`}
-        placeholder={placeholder || `Digite o(a) ${label?.toLowerCase()}`}
-        list={datalist ? datalistId : undefined}
-        {...inputProps}
-        {...rest}
-      />
+      {multiline ? (
+        <textarea
+          rows={rows}
+          className={`input-premium resize-y ${
+            error ? "border-danger focus:border-danger focus:ring-danger/15" : ""
+          }`}
+          placeholder={placeholder || `Digite o(a) ${label?.toLowerCase()}`}
+          {...inputProps}
+          {...rest}
+        />
+      ) : (
+        <input
+          type={type}
+          className={`input-premium ${
+            error ? "border-danger focus:border-danger focus:ring-danger/15" : ""
+          }`}
+          placeholder={placeholder || `Digite o(a) ${label?.toLowerCase()}`}
+          list={datalist ? datalistId : undefined}
+          {...inputProps}
+          {...rest}
+        />
+      )}
       {datalist && (
         <datalist id={datalistId}>
           {datalist.map((option) =>

@@ -2,11 +2,29 @@ import { useState } from "react"
 import { ReportService } from "@/modules/core/services/report"
 import { useToast } from "@/modules/core/feedback/toast-context"
 import { parseApiError } from "@/api/parse-api-error"
+import { downloadBlob } from "@/api/download-blob"
 
 const POLL_INTERVAL = 1500
 const MAX_TRIES = 40 // ~60s de espera
 
+const REPORT_FILE_LABELS = {
+  orders: "ordens_de_servico",
+  budgets: "orcamentos",
+  stock: "estoque",
+  cashflow: "fluxo_de_caixa",
+}
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+function reportFileName(type, report) {
+  const now = new Date()
+  const day = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-")
+  return `relatorio_${REPORT_FILE_LABELS[type] ?? type}_${day}_${report.id}.pdf`
+}
 
 async function waitForFile(id) {
   for (let attempt = 0; attempt < MAX_TRIES; attempt += 1) {
@@ -21,8 +39,8 @@ async function waitForFile(id) {
 }
 
 // Dispara a exportação de um tipo e acompanha até o arquivo ficar pronto,
-// abrindo o PDF numa nova aba. `exportingType` guarda o tipo em andamento
-// pra desabilitar só aquele botão.
+// baixando o PDF pela rota autenticada. `exportingType` guarda o tipo em
+// andamento pra desabilitar só aquele botão.
 export function useReportExport() {
   const toast = useToast()
   const [exportingType, setExportingType] = useState(null)
@@ -35,8 +53,8 @@ export function useReportExport() {
       const created = await ReportService.requestExport(type, filters)
       const done = await waitForFile(created.id)
       if (done.file_url) {
-        window.open(done.file_url, "_blank", "noopener")
-        toast.success("Relatório pronto.")
+        downloadBlob(await ReportService.download(done.id), reportFileName(type, done))
+        toast.success("Relatório pronto — download iniciado.")
       } else {
         toast.error("Relatório concluído, mas sem arquivo.")
       }

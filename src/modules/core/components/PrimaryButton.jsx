@@ -14,7 +14,7 @@ export default function PrimaryButton({
       disabled={disabled}
       onClick={onClick}
       className={`btn-primary ${fullWidth ? "w-full" : "px-8"} ${
-        disabled ? "opacity-60 pointer-events-none" : ""
+        disabled ? "bg-ground text-muted border border-line shadow-none pointer-events-none" : ""
       }`}
     >
       <Icon className="w-4 h-4" />

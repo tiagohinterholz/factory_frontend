@@ -3,7 +3,12 @@ import { Plus } from "lucide-react"
 import LiveSelect from "@/modules/core/components/LiveSelect"
 import { formatMoney } from "@/modules/core/utils/format"
 
-export default function ProductItemForm({ products = [], saving = false, onAdd }) {
+export default function ProductItemForm({
+  products = [],
+  saving = false,
+  shortageNote = "O item entra mesmo assim e a peça fica anotada para comprar.",
+  onAdd,
+}) {
   const quantityId = useId()
   const [productId, setProductId] = useState("")
   const [quantity, setQuantity] = useState("1")
@@ -17,6 +22,14 @@ export default function ProductItemForm({ products = [], saving = false, onAdd }
       .join(" "),
   }))
 
+  const selectedProduct = products.find((item) => String(item.id) === String(productId))
+  const requested = Number(quantity)
+  const available = selectedProduct?.stock_quantity ?? 0
+  const missing =
+    selectedProduct && Number.isInteger(requested) && requested > available
+      ? requested - Math.max(0, available)
+      : 0
+
   async function handleSubmit(event) {
     event.preventDefault()
     if (saving || !productId) return
@@ -25,11 +38,7 @@ export default function ProductItemForm({ products = [], saving = false, onAdd }
       setError("Informe uma quantidade inteira maior que zero.")
       return
     }
-    const product = products.find((item) => String(item.id) === String(productId))
-    if (amount > (product?.stock_quantity ?? 0)) {
-      setError(`Estoque insuficiente — disponível: ${product?.stock_quantity ?? 0}.`)
-      return
-    }
+    const product = selectedProduct
     setError("")
     const added = await onAdd({
       product_id: productId,
@@ -78,6 +87,11 @@ export default function ProductItemForm({ products = [], saving = false, onAdd }
       >
         <Plus size={24} />
       </button>
+      {missing > 0 && !error && (
+        <p role="status" className="w-full text-xs font-medium text-warn">
+          Estoque disponível: {Math.max(0, available)} — vão faltar {missing} un. {shortageNote}
+        </p>
+      )}
       {error && <p className="w-full text-xs text-danger">{error}</p>}
     </form>
   )

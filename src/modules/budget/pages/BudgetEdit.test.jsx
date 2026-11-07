@@ -97,7 +97,10 @@ describe("<BudgetEdit> — live-select de cliente/veículo", () => {
     await waitFor(() => expect(clientInput).toHaveValue("Ana Lima"))
     await waitFor(() => expect(vehicleInput).toHaveValue("VW Gol"))
 
-    fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+    fireEvent.change(screen.getByPlaceholderText("Digite o(a) validade"), {
+      target: { value: "2026-12-20T10:00" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar orçamento" }))
 
     await waitFor(() =>
       expect(update).toHaveBeenCalledWith(
@@ -149,7 +152,7 @@ describe("<BudgetEdit> — live-select de cliente/veículo", () => {
     await user.click(clientInput)
     await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
 
-    fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+    fireEvent.click(screen.getByRole("button", { name: "Salvar orçamento" }))
 
     expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
     expect(update).not.toHaveBeenCalled()
@@ -220,7 +223,7 @@ describe("<BudgetEdit> — campos travados fora de pendente", () => {
     expect(clientSelect).toBeDisabled()
     expect(vehicleSelect).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) validade")).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Salvar Alterações" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Salvar orçamento" })).toBeDisabled()
   })
 
   it("pendente: campos gerais e botão de salvar continuam editáveis", async () => {
@@ -230,7 +233,29 @@ describe("<BudgetEdit> — campos travados fora de pendente", () => {
     await screen.findByText("pendente")
     const [clientSelect] = screen.getAllByRole("combobox")
     expect(clientSelect).toBeEnabled()
-    expect(screen.getByRole("button", { name: "Salvar Alterações" })).toBeEnabled()
+    expect(screen.getByPlaceholderText("Digite o(a) validade")).toBeEnabled()
+  })
+
+  it("Salvar orçamento fica desabilitado até mexer em algo e volta a desabilitar depois de salvar", async () => {
+    mockApi()
+    const update = vi.spyOn(BudgetService, "updateBudget").mockResolvedValue(budget)
+    renderPage()
+
+    await screen.findByText("pendente")
+    const save = screen.getByRole("button", { name: "Salvar orçamento" })
+    expect(save).toBeDisabled()
+
+    fireEvent.change(screen.getByPlaceholderText("Digite o(a) validade"), {
+      target: { value: "2026-12-20T10:00" },
+    })
+    expect(save).toBeEnabled()
+    fireEvent.click(save)
+
+    await waitFor(() => expect(update).toHaveBeenCalled())
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Salvar orçamento" })).toBeDisabled(),
+    )
+    update.mockRestore()
   })
 })
 
@@ -371,7 +396,10 @@ describe("<BudgetEdit> — aprovar com data opcional", () => {
       renderPage()
 
       await screen.findByText("pendente")
-      fireEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }))
+      fireEvent.change(screen.getByPlaceholderText("Digite o(a) validade"), {
+        target: { value: "2026-12-20T10:00" },
+      })
+      fireEvent.click(screen.getByRole("button", { name: "Salvar orçamento" }))
 
       await waitFor(() => expect(update).toHaveBeenCalled())
       expect(navigateSpy).not.toHaveBeenCalledWith("/orcamentos")
@@ -394,5 +422,73 @@ describe("<BudgetEdit> — aprovar com data opcional", () => {
       expect(url.searchParams.get("text")).toContain("orçamento #1")
       expect(url.searchParams.get("text")).toContain("350,00")
     })
+  })
+})
+
+describe("<BudgetEdit> — editar item já lançado", () => {
+  it("dá desconto num serviço mudando o valor na própria linha", async () => {
+    let service = {
+      id: 70,
+      service: { id: 3, name: "Alinhamento" },
+      name: "Alinhamento",
+      unit_price: "150.00",
+      is_active: true,
+    }
+    let patched = null
+    mockApi()
+    server.use(
+      http.get(`${API}/orcamentos/1/`, () =>
+        HttpResponse.json({ ...budget, budget_services: [service] }),
+      ),
+      http.patch(`${API}/orcamentos/1/servicos/70/`, async ({ request }) => {
+        patched = await request.json()
+        service = { ...service, unit_price: patched.unit_price }
+        return HttpResponse.json(service, { status: 202 })
+      }),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Editar Alinhamento" }))
+    fireEvent.change(screen.getByLabelText("Valor (R$)"), { target: { value: "120,00" } })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar item" }))
+
+    await waitFor(() => expect(patched).toEqual({ unit_price: "120.00" }))
+    expect(await screen.findByText(/120,00/)).toBeInTheDocument()
+  })
+})
+
+describe("<BudgetEdit> — PDF", () => {
+  it("o botão de PDF diz que gera o orçamento", async () => {
+    mockApi()
+    renderPage()
+
+    expect(await screen.findByRole("button", { name: "Gerar orçamento" })).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /exportar pdf/i })).not.toBeInTheDocument()
+  })
+})
+
+describe("<BudgetEdit> — aviso de estoque", () => {
+  it("no orçamento o aviso diz que nada é reservado ainda", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [{ id: 40, name: "Sensor", unit_price: "120.00", stock_quantity: 1 }],
+          count: 1,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("pendente")
+    await user.click((await screen.findAllByRole("combobox")).at(-2))
+    await user.click(await screen.findByRole("option", { name: /Sensor/ }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "3" } })
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "O orçamento não reserva estoque; a falta é anotada na OS quando ele for aprovado.",
+    )
+    expect(screen.getByRole("status")).not.toHaveTextContent("fica anotada para comprar")
   })
 })

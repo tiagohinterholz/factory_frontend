@@ -143,7 +143,7 @@ export default function FinancialEntryList() {
         actions={
           <div className="flex items-center gap-2">
             <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
-            <ExportReportButton type="cashflow" label="Gerar Relatórios" />
+            <ExportReportButton type="cashflow" label="Gerar relatório" />
           </div>
         }
       />

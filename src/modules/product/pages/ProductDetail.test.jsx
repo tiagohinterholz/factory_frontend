@@ -54,11 +54,13 @@ const renderPage = () =>
   )
 
 describe("<ProductDetail>", () => {
-  it("tem o botão de exportar o PDF do produto", async () => {
+  it("o botão de PDF diz que gera a ficha do produto", async () => {
     mockProduct()
     renderPage()
 
-    expect(await screen.findByRole("button", { name: /exportar pdf/i })).toBeInTheDocument()
+    expect(
+      await screen.findByRole("button", { name: "Gerar ficha do produto" }),
+    ).toBeInTheDocument()
   })
 
   it("usa SupplierLiveSelect (combobox com busca) no campo Fornecedor, não mais o <select> fechado", async () => {

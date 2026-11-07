@@ -19,6 +19,7 @@ import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import ServiceItemForm from "@/modules/core/components/ServiceItemForm"
 import ProductItemForm from "@/modules/core/components/ProductItemForm"
+import EditableItemLine from "@/modules/core/components/EditableItemLine"
 import { Plus, Trash2, CheckCircle, XCircle, Copy } from "lucide-react"
 import { formatDateTime, formatMoney } from "@/modules/core/utils/format"
 import {
@@ -59,13 +60,18 @@ export default function BudgetEdit() {
     register,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = form
 
   const clientId = watch("client_id")
   const vehicleId = watch("vehicle_id")
 
   const { product: allProducts } = useProductOptions()
+
+  function stockForLine(item) {
+    const product = allProducts.find((option) => String(option.id) === String(idOf(item.product)))
+    return product ? (product.stock_quantity ?? 0) : undefined
+  }
   const { workservice: allServices } = useWorkServiceOptions()
 
   const [approveOpen, setApproveOpen] = useState(false)
@@ -113,6 +119,32 @@ export default function BudgetEdit() {
       return false
     } finally {
       setSavingItem(false)
+    }
+  }
+
+  async function handleUpdateProduct(itemId, payload) {
+    try {
+      await BudgetService.budgetProductUpdate(id, payload, itemId)
+      refresh()
+      invalidateBudgetCaches()
+      return true
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar o produto").message)
+      return false
+    }
+  }
+
+  async function handleUpdateService(itemId, payload) {
+    try {
+      await BudgetService.budgetServiceUpdate(id, payload, itemId)
+      refresh()
+      invalidateBudgetCaches()
+      return true
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar o serviço").message)
+      return false
     }
   }
 
@@ -187,7 +219,7 @@ export default function BudgetEdit() {
             label="Informar cliente"
             message={`Olá${relatedClient?.first_name ? `, ${relatedClient.first_name}` : ""}! Seu orçamento #${id} está ${status} no valor de ${formatMoney(total)}.`}
           />
-          <RecordPdfButton request={() => BudgetService.getBudgetPdf(id)} />
+          <RecordPdfButton request={() => BudgetService.getBudgetPdf(id)} label="Gerar orçamento" />
           {canDuplicate && (
             <button
               type="button"
@@ -240,8 +272,8 @@ export default function BudgetEdit() {
                 value={clientId}
                 onChange={(value) => {
                   if (value === clientId) return
-                  setValue("client_id", value)
-                  setValue("vehicle_id", "")
+                  setValue("client_id", value, { shouldDirty: true })
+                  setValue("vehicle_id", "", { shouldDirty: true })
                 }}
                 disabled={locked}
                 error={errors.client_id?.message}
@@ -250,7 +282,7 @@ export default function BudgetEdit() {
               <VehicleLiveSelect
                 label="Veículo"
                 value={vehicleId}
-                onChange={(value) => setValue("vehicle_id", value)}
+                onChange={(value) => setValue("vehicle_id", value, { shouldDirty: true })}
                 clientId={clientId}
                 disabled={locked}
                 disabledHint="Selecione o cliente primeiro"
@@ -264,8 +296,8 @@ export default function BudgetEdit() {
                 error={errors.valid_until?.message}
                 registration={register("valid_until")}
               />
-              <PrimaryButton type="submit" disabled={isSubmitting || locked}>
-                Salvar Alterações
+              <PrimaryButton type="submit" disabled={isSubmitting || locked || !isDirty}>
+                Salvar orçamento
               </PrimaryButton>
             </form>
           </div>
@@ -281,30 +313,25 @@ export default function BudgetEdit() {
               <ProductItemForm
                 products={allProducts}
                 saving={savingItem}
+                shortageNote="O orçamento não reserva estoque; a falta é anotada na OS quando ele for aprovado."
                 onAdd={handleAddProduct}
               />
             )}
 
             <div className="divide-y divide-slate-100">
               {products.map((item) => (
-                <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span>
-                    {item.product?.name} (x{item.quantity})
-                  </span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-slate-400">{formatMoney(item.unit_price)} / un</span>
-                    <span className="font-bold text-slate-700">{formatMoney(item.total)}</span>
-                    {isPending && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteProduct(item.id)}
-                        className="text-rose-400 hover:text-danger"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <EditableItemLine
+                  key={item.id}
+                  itemName={item.product?.name ?? "Produto"}
+                  quantity={item.quantity}
+                  unitPrice={item.unit_price}
+                  total={item.total}
+                  editable={isPending}
+                  availableStock={stockForLine(item)}
+                  shortageNote="O orçamento não reserva estoque; a falta é anotada na OS quando ele for aprovado."
+                  onSave={(payload) => handleUpdateProduct(item.id, payload)}
+                  onDelete={() => handleDeleteProduct(item.id)}
+                />
               ))}
               {products.length === 0 && (
                 <p className="text-slate-400 py-4 text-center">Nenhum produto adicionado.</p>
@@ -332,28 +359,21 @@ export default function BudgetEdit() {
 
             <div className="divide-y divide-slate-100">
               {services.map((item) => (
-                <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span className="flex items-center gap-2">
-                    {item.name ?? item.service?.name}
-                    {!item.service && (
+                <EditableItemLine
+                  key={item.id}
+                  itemName={item.name ?? item.service?.name ?? "Serviço"}
+                  badge={
+                    !item.service && (
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500">
                         Personalizado
                       </span>
-                    )}
-                  </span>
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">{formatMoney(item.unit_price)}</span>
-                    {isPending && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteService(item.id)}
-                        className="text-rose-400 hover:text-danger"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                    )
+                  }
+                  unitPrice={item.unit_price}
+                  editable={isPending}
+                  onSave={(payload) => handleUpdateService(item.id, payload)}
+                  onDelete={() => handleDeleteService(item.id)}
+                />
               ))}
               {services.length === 0 && (
                 <p className="text-slate-400 py-4 text-center">Nenhum serviço adicionado.</p>

@@ -82,7 +82,7 @@ describe("<BudgetList>", () => {
     renderWithProviders(<BudgetList />)
     await screen.findByText("#12")
 
-    fireEvent.click(screen.getByRole("button", { name: /gerar pdf do orçamento/i }))
+    fireEvent.click(screen.getByRole("button", { name: "Gerar orçamento" }))
 
     await waitFor(() => expect(getPdf).toHaveBeenCalledWith(12))
     await waitFor(() => expect(openPdfBlob).toHaveBeenCalledWith(blob))
@@ -284,7 +284,7 @@ describe("<BudgetList>", () => {
       )
     })
 
-    it("botão em massa se chama Gerar Relatórios (OSFIN-P1-04)", async () => {
+    it("botão em massa se chama Gerar relatório (OSFIN-P1-04)", async () => {
       localStorage.setItem(
         "user",
         JSON.stringify({ email: "a@a.com", business_id: 3, role: "admin" }),
@@ -292,7 +292,7 @@ describe("<BudgetList>", () => {
       mockBudgets()
       renderWithProviders(<BudgetList />)
 
-      expect(await screen.findByRole("button", { name: /gerar relatórios/i })).toBeInTheDocument()
+      expect(await screen.findByRole("button", { name: "Gerar relatório" })).toBeInTheDocument()
     })
   })
 })

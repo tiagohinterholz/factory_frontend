@@ -83,7 +83,7 @@ export default function ClientList() {
           <div className="flex items-center justify-end gap-1">
             <PdfIconButton
               request={() => ClientService.getClientPdf(item.id)}
-              title="Baixar PDF do cliente"
+              title="Gerar ficha do cliente"
             />
             <WhatsAppButton phone={item.phone} />
             <button

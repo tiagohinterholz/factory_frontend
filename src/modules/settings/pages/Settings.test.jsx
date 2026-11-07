@@ -44,7 +44,6 @@ function mockApi() {
   server.use(
     http.get(`${API}/configuracoes/`, () => HttpResponse.json(business)),
     http.get(`${API}/configuracoes/horarios/`, () => HttpResponse.json(hours)),
-    http.get(`${API}/configuracoes/certificado/`, () => HttpResponse.json({ installed: false })),
     http.get(`${API}/estados/`, () =>
       HttpResponse.json({ results: [{ id: 5, name: "Paraná", abbreviation: "PR" }], count: 1 }),
     ),
@@ -176,7 +175,7 @@ describe("<Settings>", () => {
     await waitFor(() => expect(savedPayload.email).toBe("novo@oficina.com"))
   })
 
-  it("gerente vê a seção de certificado digital com o envio liberado", async () => {
+  it("a gestão do empreendimento não mostra mais o certificado digital", async () => {
     localStorage.setItem(
       "user",
       JSON.stringify({
@@ -187,23 +186,10 @@ describe("<Settings>", () => {
     )
     renderWithProviders(<Settings />)
 
-    expect(await screen.findByText("Nenhum certificado instalado")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Enviar certificado" })).toBeInTheDocument()
-  })
-
-  it("atendente vê a seção de certificado digital sem o formulário de envio", async () => {
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        business_id: 1,
-        role: "atendente",
-        permissions: ["businesses.view_business"],
-      }),
-    )
-    renderWithProviders(<Settings />)
-
-    expect(await screen.findByText("Nenhum certificado instalado")).toBeInTheDocument()
+    expect(
+      await screen.findByRole("button", { name: /editar empreendimento/i }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText("Certificado Digital")).not.toBeInTheDocument()
     expect(screen.queryByRole("button", { name: "Enviar certificado" })).not.toBeInTheDocument()
-    expect(screen.queryByLabelText(/senha do certificado/i)).not.toBeInTheDocument()
   })
 })

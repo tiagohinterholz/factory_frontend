@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest"
-import { screen, fireEvent, waitFor } from "@testing-library/react"
+import { screen, fireEvent, waitFor, within } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { server } from "@/test/msw/server"
 import { API } from "@/test/msw/handlers"
@@ -24,9 +24,9 @@ beforeEach(() => {
 
 describe("<ExportReportButton> — fluxo de caixa", () => {
   it("abre filtro de tipo e período e manda pro relatório (OSFIN-P3-05)", async () => {
-    renderWithProviders(<ExportReportButton type="cashflow" label="Gerar Relatórios" />)
+    renderWithProviders(<ExportReportButton type="cashflow" label="Gerar relatório" />)
 
-    fireEvent.click(screen.getByRole("button", { name: /gerar relatórios/i }))
+    fireEvent.click(screen.getByRole("button", { name: /gerar relatório/i }))
 
     expect(screen.queryByText("Cliente")).not.toBeInTheDocument()
     fireEvent.click(await screen.findByRole("button", { name: /selecione o\(a\) tipo/i }))
@@ -35,7 +35,11 @@ describe("<ExportReportButton> — fluxo de caixa", () => {
     const [dateFrom, dateTo] = document.querySelectorAll('input[type="date"]')
     fireEvent.change(dateFrom, { target: { value: "2026-10-01" } })
     fireEvent.change(dateTo, { target: { value: "2026-10-31" } })
-    fireEvent.click(screen.getByRole("button", { name: "Gerar relatório" }))
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Filtros do relatório" })).getByRole("button", {
+        name: "Gerar relatório",
+      }),
+    )
 
     await waitFor(() =>
       expect(requestBody).toEqual({
@@ -47,10 +51,15 @@ describe("<ExportReportButton> — fluxo de caixa", () => {
   })
 
   it("sem filtro nenhum manda o corpo vazio", async () => {
-    renderWithProviders(<ExportReportButton type="cashflow" label="Gerar Relatórios" />)
+    renderWithProviders(<ExportReportButton type="cashflow" label="Gerar relatório" />)
 
-    fireEvent.click(screen.getByRole("button", { name: /gerar relatórios/i }))
-    fireEvent.click(await screen.findByRole("button", { name: "Gerar relatório" }))
+    fireEvent.click(screen.getByRole("button", { name: /gerar relatório/i }))
+    fireEvent.click(
+      within(await screen.findByRole("dialog", { name: "Filtros do relatório" })).getByRole(
+        "button",
+        { name: "Gerar relatório" },
+      ),
+    )
 
     await waitFor(() => expect(requestBody).toEqual({}))
   })

@@ -45,7 +45,7 @@ export default function WorkServiceDetail() {
           <div className="flex flex-wrap items-center gap-2">
             <RecordPdfButton
               request={() => WorkServiceService.getWorkServicePdf(id)}
-              label="Exportar PDF"
+              label="Gerar ficha do serviço"
             />
             <button
               onClick={handleDelete}

@@ -209,7 +209,7 @@ describe("<OrderEdit>", () => {
     expect(vehicleSelect).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) data e hora do serviço")).toBeDisabled()
     expect(screen.getByPlaceholderText("Digite o(a) observações")).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled()
   })
 
   it("em andamento: campos gerais e botão de salvar continuam editáveis", async () => {
@@ -219,7 +219,68 @@ describe("<OrderEdit>", () => {
     await screen.findByText("Orçamento de origem")
     const [clientSelect] = screen.getAllByRole("combobox")
     expect(clientSelect).toBeEnabled()
-    expect(screen.getByRole("button", { name: "Atualizar OS" })).toBeEnabled()
+    expect(screen.getByPlaceholderText("Digite o(a) observações")).toBeEnabled()
+  })
+
+  it("Salvar OS fica desabilitado até mexer em algo e volta a desabilitar depois de salvar", async () => {
+    mockApi()
+    const update = vi.spyOn(OrderService, "updateOrder").mockResolvedValue(order)
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    const save = screen.getByRole("button", { name: "Salvar OS" })
+    expect(save).toBeDisabled()
+
+    const notes = screen.getByPlaceholderText("Digite o(a) observações")
+    fireEvent.change(notes, { target: { value: "Cliente pediu revisão" } })
+    expect(save).toBeEnabled()
+
+    fireEvent.change(notes, { target: { value: "" } })
+    expect(save).toBeDisabled()
+
+    fireEvent.change(notes, { target: { value: "Cliente pediu revisão" } })
+    fireEvent.click(save)
+
+    await waitFor(() => expect(update).toHaveBeenCalled())
+    await waitFor(() => expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled())
+    update.mockRestore()
+  })
+
+  it("trocar o veículo habilita o Salvar OS", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/veiculos/`, () =>
+        HttpResponse.json({
+          results: [
+            {
+              id: 9,
+              client: 5,
+              manufacturer: { id: 12, name: "VW" },
+              model: { id: 55, name: "Gol" },
+              plate: "ABC1D23",
+            },
+            {
+              id: 10,
+              client: 5,
+              manufacturer: { id: 12, name: "VW" },
+              model: { id: 56, name: "Polo" },
+              plate: "XYZ9K87",
+            },
+          ],
+          count: 2,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("Orçamento de origem")
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled()
+    const [, vehicleInput] = screen.getAllByRole("combobox")
+    await user.click(vehicleInput)
+    await user.click(await screen.findByRole("option", { name: /Polo/ }))
+
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeEnabled()
   })
 
   it("mantém o client_id/vehicle_id no submit mesmo quando o cache de opções não traz o registro vinculado", async () => {
@@ -232,7 +293,10 @@ describe("<OrderEdit>", () => {
     renderPage()
 
     await screen.findByText("Orçamento de origem")
-    fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+    fireEvent.change(screen.getByPlaceholderText("Digite o(a) observações"), {
+      target: { value: "Cliente pediu revisão" },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
 
     await waitFor(() =>
       expect(update).toHaveBeenCalledWith(
@@ -482,7 +546,7 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
     await user.click(clientInput)
     await user.click(await screen.findByRole("option", { name: "Bruno Souza" }))
 
-    fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
 
     expect(await screen.findByText("Selecione o veículo")).toBeInTheDocument()
     expect(update).not.toHaveBeenCalled()
@@ -502,7 +566,10 @@ describe("<OrderEdit> — live-select de cliente/veículo", () => {
       )
 
       await screen.findByText("Orçamento de origem")
-      fireEvent.click(screen.getByRole("button", { name: "Atualizar OS" }))
+      fireEvent.change(screen.getByPlaceholderText("Digite o(a) observações"), {
+        target: { value: "Cliente pediu revisão" },
+      })
+      fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
 
       await waitFor(() => expect(update).toHaveBeenCalled())
       expect(screen.queryByRole("heading", { name: "Lista de OS" })).not.toBeInTheDocument()
@@ -591,5 +658,258 @@ describe("<OrderEdit> — serviço personalizado", () => {
       }),
     )
     create.mockRestore()
+  })
+})
+
+describe("<OrderEdit> — estoque exibido acompanha os itens lançados", () => {
+  it("depois de adicionar um produto, o picker mostra o estoque já baixado", async () => {
+    mockApi()
+    let stock = 11
+    let orderProducts = []
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({ ...order, order_products: orderProducts }),
+      ),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 40, name: "Sensor de oxigênio", unit_price: "120.00", stock_quantity: stock },
+          ],
+          count: 1,
+        }),
+      ),
+      http.post(`${API}/ordens/1/produtos/`, async ({ request }) => {
+        const body = await request.json()
+        stock -= body.quantity
+        orderProducts = [
+          {
+            id: 300,
+            product: { id: 40, name: "Sensor de oxigênio" },
+            quantity: body.quantity,
+            unit_price: "120.00",
+            total: String(120 * body.quantity),
+            is_active: true,
+          },
+        ]
+        return HttpResponse.json(orderProducts[0], { status: 201 })
+      }),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    const picker = (await screen.findAllByRole("combobox")).at(-2)
+    await user.click(picker)
+    await user.click(await screen.findByRole("option", { name: /estoque 11/ }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "1" } })
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar produto" }))
+
+    await screen.findByText(/Sensor de oxigênio \(x1\)/)
+    await user.type((await screen.findAllByRole("combobox")).at(-2), "Sensor")
+    expect(await screen.findByRole("option", { name: /estoque 10/ })).toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — editar item já lançado", () => {
+  it("altera quantidade e preço de um produto na própria linha", async () => {
+    mockApi()
+    let line = {
+      id: 300,
+      product: { id: 40, name: "Sensor de oxigênio" },
+      quantity: 2,
+      unit_price: "120.00",
+      total: "240.00",
+      is_active: true,
+    }
+    let patched = null
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json({ ...order, order_products: [line] })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 40, name: "Sensor de oxigênio", unit_price: "120.00", stock_quantity: 9 },
+          ],
+          count: 1,
+        }),
+      ),
+      http.patch(`${API}/ordens/1/produtos/300/`, async ({ request }) => {
+        patched = await request.json()
+        line = {
+          ...line,
+          quantity: patched.quantity,
+          unit_price: patched.unit_price,
+          total: (patched.quantity * Number(patched.unit_price)).toFixed(2),
+        }
+        return HttpResponse.json(line)
+      }),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Editar Sensor de oxigênio" }))
+    fireEvent.change(screen.getAllByLabelText("Qtd").at(-1), { target: { value: "3" } })
+    fireEvent.change(screen.getByLabelText("Preço unitário (R$)"), { target: { value: "100" } })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar item" }))
+
+    expect(await screen.findByText("Sensor de oxigênio (x3)")).toBeInTheDocument()
+    expect(patched).toEqual({ quantity: 3, unit_price: "100.00" })
+  })
+
+  it("o estoque disponível da linha soma o que ela já reservou", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          order_products: [
+            {
+              id: 300,
+              product: { id: 40, name: "Sensor de oxigênio" },
+              quantity: 2,
+              unit_price: "120.00",
+              total: "240.00",
+              is_active: true,
+            },
+          ],
+        }),
+      ),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [
+            { id: 40, name: "Sensor de oxigênio", unit_price: "120.00", stock_quantity: 9 },
+          ],
+          count: 1,
+        }),
+      ),
+    )
+    renderPage()
+
+    fireEvent.click(await screen.findByRole("button", { name: "Editar Sensor de oxigênio" }))
+    fireEvent.change(screen.getAllByLabelText("Qtd").at(-1), { target: { value: "11" } })
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getAllByLabelText("Qtd").at(-1), { target: { value: "13" } })
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Estoque disponível para esta linha: 11 — vão faltar 2 un.",
+    )
+  })
+
+  it("OS a faturar não deixa editar a linha", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () =>
+        HttpResponse.json({
+          ...order,
+          status: "a faturar",
+          order_products: [
+            {
+              id: 300,
+              product: { id: 40, name: "Sensor de oxigênio" },
+              quantity: 2,
+              unit_price: "120.00",
+              total: "240.00",
+              is_active: true,
+            },
+          ],
+        }),
+      ),
+    )
+    renderPage()
+
+    expect(await screen.findByText("Sensor de oxigênio (x2)")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: "Editar Sensor de oxigênio" }),
+    ).not.toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — PDF", () => {
+  it("o botão de PDF diz que gera a ordem de serviço", async () => {
+    mockApi()
+    renderPage()
+
+    expect(
+      await screen.findByRole("button", { name: "Gerar ordem de serviço" }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /exportar pdf/i })).not.toBeInTheDocument()
+  })
+})
+
+describe("<OrderEdit> — alerta de compra nas observações", () => {
+  function mockShortage() {
+    let notes = "Cliente aguarda"
+    let saved = null
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json({ ...order, notes })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [{ id: 40, name: "Sensor", unit_price: "120.00", stock_quantity: 0 }],
+          count: 1,
+        }),
+      ),
+      http.post(`${API}/ordens/1/produtos/`, () => {
+        notes = `${notes}\n[COMPRAR PEÇA] Falta 1 un de: Sensor`
+        return HttpResponse.json({ id: 300 }, { status: 201 })
+      }),
+      http.patch(`${API}/ordens/1/`, async ({ request }) => {
+        saved = await request.json()
+        notes = saved.notes
+        return HttpResponse.json({ ...order, notes })
+      }),
+    )
+    return { saved: () => saved }
+  }
+
+  async function addOneSensor(user) {
+    const picker = (await screen.findAllByRole("combobox")).at(-2)
+    await user.click(picker)
+    await user.click(await screen.findByRole("option", { name: /Sensor/ }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "1" } })
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar produto" }))
+  }
+
+  it("mostra o alerta que o servidor anotou e não apaga ao salvar", async () => {
+    const api = mockShortage()
+    const user = userEvent.setup()
+    renderPage()
+    const notesField = await screen.findByPlaceholderText("Digite o(a) observações")
+    await waitFor(() => expect(notesField).toHaveValue("Cliente aguarda"))
+
+    await addOneSensor(user)
+
+    await waitFor(() =>
+      expect(notesField).toHaveValue("Cliente aguarda\n[COMPRAR PEÇA] Falta 1 un de: Sensor"),
+    )
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled()
+
+    fireEvent.change(notesField, {
+      target: { value: `${notesField.value}\nTrocar óleo também` },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
+
+    await waitFor(() => expect(api.saved()).not.toBeNull())
+    expect(api.saved().notes).toContain("[COMPRAR PEÇA] Falta 1 un de: Sensor")
+  })
+
+  it("se as observações já estavam sendo editadas, o alerta entra no fim sem perder o texto", async () => {
+    const api = mockShortage()
+    const user = userEvent.setup()
+    renderPage()
+    const notesField = await screen.findByPlaceholderText("Digite o(a) observações")
+    await waitFor(() => expect(notesField).toHaveValue("Cliente aguarda"))
+    fireEvent.change(notesField, { target: { value: "Cliente aguarda - trocar óleo" } })
+
+    await addOneSensor(user)
+
+    await waitFor(() =>
+      expect(notesField).toHaveValue(
+        "Cliente aguarda - trocar óleo\n[COMPRAR PEÇA] Falta 1 un de: Sensor",
+      ),
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
+
+    await waitFor(() => expect(api.saved()).not.toBeNull())
+    expect(api.saved().notes).toBe(
+      "Cliente aguarda - trocar óleo\n[COMPRAR PEÇA] Falta 1 un de: Sensor",
+    )
   })
 })

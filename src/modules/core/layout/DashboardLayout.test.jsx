@@ -47,7 +47,7 @@ describe("<DashboardLayout>", () => {
     expect(banner.compareDocumentPosition(content) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getByRole("link", { name: "Atualizar certificado" })).toHaveAttribute(
       "href",
-      "/configuracoes",
+      "/configuracoes/certificado",
     )
   })
 })

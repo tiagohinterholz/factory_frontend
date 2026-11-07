@@ -78,18 +78,35 @@ describe("<ProductItemForm>", () => {
     await waitFor(() => expect(screen.getByLabelText("Qtd")).toHaveValue(1))
   })
 
-  it("recusa quantidade maior que o estoque disponível", async () => {
+  it("quantidade maior que o estoque avisa quanto falta e adiciona mesmo assim", async () => {
     const user = userEvent.setup()
-    const onAdd = vi.fn()
+    const onAdd = vi.fn().mockResolvedValue(true)
     renderWithProviders(<ProductItemForm products={PRODUCTS} onAdd={onAdd} />)
 
     await user.click(screen.getByRole("combobox"))
     await user.click(await screen.findByRole("option", { name: /pirelli/i }))
     fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "3" } })
+
+    expect(screen.getByRole("status")).toHaveTextContent("Estoque disponível: 2 — vão faltar 1 un.")
+
     fireEvent.submit(screen.getByRole("button", { name: "Adicionar produto" }).closest("form"))
 
-    expect(onAdd).not.toHaveBeenCalled()
-    expect(screen.getByText(/estoque insuficiente/i)).toBeInTheDocument()
+    await waitFor(() =>
+      expect(onAdd).toHaveBeenCalledWith({ product_id: "3", quantity: 3, unit_price: "800.00" }),
+    )
+    expect(screen.queryByText(/estoque insuficiente/i)).not.toBeInTheDocument()
+  })
+
+  it("produto sem estoque avisa que falta a quantidade inteira", async () => {
+    const user = userEvent.setup()
+    const onAdd = vi.fn().mockResolvedValue(true)
+    renderWithProviders(<ProductItemForm products={PRODUCTS} onAdd={onAdd} />)
+
+    await user.click(screen.getByRole("combobox"))
+    await user.click(await screen.findByRole("option", { name: /filtro de ar/i }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "2" } })
+
+    expect(screen.getByRole("status")).toHaveTextContent("Estoque disponível: 0 — vão faltar 2 un.")
   })
 
   it("aceita quantidade exatamente igual ao estoque disponível", async () => {
@@ -102,6 +119,7 @@ describe("<ProductItemForm>", () => {
     fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "2" } })
     fireEvent.click(screen.getByRole("button", { name: "Adicionar produto" }))
 
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
     await waitFor(() =>
       expect(onAdd).toHaveBeenCalledWith({ product_id: "3", quantity: 2, unit_price: "800.00" }),
     )

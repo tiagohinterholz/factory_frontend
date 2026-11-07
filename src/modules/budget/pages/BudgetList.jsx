@@ -139,7 +139,7 @@ export default function BudgetList() {
         actions={
           <div className="flex items-center gap-2">
             <ListFilters fields={filterFields} value={filters} onApply={applyFilters} />
-            <ExportReportButton type="budgets" label="Gerar Relatórios" />
+            <ExportReportButton type="budgets" label="Gerar relatório" />
           </div>
         }
       />
@@ -159,7 +159,7 @@ export default function BudgetList() {
           <div className="flex items-center justify-end gap-1">
             <PdfIconButton
               request={() => BudgetService.getBudgetPdf(item.id)}
-              title="Gerar PDF do orçamento"
+              title="Gerar orçamento"
             />
             {budgetIsPending(item.status) && (
               <>

@@ -22,6 +22,7 @@ import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import ServiceItemForm from "@/modules/core/components/ServiceItemForm"
 import ProductItemForm from "@/modules/core/components/ProductItemForm"
+import EditableItemLine from "@/modules/core/components/EditableItemLine"
 import {
   paymentLabel,
   orderKeys,
@@ -31,6 +32,7 @@ import {
   orderCanInvoice,
   orderIsBilled,
 } from "@/modules/order/domain"
+import { productKeys } from "@/modules/product/domain"
 import { CheckCircle2, Plus, Trash2, Wallet } from "lucide-react"
 
 export default function OrderEdit() {
@@ -66,7 +68,7 @@ export default function OrderEdit() {
     register,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = form
 
   const clientId = watch("client_id")
@@ -76,6 +78,12 @@ export default function OrderEdit() {
   const { workservice: allServices } = useWorkServiceOptions()
 
   const [savingItem, setSavingItem] = useState(false)
+
+  function stockForLine(item) {
+    const product = allProducts.find((option) => String(option.id) === String(idOf(item.product)))
+    if (!product) return undefined
+    return (product.stock_quantity ?? 0) + Number(item.quantity)
+  }
   const [invoiceOpen, setInvoiceOpen] = useState(false)
 
   // Invalida orderKeys.all (lista/detalhe/histórico) sempre que um item muda
@@ -83,6 +91,7 @@ export default function OrderEdit() {
   // staleTime (o `refresh()` só recarrega o state local desta tela).
   function invalidateOrderCaches() {
     queryClient.invalidateQueries({ queryKey: orderKeys.all })
+    queryClient.invalidateQueries({ queryKey: productKeys.all })
   }
 
   async function handleAddProduct(payload) {
@@ -114,6 +123,32 @@ export default function OrderEdit() {
       return false
     } finally {
       setSavingItem(false)
+    }
+  }
+
+  async function handleUpdateProduct(itemId, payload) {
+    try {
+      await OrderService.orderProductUpdate(id, payload, itemId)
+      refresh()
+      invalidateOrderCaches()
+      return true
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar o produto").message)
+      return false
+    }
+  }
+
+  async function handleUpdateService(itemId, payload) {
+    try {
+      await OrderService.orderServiceUpdate(id, payload, itemId)
+      refresh()
+      invalidateOrderCaches()
+      return true
+    } catch (error) {
+      console.error(error)
+      toast.error(parseApiError(error, "Erro ao atualizar o serviço").message)
+      return false
     }
   }
 
@@ -177,7 +212,10 @@ export default function OrderEdit() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <RecordPdfButton request={() => OrderService.getOrderPdf(id)} />
+          <RecordPdfButton
+            request={() => OrderService.getOrderPdf(id)}
+            label="Gerar ordem de serviço"
+          />
           <WhatsAppButton phone={relatedClient?.phone} label="WhatsApp" />
           {orderCanFinish(status) && (
             <button
@@ -222,8 +260,8 @@ export default function OrderEdit() {
                 value={clientId}
                 onChange={(value) => {
                   if (value === clientId) return
-                  setValue("client_id", value)
-                  setValue("vehicle_id", "")
+                  setValue("client_id", value, { shouldDirty: true })
+                  setValue("vehicle_id", "", { shouldDirty: true })
                 }}
                 disabled={locked}
                 error={errors.client_id?.message}
@@ -232,7 +270,7 @@ export default function OrderEdit() {
               <VehicleLiveSelect
                 label="Veículo"
                 value={vehicleId}
-                onChange={(value) => setValue("vehicle_id", value)}
+                onChange={(value) => setValue("vehicle_id", value, { shouldDirty: true })}
                 clientId={clientId}
                 disabled={locked}
                 disabledHint="Selecione o cliente primeiro"
@@ -256,12 +294,13 @@ export default function OrderEdit() {
               />
               <FormField
                 label="Observações"
+                multiline
                 disabled={locked}
                 error={errors.notes?.message}
                 registration={register("notes")}
               />
-              <PrimaryButton type="submit" disabled={isSubmitting || locked}>
-                Atualizar OS
+              <PrimaryButton type="submit" disabled={isSubmitting || locked || !isDirty}>
+                Salvar OS
               </PrimaryButton>
             </form>
           </div>
@@ -303,24 +342,17 @@ export default function OrderEdit() {
 
             <div className="divide-y divide-slate-100">
               {products.map((item) => (
-                <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span>
-                    {item.product?.name} (x{item.quantity})
-                  </span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-slate-400">{formatMoney(item.unit_price)} / un</span>
-                    <span className="font-bold text-slate-700">{formatMoney(item.total)}</span>
-                    {canEditItems && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteProduct(item.id)}
-                        className="text-rose-400 hover:text-danger"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <EditableItemLine
+                  key={item.id}
+                  itemName={item.product?.name ?? "Produto"}
+                  quantity={item.quantity}
+                  unitPrice={item.unit_price}
+                  total={item.total}
+                  editable={canEditItems}
+                  availableStock={stockForLine(item)}
+                  onSave={(payload) => handleUpdateProduct(item.id, payload)}
+                  onDelete={() => handleDeleteProduct(item.id)}
+                />
               ))}
               {products.length === 0 && (
                 <p className="text-slate-400 py-4 text-center">Nenhum produto adicionado.</p>
@@ -348,28 +380,21 @@ export default function OrderEdit() {
 
             <div className="divide-y divide-slate-100">
               {services.map((item) => (
-                <div key={item.id} className="py-3 flex justify-between items-center text-sm">
-                  <span className="flex items-center gap-2">
-                    {item.name ?? item.service?.name}
-                    {!item.service && (
+                <EditableItemLine
+                  key={item.id}
+                  itemName={item.name ?? item.service?.name ?? "Serviço"}
+                  badge={
+                    !item.service && (
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-500">
                         Personalizado
                       </span>
-                    )}
-                  </span>
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold text-slate-700">{formatMoney(item.unit_price)}</span>
-                    {canEditItems && (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteService(item.id)}
-                        className="text-rose-400 hover:text-danger"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                    )
+                  }
+                  unitPrice={item.unit_price}
+                  editable={canEditItems}
+                  onSave={(payload) => handleUpdateService(item.id, payload)}
+                  onDelete={() => handleDeleteService(item.id)}
+                />
               ))}
               {services.length === 0 && (
                 <p className="text-slate-400 py-4 text-center">Nenhum serviço adicionado.</p>
