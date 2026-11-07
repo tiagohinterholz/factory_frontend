@@ -313,6 +313,7 @@ export default function BudgetEdit() {
               <ProductItemForm
                 products={allProducts}
                 saving={savingItem}
+                shortageNote="O orçamento não reserva estoque; a falta é anotada na OS quando ele for aprovado."
                 onAdd={handleAddProduct}
               />
             )}
@@ -327,6 +328,7 @@ export default function BudgetEdit() {
                   total={item.total}
                   editable={isPending}
                   availableStock={stockForLine(item)}
+                  shortageNote="O orçamento não reserva estoque; a falta é anotada na OS quando ele for aprovado."
                   onSave={(payload) => handleUpdateProduct(item.id, payload)}
                   onDelete={() => handleDeleteProduct(item.id)}
                 />

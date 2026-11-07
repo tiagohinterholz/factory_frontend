@@ -3,7 +3,12 @@ import { Plus } from "lucide-react"
 import LiveSelect from "@/modules/core/components/LiveSelect"
 import { formatMoney } from "@/modules/core/utils/format"
 
-export default function ProductItemForm({ products = [], saving = false, onAdd }) {
+export default function ProductItemForm({
+  products = [],
+  saving = false,
+  shortageNote = "O item entra mesmo assim e a peça fica anotada para comprar.",
+  onAdd,
+}) {
   const quantityId = useId()
   const [productId, setProductId] = useState("")
   const [quantity, setQuantity] = useState("1")
@@ -84,8 +89,7 @@ export default function ProductItemForm({ products = [], saving = false, onAdd }
       </button>
       {missing > 0 && !error && (
         <p role="status" className="w-full text-xs font-medium text-warn">
-          Estoque disponível: {Math.max(0, available)} — vão faltar {missing} un. O item entra mesmo
-          assim e a peça fica anotada para comprar.
+          Estoque disponível: {Math.max(0, available)} — vão faltar {missing} un. {shortageNote}
         </p>
       )}
       {error && <p className="w-full text-xs text-danger">{error}</p>}

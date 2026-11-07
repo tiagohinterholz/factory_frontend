@@ -466,3 +466,29 @@ describe("<BudgetEdit> — PDF", () => {
     expect(screen.queryByRole("button", { name: /exportar pdf/i })).not.toBeInTheDocument()
   })
 })
+
+describe("<BudgetEdit> — aviso de estoque", () => {
+  it("no orçamento o aviso diz que nada é reservado ainda", async () => {
+    mockApi()
+    server.use(
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [{ id: 40, name: "Sensor", unit_price: "120.00", stock_quantity: 1 }],
+          count: 1,
+        }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findByText("pendente")
+    await user.click((await screen.findAllByRole("combobox")).at(-2))
+    await user.click(await screen.findByRole("option", { name: /Sensor/ }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "3" } })
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "O orçamento não reserva estoque; a falta é anotada na OS quando ele for aprovado.",
+    )
+    expect(screen.getByRole("status")).not.toHaveTextContent("fica anotada para comprar")
+  })
+})
