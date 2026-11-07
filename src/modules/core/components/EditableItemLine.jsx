@@ -3,17 +3,33 @@ import { Check, Pencil, Trash2, X } from "lucide-react"
 import { formatMoney } from "@/modules/core/utils/format"
 
 function parsePrice(raw) {
-  const text = String(raw).trim()
+  const text = String(raw).replace(/R\$/g, "").replace(/\s/g, "")
   if (text === "") return Number.NaN
-  return Number(text.includes(",") ? text.replace(/\./g, "").replace(",", ".") : text)
+  if (text.includes(",")) return Number(text.replace(/\./g, "").replace(",", "."))
+  if (/^\d{1,3}(\.\d{3})+$/.test(text)) return Number(text.replace(/\./g, ""))
+  return Number(text)
 }
 
-function LineEditor({ itemName, quantity, unitPrice, availableStock, onSave, onCancel }) {
+function formatPriceInput(value) {
+  const number = Number(value)
+  if (!Number.isFinite(number)) return ""
+  return number.toFixed(2).replace(".", ",")
+}
+
+function LineEditor({
+  itemName,
+  quantity,
+  unitPrice,
+  availableStock,
+  shortageNote,
+  onSave,
+  onCancel,
+}) {
   const quantityId = useId()
   const priceId = useId()
   const withQuantity = quantity !== undefined
   const [quantityValue, setQuantityValue] = useState(withQuantity ? String(quantity) : "")
-  const [priceValue, setPriceValue] = useState(String(unitPrice ?? ""))
+  const [priceValue, setPriceValue] = useState(formatPriceInput(unitPrice))
   const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
 
@@ -127,7 +143,7 @@ function LineEditor({ itemName, quantity, unitPrice, availableStock, onSave, onC
       {missing > 0 && !error && (
         <p role="status" className="text-xs font-medium text-warn">
           Estoque disponível para esta linha: {Math.max(0, availableStock)} — vão faltar {missing}{" "}
-          un. A peça fica anotada para comprar.
+          un. {shortageNote}
         </p>
       )}
       {error && <p className="text-xs text-danger">{error}</p>}
@@ -143,6 +159,7 @@ export default function EditableItemLine({
   total,
   editable = false,
   availableStock,
+  shortageNote = "A peça fica anotada para comprar.",
   onSave,
   onDelete,
 }) {
@@ -156,6 +173,7 @@ export default function EditableItemLine({
         quantity={quantity}
         unitPrice={unitPrice}
         availableStock={availableStock}
+        shortageNote={shortageNote}
         onSave={onSave}
         onCancel={() => setEditing(false)}
       />

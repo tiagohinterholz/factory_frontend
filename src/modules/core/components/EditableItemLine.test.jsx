@@ -65,6 +65,29 @@ describe("<EditableItemLine>", () => {
     await waitFor(() => expect(onSave).toHaveBeenCalledWith({ unit_price: "99.90" }))
   })
 
+  it("o preço abre no formato brasileiro", () => {
+    renderProduct()
+
+    openEditor()
+
+    expect(priceInput()).toHaveValue("120,00")
+  })
+
+  it.each([
+    ["1.000", "1000.00"],
+    ["1.234,56", "1234.56"],
+    ["R$ 89,90", "89.90"],
+    ["150.5", "150.50"],
+  ])("entende o preço digitado %s como %s", async (typed, sent) => {
+    const { onSave } = renderProduct()
+
+    openEditor()
+    fireEvent.change(priceInput(), { target: { value: typed } })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar item" }))
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith({ unit_price: sent }))
+  })
+
   it("aceita preço zero", async () => {
     const { onSave } = renderProduct()
 
@@ -113,6 +136,17 @@ describe("<EditableItemLine>", () => {
     )
     fireEvent.click(screen.getByRole("button", { name: "Salvar item" }))
     await waitFor(() => expect(onSave).toHaveBeenCalledWith({ quantity: 13 }))
+  })
+
+  it("o aviso de falta usa o texto do contexto (orçamento)", () => {
+    renderProduct({ availableStock: 1, shortageNote: "A falta é anotada na OS." })
+
+    openEditor()
+    fireEvent.change(quantityInput(), { target: { value: "3" } })
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "vão faltar 2 un. A falta é anotada na OS.",
+    )
   })
 
   it("dentro do estoque não mostra aviso", () => {
