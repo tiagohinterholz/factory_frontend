@@ -294,6 +294,7 @@ export default function OrderEdit() {
               />
               <FormField
                 label="Observações"
+                multiline
                 disabled={locked}
                 error={errors.notes?.message}
                 registration={register("notes")}

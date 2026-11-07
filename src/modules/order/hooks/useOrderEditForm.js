@@ -25,6 +25,17 @@ function toOrderForm(data) {
   }
 }
 
+function syncServerNotes(form, serverNotes) {
+  const previous = form.formState.defaultValues?.notes ?? ""
+  if (serverNotes === previous) return
+  const current = form.getValues("notes") ?? ""
+  form.resetField("notes", { defaultValue: serverNotes })
+  if (current === previous) return
+  const previousLines = new Set(previous.split("\n"))
+  const added = serverNotes.split("\n").filter((line) => line && !previousLines.has(line))
+  form.setValue("notes", [current, ...added].filter(Boolean).join("\n"), { shouldDirty: true })
+}
+
 export function useOrderEditForm() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -88,6 +99,12 @@ export function useOrderEditForm() {
     errorFallback: "Erro ao atualizar a ordem de serviço",
   })
 
+  const refresh = useCallback(async () => {
+    const data = await fetchMeta()
+    syncServerNotes(form, data.notes ?? "")
+    return data
+  }, [fetchMeta, form])
+
   const remove = useResourceAction({
     mutationFn: () => OrderService.deleteOrder(id),
     confirm: {
@@ -132,7 +149,7 @@ export function useOrderEditForm() {
     relatedClient: meta.client,
     relatedVehicle: meta.vehicle,
     financialEntryId: meta.financialEntryId,
-    refresh: fetchMeta,
+    refresh,
     handleDelete: remove.run,
     handleFinish: finish.run,
   }

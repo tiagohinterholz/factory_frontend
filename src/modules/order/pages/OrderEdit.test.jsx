@@ -832,3 +832,84 @@ describe("<OrderEdit> — PDF", () => {
     expect(screen.queryByRole("button", { name: /exportar pdf/i })).not.toBeInTheDocument()
   })
 })
+
+describe("<OrderEdit> — alerta de compra nas observações", () => {
+  function mockShortage() {
+    let notes = "Cliente aguarda"
+    let saved = null
+    mockApi()
+    server.use(
+      http.get(`${API}/ordens/1/`, () => HttpResponse.json({ ...order, notes })),
+      http.get(`${API}/produtos/`, () =>
+        HttpResponse.json({
+          results: [{ id: 40, name: "Sensor", unit_price: "120.00", stock_quantity: 0 }],
+          count: 1,
+        }),
+      ),
+      http.post(`${API}/ordens/1/produtos/`, () => {
+        notes = `${notes}\n[COMPRAR PEÇA] Falta 1 un de: Sensor`
+        return HttpResponse.json({ id: 300 }, { status: 201 })
+      }),
+      http.patch(`${API}/ordens/1/`, async ({ request }) => {
+        saved = await request.json()
+        notes = saved.notes
+        return HttpResponse.json({ ...order, notes })
+      }),
+    )
+    return { saved: () => saved }
+  }
+
+  async function addOneSensor(user) {
+    const picker = (await screen.findAllByRole("combobox")).at(-2)
+    await user.click(picker)
+    await user.click(await screen.findByRole("option", { name: /Sensor/ }))
+    fireEvent.change(screen.getByLabelText("Qtd"), { target: { value: "1" } })
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar produto" }))
+  }
+
+  it("mostra o alerta que o servidor anotou e não apaga ao salvar", async () => {
+    const api = mockShortage()
+    const user = userEvent.setup()
+    renderPage()
+    const notesField = await screen.findByPlaceholderText("Digite o(a) observações")
+    await waitFor(() => expect(notesField).toHaveValue("Cliente aguarda"))
+
+    await addOneSensor(user)
+
+    await waitFor(() =>
+      expect(notesField).toHaveValue("Cliente aguarda\n[COMPRAR PEÇA] Falta 1 un de: Sensor"),
+    )
+    expect(screen.getByRole("button", { name: "Salvar OS" })).toBeDisabled()
+
+    fireEvent.change(notesField, {
+      target: { value: `${notesField.value}\nTrocar óleo também` },
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
+
+    await waitFor(() => expect(api.saved()).not.toBeNull())
+    expect(api.saved().notes).toContain("[COMPRAR PEÇA] Falta 1 un de: Sensor")
+  })
+
+  it("se as observações já estavam sendo editadas, o alerta entra no fim sem perder o texto", async () => {
+    const api = mockShortage()
+    const user = userEvent.setup()
+    renderPage()
+    const notesField = await screen.findByPlaceholderText("Digite o(a) observações")
+    await waitFor(() => expect(notesField).toHaveValue("Cliente aguarda"))
+    fireEvent.change(notesField, { target: { value: "Cliente aguarda - trocar óleo" } })
+
+    await addOneSensor(user)
+
+    await waitFor(() =>
+      expect(notesField).toHaveValue(
+        "Cliente aguarda - trocar óleo\n[COMPRAR PEÇA] Falta 1 un de: Sensor",
+      ),
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Salvar OS" }))
+
+    await waitFor(() => expect(api.saved()).not.toBeNull())
+    expect(api.saved().notes).toBe(
+      "Cliente aguarda - trocar óleo\n[COMPRAR PEÇA] Falta 1 un de: Sensor",
+    )
+  })
+})
