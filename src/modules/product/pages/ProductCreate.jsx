@@ -2,15 +2,9 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useProductForm } from "@/modules/product/hooks/useProductForm"
 import BackLink from "@/modules/core/components/BackLink"
-import { useProductOptions } from "@/modules/core/hooks/options"
-import FormField from "@/modules/core/components/FormField"
-import MoneyField from "@/modules/core/components/MoneyField"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
-import { SupplierLiveSelect } from "@/modules/supplier"
-import { ProductCategoryLiveSelect } from "@/modules/productcategory"
-import { ProductSubcategoryLiveSelect } from "@/modules/productsubcategory"
+import ProductFormFields from "@/modules/product/components/ProductFormFields"
 import ProductFinancialEntryModal from "@/modules/product/components/ProductFinancialEntryModal"
-import { unitOfMeasureOptions } from "@/modules/product/constants/product"
 import { Package, Save } from "lucide-react"
 
 export default function ProductCreate() {
@@ -22,22 +16,8 @@ export default function ProductCreate() {
     onSuccess: (product) => setCreatedProduct(product),
   })
   const {
-    register,
-    control,
-    watch,
-    setValue,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = form
-
-  const categoryId = watch("category_id")
-  const subcategoryId = watch("subcategory_id")
-  const supplierId = watch("supplier_id")
-
-  const { product: products } = useProductOptions()
-
-  // datalist de "Marca" pré-populado com as marcas já cadastradas em outros
-  // produtos — continua texto livre, só facilita reaproveitar o mesmo nome.
-  const brandOptions = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort()
 
   function finishFlow() {
     setCreatedProduct(null)
@@ -60,116 +40,7 @@ export default function ProductCreate() {
           </div>
 
           <form className="space-y-6" onSubmit={onSubmit}>
-            <SupplierLiveSelect
-              label="Fornecedor *"
-              value={supplierId}
-              onChange={(value) => setValue("supplier_id", value)}
-              error={errors.supplier_id?.message}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Nome do Produto"
-                placeholder="Ex: Óleo 5W30"
-                error={errors.name?.message}
-                registration={register("name")}
-              />
-              <FormField
-                label="Marca"
-                placeholder="Ex: Castrol"
-                datalist={brandOptions}
-                error={errors.brand?.message}
-                registration={register("brand")}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Referência"
-                placeholder="Ex: REF-123"
-                error={errors.reference?.message}
-                registration={register("reference")}
-              />
-              <FormField
-                label="SKU / Código de Barras"
-                placeholder="Ex: 7891234567890"
-                error={errors.sku?.message}
-                registration={register("sku")}
-              />
-            </div>
-
-            <FormField
-              label="Descrição"
-              placeholder="Detalhes técnicos..."
-              error={errors.description?.message}
-              registration={register("description")}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ProductCategoryLiveSelect
-                label="Categoria"
-                value={categoryId}
-                onChange={(value) => {
-                  setValue("category_id", value)
-                  setValue("subcategory_id", "")
-                }}
-                error={errors.category_id?.message}
-              />
-              <ProductSubcategoryLiveSelect
-                label="Subcategoria"
-                value={subcategoryId}
-                onChange={(value) => setValue("subcategory_id", value)}
-                categoryId={categoryId}
-                error={errors.subcategory_id?.message}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Qtd em Estoque"
-                type="number"
-                error={errors.stock_quantity?.message}
-                registration={register("stock_quantity")}
-              />
-              <FormField
-                label="Unidade de Medida"
-                placeholder="UN"
-                datalist={unitOfMeasureOptions}
-                error={errors.unit_of_measure?.message}
-                registration={register("unit_of_measure")}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <MoneyField
-                control={control}
-                name="unit_price"
-                label="Preço Unitário"
-                error={errors.unit_price?.message}
-              />
-              <MoneyField
-                control={control}
-                name="cost_price"
-                label="Preço de Custo (opcional)"
-                error={errors.cost_price?.message}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Estoque Mínimo (opcional)"
-                type="number"
-                placeholder="Deixe em branco pra não alertar"
-                error={errors.minimum_stock?.message}
-                registration={register("minimum_stock")}
-              />
-              <FormField
-                label="NCM (opcional)"
-                placeholder="Ex: 87089900"
-                error={errors.ncm?.message}
-                registration={register("ncm")}
-              />
-            </div>
+            <ProductFormFields form={form} />
 
             <div className="pt-4 flex justify-end">
               <PrimaryButton type="submit" icon={Save} fullWidth={false} disabled={isSubmitting}>

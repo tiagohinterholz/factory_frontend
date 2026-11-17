@@ -19,6 +19,7 @@ import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import ServiceItemForm from "@/modules/core/components/ServiceItemForm"
 import ProductItemForm from "@/modules/core/components/ProductItemForm"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import EditableItemLine from "@/modules/core/components/EditableItemLine"
 import { Plus, Trash2, CheckCircle, XCircle, Copy } from "lucide-react"
 import { formatDateTime, formatMoney } from "@/modules/core/utils/format"
@@ -67,6 +68,7 @@ export default function BudgetEdit() {
   const vehicleId = watch("vehicle_id")
 
   const { product: allProducts } = useProductOptions()
+  const { canCreateProduct } = usePermissions()
 
   function stockForLine(item) {
     const product = allProducts.find((option) => String(option.id) === String(idOf(item.product)))
@@ -313,6 +315,7 @@ export default function BudgetEdit() {
               <ProductItemForm
                 products={allProducts}
                 saving={savingItem}
+                allowCreateProduct={canCreateProduct}
                 shortageNote="O orçamento não reserva estoque; a falta é anotada na OS quando ele for aprovado."
                 onAdd={handleAddProduct}
               />

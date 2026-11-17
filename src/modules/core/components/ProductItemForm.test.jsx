@@ -1,6 +1,9 @@
-import { describe, it, expect, vi } from "vitest"
-import { screen, fireEvent, waitFor } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import { screen, fireEvent, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { http, HttpResponse } from "msw"
+import { server } from "@/test/msw/server"
+import { API } from "@/test/msw/handlers"
 import { renderWithProviders } from "@/test/render"
 import ProductItemForm from "./ProductItemForm"
 
@@ -146,5 +149,140 @@ describe("<ProductItemForm>", () => {
 
     expect(onAdd).not.toHaveBeenCalled()
     expect(screen.getByText(/quantidade inteira/i)).toBeInTheDocument()
+  })
+})
+
+describe("<ProductItemForm> cadastro rápido de produto", () => {
+  const CREATED = {
+    id: 50,
+    name: "Pastilha de freio",
+    unit_price: "50.00",
+    cost_price: "30.00",
+    stock_quantity: 2,
+  }
+
+  function mockCatalogApi() {
+    let body
+    server.use(
+      http.get(`${API}/fornecedores/`, () =>
+        HttpResponse.json({ results: [{ id: 9, corporate_name: "Bosch Ltda" }], count: 1 }),
+      ),
+      http.get(`${API}/produtos/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.get(`${API}/categorias-produto/`, () => HttpResponse.json({ results: [], count: 0 })),
+      http.post(`${API}/produtos/`, async ({ request }) => {
+        body = await request.json()
+        return HttpResponse.json(CREATED, { status: 201 })
+      }),
+    )
+    return () => body
+  }
+
+  function loginAs(user) {
+    localStorage.setItem("user", JSON.stringify({ email: "a@a.com", business_id: 3, ...user }))
+  }
+
+  async function createProductThroughModal(user, productCombobox) {
+    await user.click(productCombobox)
+    await user.click(await screen.findByRole("option", { name: "Cadastrar novo produto" }))
+
+    const dialog = await screen.findByRole("dialog", { name: "Cadastrar novo produto" })
+    const supplierInput = within(dialog)
+      .getAllByRole("combobox")
+      .find((el) => el.id?.startsWith("headlessui-combobox-input"))
+    await user.click(supplierInput)
+    await user.click(await screen.findByRole("option", { name: "Bosch Ltda" }))
+    await user.type(within(dialog).getByPlaceholderText("Ex: Óleo 5W30"), "Pastilha de freio")
+    fireEvent.change(
+      within(dialog).getByText("Qtd em Estoque").closest("div").querySelector("input"),
+      { target: { value: "2" } },
+    )
+    fireEvent.change(
+      within(dialog).getByText("Preço Unitário").closest("div").querySelector("input"),
+      { target: { value: "5000" } },
+    )
+    fireEvent.click(within(dialog).getByRole("button", { name: "Salvar produto" }))
+  }
+
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it("sem permissão de cadastrar produto, a lista não oferece o atalho", async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<ProductItemForm products={PRODUCTS} onAdd={vi.fn()} />)
+
+    await user.click(screen.getByRole("combobox"))
+
+    await screen.findAllByRole("option")
+    expect(screen.queryByRole("option", { name: "Cadastrar novo produto" })).toBeNull()
+  })
+
+  it("cadastra pelo modal, pergunta da saída financeira e volta com o produto já selecionado", async () => {
+    loginAs({ role: "admin" })
+    const postedBody = mockCatalogApi()
+    const onAdd = vi.fn().mockResolvedValue(true)
+    const user = userEvent.setup()
+    renderWithProviders(<ProductItemForm products={PRODUCTS} allowCreateProduct onAdd={onAdd} />)
+    const productCombobox = screen.getByRole("combobox")
+
+    await createProductThroughModal(user, productCombobox)
+
+    expect(
+      await screen.findByRole("dialog", { name: /registrar saída financeira/i }),
+    ).toBeInTheDocument()
+    expect(postedBody()).toMatchObject({
+      name: "Pastilha de freio",
+      supplier_id: "9",
+      stock_quantity: 2,
+    })
+    fireEvent.click(screen.getByRole("button", { name: "Não" }))
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    expect(productCombobox).toHaveValue("Pastilha de freio (R$ 50,00) · estoque 2")
+
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar produto" }))
+
+    await waitFor(() =>
+      expect(onAdd).toHaveBeenCalledWith({ product_id: "50", quantity: 1, unit_price: "50.00" }),
+    )
+  })
+
+  it("quem não lança no financeiro volta direto pro item, sem a pergunta da saída", async () => {
+    loginAs({ role: "atendente", permissions: ["products.add_product"] })
+    mockCatalogApi()
+    const user = userEvent.setup()
+    renderWithProviders(<ProductItemForm products={PRODUCTS} allowCreateProduct onAdd={vi.fn()} />)
+    const productCombobox = screen.getByRole("combobox")
+
+    await createProductThroughModal(user, productCombobox)
+
+    await waitFor(() =>
+      expect(productCombobox).toHaveValue("Pastilha de freio (R$ 50,00) · estoque 2"),
+    )
+    expect(screen.queryByRole("dialog")).toBeNull()
+  })
+
+  it("fechar o modal sem salvar não cadastra nada e mantém a linha como estava", async () => {
+    loginAs({ role: "admin" })
+    let posted = false
+    mockCatalogApi()
+    server.use(
+      http.post(`${API}/produtos/`, () => {
+        posted = true
+        return HttpResponse.json(CREATED, { status: 201 })
+      }),
+    )
+    const user = userEvent.setup()
+    renderWithProviders(<ProductItemForm products={PRODUCTS} allowCreateProduct onAdd={vi.fn()} />)
+    const productCombobox = screen.getByRole("combobox")
+
+    await user.click(productCombobox)
+    await user.click(await screen.findByRole("option", { name: "Cadastrar novo produto" }))
+    const dialog = await screen.findByRole("dialog", { name: "Cadastrar novo produto" })
+    fireEvent.keyDown(document, { key: "Escape" })
+
+    await waitFor(() => expect(dialog).not.toBeInTheDocument())
+    expect(posted).toBe(false)
+    expect(productCombobox).toHaveValue("")
   })
 })
