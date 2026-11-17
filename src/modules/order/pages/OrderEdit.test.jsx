@@ -913,3 +913,52 @@ describe("<OrderEdit> — alerta de compra nas observações", () => {
     )
   })
 })
+
+describe("cadastro rápido de produto no item", () => {
+  function productCombobox() {
+    return screen
+      .getAllByText("Produto")
+      .find((el) => el.tagName === "LABEL")
+      .closest("div")
+      .querySelector("input")
+  }
+
+  it("quem pode cadastrar produto vê o atalho na lista de produtos", async () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({ email: "a@a.com", business_id: 1, role: "admin" }),
+    )
+    mockApi()
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findAllByText("Produto")
+    await user.click(productCombobox())
+
+    expect(
+      await screen.findByRole("option", { name: "Cadastrar novo produto" }),
+    ).toBeInTheDocument()
+  })
+
+  it("sem a permissão de cadastrar produto, o atalho não aparece", async () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        email: "a@a.com",
+        business_id: 1,
+        role: "atendente",
+        permissions: ["products.view_product"],
+      }),
+    )
+    mockApi()
+    const user = userEvent.setup()
+    renderPage()
+
+    await screen.findAllByText("Produto")
+    await user.click(productCombobox())
+
+    await waitFor(() =>
+      expect(screen.queryByRole("option", { name: "Cadastrar novo produto" })).toBeNull(),
+    )
+  })
+})

@@ -22,6 +22,7 @@ import { VehicleLiveSelect } from "@/modules/vehicle"
 import PrimaryButton from "@/modules/core/components/PrimaryButton"
 import ServiceItemForm from "@/modules/core/components/ServiceItemForm"
 import ProductItemForm from "@/modules/core/components/ProductItemForm"
+import { usePermissions } from "@/modules/auth/hooks/usePermissions"
 import EditableItemLine from "@/modules/core/components/EditableItemLine"
 import {
   paymentLabel,
@@ -75,6 +76,7 @@ export default function OrderEdit() {
   const vehicleId = watch("vehicle_id")
 
   const { product: allProducts } = useProductOptions()
+  const { canCreateProduct } = usePermissions()
   const { workservice: allServices } = useWorkServiceOptions()
 
   const [savingItem, setSavingItem] = useState(false)
@@ -336,6 +338,7 @@ export default function OrderEdit() {
               <ProductItemForm
                 products={allProducts}
                 saving={savingItem}
+                allowCreateProduct={canCreateProduct}
                 onAdd={handleAddProduct}
               />
             )}

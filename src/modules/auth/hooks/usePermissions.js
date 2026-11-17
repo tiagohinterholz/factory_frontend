@@ -49,6 +49,7 @@ export function usePermissions() {
       has("suppliers.view_supplier") ||
       has("products.view_product") ||
       has("workservices.view_service"),
+    canCreateProduct: has("products.add_product"),
     canViewBudgets: has("budgets.view_budget"),
     canViewOrders: has("orders.view_order"),
     canViewFiscalNotes: has("orders.view_fiscalnote") || has("orders.view_servicefiscalnote"),
